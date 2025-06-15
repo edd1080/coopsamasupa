@@ -14,6 +14,15 @@ const Login = () => {
       
       <div className="w-full max-w-md space-y-6 animate-fade-in">
         <div className="text-center">
+          <div className="flex justify-center mb-4">
+            <div className="w-24 h-16 bg-white rounded-xl flex items-center justify-center shadow-lg p-3">
+              <img
+                src="/lovable-uploads/8517c16c-a94c-48da-9b01-9cabbde80b84.png"
+                alt="Coopsama Logo"
+                className="w-full h-full object-contain"
+              />
+            </div>
+          </div>
           <h1 className="text-3xl font-bold text-primary">Coopsama App</h1>
           <p className="mt-1 text-muted-foreground">Portal de Agentes</p>
         </div>

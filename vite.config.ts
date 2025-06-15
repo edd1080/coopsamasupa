@@ -35,10 +35,10 @@ export default defineConfig(({ mode }) => ({
       },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'CreditFlow Mobile Agent',
-        short_name: 'CreditFlow',
-        description: 'Aplicación móvil para gestión de créditos',
-        theme_color: '#7142C5',
+        name: 'Coopsama App',
+        short_name: 'Coopsama',
+        description: 'Aplicación móvil para gestión de créditos Coopsama',
+        theme_color: '#19418A',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
@@ -46,17 +46,17 @@ export default defineConfig(({ mode }) => ({
         start_url: '/',
         icons: [
           {
-            src: 'pwa-192x192.png',
+            src: '/lovable-uploads/8517c16c-a94c-48da-9b01-9cabbde80b84.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: 'pwa-512x512.png',
+            src: '/lovable-uploads/8517c16c-a94c-48da-9b01-9cabbde80b84.png',
             sizes: '512x512',
             type: 'image/png'
           },
           {
-            src: 'pwa-512x512.png',
+            src: '/lovable-uploads/8517c16c-a94c-48da-9b01-9cabbde80b84.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'

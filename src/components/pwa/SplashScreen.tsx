@@ -10,32 +10,18 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ isVisible }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-background to-primary/5">
-      {/* Logo/Icon Container */}
+      {/* Logo Container */}
       <div className="relative mb-8">
-        <div className="w-24 h-24 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-lg">
-          <svg
-            width="48"
-            height="48"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="text-white"
-          >
-            <path
-              d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z"
-              fill="currentColor"
-            />
-            <path
-              d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
-              stroke="currentColor"
-              strokeWidth="2"
-              fill="none"
-            />
-          </svg>
+        <div className="w-32 h-20 bg-white rounded-2xl flex items-center justify-center shadow-lg p-4">
+          <img
+            src="/lovable-uploads/8517c16c-a94c-48da-9b01-9cabbde80b84.png"
+            alt="Coopsama Logo"
+            className="w-full h-full object-contain"
+          />
         </div>
         
         {/* Pulse animation ring */}
-        <div className="absolute inset-0 w-24 h-24 border-2 border-primary/30 rounded-2xl animate-ping"></div>
+        <div className="absolute inset-0 w-32 h-20 border-2 border-primary/30 rounded-2xl animate-ping"></div>
       </div>
 
       {/* App Name */}
@@ -43,6 +29,9 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ isVisible }) => {
         <h1 className="text-3xl font-bold text-foreground mb-2">
           Coopsama App
         </h1>
+        <p className="text-muted-foreground">
+          Portal de Agentes
+        </p>
       </div>
 
       {/* Animated Loader */}
