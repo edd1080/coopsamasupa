@@ -5,6 +5,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { AuthProvider } from "@/hooks/useAuth";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import React, { useState } from "react";
 
 // PWA Components
@@ -50,43 +52,97 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          
-          {/* PWA Splash Screen */}
-          <SplashScreen isVisible={isLoading} />
-          
-          {/* PWA Update Prompt */}
-          <UpdatePrompt 
-            isVisible={showUpdatePrompt}
-            onUpdate={handleUpdate}
-            onDismiss={handleDismissUpdate}
-          />
-          
-          {/* Main App Content */}
-          {!isLoading && (
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/applications" element={<Applications />} />
-                <Route path="/applications/new" element={<RequestForm />} />
-                <Route path="/applications/:id" element={<ApplicationDetails />} />
-                <Route path="/applications/:id/edit" element={<RequestForm />} />
-                <Route path="/applications/:id/guarantors/new" element={<RequestForm />} />
-                <Route path="/applications/:id/guarantors/:guarantorId" element={<ApplicationDetails />} />
-                <Route path="/applications/:id/guarantors/:guarantorId/edit" element={<RequestForm />} />
-                <Route path="/prequalifications" element={<Prequalifications />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/settings/personal-info" element={<PersonalInfo />} />
-                <Route path="/settings/change-password" element={<ChangePassword />} />
-                <Route path="/settings/report-problem" element={<ReportProblem />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          )}
-        </TooltipProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            
+            {/* PWA Splash Screen */}
+            <SplashScreen isVisible={isLoading} />
+            
+            {/* PWA Update Prompt */}
+            <UpdatePrompt 
+              isVisible={showUpdatePrompt}
+              onUpdate={handleUpdate}
+              onDismiss={handleDismissUpdate}
+            />
+            
+            {/* Main App Content */}
+            {!isLoading && (
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/" element={
+                    <ProtectedRoute>
+                      <Index />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/applications" element={
+                    <ProtectedRoute>
+                      <Applications />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/applications/new" element={
+                    <ProtectedRoute>
+                      <RequestForm />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/applications/:id" element={
+                    <ProtectedRoute>
+                      <ApplicationDetails />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/applications/:id/edit" element={
+                    <ProtectedRoute>
+                      <RequestForm />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/applications/:id/guarantors/new" element={
+                    <ProtectedRoute>
+                      <RequestForm />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/applications/:id/guarantors/:guarantorId" element={
+                    <ProtectedRoute>
+                      <ApplicationDetails />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/applications/:id/guarantors/:guarantorId/edit" element={
+                    <ProtectedRoute>
+                      <RequestForm />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/prequalifications" element={
+                    <ProtectedRoute>
+                      <Prequalifications />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/settings" element={
+                    <ProtectedRoute>
+                      <Settings />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/settings/personal-info" element={
+                    <ProtectedRoute>
+                      <PersonalInfo />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/settings/change-password" element={
+                    <ProtectedRoute>
+                      <ChangePassword />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/settings/report-problem" element={
+                    <ProtectedRoute>
+                      <ReportProblem />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            )}
+          </TooltipProvider>
+        </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
