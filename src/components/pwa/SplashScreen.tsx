@@ -24,7 +24,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ isVisible }) => {
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-background to-primary/5">
       {/* Logo Container */}
-      <div className="mb-8">
+      <div className="mb-12">
         {!imageError ? (
           <img
             src="/lovable-uploads/3a7e44fe-eeee-4096-b06f-ed880c04cc99.png"
@@ -43,26 +43,11 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ isVisible }) => {
         )}
       </div>
 
-      {/* App Name */}
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">
-          Coopsama App
-        </h1>
-        <p className="text-muted-foreground">
-          Portal de Agentes
-        </p>
-      </div>
-
-      {/* Animated Loader */}
-      <div className="flex flex-col items-center gap-4">
-        <div className="flex space-x-1">
-          <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
-          <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-          <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-        </div>
-        <p className="text-sm text-muted-foreground animate-pulse">
-          Cargando aplicación...
-        </p>
+      {/* Animated Loader - Solo puntos sin texto */}
+      <div className="flex space-x-1">
+        <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
+        <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+        <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
       </div>
 
       {/* Debug info - only in development */}
