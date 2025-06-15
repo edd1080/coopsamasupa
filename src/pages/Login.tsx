@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoginForm from '@/components/auth/LoginForm';
 import ThemeToggle from '@/components/ui/ThemeToggle';
@@ -8,17 +8,27 @@ import { useAuth } from '@/hooks/useAuth';
 const Login = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const hasNavigatedRef = useRef(false);
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
-    if (!loading && user) {
-      console.log('User already authenticated, redirecting to dashboard');
-      navigate('/');
+    console.log('🏠 Login page - Loading:', loading, 'User:', !!user, 'Has navigated:', hasNavigatedRef.current);
+    
+    if (!loading && user && !hasNavigatedRef.current) {
+      console.log('🔄 User already authenticated, redirecting to dashboard');
+      hasNavigatedRef.current = true;
+      navigate('/', { replace: true });
+    }
+    
+    // Reset navigation flag when user logs out
+    if (!user) {
+      hasNavigatedRef.current = false;
     }
   }, [user, loading, navigate]);
 
   // Show loading while checking auth state
   if (loading) {
+    console.log('⏳ Login page showing loading state');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -29,11 +39,13 @@ const Login = () => {
     );
   }
 
-  // Don't render login form if user is authenticated
+  // Don't render login form if user is authenticated (prevent flash)
   if (user) {
+    console.log('👤 User is authenticated, not rendering login form');
     return null;
   }
 
+  console.log('📝 Rendering login form');
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-b from-background to-background/95">
       <div className="absolute top-4 right-4">
