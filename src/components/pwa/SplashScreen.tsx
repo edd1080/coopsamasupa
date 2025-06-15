@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 interface SplashScreenProps {
@@ -12,7 +13,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ isVisible }) => {
       {/* Logo Container */}
       <div className="mb-8">
         <img
-          src="/lovable-uploads/4434affb-3c68-48b5-a767-b5dcb7d10d0a.png"
+          src="/lovable-uploads/871a2ba2-4b77-4709-bd63-5f4ca7488ed6.png"
           alt="Coopsama Logo"
           className="w-52 h-20 object-contain"
         />
