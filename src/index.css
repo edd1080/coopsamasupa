@@ -7,83 +7,83 @@
 
 @layer base {
   :root {
-    /* Light theme - Colores más vibrantes */
+    /* Light theme - Nueva paleta con azul primario y verde accent */
     --background: 0 0% 100%; /* Blanco puro */
-    --foreground: 210 22% 22%; /* Gris oscuro #1F2937 */
+    --foreground: 219 39% 11%; /* Gris oscuro basado en el azul principal */
 
-    --card: 210 20% 98%; /* Blanco ligeramente gris #FAFAFA */
-    --card-foreground: 210 22% 22%; /* Gris oscuro #1F2937 */
+    --card: 210 20% 98%; /* Blanco ligeramente gris */
+    --card-foreground: 219 39% 11%; /* Gris oscuro basado en el azul */
 
     --popover: 0 0% 100%; /* Blanco puro */
-    --popover-foreground: 210 22% 22%; /* Gris oscuro #1F2937 */
+    --popover-foreground: 219 39% 11%; /* Gris oscuro basado en el azul */
 
-    /* Primary: Púrpura vibrante #7142C5 */
-    --primary: 257 56% 52%;
+    /* Primary: Azul principal #19418A */
+    --primary: 219 69% 32%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: Gris claro más definido #E5E7EB */
+    /* Secondary: Gris claro más definido */
     --secondary: 210 16% 90%;
-    --secondary-foreground: 210 22% 22%;
+    --secondary-foreground: 219 39% 11%;
 
-    /* Accent: Lavanda suave #EDE9FE */
-    --accent: 256 100% 96%;
-    --accent-foreground: 257 56% 52%;
+    /* Accent: Verde principal #53B742 */
+    --accent: 112 47% 49%;
+    --accent-foreground: 0 0% 100%;
 
-    --muted: 210 16% 93%; /* Gris claro #F0F0F0 */
-    --muted-foreground: 220 14% 42%; /* Gris medio #6B7280 */
+    --muted: 210 16% 93%; /* Gris claro */
+    --muted-foreground: 219 20% 42%; /* Gris medio basado en azul */
 
-    --destructive: 0 72% 51%; /* Rojo vibrante #DC2626 */
+    --destructive: 0 72% 51%; /* Rojo vibrante */
     --destructive-foreground: 0 0% 100%;
 
     --border: 210 20% 88%;
     --input: 210 20% 88%;
-    --ring: 257 56% 52%;
+    --ring: 219 69% 32%; /* Mismo que primary */
 
-    /* Success, Warning, Error más vibrantes */
-    --success: 142 71% 45%; /* Verde vibrante #10B981 */
-    --warning: 45 93% 47%; /* Amarillo vibrante #F59E0B */
-    --error: 0 72% 51%; /* Rojo vibrante #DC2626 */
+    /* Success, Warning, Error */
+    --success: 112 47% 49%; /* Verde accent para success */
+    --warning: 45 93% 47%; /* Amarillo vibrante */
+    --error: 0 72% 51%; /* Rojo vibrante */
 
     --radius: 0.75rem;
   }
 
   .dark {
-    /* Dark theme - Colores más vibrantes */
-    --background: 210 22% 22%; /* Gris oscuro #1F2937 */
-    --foreground: 210 18% 87%; /* Gris claro más brillante #E5E7EB */
+    /* Dark theme - Nueva paleta adaptada */
+    --background: 219 39% 11%; /* Gris oscuro basado en azul principal */
+    --foreground: 210 18% 87%; /* Gris claro */
 
-    --card: 212 22% 30%; /* Gris medio más definido #4B5563 */
-    --card-foreground: 210 18% 87%; /* Gris claro más brillante #E5E7EB */
+    --card: 219 30% 18%; /* Gris medio más definido basado en azul */
+    --card-foreground: 210 18% 87%; /* Gris claro */
 
-    --popover: 210 22% 22%; /* Gris oscuro #1F2937 */
-    --popover-foreground: 210 18% 87%; /* Gris claro más brillante #E5E7EB */
+    --popover: 219 39% 11%; /* Gris oscuro basado en azul */
+    --popover-foreground: 210 18% 87%; /* Gris claro */
 
-    /* Primary: Púrpura vibrante #8B5CF6 */
-    --primary: 258 90% 66%;
+    /* Primary: Azul más claro para dark mode #2563EB */
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: Gris medio más definido #4B5563 */
-    --secondary: 212 22% 30%;
+    /* Secondary: Gris medio más definido */
+    --secondary: 219 30% 18%;
     --secondary-foreground: 210 18% 87%;
 
-    /* Accent: Lavanda oscura más suave #C4B5FD */
-    --accent: 256 87% 85%;
-    --accent-foreground: 210 22% 22%;
+    /* Accent: Verde más claro para dark mode #65D952 */
+    --accent: 112 57% 59%;
+    --accent-foreground: 219 39% 11%;
 
-    --muted: 212 22% 30%; /* Gris medio más definido #4B5563 */
-    --muted-foreground: 220 13% 68%; /* Gris claro suave más brillante #A1A1AA */
+    --muted: 219 30% 18%; /* Gris medio basado en azul */
+    --muted-foreground: 220 13% 68%; /* Gris claro suave */
 
-    --destructive: 0 72% 51%; /* Rojo vibrante #DC2626 */
+    --destructive: 0 72% 51%; /* Rojo vibrante */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 212 22% 35%;
-    --input: 212 22% 35%;
-    --ring: 258 90% 66%;
+    --border: 219 30% 25%;
+    --input: 219 30% 25%;
+    --ring: 217 91% 60%; /* Mismo que primary */
 
-    /* Success, Warning, Error más vibrantes */
-    --success: 142 71% 45%; /* Verde vibrante #10B981 */
-    --warning: 45 93% 47%; /* Amarillo vibrante #F59E0B */
-    --error: 0 72% 51%; /* Rojo vibrante #DC2626 */
+    /* Success, Warning, Error para dark mode */
+    --success: 112 57% 59%; /* Verde accent más claro */
+    --warning: 45 93% 47%; /* Amarillo vibrante */
+    --error: 0 72% 51%; /* Rojo vibrante */
   }
 }
 
@@ -143,7 +143,7 @@
   }
 
   .nav-link {
-    @apply flex items-center gap-2 p-2 rounded-md transition-colors hover:bg-accent hover:text-accent-foreground;
+    @apply flex items-center gap-2 p-2 rounded-md transition-colors hover:bg-accent/10 hover:text-accent-foreground;
   }
 
   .nav-link.active {
@@ -151,7 +151,7 @@
   }
 
   .btn-icon {
-    @apply p-2 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors;
+    @apply p-2 rounded-full hover:bg-primary/10 hover:text-primary transition-colors;
   }
   
   /* Request card styles */
@@ -198,14 +198,14 @@
     @apply text-base leading-relaxed;
   }
 
-  /* Contenedor de formulario de solicitante - usando el nuevo primary */
+  /* Contenedor de formulario de solicitante - usando el azul primario */
   .form-container-applicant {
     @apply border-l-4 border-primary bg-primary/5;
   }
 
-  /* Contenedor de formulario de fiador - usando accent lavanda */
+  /* Contenedor de formulario de fiador - usando verde accent */
   .form-container-guarantor {
-    @apply border-l-4 border-accent bg-accent/30;
+    @apply border-l-4 border-accent bg-accent/10;
   }
 
   /* Badges para tipo de formulario */
@@ -218,6 +218,6 @@
   }
 
   .form-type-badge-guarantor {
-    @apply bg-accent text-accent-foreground;
+    @apply bg-accent/15 text-accent-foreground;
   }
 }
