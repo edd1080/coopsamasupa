@@ -3,7 +3,6 @@ import { useState, useEffect, createContext, useContext, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
@@ -21,77 +20,62 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const navigate = useNavigate();
   
-  // Use ref to prevent multiple navigations
-  const hasNavigatedRef = useRef(false);
+  // Use refs to prevent re-renders and track state
+  const mountedRef = useRef(true);
+  const subscriptionRef = useRef<any>(null);
 
   useEffect(() => {
-    console.log('🏁 AuthProvider initializing...');
-    let mounted = true;
-
-    // Simple auth state change handler without dependencies
+    console.log('🏁 AuthProvider mounting...');
+    
+    // Simple auth state change handler - NO navigation here
     const handleAuthChange = (event: string, session: Session | null) => {
-      if (!mounted) return;
+      if (!mountedRef.current) return;
       
-      console.log('🔐 Auth event:', event, 'User ID:', session?.user?.id);
+      console.log('🔐 Auth event:', event, 'Session:', !!session);
       
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
-
-      // Handle navigation only for successful sign in
-      if (event === 'SIGNED_IN' && session?.user && !hasNavigatedRef.current) {
-        const currentPath = window.location.pathname;
-        console.log('🚀 User signed in, current path:', currentPath);
-        
-        if (currentPath === '/login') {
-          console.log('🔄 Navigating from login to dashboard');
-          hasNavigatedRef.current = true;
-          navigate('/', { replace: true });
-        }
-      }
-      
-      // Reset navigation flag on sign out
-      if (event === 'SIGNED_OUT') {
-        console.log('👋 User signed out');
-        hasNavigatedRef.current = false;
-      }
     };
 
     // Get initial session
-    const getInitialSession = async () => {
+    const initializeAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
           console.error('❌ Error getting initial session:', error);
-          if (mounted) setLoading(false);
-          return;
-        }
-        
-        if (mounted) {
-          console.log('📋 Initial session loaded:', !!session, 'User:', session?.user?.id);
-          setSession(session);
-          setUser(session?.user ?? null);
-          setLoading(false);
+        } else {
+          console.log('📋 Initial session loaded:', !!session);
+          if (mountedRef.current) {
+            setSession(session);
+            setUser(session?.user ?? null);
+          }
         }
       } catch (error) {
-        console.error('❌ Error in getInitialSession:', error);
-        if (mounted) setLoading(false);
+        console.error('❌ Error in initializeAuth:', error);
+      } finally {
+        if (mountedRef.current) {
+          setLoading(false);
+        }
       }
     };
 
-    getInitialSession();
+    // Set up auth listener
+    subscriptionRef.current = supabase.auth.onAuthStateChange(handleAuthChange);
+    
+    // Initialize auth state
+    initializeAuth();
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthChange);
-
+    // Cleanup function
     return () => {
       console.log('🛑 AuthProvider cleanup');
-      mounted = false;
-      subscription.unsubscribe();
+      mountedRef.current = false;
+      if (subscriptionRef.current) {
+        subscriptionRef.current.data.subscription.unsubscribe();
+      }
     };
-  }, []); // Empty dependency array to prevent re-runs
+  }, []); // Empty dependency array - this effect should only run once
 
   const signIn = async (email: string, password: string) => {
     console.log('🔑 Attempting sign in for:', email);
@@ -142,9 +126,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       title: "Sesión cerrada",
       description: "Has cerrado sesión exitosamente"
     });
-    
-    hasNavigatedRef.current = false;
-    navigate('/login', { replace: true });
   };
 
   const value = {

@@ -9,10 +9,8 @@ const Login = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect authenticated users to dashboard
+  // Simple redirect for authenticated users
   useEffect(() => {
-    console.log('🏠 Login page - Loading:', loading, 'User:', !!user);
-    
     if (!loading && user) {
       console.log('🔄 User already authenticated, redirecting to dashboard');
       navigate('/', { replace: true });
@@ -34,7 +32,6 @@ const Login = () => {
 
   // Don't render login form if user is authenticated
   if (user) {
-    console.log('👤 User is authenticated, not rendering login form');
     return null;
   }
 
