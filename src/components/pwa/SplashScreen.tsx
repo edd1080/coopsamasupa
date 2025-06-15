@@ -12,16 +12,16 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ isVisible }) => {
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-background to-primary/5">
       {/* Logo Container */}
       <div className="relative mb-8">
-        <div className="w-32 h-20 bg-white rounded-2xl flex items-center justify-center shadow-lg p-4">
+        <div className="w-52 h-20 bg-white rounded-2xl flex items-center justify-center shadow-lg p-4">
           <img
-            src="/lovable-uploads/8517c16c-a94c-48da-9b01-9cabbde80b84.png"
+            src="/lovable-uploads/0d66778d-afe5-4d46-a1eb-0e6cf610456f.png"
             alt="Coopsama Logo"
             className="w-full h-full object-contain"
           />
         </div>
         
         {/* Pulse animation ring */}
-        <div className="absolute inset-0 w-32 h-20 border-2 border-primary/30 rounded-2xl animate-ping"></div>
+        <div className="absolute inset-0 w-52 h-20 border-2 border-primary/30 rounded-2xl animate-ping"></div>
       </div>
 
       {/* App Name */}
