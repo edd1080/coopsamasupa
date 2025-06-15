@@ -70,10 +70,14 @@ const Header = ({
     }
     
     switch (location.pathname) {
+      case '/':
+        return 'Coopsama App';
       case '/prospects':
         return 'Prospectos';
       case '/applications':
         return 'Solicitudes';
+      case '/prequalifications':
+        return 'Precalificaciones';
       case '/alerts':
         return 'Alertas';
       case '/settings':
@@ -81,10 +85,6 @@ const Header = ({
       case '/login':
         return 'Iniciar Sesión';
       default:
-        // Show user name if authenticated, otherwise show app name
-        if (user?.email) {
-          return `Hola, ${user.email.split('@')[0]}`;
-        }
         return 'Coopsama App';
     }
   };
@@ -124,7 +124,7 @@ const Header = ({
   };
 
   // Show back button for application details and edit routes (but not main pages)
-  const showBackButton = !['/', '/prospects', '/applications', '/alerts', '/settings', '/login'].includes(location.pathname);
+  const showBackButton = !['/', '/prospects', '/applications', '/prequalifications', '/alerts', '/settings', '/login'].includes(location.pathname);
 
   const getStatusBadge = () => {
     if (!applicationStatus || !isApplicationDetailsPage) return null;
@@ -150,8 +150,8 @@ const Header = ({
             </Button>
           )}
           
-          {/* Title */}
-          <h1 className="text-lg font-bold text-primary">
+          {/* Title - Centered on home page */}
+          <h1 className={`text-lg font-bold text-primary ${location.pathname === '/' ? 'flex-1 text-center' : ''}`}>
             {getPageTitle()}
           </h1>
           {isGuarantorForm && <Users className="h-4 w-4 text-accent" />}

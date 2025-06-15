@@ -13,7 +13,7 @@ export const useAgentProfile = () => {
       if (!user?.id) throw new Error('Usuario no autenticado');
       
       const { data, error } = await supabase
-        .from('agents')
+        .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
@@ -47,7 +47,7 @@ export const usePrequalifications = () => {
   });
 };
 
-// Hook para obtener solicitudes
+// Hook para obtener solicitudes con formato mejorado
 export const useApplications = () => {
   const { user } = useAuth();
   
@@ -63,7 +63,21 @@ export const useApplications = () => {
         .order('created_at', { ascending: false });
         
       if (error) throw error;
-      return data;
+      
+      // Formatear datos para compatibilidad con la UI existente
+      return data.map(app => ({
+        id: app.id,
+        clientName: app.client_name,
+        product: app.product,
+        amount: new Intl.NumberFormat('es-GT', {
+          style: 'currency',
+          currency: 'GTQ'
+        }).format(app.amount_requested),
+        status: app.status,
+        date: new Date(app.created_at).toISOString().split('T')[0],
+        progress: app.progress_step || 1,
+        stage: app.current_stage || 'Información Personal'
+      }));
     },
     enabled: !!user?.id,
   });
@@ -119,6 +133,7 @@ export const useCreateApplication = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['applications'] });
+      queryClient.invalidateQueries({ queryKey: ['application-metrics'] });
     },
   });
 };

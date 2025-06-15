@@ -7,12 +7,30 @@ import PrequalificationModal from '@/components/prequalification/Prequalificatio
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileSpreadsheet, Users, TrendingUp, CheckCircle, AlertCircle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { useApplicationMetrics } from '@/hooks/useApplicationMetrics';
 
 const Index = () => {
   const navigate = useNavigate();
   const [showPrequalificationModal, setShowPrequalificationModal] = useState(false);
+  
+  const { data: profile, isLoading: profileLoading } = useUserProfile();
+  const { data: metrics, isLoading: metricsLoading } = useApplicationMetrics();
 
-  // No auth check needed - AuthRouter handles this
+  // Determinar el saludo y nombre
+  const getGreeting = () => {
+    if (profileLoading) return 'Cargando...';
+    if (profile?.full_name) return `¡Bienvenido, ${profile.full_name.split(' ')[0]}!`;
+    if (profile?.first_name) return `¡Bienvenido, ${profile.first_name}!`;
+    return '¡Bienvenido!';
+  };
+
+  const getUserInfo = () => {
+    if (profileLoading) return 'Cargando información...';
+    const role = profile?.role || 'Asesor de créditos';
+    const agency = profile?.agency || 'Agencia Central';
+    return `${role} | ${agency}`;
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -20,8 +38,8 @@ const Index = () => {
       
       <main className="flex-1 px-4 py-8 pb-20">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-2">¡Bienvenido, Carlos!</h1>
-          <p className="text-muted-foreground">Asesor de créditos | Agencia Central</p>
+          <h1 className="text-2xl font-bold mb-2">{getGreeting()}</h1>
+          <p className="text-muted-foreground">{getUserInfo()}</p>
         </div>
         
         {/* Metrics Summary */}
@@ -33,7 +51,9 @@ const Index = () => {
                   <TrendingUp className="h-5 w-5 text-primary" />
                 </div>
                 <p className="text-sm text-muted-foreground">Solicitudes Activas</p>
-                <h2 className="text-2xl font-bold">24</h2>
+                <h2 className="text-2xl font-bold">
+                  {metricsLoading ? '...' : metrics?.active || 0}
+                </h2>
               </div>
             </CardContent>
           </Card>
@@ -45,7 +65,9 @@ const Index = () => {
                   <CheckCircle className="h-5 w-5 text-green-500" />
                 </div>
                 <p className="text-sm text-muted-foreground">Aprobadas</p>
-                <h2 className="text-2xl font-bold">12</h2>
+                <h2 className="text-2xl font-bold">
+                  {metricsLoading ? '...' : metrics?.approved || 0}
+                </h2>
               </div>
             </CardContent>
           </Card>
@@ -56,8 +78,10 @@ const Index = () => {
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/10 mb-2">
                   <Clock className="h-5 w-5 text-amber-500" />
                 </div>
-                <p className="text-sm text-muted-foreground">Pendientes</p>
-                <h2 className="text-2xl font-bold">8</h2>
+                <p className="text-sm text-muted-foreground">En Revisión</p>
+                <h2 className="text-2xl font-bold">
+                  {metricsLoading ? '...' : metrics?.reviewing || 0}
+                </h2>
               </div>
             </CardContent>
           </Card>
@@ -69,7 +93,9 @@ const Index = () => {
                   <AlertCircle className="h-5 w-5 text-red-500" />
                 </div>
                 <p className="text-sm text-muted-foreground">Rechazadas</p>
-                <h2 className="text-2xl font-bold">4</h2>
+                <h2 className="text-2xl font-bold">
+                  {metricsLoading ? '...' : metrics?.rejected || 0}
+                </h2>
               </div>
             </CardContent>
           </Card>

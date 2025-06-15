@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
@@ -14,6 +13,7 @@ import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, C
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { useApplications } from '@/hooks/useSupabaseQuery';
 
 const Applications = () => {
   const navigate = useNavigate();
@@ -21,8 +21,8 @@ const Applications = () => {
   const [showPrequalificationModal, setShowPrequalificationModal] = useState(false);
   const [activeStatusFilter, setActiveStatusFilter] = useState('all');
   
-  // Empty applications array - no mock data
-  const [applications, setApplications] = useState([]);
+  // Obtener aplicaciones reales de la base de datos
+  const { data: applications = [], isLoading, error } = useApplications();
 
   const handleViewApplication = (id: string) => {
     navigate(`/applications/${id}`);
@@ -68,12 +68,12 @@ const Applications = () => {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'active':
+      case 'pending':
         return <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 flex items-center gap-1 text-sm px-3 py-1">
             <BarChart3 className="h-4 w-4" />
             <span>Activo</span>
           </Badge>;
-      case 'verification':
+      case 'reviewing':
         return <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-200 flex items-center gap-1 text-sm px-3 py-1">
             <Clock className="h-4 w-4" />
             <span>Verificación</span>
@@ -104,20 +104,36 @@ const Applications = () => {
 
   const filteredApplications = applications.filter(application => {
     if (activeStatusFilter === 'all') return true;
+    if (activeStatusFilter === 'active') return application.status === 'pending';
+    if (activeStatusFilter === 'verification') return application.status === 'reviewing';
     return application.status === activeStatusFilter;
   });
 
   const getStatusCounts = () => {
     return {
       all: applications.length,
-      active: applications.filter(app => app.status === 'active').length,
-      verification: applications.filter(app => app.status === 'verification').length,
+      active: applications.filter(app => app.status === 'pending').length,
+      verification: applications.filter(app => app.status === 'reviewing').length,
       approved: applications.filter(app => app.status === 'approved').length,
       rejected: applications.filter(app => app.status === 'rejected').length,
     };
   };
 
   const statusCounts = getStatusCounts();
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 px-4 py-4 pb-20">
+          <div className="text-center py-12">
+            <p className="text-red-500">Error al cargar solicitudes: {error.message}</p>
+          </div>
+        </main>
+        <BottomNavigation />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -161,114 +177,120 @@ const Applications = () => {
           </TabsList>
           
           <TabsContent value={activeStatusFilter} className="mt-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredApplications.map(application => (
-                <ContextMenu key={application.id}>
-                  <ContextMenuTrigger>
-                    <Card className="card-hover cursor-pointer group relative" onClick={() => handleViewApplication(application.id)}>
-                      <CardContent className="p-4">
-                        <div className="flex flex-col">
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <h3 className="text-section-title font-semibold">{application.clientName}</h3>
-                              <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                                <Calendar className="h-3 w-3" />
-                                <span>{formatDate(application.date)}</span>
-                                <FileText className="h-3 w-3 ml-2" />
-                                <span>{application.id}</span>
+            {isLoading ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">Cargando solicitudes...</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredApplications.map(application => (
+                  <ContextMenu key={application.id}>
+                    <ContextMenuTrigger>
+                      <Card className="card-hover cursor-pointer group relative" onClick={() => handleViewApplication(application.id)}>
+                        <CardContent className="p-4">
+                          <div className="flex flex-col">
+                            <div className="flex items-start justify-between mb-2">
+                              <div>
+                                <h3 className="text-section-title font-semibold">{application.clientName}</h3>
+                                <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                                  <Calendar className="h-3 w-3" />
+                                  <span>{formatDate(application.date)}</span>
+                                  <FileText className="h-3 w-3 ml-2" />
+                                  <span>{application.id}</span>
+                                </div>
+                              </div>
+                              
+                              <div className="flex flex-col items-end gap-2">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 ml-auto transition-opacity" onClick={e => e.stopPropagation()}>
+                                      <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" className="w-48">
+                                    <DropdownMenuItem onClick={() => handleViewApplication(application.id)}>
+                                      <FileText className="mr-2 h-4 w-4" />
+                                      <span>Ver detalles</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={e => handleEditApplication(application.id, e)}>
+                                      <Edit className="mr-2 h-4 w-4" />
+                                      <span>Editar</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={e => handleDuplicateApplication(application.id, application.clientName, e)}>
+                                      <Copy className="mr-2 h-4 w-4" />
+                                      <span>Duplicar</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={e => handleShareApplication(application.id, e)}>
+                                      <Share2 className="mr-2 h-4 w-4" />
+                                      <span>Compartir</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={e => handleDeleteApplication(application.id, e)}>
+                                      <Trash2 className="mr-2 h-4 w-4" />
+                                      <span>Eliminar</span>
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                                
+                                {getStatusBadge(application.status)}
                               </div>
                             </div>
                             
-                            <div className="flex flex-col items-end gap-2">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 ml-auto transition-opacity" onClick={e => e.stopPropagation()}>
-                                    <MoreVertical className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-48">
-                                  <DropdownMenuItem onClick={() => handleViewApplication(application.id)}>
-                                    <FileText className="mr-2 h-4 w-4" />
-                                    <span>Ver detalles</span>
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={e => handleEditApplication(application.id, e)}>
-                                    <Edit className="mr-2 h-4 w-4" />
-                                    <span>Editar</span>
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={e => handleDuplicateApplication(application.id, application.clientName, e)}>
-                                    <Copy className="mr-2 h-4 w-4" />
-                                    <span>Duplicar</span>
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem onClick={e => handleShareApplication(application.id, e)}>
-                                    <Share2 className="mr-2 h-4 w-4" />
-                                    <span>Compartir</span>
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={e => handleDeleteApplication(application.id, e)}>
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    <span>Eliminar</span>
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                              
-                              {getStatusBadge(application.status)}
+                            <div className="mt-1 mb-1">
+                              <div className="flex items-center text-base font-medium mb-1">
+                                {application.stage === 'Información Financiera' && <Banknote className="h-4 w-4 mr-2" />}
+                                {application.stage === 'Firma de Acta' && <FileSignature className="h-4 w-4 mr-2" />}
+                                {application.stage === 'Análisis de Carácter' && <UserCheck className="h-4 w-4 mr-2" />}
+                                {application.stage === 'Documentos e Imágenes' && <FileImage className="h-4 w-4 mr-2" />}
+                                {application.stage === 'Fiadores' && <Users className="h-4 w-4 mr-2" />}
+                                <span>{application.stage}</span>
+                              </div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span className="text-muted-foreground">Progreso</span>
+                                <span className="font-medium">{Math.round(application.progress / 6 * 100)}%</span>
+                              </div>
+                              <Progress value={application.progress / 6 * 100} className="h-1.5" />
+                            </div>
+                            
+                            <div className="flex justify-between items-center mt-2 text-sm">
+                              <div className="font-medium">{application.product}</div>
+                              <div className="text-primary">{application.amount}</div>
                             </div>
                           </div>
-                          
-                          <div className="mt-1 mb-1">
-                            <div className="flex items-center text-base font-medium mb-1">
-                              {application.stage === 'Información Financiera' && <Banknote className="h-4 w-4 mr-2" />}
-                              {application.stage === 'Firma de Acta' && <FileSignature className="h-4 w-4 mr-2" />}
-                              {application.stage === 'Análisis de Carácter' && <UserCheck className="h-4 w-4 mr-2" />}
-                              {application.stage === 'Documentos e Imágenes' && <FileImage className="h-4 w-4 mr-2" />}
-                              {application.stage === 'Fiadores' && <Users className="h-4 w-4 mr-2" />}
-                              <span>{application.stage}</span>
-                            </div>
-                            <div className="flex justify-between text-sm mb-1">
-                              <span className="text-muted-foreground">Progreso</span>
-                              <span className="font-medium">{Math.round(application.progress / 6 * 100)}%</span>
-                            </div>
-                            <Progress value={application.progress / 6 * 100} className="h-1.5" />
-                          </div>
-                          
-                          <div className="flex justify-between items-center mt-2 text-sm">
-                            <div className="font-medium">{application.product}</div>
-                            <div className="text-primary">{application.amount}</div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </ContextMenuTrigger>
-                  <ContextMenuContent className="w-48">
-                    <ContextMenuItem onClick={() => handleViewApplication(application.id)}>
-                      <FileText className="mr-2 h-4 w-4" />
-                      <span>Ver detalles</span>
-                    </ContextMenuItem>
-                    <ContextMenuItem onClick={e => handleEditApplication(application.id, e)}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      <span>Editar</span>
-                    </ContextMenuItem>
-                    <ContextMenuItem onClick={e => handleDuplicateApplication(application.id, application.clientName, e)}>
-                      <Copy className="mr-2 h-4 w-4" />
-                      <span>Duplicar</span>
-                    </ContextMenuItem>
-                    <ContextMenuSeparator />
-                    <ContextMenuItem onClick={e => handleShareApplication(application.id, e)}>
-                      <Share2 className="mr-2 h-4 w-4" />
-                      <span>Compartir</span>
-                    </ContextMenuItem>
-                    <ContextMenuSeparator />
-                    <ContextMenuItem className="text-destructive focus:text-destructive" onClick={e => handleDeleteApplication(application.id, e)}>
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      <span>Eliminar</span>
-                    </ContextMenuItem>
-                  </ContextMenuContent>
-                </ContextMenu>
-              ))}
-            </div>
+                        </CardContent>
+                      </Card>
+                    </ContextMenuTrigger>
+                    <ContextMenuContent className="w-48">
+                      <ContextMenuItem onClick={() => handleViewApplication(application.id)}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        <span>Ver detalles</span>
+                      </ContextMenuItem>
+                      <ContextMenuItem onClick={e => handleEditApplication(application.id, e)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        <span>Editar</span>
+                      </ContextMenuItem>
+                      <ContextMenuItem onClick={e => handleDuplicateApplication(application.id, application.clientName, e)}>
+                        <Copy className="mr-2 h-4 w-4" />
+                        <span>Duplicar</span>
+                      </ContextMenuItem>
+                      <ContextMenuSeparator />
+                      <ContextMenuItem onClick={e => handleShareApplication(application.id, e)}>
+                        <Share2 className="mr-2 h-4 w-4" />
+                        <span>Compartir</span>
+                      </ContextMenuItem>
+                      <ContextMenuSeparator />
+                      <ContextMenuItem className="text-destructive focus:text-destructive" onClick={e => handleDeleteApplication(application.id, e)}>
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        <span>Eliminar</span>
+                      </ContextMenuItem>
+                    </ContextMenuContent>
+                  </ContextMenu>
+                ))}
+              </div>
+            )}
             
-            {filteredApplications.length === 0 && (
+            {!isLoading && filteredApplications.length === 0 && (
               <div className="text-center py-12">
                 <FileText className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
                 <h3 className="text-lg font-medium mb-2">No hay solicitudes</h3>
