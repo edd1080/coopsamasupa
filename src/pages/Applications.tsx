@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import BottomNavigation from '@/components/layout/BottomNavigation';
@@ -20,19 +20,9 @@ const generateRandomSCOId = () => {
 
 const Applications = () => {
   const navigate = useNavigate();
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
   const [showPrequalificationModal, setShowPrequalificationModal] = useState(false);
   const [activeStatusFilter, setActiveStatusFilter] = useState('all');
-
-  useEffect(() => {
-    // Check if user is authenticated
-    const authToken = localStorage.getItem('authToken');
-    if (!authToken) {
-      navigate('/login');
-    }
-  }, [navigate]);
 
   const handleViewApplication = (id: string) => {
     navigate(`/applications/${id}`);

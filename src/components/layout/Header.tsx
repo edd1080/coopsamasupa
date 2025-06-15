@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, X, User, Users, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/hooks/useAuth';
 
 // Import the form context to access exit dialog functionality
 import { useFormContext } from '@/components/requestForm/RequestFormProvider';
@@ -38,6 +39,7 @@ const Header = ({
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   // Try to get form context if available (only in request form routes)
   let formContext;
@@ -79,6 +81,10 @@ const Header = ({
       case '/login':
         return 'Iniciar Sesión';
       default:
+        // Show user name if authenticated, otherwise show app name
+        if (user?.email) {
+          return `Hola, ${user.email.split('@')[0]}`;
+        }
         return 'Coopsama App';
     }
   };

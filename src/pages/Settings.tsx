@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { ChevronRight, LogOut, User, HelpCircle, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import BottomNavigation from '@/components/layout/BottomNavigation';
+import { useAuth } from '@/hooks/useAuth';
 // DeviceInfo commented out but preserved for future use
 // import DeviceInfo from '@/components/settings/DeviceInfo';
 import NotificationSettings from '@/components/settings/NotificationSettings';
@@ -19,6 +20,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 const Settings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signOut } = useAuth();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   // DeviceInfo data commented out but preserved for future use
@@ -44,21 +46,19 @@ const Settings = () => {
   };
   */
 
-  useEffect(() => {
-    const authToken = localStorage.getItem('authToken');
-    if (!authToken) {
-      navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      // No need to navigate - AuthRouter will handle the redirect
+      setShowLogoutDialog(false);
+    } catch (error) {
+      console.error('Error during logout:', error);
+      toast({
+        title: "Error al cerrar sesión",
+        description: "Hubo un problema al cerrar la sesión",
+        variant: "destructive"
+      });
     }
-  }, [navigate]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    toast({
-      title: "Sesión cerrada",
-      description: "Has salido de tu cuenta"
-    });
-    navigate('/login');
-    setShowLogoutDialog(false);
   };
 
   const handleLogoutClick = () => {
