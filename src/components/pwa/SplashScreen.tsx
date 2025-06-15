@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface SplashScreenProps {
@@ -12,13 +11,11 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ isVisible }) => {
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-background to-primary/5">
       {/* Logo Container */}
       <div className="mb-8">
-        <div className="w-52 h-20 bg-white rounded-2xl flex items-center justify-center p-4">
-          <img
-            src="/lovable-uploads/0d66778d-afe5-4d46-a1eb-0e6cf610456f.png"
-            alt="Coopsama Logo"
-            className="w-full h-full object-contain"
-          />
-        </div>
+        <img
+          src="/lovable-uploads/4434affb-3c68-48b5-a767-b5dcb7d10d0a.png"
+          alt="Coopsama Logo"
+          className="w-52 h-20 object-contain"
+        />
       </div>
 
       {/* App Name */}
