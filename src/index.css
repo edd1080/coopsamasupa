@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
 
 @tailwind base;
@@ -44,6 +43,9 @@
     --warning: 45 93% 47%; /* Amarillo vibrante */
     --error: 0 72% 51%; /* Rojo vibrante */
 
+    /* Custom hover color #EAFFE7 */
+    --soft-green-hover: 112 64% 92%;
+
     --radius: 0.75rem;
   }
 
@@ -84,6 +86,9 @@
     --success: 112 57% 59%; /* Verde accent más claro */
     --warning: 45 93% 47%; /* Amarillo vibrante */
     --error: 0 72% 51%; /* Rojo vibrante */
+
+    /* Custom hover color for dark mode - slightly adjusted */
+    --soft-green-hover: 112 30% 25%;
   }
 }
 

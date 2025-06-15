@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -114,6 +113,10 @@ export default {
 					700: '#15803d',
 					800: '#166534',
 					900: '#14532d'
+				},
+				// Soft green hover color #EAFFE7
+				'soft-green': {
+					'hover': 'hsl(var(--soft-green-hover))'
 				}
 			},
 			borderRadius: {

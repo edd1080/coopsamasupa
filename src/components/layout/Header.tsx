@@ -56,6 +56,9 @@ const Header = ({
   // Check if we're on application details page
   const isApplicationDetailsPage = location.pathname.match(/^\/applications\/[^\/]+(?:\/edit)?$/);
 
+  // Check if we're creating a new application
+  const isNewApplication = location.pathname === '/applications/new';
+
   // Check if we should center the title (mobile view for specific pages)
   const shouldCenterTitle = ['/', '/applications', '/prequalifications', '/settings'].includes(location.pathname);
 
@@ -79,6 +82,8 @@ const Header = ({
         return 'Prospectos';
       case '/applications':
         return 'Solicitudes';
+      case '/applications/new':
+        return 'Nueva Solicitud';
       case '/prequalifications':
         return 'Precalificaciones';
       case '/alerts':
@@ -114,7 +119,7 @@ const Header = ({
 
   const handleExit = () => {
     // If we're in a form context (request form), use the form's exit handler
-    if (formContext && location.pathname.includes('/edit')) {
+    if (formContext && (location.pathname.includes('/edit') || isNewApplication)) {
       formContext.handleShowExitDialog();
     } else {
       // Default behavior for other routes
@@ -126,8 +131,11 @@ const Header = ({
     }
   };
 
-  // Show back button for application details and edit routes (but not main pages)
-  const showBackButton = !['/', '/prospects', '/applications', '/prequalifications', '/alerts', '/settings', '/login'].includes(location.pathname);
+  // Show back button for application details and edit routes (but not main pages or new applications)
+  const showBackButton = !['/', '/prospects', '/applications', '/prequalifications', '/alerts', '/settings', '/login'].includes(location.pathname) && !isNewApplication;
+
+  // Show X button for new applications and edit routes
+  const showExitButton = isNewApplication || location.pathname.includes('/edit');
 
   const getStatusBadge = () => {
     if (!applicationStatus || !isApplicationDetailsPage) return null;
@@ -160,10 +168,10 @@ const Header = ({
           {isGuarantorForm && <Users className="h-4 w-4 text-accent" />}
         </div>
         
-        {/* Right area - Status badge for application details */}
+        {/* Right area - Status badge for application details and X button for forms */}
         <div className="flex items-center gap-2">
           {getStatusBadge()}
-          {location.pathname.includes('/edit') && (
+          {showExitButton && (
             <Button variant="ghost" size="icon" className="rounded-full w-8 h-8" onClick={handleExit} aria-label="Cerrar">
               <X className="h-5 w-5" />
             </Button>
