@@ -52,24 +52,24 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            
-            {/* PWA Splash Screen */}
-            <SplashScreen isVisible={isLoading} />
-            
-            {/* PWA Update Prompt */}
-            <UpdatePrompt 
-              isVisible={showUpdatePrompt}
-              onUpdate={handleUpdate}
-              onDismiss={handleDismissUpdate}
-            />
-            
-            {/* Main App Content */}
-            {!isLoading && (
-              <BrowserRouter>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          
+          {/* PWA Splash Screen */}
+          <SplashScreen isVisible={isLoading} />
+          
+          {/* PWA Update Prompt */}
+          <UpdatePrompt 
+            isVisible={showUpdatePrompt}
+            onUpdate={handleUpdate}
+            onDismiss={handleDismissUpdate}
+          />
+          
+          {/* Main App Content */}
+          {!isLoading && (
+            <BrowserRouter>
+              <AuthProvider>
                 <Routes>
                   <Route path="/login" element={<Login />} />
                   <Route path="/" element={
@@ -139,10 +139,10 @@ const App = () => {
                   } />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
-              </BrowserRouter>
-            )}
-          </TooltipProvider>
-        </AuthProvider>
+              </AuthProvider>
+            </BrowserRouter>
+          )}
+        </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
