@@ -75,7 +75,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       console.log('🛑 AuthProvider cleanup');
       mountedRef.current = false;
-      initializedRef.current = false;
+      // DON'T reset initializedRef - we want to stay initialized
       if (subscriptionRef.current) {
         subscriptionRef.current.data.subscription.unsubscribe();
       }
