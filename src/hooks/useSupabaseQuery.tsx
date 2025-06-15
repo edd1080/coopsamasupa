@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -47,7 +46,7 @@ export const usePrequalifications = () => {
   });
 };
 
-// Hook para obtener solicitudes con formato mejorado
+// Hook para obtener solicitudes con formato mejorado, incluyendo borradores
 export const useApplications = () => {
   const { user } = useAuth();
   
@@ -56,28 +55,58 @@ export const useApplications = () => {
     queryFn: async () => {
       if (!user?.id) throw new Error('Usuario no autenticado');
       
-      const { data, error } = await supabase
+      // Obtener solicitudes completas
+      const { data: applications, error: appsError } = await supabase
         .from('applications')
         .select('*')
         .eq('agent_id', user.id)
         .order('created_at', { ascending: false });
         
-      if (error) throw error;
+      if (appsError) throw appsError;
       
-      // Formatear datos para compatibilidad con la UI existente
-      return data.map(app => ({
-        id: app.id,
-        clientName: app.client_name,
-        product: app.product,
-        amount: new Intl.NumberFormat('es-GT', {
-          style: 'currency',
-          currency: 'GTQ'
-        }).format(app.amount_requested),
-        status: app.status,
-        date: new Date(app.created_at).toISOString().split('T')[0],
-        progress: app.progress_step || 1,
-        stage: app.current_stage || 'Información Personal'
-      }));
+      // Obtener borradores
+      const { data: drafts, error: draftsError } = await supabase
+        .from('application_drafts')
+        .select('*')
+        .eq('agent_id', user.id)
+        .order('updated_at', { ascending: false });
+        
+      if (draftsError) throw draftsError;
+      
+      // Combinar solicitudes y borradores
+      const allApplications = [
+        // Mapear solicitudes completas
+        ...applications.map(app => ({
+          id: app.id,
+          clientName: app.client_name,
+          product: app.product,
+          amount: new Intl.NumberFormat('es-GT', {
+            style: 'currency',
+            currency: 'GTQ'
+          }).format(app.amount_requested),
+          status: app.status,
+          date: new Date(app.created_at).toISOString().split('T')[0],
+          progress: app.progress_step || 1,
+          stage: app.current_stage || 'Información Personal',
+          isDraft: app.is_draft || false,
+          draftData: app.draft_data
+        })),
+        // Mapear borradores
+        ...drafts.map(draft => ({
+          id: draft.id,
+          clientName: draft.client_name || 'Sin nombre',
+          product: 'Borrador',
+          amount: 'Por definir',
+          status: 'draft',
+          date: new Date(draft.updated_at).toISOString().split('T')[0],
+          progress: draft.last_step || 0,
+          stage: 'Borrador en progreso',
+          isDraft: true,
+          draftData: draft.draft_data
+        }))
+      ];
+      
+      return allApplications;
     },
     enabled: !!user?.id,
   });

@@ -5,14 +5,13 @@ import BottomNavigation from '@/components/layout/BottomNavigation';
 import BreadcrumbNavigation from '@/components/navigation/BreadcrumbNavigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { ArrowLeft, Edit, FileText, CheckCircle, Clock, XCircle, AlertCircle, User, Briefcase, DollarSign, FileCheck, Camera, ClipboardList, Calendar, UserCheck, Users, Search, FileSignature, BarChart3, MapPin, Plus, Send, PartyPopper, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Edit, Send, PartyPopper, AlertCircle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import SummaryTab from '@/components/applications/tabs/SummaryTab';
 
 const applicationStatuses = {
   'pending': {
@@ -441,146 +440,11 @@ const ApplicationDetails = () => {
           </TabsList>
           
           <TabsContent value="summary">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base flex items-center">
-                    <User className="h-4 w-4 mr-2 text-primary" />
-                    Identificación
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <dl className="space-y-2 text-sm">
-                    <div>
-                      <dt className="text-muted-foreground">Nombre</dt>
-                      <dd className="font-medium">{application.identification.fullName}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-muted-foreground">CUI</dt>
-                      <dd className="font-medium">{application.identification.cui}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-muted-foreground">NIT</dt>
-                      <dd className="font-medium">{application.identification.nit}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-muted-foreground">Teléfono</dt>
-                      <dd className="font-medium">{application.identification.phone}</dd>
-                    </div>
-                  </dl>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base flex items-center">
-                    <DollarSign className="h-4 w-4 mr-2 text-primary" />
-                    Finanzas
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <dl className="space-y-2 text-sm">
-                    <div>
-                      <dt className="text-muted-foreground">Ingresos Principales</dt>
-                      <dd className="font-medium">Q{application.finances.primaryIncome.toLocaleString()}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-muted-foreground">Gastos Mensuales</dt>
-                      <dd className="font-medium">Q{application.finances.totalExpenses.toLocaleString()}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-muted-foreground">Patrimonio Neto</dt>
-                      <dd className="font-medium">Q{application.finances.netWorth.toLocaleString()}</dd>
-                    </div>
-                  </dl>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base flex items-center">
-                    <Briefcase className="h-4 w-4 mr-2 text-primary" />
-                    Trabajo
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <dl className="space-y-2 text-sm">
-                    <div>
-                      <dt className="text-muted-foreground">Situación Laboral</dt>
-                      <dd className="font-medium">{application.work.employmentStatus}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-muted-foreground">Empresa/Negocio</dt>
-                      <dd className="font-medium">{application.work.companyName}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-muted-foreground">Experiencia</dt>
-                      <dd className="font-medium">{application.work.yearsEmployed} años</dd>
-                    </div>
-                  </dl>
-                </CardContent>
-              </Card>
-            </div>
-            
-            <Card className="mb-4 border-primary/20 bg-primary/5">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center">
-                  <FileText className="h-4 w-4 mr-2 text-primary" />
-                  Solicitud de Crédito
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center p-3 bg-background rounded-md">
-                    <p className="text-xs text-muted-foreground mb-1">Monto Solicitado</p>
-                    <p className="font-bold text-lg">Q{application.creditRequest.loanAmount.toLocaleString()}</p>
-                  </div>
-                  <div className="text-center p-3 bg-background rounded-md">
-                    <p className="text-xs text-muted-foreground mb-1">Plazo</p>
-                    <p className="font-bold text-lg">{application.creditRequest.termMonths} meses</p>
-                  </div>
-                  <div className="text-center p-3 bg-background rounded-md">
-                    <p className="text-xs text-muted-foreground mb-1">Tipo de Crédito</p>
-                    <p className="font-bold text-sm">{application.creditRequest.creditType}</p>
-                  </div>
-                  <div className="text-center p-3 bg-background rounded-md">
-                    <p className="text-xs text-muted-foreground mb-1">Propósito</p>
-                    <p className="font-bold text-sm">{application.creditRequest.purpose}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="cursor-pointer hover:shadow-md transition-shadow duration-200" onClick={navigateToDocuments}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center justify-between">
-                  <div className="flex items-center">
-                    <FileCheck className="h-4 w-4 mr-2 text-primary" />
-                    Estado de Documentos
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-                  {Object.entries(application.documents).map(([key, value]: [string, any]) => <div key={key} className="flex flex-col items-center p-2 rounded-md border">
-                      {value.status === 'complete' ? <div className="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center mb-2">
-                          <CheckCircle className="h-5 w-5" />
-                        </div> : <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mb-2">
-                          <Clock className="h-5 w-5" />
-                        </div>}
-                      <span className="text-xs text-center">
-                        {key === 'dpiFrontal' && 'DPI Frontal'}
-                        {key === 'dpiTrasero' && 'DPI Trasero'}
-                        {key === 'fotoSolicitante' && 'Foto Solicitante'}
-                        {key === 'recibosServicios' && 'Recibos Servicios'}
-                        {key === 'firmaCanvas' && 'Firma Digital'}
-                      </span>
-                      {value.status === 'pending' && <p className="text-xs text-amber-600 mt-1">Pendiente</p>}
-                    </div>)}
-                </div>
-              </CardContent>
-            </Card>
+            <SummaryTab
+              application={application}
+              onNavigateToSection={navigateToFormSection}
+              onNavigateToDocuments={navigateToDocuments}
+            />
           </TabsContent>
           
           <TabsContent value="details">

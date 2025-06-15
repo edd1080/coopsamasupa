@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      application_drafts: {
+        Row: {
+          agent_id: string
+          client_name: string | null
+          created_at: string
+          draft_data: Json
+          id: string
+          last_step: number | null
+          last_sub_step: number | null
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          client_name?: string | null
+          created_at?: string
+          draft_data?: Json
+          id?: string
+          last_step?: number | null
+          last_sub_step?: number | null
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          client_name?: string | null
+          created_at?: string
+          draft_data?: Json
+          id?: string
+          last_step?: number | null
+          last_sub_step?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       applications: {
         Row: {
           agent_id: string
@@ -16,7 +49,9 @@ export type Database = {
           client_name: string
           created_at: string
           current_stage: string | null
+          draft_data: Json | null
           id: string
+          is_draft: boolean | null
           product: string
           progress_step: number | null
           status: string
@@ -28,7 +63,9 @@ export type Database = {
           client_name: string
           created_at?: string
           current_stage?: string | null
+          draft_data?: Json | null
           id: string
+          is_draft?: boolean | null
           product: string
           progress_step?: number | null
           status?: string
@@ -40,7 +77,9 @@ export type Database = {
           client_name?: string
           created_at?: string
           current_stage?: string | null
+          draft_data?: Json | null
           id?: string
+          is_draft?: boolean | null
           product?: string
           progress_step?: number | null
           status?: string

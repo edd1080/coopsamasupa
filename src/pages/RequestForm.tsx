@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Header from '@/components/layout/Header';
 import BottomNavigation from '@/components/layout/BottomNavigation';
@@ -18,7 +19,8 @@ const RequestFormContent = () => {
     showExitDialog,
     setShowExitDialog,
     handleExit,
-    hasUnsavedChanges
+    hasUnsavedChanges,
+    formData
   } = useFormContext();
 
   return (
@@ -51,6 +53,7 @@ const RequestFormContent = () => {
         onOpenChange={setShowExitDialog}
         onExit={handleExit}
         hasUnsavedChanges={hasUnsavedChanges}
+        formData={formData}
       />
     </div>
   );
