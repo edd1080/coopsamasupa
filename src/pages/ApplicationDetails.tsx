@@ -9,7 +9,26 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { ArrowLeft, Edit, Send, PartyPopper, AlertCircle } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { 
+  ArrowLeft, 
+  Edit, 
+  Send, 
+  PartyPopper, 
+  AlertCircle,
+  Clock,
+  FileText,
+  CheckCircle,
+  XCircle,
+  User,
+  DollarSign,
+  MapPin,
+  Users,
+  FileCheck,
+  Briefcase,
+  Plus,
+  Camera
+} from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import SummaryTab from '@/components/applications/tabs/SummaryTab';
 
@@ -31,6 +50,7 @@ const applicationStatuses = {
     color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
   }
 };
+
 const formSections = [{
   id: 'identification',
   icon: <User size={18} />,
@@ -202,6 +222,7 @@ const ApplicationDetails = () => {
     };
     fetchApplicationData();
   }, [id]);
+
   useEffect(() => {
     if (application && !toastShown) {
       toast({
@@ -333,6 +354,7 @@ const ApplicationDetails = () => {
         <BottomNavigation />
       </div>;
   }
+  
   if (!application) {
     return <div className="min-h-screen flex flex-col">
         <Header />
@@ -432,7 +454,6 @@ const ApplicationDetails = () => {
             <TabsTrigger value="details">Detalles</TabsTrigger>
             <TabsTrigger value="guarantors">
               <div className="flex items-center gap-1">
-                
                 <span>Fiadores</span>
               </div>
             </TabsTrigger>
