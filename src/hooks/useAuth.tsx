@@ -3,6 +3,7 @@ import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
@@ -20,6 +21,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Get initial session
@@ -32,14 +34,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth event:', event, 'Session:', session);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+
+        // Navigate automatically on sign in
+        if (event === 'SIGNED_IN' && session?.user) {
+          console.log('User signed in, navigating to dashboard');
+          navigate('/');
+        }
       }
     );
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate]);
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
@@ -86,6 +95,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       title: "Sesión cerrada",
       description: "Has cerrado sesión exitosamente"
     });
+    
+    navigate('/login');
   };
 
   const value = {

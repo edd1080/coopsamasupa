@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Lock, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +11,6 @@ const LoginForm = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
   const { toast } = useToast();
   const { signIn } = useAuth();
 
@@ -31,7 +29,7 @@ const LoginForm = () => {
     try {
       setIsLoading(true);
       await signIn(email, password);
-      navigate('/');
+      // Navigation is now handled automatically in useAuth
     } catch (error) {
       console.error('Login error:', error);
       toast({

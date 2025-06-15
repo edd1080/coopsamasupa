@@ -1,9 +1,39 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import LoginForm from '@/components/auth/LoginForm';
 import ThemeToggle from '@/components/ui/ThemeToggle';
+import { useAuth } from '@/hooks/useAuth';
 
 const Login = () => {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (!loading && user) {
+      console.log('User already authenticated, redirecting to dashboard');
+      navigate('/');
+    }
+  }, [user, loading, navigate]);
+
+  // Show loading while checking auth state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-muted-foreground">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render login form if user is authenticated
+  if (user) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-b from-background to-background/95">
       <div className="absolute top-4 right-4">
