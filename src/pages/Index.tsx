@@ -32,6 +32,12 @@ const Index = () => {
     return `${role} | ${agency}`;
   };
 
+  const handleNewApplication = () => {
+    console.log('🎯 Nueva solicitud button clicked');
+    console.log('📍 Navigating to /applications/new');
+    navigate('/applications/new');
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
@@ -102,7 +108,7 @@ const Index = () => {
         </div>
         
         <div className="grid grid-cols-1 gap-6 mb-6">
-          <Card className="card-hover" onClick={() => navigate('/applications/new')}>
+          <Card className="card-hover" onClick={handleNewApplication}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileSpreadsheet className="h-5 w-5 text-primary" />
@@ -111,7 +117,7 @@ const Index = () => {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">Crear una nueva solicitud de crédito</p>
-              <Button className="mt-4 w-full">
+              <Button className="mt-4 w-full" onClick={handleNewApplication}>
                 <FileSpreadsheet className="mr-2 h-4 w-4" />
                 Comenzar solicitud
               </Button>

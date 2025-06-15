@@ -23,6 +23,8 @@ const RequestFormContent = () => {
     formData
   } = useFormContext();
 
+  console.log('🎯 RequestFormContent rendering');
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header personName={getFirstNameAndLastName(personName)} />
@@ -60,6 +62,8 @@ const RequestFormContent = () => {
 };
 
 const RequestForm = () => {
+  console.log('🚀 RequestForm component initializing');
+  
   return (
     <RequestFormProvider steps={steps}>
       <RequestFormContent />

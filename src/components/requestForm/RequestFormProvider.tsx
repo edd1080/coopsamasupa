@@ -170,13 +170,9 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
   };
 
   useEffect(() => {
-    const authToken = localStorage.getItem('authToken');
-    if (!authToken) {
-      navigate('/login');
-      return;
-    }
-    
-    console.log(`RequestForm initialized, active step: ${steps[activeStep].id}`);
+    console.log('🏁 RequestFormProvider initializing...');
+    console.log('📍 Current path:', location.pathname);
+    console.log('📝 Current active step:', steps[activeStep].id);
     
     // Check if there's a sectionId in the navigation state
     const navigationState = location.state as { sectionId?: string } | null;
@@ -195,14 +191,13 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
           className: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100",
         });
         
-        console.log(`Navigated to section: ${navigationState.sectionId}, step index: ${targetStepIndex}`);
+        console.log(`✅ Navigated to section: ${navigationState.sectionId}, step index: ${targetStepIndex}`);
       }
     }
     
     // If we're editing an existing application, fetch its data
     if (id) {
-      // In a real app, you would fetch the application data from an API
-      console.log(`Fetching data for application: ${id}`);
+      console.log(`📂 Fetching data for application: ${id}`);
       
       // Simulate API delay
       setTimeout(() => {
