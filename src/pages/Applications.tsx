@@ -1,28 +1,36 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import BottomNavigation from '@/components/layout/BottomNavigation';
 import PrequalificationModal from '@/components/prequalification/PrequalificationModal';
+import CancelApplicationBottomSheet from '@/components/applications/CancelApplicationBottomSheet';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, SlidersHorizontal, FileSpreadsheet, Clock, Calendar, Edit, FileText, Copy, Trash2, Share2, MoreVertical, CheckCircle, AlertCircle, BarChart3, Banknote, FileSignature, UserCheck, FileImage, Users } from 'lucide-react';
+import { Search, SlidersHorizontal, FileSpreadsheet, Clock, Calendar, Edit, FileText, Trash2, MoreVertical, CheckCircle, AlertCircle, BarChart3, Banknote, FileSignature, UserCheck, FileImage, Users, X } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, ContextMenuSeparator } from "@/components/ui/context-menu";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { useApplications } from '@/hooks/useSupabaseQuery';
+import { useDeleteApplication } from '@/hooks/useApplicationActions';
 
 const Applications = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [showPrequalificationModal, setShowPrequalificationModal] = useState(false);
   const [activeStatusFilter, setActiveStatusFilter] = useState('all');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [cancelBottomSheetOpen, setCancelBottomSheetOpen] = useState(false);
+  const [selectedApplication, setSelectedApplication] = useState<{ id: string; clientName: string } | null>(null);
   
   // Obtener aplicaciones reales de la base de datos
   const { data: applications = [], isLoading, error } = useApplications();
+  const deleteMutation = useDeleteApplication();
 
   const handleViewApplication = (id: string) => {
     navigate(`/applications/${id}`);
@@ -38,32 +46,24 @@ const Applications = () => {
     });
   };
 
-  const handleDuplicateApplication = (id: string, clientName: string, e?: React.MouseEvent) => {
+  const handleCancelApplication = (id: string, clientName: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    toast({
-      title: "Solicitud duplicada",
-      description: `Se ha creado una copia de la solicitud de ${clientName}`,
-      duration: 3000
-    });
+    setSelectedApplication({ id, clientName });
+    setCancelBottomSheetOpen(true);
   };
 
-  const handleDeleteApplication = (id: string, e?: React.MouseEvent) => {
+  const handleDeleteApplication = (id: string, clientName: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    toast({
-      title: "Solicitud eliminada",
-      description: `La solicitud ${id} ha sido eliminada`,
-      variant: "destructive",
-      duration: 3000
-    });
+    setSelectedApplication({ id, clientName });
+    setDeleteDialogOpen(true);
   };
 
-  const handleShareApplication = (id: string, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    toast({
-      title: "Compartir solicitud",
-      description: `Se ha copiado el enlace de la solicitud ${id}`,
-      duration: 3000
-    });
+  const confirmDelete = () => {
+    if (selectedApplication) {
+      deleteMutation.mutate(selectedApplication.id);
+      setDeleteDialogOpen(false);
+      setSelectedApplication(null);
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -87,6 +87,11 @@ const Applications = () => {
         return <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200 flex items-center gap-1 text-sm px-3 py-1">
             <AlertCircle className="h-4 w-4" />
             <span>Rechazado</span>
+          </Badge>;
+      case 'cancelled':
+        return <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-200 flex items-center gap-1 text-sm px-3 py-1">
+            <X className="h-4 w-4" />
+            <span>Cancelado</span>
           </Badge>;
       default:
         return null;
@@ -216,17 +221,14 @@ const Applications = () => {
                                       <Edit className="mr-2 h-4 w-4" />
                                       <span>Editar</span>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={e => handleDuplicateApplication(application.id, application.clientName, e)}>
-                                      <Copy className="mr-2 h-4 w-4" />
-                                      <span>Duplicar</span>
-                                    </DropdownMenuItem>
+                                    {application.status !== 'cancelled' && application.status !== 'approved' && (
+                                      <DropdownMenuItem onClick={e => handleCancelApplication(application.id, application.clientName, e)}>
+                                        <X className="mr-2 h-4 w-4" />
+                                        <span>Cancelar solicitud</span>
+                                      </DropdownMenuItem>
+                                    )}
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={e => handleShareApplication(application.id, e)}>
-                                      <Share2 className="mr-2 h-4 w-4" />
-                                      <span>Compartir</span>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={e => handleDeleteApplication(application.id, e)}>
+                                    <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={e => handleDeleteApplication(application.id, application.clientName, e)}>
                                       <Trash2 className="mr-2 h-4 w-4" />
                                       <span>Eliminar</span>
                                     </DropdownMenuItem>
@@ -270,17 +272,14 @@ const Applications = () => {
                         <Edit className="mr-2 h-4 w-4" />
                         <span>Editar</span>
                       </ContextMenuItem>
-                      <ContextMenuItem onClick={e => handleDuplicateApplication(application.id, application.clientName, e)}>
-                        <Copy className="mr-2 h-4 w-4" />
-                        <span>Duplicar</span>
-                      </ContextMenuItem>
+                      {application.status !== 'cancelled' && application.status !== 'approved' && (
+                        <ContextMenuItem onClick={e => handleCancelApplication(application.id, application.clientName, e)}>
+                          <X className="mr-2 h-4 w-4" />
+                          <span>Cancelar solicitud</span>
+                        </ContextMenuItem>
+                      )}
                       <ContextMenuSeparator />
-                      <ContextMenuItem onClick={e => handleShareApplication(application.id, e)}>
-                        <Share2 className="mr-2 h-4 w-4" />
-                        <span>Compartir</span>
-                      </ContextMenuItem>
-                      <ContextMenuSeparator />
-                      <ContextMenuItem className="text-destructive focus:text-destructive" onClick={e => handleDeleteApplication(application.id, e)}>
+                      <ContextMenuItem className="text-destructive focus:text-destructive" onClick={e => handleDeleteApplication(application.id, application.clientName, e)}>
                         <Trash2 className="mr-2 h-4 w-4" />
                         <span>Eliminar</span>
                       </ContextMenuItem>
@@ -308,6 +307,38 @@ const Applications = () => {
       </main>
       
       <BottomNavigation />
+      
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar solicitud?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. La solicitud de {selectedApplication?.clientName} será eliminada permanentemente del sistema.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "Eliminando..." : "Eliminar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Cancel Application Bottom Sheet */}
+      {selectedApplication && (
+        <CancelApplicationBottomSheet
+          open={cancelBottomSheetOpen}
+          onOpenChange={setCancelBottomSheetOpen}
+          applicationId={selectedApplication.id}
+          clientName={selectedApplication.clientName}
+        />
+      )}
       
       <PrequalificationModal open={showPrequalificationModal} onOpenChange={setShowPrequalificationModal} />
     </div>

@@ -24,6 +24,7 @@ export const useApplicationMetrics = () => {
         approved: data.filter(app => app.status === 'approved').length,
         reviewing: data.filter(app => app.status === 'reviewing').length,
         rejected: data.filter(app => app.status === 'rejected').length,
+        cancelled: data.filter(app => app.status === 'cancelled').length,
         total: data.length
       };
       

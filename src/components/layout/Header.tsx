@@ -56,6 +56,9 @@ const Header = ({
   // Check if we're on application details page
   const isApplicationDetailsPage = location.pathname.match(/^\/applications\/[^\/]+(?:\/edit)?$/);
 
+  // Check if we should center the title (mobile view for specific pages)
+  const shouldCenterTitle = ['/', '/applications', '/prequalifications', '/settings'].includes(location.pathname);
+
   // Get page title based on current path
   const getPageTitle = () => {
     const isEditRoute = location.pathname.includes('/edit');
@@ -150,8 +153,8 @@ const Header = ({
             </Button>
           )}
           
-          {/* Title - Centered on home page */}
-          <h1 className={`text-lg font-bold text-primary ${location.pathname === '/' ? 'flex-1 text-center' : ''}`}>
+          {/* Title - Centered on specific pages */}
+          <h1 className={`text-lg font-bold text-primary ${shouldCenterTitle ? 'flex-1 text-center' : ''}`}>
             {getPageTitle()}
           </h1>
           {isGuarantorForm && <Users className="h-4 w-4 text-accent" />}
