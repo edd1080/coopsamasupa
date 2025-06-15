@@ -1,5 +1,5 @@
 
-import { useState, useEffect, createContext, useContext, useCallback, useRef } from 'react';
+import { useState, useEffect, createContext, useContext, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -20,66 +20,44 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [initialized, setInitialized] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // Use refs to avoid dependency issues
-  const currentUserIdRef = useRef<string | null>(null);
-  const currentSessionTokenRef = useRef<string | null>(null);
+  // Use ref to prevent multiple navigations
   const hasNavigatedRef = useRef(false);
 
-  // Memoize the auth state change handler with minimal dependencies
-  const handleAuthChange = useCallback((event: string, session: Session | null) => {
-    console.log('🔐 Auth event:', event, 'User ID:', session?.user?.id, 'Has session:', !!session);
-    
-    const newUserId = session?.user?.id || null;
-    const newSessionToken = session?.access_token || null;
-    
-    // Only update state if there's an actual change using refs for comparison
-    const userChanged = currentUserIdRef.current !== newUserId;
-    const sessionChanged = currentSessionTokenRef.current !== newSessionToken;
-    
-    if (userChanged || sessionChanged) {
-      console.log('📝 Auth state updating - User changed:', userChanged, 'Session changed:', sessionChanged);
+  useEffect(() => {
+    console.log('🏁 AuthProvider initializing...');
+    let mounted = true;
+
+    // Simple auth state change handler without dependencies
+    const handleAuthChange = (event: string, session: Session | null) => {
+      if (!mounted) return;
       
-      currentUserIdRef.current = newUserId;
-      currentSessionTokenRef.current = newSessionToken;
+      console.log('🔐 Auth event:', event, 'User ID:', session?.user?.id);
       
       setSession(session);
       setUser(session?.user ?? null);
-    }
-    
-    // Handle initialization
-    if (!initialized) {
-      console.log('✅ Auth initialized');
       setLoading(false);
-      setInitialized(true);
-      hasNavigatedRef.current = false;
-    }
 
-    // Handle navigation only for successful sign in and prevent multiple navigations
-    if (event === 'SIGNED_IN' && session?.user && !hasNavigatedRef.current) {
-      const currentPath = window.location.pathname;
-      console.log('🚀 User signed in, current path:', currentPath);
-      
-      if (currentPath === '/login') {
-        console.log('🔄 Navigating from login to dashboard');
-        hasNavigatedRef.current = true;
-        navigate('/', { replace: true });
+      // Handle navigation only for successful sign in
+      if (event === 'SIGNED_IN' && session?.user && !hasNavigatedRef.current) {
+        const currentPath = window.location.pathname;
+        console.log('🚀 User signed in, current path:', currentPath);
+        
+        if (currentPath === '/login') {
+          console.log('🔄 Navigating from login to dashboard');
+          hasNavigatedRef.current = true;
+          navigate('/', { replace: true });
+        }
       }
-    }
-    
-    // Reset navigation flag on sign out
-    if (event === 'SIGNED_OUT') {
-      console.log('👋 User signed out');
-      hasNavigatedRef.current = false;
-    }
-  }, [navigate, initialized]);
-
-  useEffect(() => {
-    let mounted = true;
-    console.log('🏁 AuthProvider initializing...');
+      
+      // Reset navigation flag on sign out
+      if (event === 'SIGNED_OUT') {
+        console.log('👋 User signed out');
+        hasNavigatedRef.current = false;
+      }
+    };
 
     // Get initial session
     const getInitialSession = async () => {
@@ -87,27 +65,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
           console.error('❌ Error getting initial session:', error);
+          if (mounted) setLoading(false);
           return;
         }
         
         if (mounted) {
           console.log('📋 Initial session loaded:', !!session, 'User:', session?.user?.id);
-          
-          // Update refs first
-          currentUserIdRef.current = session?.user?.id || null;
-          currentSessionTokenRef.current = session?.access_token || null;
-          
           setSession(session);
           setUser(session?.user ?? null);
           setLoading(false);
-          setInitialized(true);
         }
       } catch (error) {
         console.error('❌ Error in getInitialSession:', error);
-        if (mounted) {
-          setLoading(false);
-          setInitialized(true);
-        }
+        if (mounted) setLoading(false);
       }
     };
 
@@ -121,7 +91,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [handleAuthChange]);
+  }, []); // Empty dependency array to prevent re-runs
 
   const signIn = async (email: string, password: string) => {
     console.log('🔑 Attempting sign in for:', email);

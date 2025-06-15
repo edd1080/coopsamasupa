@@ -10,7 +10,7 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
 
-  console.log('🛡️ ProtectedRoute - Loading:', loading, 'User:', !!user, 'User ID:', user?.id);
+  console.log('🛡️ ProtectedRoute - Loading:', loading, 'User:', !!user);
 
   if (loading) {
     console.log('⏳ ProtectedRoute showing loading state');
