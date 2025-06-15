@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -194,6 +193,7 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ formData, updateFormData })
                   <Input 
                     id="dependentsCount" 
                     type="number"
+                    inputMode="numeric"
                     min="1"
                     value={formData.dependentsCount || ''} 
                     onChange={(e) => updateFormData('dependentsCount', e.target.value)} 
@@ -205,6 +205,7 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ formData, updateFormData })
                   <Input 
                     id="dependentsStudying" 
                     type="number"
+                    inputMode="numeric"
                     min="0"
                     value={formData.dependentsStudying || ''} 
                     onChange={(e) => updateFormData('dependentsStudying', e.target.value)} 

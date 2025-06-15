@@ -66,6 +66,7 @@ const WorkInfo: React.FC<WorkInfoProps> = ({ formData, updateFormData }) => {
               <Input 
                 id="yearsEmployed" 
                 type="number"
+                inputMode="numeric"
                 value={formData.yearsEmployed || ''} 
                 onChange={(e) => updateFormData('yearsEmployed', e.target.value)} 
                 placeholder="Años"
@@ -77,6 +78,7 @@ const WorkInfo: React.FC<WorkInfoProps> = ({ formData, updateFormData }) => {
               <Input 
                 id="monthsEmployed" 
                 type="number"
+                inputMode="numeric"
                 value={formData.monthsEmployed || ''} 
                 onChange={(e) => updateFormData('monthsEmployed', e.target.value)} 
                 placeholder="Meses"

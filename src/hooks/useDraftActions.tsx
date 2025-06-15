@@ -18,7 +18,15 @@ export const useSaveDraft = () => {
     }) => {
       if (!user?.id) throw new Error('Usuario no autenticado');
       
-      const clientName = formData?.identification?.fullName || formData?.personalInfo?.fullName || '';
+      // Construir el nombre del cliente desde diferentes fuentes posibles
+      const clientName = formData?.identification?.fullName || 
+                        formData?.personalInfo?.fullName || 
+                        formData?.basicData?.fullName ||
+                        formData?.fullName ||
+                        (formData?.firstName && formData?.lastName ? `${formData.firstName} ${formData.lastName}` : '') ||
+                        (formData?.identification?.firstName && formData?.identification?.lastName ? `${formData.identification.firstName} ${formData.identification.lastName}` : '') ||
+                        formData?.firstName || 
+                        '';
       
       const { data, error } = await supabase
         .from('application_drafts')
@@ -79,10 +87,14 @@ export const useApplicationValidation = () => {
   const validateMinimumRequiredData = (formData: any): { isValid: boolean; missingFields: string[] } => {
     const missingFields: string[] = [];
     
-    // Validar nombre completo (puede estar en identification o personalInfo)
+    // Validar nombre completo desde diferentes fuentes posibles
     const fullName = formData?.identification?.fullName || 
                     formData?.personalInfo?.fullName || 
-                    formData?.basicData?.fullName;
+                    formData?.basicData?.fullName ||
+                    formData?.fullName ||
+                    (formData?.firstName && formData?.lastName ? `${formData.firstName} ${formData.lastName}` : '') ||
+                    (formData?.identification?.firstName && formData?.identification?.lastName ? `${formData.identification.firstName} ${formData.identification.lastName}` : '') ||
+                    formData?.firstName;
     
     if (!fullName || fullName.trim().length === 0) {
       missingFields.push('Nombre completo');
