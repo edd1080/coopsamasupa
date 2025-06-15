@@ -21,14 +21,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   
-  // Use refs to prevent re-renders and track state
+  // Use ref to prevent unnecessary re-renders
   const mountedRef = useRef(true);
   const subscriptionRef = useRef<any>(null);
+  const initializedRef = useRef(false);
 
   useEffect(() => {
-    console.log('🏁 AuthProvider mounting...');
+    if (initializedRef.current) return;
     
-    // Simple auth state change handler - NO navigation here
+    console.log('🏁 AuthProvider initializing...');
+    initializedRef.current = true;
+    
+    // Auth state change handler - NO navigation here, just state updates
     const handleAuthChange = (event: string, session: Session | null) => {
       if (!mountedRef.current) return;
       
@@ -39,9 +43,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
     };
 
-    // Get initial session
+    // Get initial session and set up listener
     const initializeAuth = async () => {
       try {
+        // Set up the listener first
+        subscriptionRef.current = supabase.auth.onAuthStateChange(handleAuthChange);
+        
+        // Then get initial session
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
           console.error('❌ Error getting initial session:', error);
@@ -61,16 +69,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
-    // Set up auth listener
-    subscriptionRef.current = supabase.auth.onAuthStateChange(handleAuthChange);
-    
-    // Initialize auth state
     initializeAuth();
 
     // Cleanup function
     return () => {
       console.log('🛑 AuthProvider cleanup');
       mountedRef.current = false;
+      initializedRef.current = false;
       if (subscriptionRef.current) {
         subscriptionRef.current.data.subscription.unsubscribe();
       }

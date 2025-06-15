@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoginForm from '@/components/auth/LoginForm';
 import ThemeToggle from '@/components/ui/ThemeToggle';
@@ -8,11 +8,13 @@ import { useAuth } from '@/hooks/useAuth';
 const Login = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const hasRedirectedRef = useRef(false);
 
-  // Simple redirect for authenticated users
+  // Simple redirect for authenticated users - only once
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && user && !hasRedirectedRef.current) {
       console.log('🔄 User already authenticated, redirecting to dashboard');
+      hasRedirectedRef.current = true;
       navigate('/', { replace: true });
     }
   }, [user, loading, navigate]);
@@ -30,8 +32,8 @@ const Login = () => {
     );
   }
 
-  // Don't render login form if user is authenticated
-  if (user) {
+  // Don't render login form if user is authenticated or has been redirected
+  if (user || hasRedirectedRef.current) {
     return null;
   }
 
