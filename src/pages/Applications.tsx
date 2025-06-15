@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
@@ -14,15 +15,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 
-const generateRandomSCOId = () => {
-  return `SCO_${Math.floor(100000 + Math.random() * 900000)}`;
-};
-
 const Applications = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [showPrequalificationModal, setShowPrequalificationModal] = useState(false);
   const [activeStatusFilter, setActiveStatusFilter] = useState('all');
+  
+  // Empty applications array - no mock data
+  const [applications, setApplications] = useState([]);
 
   const handleViewApplication = (id: string) => {
     navigate(`/applications/${id}`);
@@ -65,53 +65,6 @@ const Applications = () => {
       duration: 3000
     });
   };
-
-  const applications = [{
-    id: generateRandomSCOId(),
-    clientName: 'Ana García Méndez',
-    product: 'Crédito Personal',
-    amount: '$25,000',
-    status: 'active',
-    date: '2025-04-07',
-    progress: 2,
-    stage: 'Información Financiera'
-  }, {
-    id: generateRandomSCOId(),
-    clientName: 'Carlos López Ramírez',
-    product: 'Hipoteca',
-    amount: '$1,200,000',
-    status: 'approved',
-    date: '2025-04-06',
-    progress: 4,
-    stage: 'Firma de Acta'
-  }, {
-    id: generateRandomSCOId(),
-    clientName: 'María Rodríguez Sánchez',
-    product: 'Crédito Auto',
-    amount: '$350,000',
-    status: 'verification',
-    date: '2025-04-05',
-    progress: 3,
-    stage: 'Análisis de Carácter'
-  }, {
-    id: generateRandomSCOId(),
-    clientName: 'José Hernández Torres',
-    product: 'Crédito PYME',
-    amount: '$500,000',
-    status: 'verification',
-    date: '2025-04-03',
-    progress: 3,
-    stage: 'Documentos e Imágenes'
-  }, {
-    id: generateRandomSCOId(),
-    clientName: 'Laura Sánchez Vega',
-    product: 'Crédito Personal',
-    amount: '$30,000',
-    status: 'rejected',
-    date: '2025-04-02',
-    progress: 4,
-    stage: 'Fiadores'
-  }];
 
   const getStatusBadge = (status: string) => {
     switch (status) {

@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import BottomNavigation from '@/components/layout/BottomNavigation';
@@ -18,13 +19,6 @@ const Prequalifications = () => {
   const { toast } = useToast();
   const [showPrequalificationModal, setShowPrequalificationModal] = useState(false);
   const { prequalifications, deletePrequalification } = usePrequalifications();
-
-  useEffect(() => {
-    const authToken = localStorage.getItem('authToken');
-    if (!authToken) {
-      navigate('/login');
-    }
-  }, [navigate]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -87,6 +81,17 @@ const Prequalifications = () => {
     });
   };
 
+  const clearAllData = () => {
+    localStorage.removeItem('prequalifications');
+    localStorage.removeItem('authToken'); // Clean any old tokens
+    toast({
+      title: "Datos limpiados",
+      description: "Se han eliminado todos los datos de prueba",
+      duration: 3000
+    });
+    window.location.reload();
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -101,6 +106,11 @@ const Prequalifications = () => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input placeholder="Buscar precalificaciones..." className="pl-10" />
         </div>
+
+        {/* Development helper button */}
+        <Button variant="outline" size="sm" onClick={clearAllData} className="text-xs">
+          Limpiar datos de prueba
+        </Button>
 
         {prequalifications.length === 0 ? <Card>
             <CardContent className="p-8 text-center space-y-4">
