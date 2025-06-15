@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -14,7 +13,6 @@ const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { signIn } = useAuth();
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,9 +29,8 @@ const LoginForm = () => {
     try {
       setIsLoading(true);
       await signIn(email, password);
-      // Navigate immediately after successful login
-      console.log('🔄 Login successful, navigating to dashboard');
-      navigate('/', { replace: true });
+      console.log('🔄 Login successful - AuthRouter will handle navigation');
+      // NO navigation here - let AuthRouter handle it
     } catch (error) {
       console.error('Login error:', error);
       toast({

@@ -21,18 +21,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   
-  // Use ref to prevent unnecessary re-renders
   const mountedRef = useRef(true);
   const subscriptionRef = useRef<any>(null);
-  const initializedRef = useRef(false);
 
   useEffect(() => {
-    if (initializedRef.current) return;
-    
     console.log('🏁 AuthProvider initializing...');
-    initializedRef.current = true;
     
-    // Auth state change handler - NO navigation here, just state updates
+    // Auth state change handler - ONLY state updates, NO navigation
     const handleAuthChange = (event: string, session: Session | null) => {
       if (!mountedRef.current) return;
       
@@ -75,12 +70,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       console.log('🛑 AuthProvider cleanup');
       mountedRef.current = false;
-      // DON'T reset initializedRef - we want to stay initialized
       if (subscriptionRef.current) {
         subscriptionRef.current.data.subscription.unsubscribe();
       }
     };
-  }, []); // Empty dependency array - this effect should only run once
+  }, []);
 
   const signIn = async (email: string, password: string) => {
     console.log('🔑 Attempting sign in for:', email);

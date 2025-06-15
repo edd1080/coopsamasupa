@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import BottomNavigation from '@/components/layout/BottomNavigation';
@@ -12,13 +12,7 @@ const Index = () => {
   const navigate = useNavigate();
   const [showPrequalificationModal, setShowPrequalificationModal] = useState(false);
 
-  useEffect(() => {
-    // Check if user is authenticated
-    const authToken = localStorage.getItem('authToken');
-    if (!authToken) {
-      navigate('/login');
-    }
-  }, [navigate]);
+  // No auth check needed - AuthRouter handles this
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
