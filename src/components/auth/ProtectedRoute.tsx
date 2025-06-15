@@ -2,7 +2,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ProtectedRouteProps {
@@ -12,19 +12,30 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
   const [sessionChecked, setSessionChecked] = useState(false);
+  const checkInProgress = useRef(false);
 
   useEffect(() => {
-    // Double-check session on mount to ensure we have the latest state
+    // Avoid multiple simultaneous session checks
+    if (loading || checkInProgress.current || sessionChecked) {
+      return;
+    }
+
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log('ProtectedRoute session check:', session);
-      setSessionChecked(true);
+      checkInProgress.current = true;
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log('ProtectedRoute session check:', session);
+        setSessionChecked(true);
+      } catch (error) {
+        console.error('Error checking session:', error);
+        setSessionChecked(true);
+      } finally {
+        checkInProgress.current = false;
+      }
     };
     
-    if (!loading) {
-      checkSession();
-    }
-  }, [loading]);
+    checkSession();
+  }, [loading, sessionChecked]);
 
   if (loading || !sessionChecked) {
     return (

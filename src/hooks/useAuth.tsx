@@ -1,5 +1,5 @@
 
-import { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -20,35 +20,70 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+  // Memoize the auth state change handler to prevent re-creation
+  const handleAuthChange = useCallback((event: string, session: Session | null) => {
+    console.log('Auth event:', event, 'Session:', session);
+    
+    // Only update state if there's an actual change
+    if (session?.user?.id !== user?.id || session?.access_token !== session?.access_token) {
       setSession(session);
       setUser(session?.user ?? null);
+    }
+    
+    if (!initialized) {
       setLoading(false);
-    });
+      setInitialized(true);
+    }
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth event:', event, 'Session:', session);
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
+    // Handle navigation only for sign in events and only if not already on the dashboard
+    if (event === 'SIGNED_IN' && session?.user && window.location.pathname === '/login') {
+      console.log('User signed in, navigating to dashboard');
+      navigate('/', { replace: true });
+    }
+  }, [user?.id, session?.access_token, initialized, navigate]);
 
-        // Navigate automatically on sign in
-        if (event === 'SIGNED_IN' && session?.user) {
-          console.log('User signed in, navigating to dashboard');
-          navigate('/');
+  useEffect(() => {
+    let mounted = true;
+
+    // Get initial session
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Error getting session:', error);
+          return;
+        }
+        
+        if (mounted) {
+          console.log('Initial session:', session);
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+          setInitialized(true);
+        }
+      } catch (error) {
+        console.error('Error in getInitialSession:', error);
+        if (mounted) {
+          setLoading(false);
+          setInitialized(true);
         }
       }
-    );
+    };
 
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    getInitialSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthChange);
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [handleAuthChange]);
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
@@ -96,7 +131,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       description: "Has cerrado sesión exitosamente"
     });
     
-    navigate('/login');
+    navigate('/login', { replace: true });
   };
 
   const value = {
