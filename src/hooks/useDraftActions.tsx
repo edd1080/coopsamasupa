@@ -18,38 +18,60 @@ export const useSaveDraft = () => {
     }) => {
       if (!user?.id) throw new Error('Usuario no autenticado');
       
+      console.log('💾 useSaveDraft: Saving draft with data:', { formData, currentStep, currentSubStep });
+      
       // Construir el nombre del cliente desde diferentes fuentes posibles
-      const clientName = formData?.identification?.fullName || 
+      const clientName = formData?.fullName ||
+                        formData?.identification?.fullName || 
                         formData?.personalInfo?.fullName || 
                         formData?.basicData?.fullName ||
-                        formData?.fullName ||
                         (formData?.firstName && formData?.lastName ? `${formData.firstName} ${formData.lastName}` : '') ||
                         (formData?.identification?.firstName && formData?.identification?.lastName ? `${formData.identification.firstName} ${formData.identification.lastName}` : '') ||
                         formData?.firstName || 
-                        '';
+                        'Sin nombre';
+      
+      console.log('👤 Extracted client name:', clientName);
+      
+      const draftPayload = {
+        agent_id: user.id,
+        client_name: clientName,
+        draft_data: formData,
+        last_step: currentStep,
+        last_sub_step: currentSubStep || 0,
+        updated_at: new Date().toISOString()
+      };
+      
+      console.log('📦 Draft payload:', draftPayload);
       
       const { data, error } = await supabase
         .from('application_drafts')
-        .upsert({
-          agent_id: user.id,
-          client_name: clientName,
-          draft_data: formData,
-          last_step: currentStep,
-          last_sub_step: currentSubStep || 0,
-          updated_at: new Date().toISOString()
-        })
+        .upsert(draftPayload)
         .select()
         .single();
         
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Supabase error:', error);
+        throw error;
+      }
+      
+      console.log('✅ Draft saved successfully:', data);
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('🎉 Draft save success, invalidating queries');
       queryClient.invalidateQueries({ queryKey: ['applications'] });
       queryClient.invalidateQueries({ queryKey: ['application-drafts'] });
+      
+      toast({
+        title: "Borrador guardado",
+        description: `Tu solicitud ha sido guardada como borrador (ID: ${data.id.slice(0, 8)}...)`,
+        variant: "default",
+        className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
+        duration: 3000,
+      });
     },
     onError: (error) => {
-      console.error('Error saving draft:', error);
+      console.error('❌ Error saving draft:', error);
       toast({
         title: "Error al guardar borrador",
         description: "No se pudo guardar el progreso. Inténtalo de nuevo.",

@@ -11,6 +11,8 @@ interface WorkInfoProps {
 }
 
 const WorkInfo: React.FC<WorkInfoProps> = ({ formData, updateFormData }) => {
+  console.log('💼 WorkInfo rendering with formData:', formData);
+  
   return (
     <Card className="border-0 shadow-none">
       <CardContent className="p-0 space-y-4">
@@ -24,7 +26,10 @@ const WorkInfo: React.FC<WorkInfoProps> = ({ formData, updateFormData }) => {
             <Label htmlFor="employmentStatus">Situación Laboral</Label>
             <Select
               value={formData.employmentStatus || ''}
-              onValueChange={(value) => updateFormData('employmentStatus', value)}
+              onValueChange={(value) => {
+                console.log('📝 Employment status changed:', value);
+                updateFormData('employmentStatus', value);
+              }}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecciona tu situación laboral" />
@@ -45,7 +50,10 @@ const WorkInfo: React.FC<WorkInfoProps> = ({ formData, updateFormData }) => {
             <Input 
               id="companyName" 
               value={formData.companyName || ''} 
-              onChange={(e) => updateFormData('companyName', e.target.value)} 
+              onChange={(e) => {
+                console.log('📝 Company name changed:', e.target.value);
+                updateFormData('companyName', e.target.value);
+              }} 
               placeholder="Nombre de la empresa donde trabajas"
             />
           </div>
@@ -55,7 +63,10 @@ const WorkInfo: React.FC<WorkInfoProps> = ({ formData, updateFormData }) => {
             <Input 
               id="position" 
               value={formData.position || ''} 
-              onChange={(e) => updateFormData('position', e.target.value)} 
+              onChange={(e) => {
+                console.log('📝 Position changed:', e.target.value);
+                updateFormData('position', e.target.value);
+              }} 
               placeholder="Tu puesto o cargo"
             />
           </div>
@@ -68,7 +79,10 @@ const WorkInfo: React.FC<WorkInfoProps> = ({ formData, updateFormData }) => {
                 type="number"
                 inputMode="numeric"
                 value={formData.yearsEmployed || ''} 
-                onChange={(e) => updateFormData('yearsEmployed', e.target.value)} 
+                onChange={(e) => {
+                  console.log('📝 Years employed changed:', e.target.value);
+                  updateFormData('yearsEmployed', e.target.value);
+                }} 
                 placeholder="Años"
               />
             </div>
@@ -80,7 +94,10 @@ const WorkInfo: React.FC<WorkInfoProps> = ({ formData, updateFormData }) => {
                 type="number"
                 inputMode="numeric"
                 value={formData.monthsEmployed || ''} 
-                onChange={(e) => updateFormData('monthsEmployed', e.target.value)} 
+                onChange={(e) => {
+                  console.log('📝 Months employed changed:', e.target.value);
+                  updateFormData('monthsEmployed', e.target.value);
+                }} 
                 placeholder="Meses"
               />
             </div>
@@ -91,7 +108,10 @@ const WorkInfo: React.FC<WorkInfoProps> = ({ formData, updateFormData }) => {
             <Input 
               id="workAddress" 
               value={formData.workAddress || ''} 
-              onChange={(e) => updateFormData('workAddress', e.target.value)} 
+              onChange={(e) => {
+                console.log('📝 Work address changed:', e.target.value);
+                updateFormData('workAddress', e.target.value);
+              }} 
               placeholder="Dirección completa del lugar de trabajo"
             />
           </div>
@@ -101,7 +121,10 @@ const WorkInfo: React.FC<WorkInfoProps> = ({ formData, updateFormData }) => {
             <Input 
               id="workPhone" 
               value={formData.workPhone || ''} 
-              onChange={(e) => updateFormData('workPhone', e.target.value)} 
+              onChange={(e) => {
+                console.log('📝 Work phone changed:', e.target.value);
+                updateFormData('workPhone', e.target.value);
+              }} 
               placeholder="Teléfono de la empresa"
             />
           </div>

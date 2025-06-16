@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
+import { useSaveDraft } from '@/hooks/useDraftActions';
 
 // Generate a random 6-digit number for application IDs
 const generateRandomId = () => {
@@ -145,6 +146,9 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
   const [currentGuarantorIndex, setCurrentGuarantorIndex] = useState(0);
   const [guarantorFormStep, setGuarantorFormStep] = useState(0); // 0: basic info, 1: financial info
   const [isInGuarantorForm, setIsInGuarantorForm] = useState(false);
+  
+  // Integrar el hook useSaveDraft
+  const saveDraftMutation = useSaveDraft();
   
   // Check if there are unsaved changes
   const hasUnsavedChanges = JSON.stringify(formData) !== JSON.stringify(lastSavedData);
@@ -310,7 +314,11 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
   };
   
   const updateFormData = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      const newData = { ...prev, [field]: value };
+      console.log('📝 Form data updated:', { field, value, newData });
+      return newData;
+    });
     
     // Auto-check completion when data is updated
     setTimeout(() => {
@@ -343,24 +351,31 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
     window.scrollTo(0, 0);
   };
   
-  const handleSaveDraft = () => {
-    console.log('Saving draft:', formData);
+  const handleSaveDraft = async () => {
+    console.log('💾 Saving draft with data:', formData);
+    console.log('📍 Current step:', activeStep, 'Sub-step:', subStep);
     
-    // Update last saved data
-    setLastSavedData(formData);
-    
-    // Mark current section as complete if it has sufficient data
-    if (checkSectionCompletion()) {
-      setSectionStatus(prev => ({ ...prev, [steps[activeStep].id]: 'complete' }));
+    try {
+      await saveDraftMutation.mutateAsync({
+        formData,
+        currentStep: activeStep,
+        currentSubStep: subStep
+      });
+      
+      // Update last saved data to reflect successful save
+      setLastSavedData(formData);
+      
+      // Mark current section as complete if it has sufficient data
+      if (checkSectionCompletion()) {
+        setSectionStatus(prev => ({ ...prev, [steps[activeStep].id]: 'complete' }));
+      }
+      
+      console.log('✅ Draft saved successfully');
+      
+    } catch (error) {
+      console.error('❌ Error saving draft:', error);
+      // Error toast is already handled by the useSaveDraft hook
     }
-    
-    toast({
-      title: "Borrador guardado",
-      description: "Tu solicitud ha sido guardada como borrador.",
-      variant: "default",
-      className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
-      duration: 3000,
-    });
   };
   
   const handleSubmit = () => {
@@ -394,9 +409,17 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
     setShowExitDialog(true);
   };
   
-  const handleExit = (save: boolean) => {
+  const handleExit = async (save: boolean) => {
+    console.log('🚪 Exiting application, save:', save);
+    
     if (save) {
-      handleSaveDraft();
+      try {
+        await handleSaveDraft();
+        console.log('✅ Draft saved before exit');
+      } catch (error) {
+        console.error('❌ Failed to save draft before exit:', error);
+        // Still proceed to exit even if save fails
+      }
     }
     
     setShowExitDialog(false);

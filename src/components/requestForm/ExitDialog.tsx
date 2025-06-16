@@ -29,20 +29,33 @@ const ExitDialog: React.FC<ExitDialogProps> = ({
   formData = {}
 }) => {
   const [showMinimumDataAlert, setShowMinimumDataAlert] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
   const { validateMinimumRequiredData } = useApplicationValidation();
 
-  const handleExitWithSave = () => {
+  const handleExitWithSave = async () => {
+    console.log('💾 Attempting to save before exit with data:', formData);
+    
     const validation = validateMinimumRequiredData(formData);
+    console.log('✅ Validation result:', validation);
     
     if (!validation.isValid) {
+      console.log('❌ Validation failed, showing minimum data alert');
       setShowMinimumDataAlert(true);
       return;
     }
     
-    onExit(true);
+    setIsExiting(true);
+    try {
+      await onExit(true);
+      console.log('✅ Exit with save completed');
+    } catch (error) {
+      console.error('❌ Error during exit with save:', error);
+      setIsExiting(false);
+    }
   };
 
   const handleExitWithoutSave = () => {
+    console.log('🚪 Exiting without save');
     onExit(false);
   };
 
@@ -70,6 +83,7 @@ const ExitDialog: React.FC<ExitDialogProps> = ({
               variant="outline"
               onClick={handleExitWithoutSave}
               className="w-full sm:w-auto"
+              disabled={isExiting}
             >
               <XCircle className="mr-2 h-4 w-4" />
               Salir sin guardar
@@ -78,9 +92,10 @@ const ExitDialog: React.FC<ExitDialogProps> = ({
               type="button"
               onClick={handleExitWithSave}
               className="w-full sm:w-auto"
+              disabled={isExiting}
             >
               <Save className="mr-2 h-4 w-4" />
-              Guardar y salir
+              {isExiting ? "Guardando..." : "Guardar y salir"}
             </Button>
           </DialogFooter>
         </DialogContent>
