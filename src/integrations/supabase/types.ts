@@ -87,6 +87,66 @@ export type Database = {
         }
         Relationships: []
       }
+      prequalifications: {
+        Row: {
+          agent_id: string
+          can_proceed: boolean | null
+          client_dpi: string
+          client_name: string
+          client_phone: string | null
+          created_at: string | null
+          credit_history: string
+          credit_purpose: string
+          economic_activity: string
+          evaluation_reason: string | null
+          evaluation_result: Json
+          evaluation_status: string
+          id: string
+          monthly_income: number
+          requested_amount: number
+          requires_additional_data: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          agent_id: string
+          can_proceed?: boolean | null
+          client_dpi: string
+          client_name: string
+          client_phone?: string | null
+          created_at?: string | null
+          credit_history: string
+          credit_purpose: string
+          economic_activity: string
+          evaluation_reason?: string | null
+          evaluation_result?: Json
+          evaluation_status: string
+          id?: string
+          monthly_income: number
+          requested_amount: number
+          requires_additional_data?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          agent_id?: string
+          can_proceed?: boolean | null
+          client_dpi?: string
+          client_name?: string
+          client_phone?: string | null
+          created_at?: string | null
+          credit_history?: string
+          credit_purpose?: string
+          economic_activity?: string
+          evaluation_reason?: string | null
+          evaluation_result?: Json
+          evaluation_status?: string
+          id?: string
+          monthly_income?: number
+          requested_amount?: number
+          requires_additional_data?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           agency: string | null

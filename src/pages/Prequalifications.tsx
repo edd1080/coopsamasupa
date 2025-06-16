@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Search, FileSpreadsheet, Edit, Trash2, CheckCircle, AlertCircle, XCircle, Calendar, User, Banknote } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { usePrequalifications } from '@/hooks/usePrequalifications';
+import { usePrequalifications } from '@/hooks/useSupabaseQuery';
 import { formatCurrency } from '@/utils/prequalificationEngine';
 import { useToast } from '@/hooks/use-toast';
 
@@ -18,7 +18,7 @@ const Prequalifications = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [showPrequalificationModal, setShowPrequalificationModal] = useState(false);
-  const { prequalifications, deletePrequalification } = usePrequalifications();
+  const { data: prequalifications = [], isLoading } = usePrequalifications();
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -54,7 +54,6 @@ const Prequalifications = () => {
   };
 
   const handleStartApplication = (id: string) => {
-    // TODO: Integrar con formulario principal pasando datos de precalificación
     toast({
       title: "Iniciando solicitud",
       description: "Redirigiendo al formulario de solicitud completa...",
@@ -64,7 +63,6 @@ const Prequalifications = () => {
   };
 
   const handleEdit = (id: string) => {
-    // TODO: Implementar edición de precalificación
     toast({
       title: "Función pendiente",
       description: "La edición de precalificaciones estará disponible próximamente",
@@ -73,24 +71,34 @@ const Prequalifications = () => {
   };
 
   const handleDelete = (id: string, clientName: string) => {
-    deletePrequalification(id);
+    // TODO: Implementar eliminación desde Supabase
     toast({
-      title: "Precalificación eliminada",
-      description: `Se ha eliminado la precalificación de ${clientName}`,
+      title: "Función pendiente",
+      description: "La eliminación de precalificaciones estará disponible próximamente",
       duration: 3000
     });
   };
 
-  const clearAllData = () => {
-    localStorage.removeItem('prequalifications');
-    localStorage.removeItem('authToken'); // Clean any old tokens
-    toast({
-      title: "Datos limpiados",
-      description: "Se han eliminado todos los datos de prueba",
-      duration: 3000
-    });
-    window.location.reload();
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 px-4 py-4 pb-20 space-y-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+            <div className="h-10 bg-gray-200 rounded"></div>
+            <div className="space-y-4">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-32 bg-gray-200 rounded"></div>
+              ))}
+            </div>
+          </div>
+        </main>
+        <BottomNavigation />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -107,25 +115,24 @@ const Prequalifications = () => {
           <Input placeholder="Buscar precalificaciones..." className="pl-10" />
         </div>
 
-        {/* Development helper button */}
-        <Button variant="outline" size="sm" onClick={clearAllData} className="text-xs">
-          Limpiar datos de prueba
-        </Button>
-
-        {prequalifications.length === 0 ? <Card>
+        {prequalifications.length === 0 ? (
+          <Card>
             <CardContent className="p-8 text-center space-y-4">
               <div className="text-muted-foreground">
                 <FileSpreadsheet className="h-12 w-12 mx-auto mb-3 opacity-50" />
                 <p className="font-bold text-base text-gray-800 mx-0 px-0">No hay precalificaciones registradas</p>
-                <p className="text-sm font-thin">Puedes crear una nueva precalificación usando el botón de abajo o el botón + flotante</p>
+                <p className="text-sm font-thin">Puedes crear una nueva precalificación usando el botón de abajo</p>
               </div>
               <Button className="w-full" onClick={() => setShowPrequalificationModal(true)}>
                 <FileSpreadsheet className="mr-2 h-4 w-4" />
                 Iniciar Pre-Calificación
               </Button>
             </CardContent>
-          </Card> : <div className="space-y-4">
-            {prequalifications.map(prequalification => <Card key={prequalification.id} className="card-hover group">
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {prequalifications.map(prequalification => (
+              <Card key={prequalification.id} className="card-hover group">
                 <CardContent className="p-4">
                   <div className="flex flex-col space-y-3">
                     {/* Header con nombre, fecha y monto */}
@@ -133,22 +140,22 @@ const Prequalifications = () => {
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold flex items-center gap-2 mb-2 text-base">
                           <User className="h-4 w-4 text-muted-foreground" />
-                          {prequalification.data.nombre_completo}
+                          {prequalification.client_name}
                         </h3>
                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
                           <Calendar className="h-3 w-3" />
-                          {formatDate(prequalification.timestamp)}
+                          {formatDate(prequalification.created_at)}
                         </div>
                       </div>
                       
                       <div className="flex flex-col items-end gap-2">
                         <div className="flex items-center gap-1 text-lg font-semibold text-primary">
                           <Banknote className="h-5 w-5" />
-                          {formatCurrency(prequalification.data.monto_solicitado)}
+                          {formatCurrency(prequalification.requested_amount)}
                         </div>
                         
                         <div className="flex items-center gap-2">
-                          {getStatusBadge(prequalification.result.status)}
+                          {getStatusBadge(prequalification.evaluation_status)}
 
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -157,16 +164,23 @@ const Prequalifications = () => {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-48">
-                              {prequalification.result.canProceed && <DropdownMenuItem onClick={() => handleStartApplication(prequalification.id)}>
+                              {prequalification.can_proceed && (
+                                <DropdownMenuItem onClick={() => handleStartApplication(prequalification.id)}>
                                   <FileSpreadsheet className="mr-2 h-4 w-4" />
                                   <span>Iniciar solicitud</span>
-                                </DropdownMenuItem>}
-                              {prequalification.result.status === 'yellow' && <DropdownMenuItem onClick={() => handleEdit(prequalification.id)}>
+                                </DropdownMenuItem>
+                              )}
+                              {prequalification.evaluation_status === 'yellow' && (
+                                <DropdownMenuItem onClick={() => handleEdit(prequalification.id)}>
                                   <Edit className="mr-2 h-4 w-4" />
                                   <span>Editar/Completar</span>
-                                </DropdownMenuItem>}
+                                </DropdownMenuItem>
+                              )}
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(prequalification.id, prequalification.data.nombre_completo)}>
+                              <DropdownMenuItem 
+                                className="text-destructive focus:text-destructive" 
+                                onClick={() => handleDelete(prequalification.id, prequalification.client_name)}
+                              >
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 <span>Eliminar</span>
                               </DropdownMenuItem>
@@ -179,24 +193,26 @@ const Prequalifications = () => {
                     {/* Evaluación */}
                     <div className="text-sm bg-muted/50 p-3 rounded-md">
                       <p className="font-medium text-muted-foreground mb-1">Evaluación:</p>
-                      <p className="font-medium">{prequalification.result.reason}</p>
+                      <p className="font-medium">{prequalification.evaluation_reason}</p>
                     </div>
 
                     {/* Información adicional */}
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="text-muted-foreground">Ingreso mensual:</span>
-                        <p className="font-bold">{formatCurrency(prequalification.data.ingreso_mensual)}</p>
+                        <p className="font-bold">{formatCurrency(prequalification.monthly_income)}</p>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Destino:</span>
-                        <p className="capitalize font-bold">{prequalification.data.destino_credito}</p>
+                        <p className="capitalize font-bold">{prequalification.credit_purpose}</p>
                       </div>
                     </div>
                   </div>
                 </CardContent>
-              </Card>)}
-          </div>}
+              </Card>
+            ))}
+          </div>
+        )}
       </main>
 
       <BottomNavigation />

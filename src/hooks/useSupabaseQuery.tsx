@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -24,7 +25,7 @@ export const useAgentProfile = () => {
   });
 };
 
-// Hook para obtener precalificaciones
+// Hook para obtener precalificaciones desde Supabase
 export const usePrequalifications = () => {
   const { user } = useAuth();
   
@@ -127,7 +128,7 @@ const getStageNameFromStep = (step: number): string => {
   return stageNames[step as keyof typeof stageNames] || 'En progreso';
 };
 
-// Hook para crear precalificación
+// Hook para crear precalificación en Supabase
 export const useCreatePrequalification = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -139,8 +140,20 @@ export const useCreatePrequalification = () => {
       const { data: result, error } = await supabase
         .from('prequalifications')
         .insert({
-          ...data,
-          agent_id: user.id
+          agent_id: user.id,
+          client_name: data.nombre_completo,
+          client_dpi: data.dpi,
+          client_phone: data.telefono,
+          economic_activity: data.actividad_economica,
+          monthly_income: data.ingreso_mensual,
+          credit_purpose: data.destino_credito,
+          requested_amount: data.monto_solicitado,
+          credit_history: data.historial,
+          evaluation_result: data.result,
+          evaluation_status: data.result.status,
+          can_proceed: data.result.canProceed,
+          requires_additional_data: data.result.requiresAdditionalData,
+          evaluation_reason: data.result.reason
         })
         .select()
         .single();
