@@ -3,6 +3,7 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 import { useSaveDraft } from '@/hooks/useDraftActions';
 import { useIncrementalSave } from '@/hooks/useIncrementalSave';
+import { useDraftFormData } from '@/hooks/useApplicationData';
 
 // Generate a random 6-digit number for application IDs
 const generateRandomId = () => {
@@ -151,6 +152,9 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
   // Integrar el hook useSaveDraft y useIncrementalSave
   const saveDraftMutation = useSaveDraft();
   
+  // Cargar datos reales si estamos editando
+  const { data: draftData, isLoading: isDraftLoading, error: draftError } = useDraftFormData(id || '');
+  
   // Import the useIncrementalSave hook
   const { saveIncremental, updateLastSavedData, hasUnsavedChanges: hasIncrementalChanges } = useIncrementalSave({
     currentData: formData,
@@ -201,9 +205,8 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
       const targetStepIndex = sectionIdToStepIndex[navigationState.sectionId as keyof typeof sectionIdToStepIndex];
       if (targetStepIndex !== undefined) {
         setActiveStep(targetStepIndex);
-        setSubStep(0); // Reset to beginning of section
+        setSubStep(0);
         
-        // Show toast notification
         const sectionName = sectionNames[navigationState.sectionId as keyof typeof sectionNames];
         toast({
           title: "Navegación exitosa",
@@ -216,51 +219,52 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
       }
     }
     
-    // If we're editing an existing application, fetch its data
-    if (id) {
-      console.log(`📂 Fetching data for application: ${id}`);
+    // Si estamos editando un borrador existente, cargar sus datos REALES
+    if (id && draftData && !isDraftLoading && !draftError) {
+      console.log(`📂 Loading REAL draft data for ID: ${id}`);
       
-      // Simulate API delay
-      setTimeout(() => {
-        // This is mock data - in a real app, this would come from an API
-        const mockData = {
-          personalInfo: {
-            firstName: 'María',
-            lastName: 'Rodríguez',
-          },
-          termsAccepted: false,
-          dataProcessingAccepted: false,
-          creditCheckAccepted: false,
-          applicationCode: `BVM_${generateRandomId()}`,
-          hasFatca: false,
-          isPep: false,
-          agentComments: "",
-          creditAmount: 50000
-        };
-        
-        setFormData(mockData);
-        setInitialFormData(mockData);
-        setLastSavedData(mockData);
-        setPersonName(`${mockData.personalInfo.firstName} ${mockData.personalInfo.lastName}`);
-        
-        // Set sections that have data as complete
-        if (mockData.personalInfo) {
-          setSectionStatus(prev => ({ ...prev, identification: 'complete' }));
-        }
-        
-        // Only show toast once if not navigating to specific section
-        if (!toastShown && !navigationState?.sectionId) {
-          toast({
-            title: "Datos cargados",
-            description: `Se ha cargado la solicitud ${mockData.applicationCode || id} para edición`,
-            duration: 3000,
-            className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
-          });
-          setToastShown(true);
-        }
-      }, 500);
+      const loadedFormData = draftData.draft_data || {};
+      const clientName = draftData.client_name || 'Sin nombre';
+      
+      setFormData(loadedFormData);
+      setInitialFormData(loadedFormData);
+      setLastSavedData(loadedFormData);
+      setPersonName(clientName);
+      
+      // Restaurar paso y sub-paso
+      if (draftData.last_step !== undefined) {
+        setActiveStep(draftData.last_step);
+      }
+      if (draftData.last_sub_step !== undefined) {
+        setSubStep(draftData.last_sub_step);
+      }
+      
+      // Mostrar toast solo una vez si no estamos navegando a sección específica
+      if (!toastShown && !navigationState?.sectionId) {
+        toast({
+          title: "Borrador cargado",
+          description: `Se ha cargado el borrador de ${clientName}`,
+          duration: 3000,
+          className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
+        });
+        setToastShown(true);
+      }
+      
+      console.log('✅ Real draft data loaded successfully');
     }
-  }, [navigate, activeStep, id, toast, toastShown, steps, location.state]);
+    
+    // Mostrar error si hay problema cargando datos
+    if (draftError && id && !toastShown) {
+      console.error('❌ Error loading draft data:', draftError);
+      toast({
+        title: "Error cargando borrador",
+        description: "No se pudo cargar el borrador. Iniciando solicitud nueva.",
+        variant: "destructive",
+        duration: 3000,
+      });
+      setToastShown(true);
+    }
+  }, [id, draftData, isDraftLoading, draftError, navigate, activeStep, toast, toastShown, steps, location.state]);
   
   // Check if current section has sufficient data to be marked as complete
   const checkSectionCompletion = () => {

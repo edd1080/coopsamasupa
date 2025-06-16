@@ -64,9 +64,12 @@ const ApplicationsList: React.FC<ApplicationsListProps> = ({
         ))}
       </div>
       
-      <div className="flex justify-center py-4">
-        <Button variant="outline">Cargar más</Button>
-      </div>
+      {/* Solo mostrar "Cargar más" si hay muchas aplicaciones */}
+      {applications.length >= 10 && (
+        <div className="flex justify-center py-4">
+          <Button variant="outline">Cargar más</Button>
+        </div>
+      )}
     </>
   );
 };

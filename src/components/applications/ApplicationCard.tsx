@@ -38,15 +38,28 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
   const { toast } = useToast();
 
   const handleViewApplication = (id: string) => {
-    navigate(`/applications/${id}`);
+    // Si es un borrador, ir al formulario para continuar editando
+    if ((application as any).isDraft) {
+      navigate(`/request-form/${id}`);
+      toast({
+        title: "Continuando borrador",
+        description: `Abriendo borrador de ${application.clientName}`,
+        duration: 3000
+      });
+    } else {
+      // Si es aplicación completa, ir a detalles
+      navigate(`/applications/${id}`);
+    }
   };
 
   const handleEditApplication = (id: string, clientName: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    navigate(`/applications/${id}/edit`);
+    
+    // Tanto borradores como aplicaciones completas van al formulario para edición
+    navigate(`/request-form/${id}`);
     toast({
       title: "Edición iniciada",
-      description: `Editando solicitud ${id}`,
+      description: `Editando solicitud de ${clientName}`,
       duration: 3000
     });
   };

@@ -62,7 +62,7 @@ export const usePrequalifications = () => {
   });
 };
 
-// Hook para obtener solicitudes con formato mejorado, incluyendo borradores
+// Hook para obtener solicitudes con formato mejorado, incluyendo borradores - CORREGIDO ORDENAMIENTO
 export const useApplications = () => {
   const { user } = useAuth();
   
@@ -71,58 +71,62 @@ export const useApplications = () => {
     queryFn: async () => {
       if (!user?.id) throw new Error('Usuario no autenticado');
       
-      // Obtener solicitudes completas
+      // Obtener solicitudes completas - MÁS RECIENTES PRIMERO
       const { data: applications, error: appsError } = await supabase
         .from('applications')
         .select('*')
         .eq('agent_id', user.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }); // Cambiado a false para más recientes primero
         
       if (appsError) throw appsError;
       
-      // Obtener borradores
+      // Obtener borradores - MÁS RECIENTES PRIMERO
       const { data: drafts, error: draftsError } = await supabase
         .from('application_drafts')
         .select('*')
         .eq('agent_id', user.id)
-        .order('updated_at', { ascending: false });
+        .order('updated_at', { ascending: false }); // Cambiado a false para más recientes primero
         
       if (draftsError) throw draftsError;
       
-      // Combinar solicitudes y borradores
-      const allApplications = [
-        // Mapear solicitudes completas
-        ...applications.map(app => ({
-          id: app.id,
-          clientName: app.client_name,
-          product: app.product,
-          amount: new Intl.NumberFormat('es-GT', {
-            style: 'currency',
-            currency: 'GTQ'
-          }).format(app.amount_requested),
-          status: app.status,
-          date: new Date(app.created_at).toISOString().split('T')[0],
-          progress: app.progress_step || 1,
-          stage: app.current_stage || 'Información Personal',
-          isDraft: app.is_draft || false,
-          draftData: app.draft_data
-        })),
-        // Mapear borradores - MOSTRAR COMO "PENDING" (ACTIVAS) VISUALMENTE
-        ...drafts.map(draft => ({
-          id: draft.id,
-          clientName: draft.client_name || 'Sin nombre',
-          product: 'Préstamo Personal', // Default product for drafts
-          amount: 'Por definir',
-          status: 'pending', // Mostrar como activas en lugar de draft
-          date: new Date(draft.updated_at).toISOString().split('T')[0],
-          progress: draft.last_step || 0,
-          stage: getStageNameFromStep(draft.last_step || 0),
-          isDraft: true,
-          draftData: draft.draft_data,
-          lastStep: draft.last_step,
-          lastSubStep: draft.last_sub_step
-        }))
-      ];
+      // Combinar solicitudes y borradores con timestamps para ordenamiento correcto
+      const applicationItems = applications.map(app => ({
+        id: app.id,
+        clientName: app.client_name,
+        product: app.product,
+        amount: new Intl.NumberFormat('es-GT', {
+          style: 'currency',
+          currency: 'GTQ'
+        }).format(app.amount_requested),
+        status: app.status,
+        date: new Date(app.created_at).toISOString().split('T')[0],
+        progress: app.progress_step || 1,
+        stage: app.current_stage || 'Información Personal',
+        isDraft: false,
+        draftData: app.draft_data,
+        timestamp: new Date(app.created_at).getTime() // Para ordenamiento
+      }));
+      
+      const draftItems = drafts.map(draft => ({
+        id: draft.id,
+        clientName: draft.client_name || 'Sin nombre',
+        product: 'Préstamo Personal',
+        amount: 'Por definir',
+        status: 'pending',
+        date: new Date(draft.updated_at).toISOString().split('T')[0],
+        progress: draft.last_step || 0,
+        stage: getStageNameFromStep(draft.last_step || 0),
+        isDraft: true,
+        draftData: draft.draft_data,
+        lastStep: draft.last_step,
+        lastSubStep: draft.last_sub_step,
+        timestamp: new Date(draft.updated_at).getTime() // Para ordenamiento
+      }));
+      
+      // Combinar y ordenar por timestamp más reciente primero
+      const allApplications = [...applicationItems, ...draftItems]
+        .sort((a, b) => b.timestamp - a.timestamp)
+        .map(({ timestamp, ...item }) => item); // Remover timestamp del resultado final
       
       return allApplications;
     },
