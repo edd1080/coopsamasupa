@@ -91,18 +91,20 @@ export const useApplications = () => {
           isDraft: app.is_draft || false,
           draftData: app.draft_data
         })),
-        // Mapear borradores
+        // Mapear borradores - MOSTRAR COMO "PENDING" (ACTIVAS) VISUALMENTE
         ...drafts.map(draft => ({
           id: draft.id,
           clientName: draft.client_name || 'Sin nombre',
-          product: 'Borrador',
+          product: 'Préstamo Personal', // Default product for drafts
           amount: 'Por definir',
-          status: 'draft',
+          status: 'pending', // Mostrar como activas en lugar de draft
           date: new Date(draft.updated_at).toISOString().split('T')[0],
           progress: draft.last_step || 0,
-          stage: 'Borrador en progreso',
+          stage: getStageNameFromStep(draft.last_step || 0),
           isDraft: true,
-          draftData: draft.draft_data
+          draftData: draft.draft_data,
+          lastStep: draft.last_step,
+          lastSubStep: draft.last_sub_step
         }))
       ];
       
@@ -110,6 +112,19 @@ export const useApplications = () => {
     },
     enabled: !!user?.id,
   });
+};
+
+// Helper function to get stage name from step number
+const getStageNameFromStep = (step: number): string => {
+  const stageNames = {
+    0: 'Información Personal',
+    1: 'Información Financiera',
+    2: 'Información del Negocio',
+    3: 'Fiadores y Referencias',
+    4: 'Documentos',
+    5: 'Revisión Final'
+  };
+  return stageNames[step as keyof typeof stageNames] || 'En progreso';
 };
 
 // Hook para crear precalificación

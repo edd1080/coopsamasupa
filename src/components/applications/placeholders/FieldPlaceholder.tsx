@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, Plus } from 'lucide-react';
+import { ChevronRight, Plus, AlertCircle } from 'lucide-react';
 
 interface FieldPlaceholderProps {
   label: string;
@@ -10,6 +10,7 @@ interface FieldPlaceholderProps {
   onEdit?: () => void;
   showEditButton?: boolean;
   className?: string;
+  required?: boolean;
 }
 
 const FieldPlaceholder: React.FC<FieldPlaceholderProps> = ({
@@ -18,19 +19,28 @@ const FieldPlaceholder: React.FC<FieldPlaceholderProps> = ({
   placeholder = "Por ingresar",
   onEdit,
   showEditButton = true,
-  className = ""
+  className = "",
+  required = false
 }) => {
   const hasValue = value !== null && value !== undefined && value !== '';
+  const showRequiredIndicator = required && !hasValue;
   
   return (
     <div className={`space-y-2 ${className}`}>
       <div className="flex justify-between items-start">
         <div className="flex-1">
-          <p className="text-sm text-muted-foreground">{label}</p>
+          <div className="flex items-center gap-1">
+            <p className="text-sm text-muted-foreground">{label}</p>
+            {showRequiredIndicator && (
+              <AlertCircle className="h-3 w-3 text-amber-500" />
+            )}
+          </div>
           {hasValue ? (
             <p className="font-medium">{value}</p>
           ) : (
-            <p className="text-muted-foreground italic">{placeholder}</p>
+            <p className={`italic ${showRequiredIndicator ? 'text-amber-600' : 'text-muted-foreground'}`}>
+              {showRequiredIndicator ? 'Requerido - Por ingresar' : placeholder}
+            </p>
           )}
         </div>
         {showEditButton && onEdit && (
@@ -38,9 +48,9 @@ const FieldPlaceholder: React.FC<FieldPlaceholderProps> = ({
             variant="ghost"
             size="sm"
             onClick={onEdit}
-            className="text-xs"
+            className={`text-xs ${showRequiredIndicator ? 'text-amber-600 hover:text-amber-700' : ''}`}
           >
-            {hasValue ? 'Editar' : 'Completar'}
+            {hasValue ? 'Editar' : (showRequiredIndicator ? 'Completar' : 'Agregar')}
             <ChevronRight className="h-3 w-3 ml-1" />
           </Button>
         )}

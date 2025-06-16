@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 import { useSaveDraft } from '@/hooks/useDraftActions';
+import { useIncrementalSave } from '@/hooks/useIncrementalSave';
 
 // Generate a random 6-digit number for application IDs
 const generateRandomId = () => {
@@ -147,11 +148,27 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
   const [guarantorFormStep, setGuarantorFormStep] = useState(0); // 0: basic info, 1: financial info
   const [isInGuarantorForm, setIsInGuarantorForm] = useState(false);
   
-  // Integrar el hook useSaveDraft
+  // Integrar el hook useSaveDraft y useIncrementalSave
   const saveDraftMutation = useSaveDraft();
   
-  // Check if there are unsaved changes
-  const hasUnsavedChanges = JSON.stringify(formData) !== JSON.stringify(lastSavedData);
+  // Import the useIncrementalSave hook
+  const { saveIncremental, updateLastSavedData, hasUnsavedChanges: hasIncrementalChanges } = useIncrementalSave({
+    currentData: formData,
+    onSave: async (dataToSave: any, hasChanges: boolean) => {
+      if (hasChanges) {
+        await saveDraftMutation.mutateAsync({
+          formData,
+          currentStep: activeStep,
+          currentSubStep: subStep,
+          isIncremental: true,
+          changedData: dataToSave
+        });
+      }
+    }
+  });
+  
+  // Check if there are unsaved changes (using incremental save logic)
+  const hasUnsavedChanges = hasIncrementalChanges();
 
   // Mapping from sectionId to step index
   const sectionIdToStepIndex = {
@@ -352,18 +369,10 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
   };
   
   const handleSaveDraft = async () => {
-    console.log('💾 Saving draft with data:', formData);
-    console.log('📍 Current step:', activeStep, 'Sub-step:', subStep);
+    console.log('💾 Saving draft with incremental save...');
     
     try {
-      await saveDraftMutation.mutateAsync({
-        formData,
-        currentStep: activeStep,
-        currentSubStep: subStep
-      });
-      
-      // Update last saved data to reflect successful save
-      setLastSavedData(formData);
+      await saveIncremental(false); // Use incremental save
       
       // Mark current section as complete if it has sufficient data
       if (checkSectionCompletion()) {
@@ -414,7 +423,7 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
     
     if (save) {
       try {
-        await handleSaveDraft();
+        await saveIncremental(true); // Force full save on exit
         console.log('✅ Draft saved before exit');
       } catch (error) {
         console.error('❌ Failed to save draft before exit:', error);

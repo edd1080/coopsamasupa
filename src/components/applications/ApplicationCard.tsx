@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -19,6 +18,7 @@ interface Application {
   date: string;
   progress: number;
   stage: string;
+  isDraft?: boolean;
 }
 
 interface ApplicationCardProps {
@@ -51,7 +51,16 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
     });
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, isDraft?: boolean) => {
+    // Para borradores, mostrar como "Activo" pero con indicador visual sutil
+    if (isDraft) {
+      return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 flex items-center gap-1 text-sm px-3 py-1">
+          <BarChart3 className="h-4 w-4" />
+          <span>Activo</span>
+          <span className="text-xs opacity-70">(Borrador)</span>
+        </Badge>;
+    }
+    
     switch (status) {
       case 'pending':
         return <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 flex items-center gap-1 text-sm px-3 py-1">
@@ -156,7 +165,7 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
                     </DropdownMenuContent>
                   </DropdownMenu>
                   
-                  {getStatusBadge(application.status)}
+                  {getStatusBadge(application.status, (application as any).isDraft)}
                 </div>
               </div>
               
