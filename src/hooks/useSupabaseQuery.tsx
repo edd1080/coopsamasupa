@@ -1,7 +1,8 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { sanitizeObjectData } from '@/utils/inputValidation';
+import { sanitizeConsoleOutput } from '@/utils/securityUtils';
 
 // Hook para obtener el perfil del agente
 export const useAgentProfile = () => {
@@ -12,13 +13,20 @@ export const useAgentProfile = () => {
     queryFn: async () => {
       if (!user?.id) throw new Error('Usuario no autenticado');
       
+      console.log('🔍 Fetching agent profile for user:', sanitizeConsoleOutput({ userId: user.id }));
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
         
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error fetching agent profile:', sanitizeConsoleOutput(error));
+        throw error;
+      }
+      
+      console.log('✅ Agent profile fetched successfully');
       return data;
     },
     enabled: !!user?.id,
@@ -34,13 +42,20 @@ export const usePrequalifications = () => {
     queryFn: async () => {
       if (!user?.id) throw new Error('Usuario no autenticado');
       
+      console.log('🔍 Fetching prequalifications for user:', sanitizeConsoleOutput({ userId: user.id }));
+      
       const { data, error } = await supabase
         .from('prequalifications')
         .select('*')
         .eq('agent_id', user.id)
         .order('created_at', { ascending: false });
         
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error fetching prequalifications:', sanitizeConsoleOutput(error));
+        throw error;
+      }
+      
+      console.log('✅ Prequalifications fetched successfully:', data?.length || 0, 'records');
       return data;
     },
     enabled: !!user?.id,
@@ -128,7 +143,7 @@ const getStageNameFromStep = (step: number): string => {
   return stageNames[step as keyof typeof stageNames] || 'En progreso';
 };
 
-// Hook para crear precalificación en Supabase
+// Hook para crear precalificación en Supabase con validación mejorada
 export const useCreatePrequalification = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -137,28 +152,38 @@ export const useCreatePrequalification = () => {
     mutationFn: async (data: any) => {
       if (!user?.id) throw new Error('Usuario no autenticado');
       
+      console.log('💾 Creating prequalification for user:', sanitizeConsoleOutput({ userId: user.id }));
+      
+      // Sanitize input data before storing
+      const sanitizedData = sanitizeObjectData(data);
+      
       const { data: result, error } = await supabase
         .from('prequalifications')
         .insert({
           agent_id: user.id,
-          client_name: data.nombre_completo,
-          client_dpi: data.dpi,
-          client_phone: data.telefono,
-          economic_activity: data.actividad_economica,
-          monthly_income: data.ingreso_mensual,
-          credit_purpose: data.destino_credito,
-          requested_amount: data.monto_solicitado,
-          credit_history: data.historial,
-          evaluation_result: data.result,
-          evaluation_status: data.result.status,
-          can_proceed: data.result.canProceed,
-          requires_additional_data: data.result.requiresAdditionalData,
-          evaluation_reason: data.result.reason
+          client_name: sanitizedData.nombre_completo,
+          client_dpi: sanitizedData.dpi,
+          client_phone: sanitizedData.telefono,
+          economic_activity: sanitizedData.actividad_economica,
+          monthly_income: sanitizedData.ingreso_mensual,
+          credit_purpose: sanitizedData.destino_credito,
+          requested_amount: sanitizedData.monto_solicitado,
+          credit_history: sanitizedData.historial,
+          evaluation_result: sanitizedData.result,
+          evaluation_status: sanitizedData.result.status,
+          can_proceed: sanitizedData.result.canProceed,
+          requires_additional_data: sanitizedData.result.requiresAdditionalData,
+          evaluation_reason: sanitizedData.result.reason
         })
         .select()
         .single();
         
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error creating prequalification:', sanitizeConsoleOutput(error));
+        throw error;
+      }
+      
+      console.log('✅ Prequalification created successfully');
       return result;
     },
     onSuccess: () => {
@@ -167,7 +192,7 @@ export const useCreatePrequalification = () => {
   });
 };
 
-// Hook para crear solicitud
+// Hook para crear solicitud con validación mejorada
 export const useCreateApplication = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -176,16 +201,26 @@ export const useCreateApplication = () => {
     mutationFn: async (data: any) => {
       if (!user?.id) throw new Error('Usuario no autenticado');
       
+      console.log('💾 Creating application for user:', sanitizeConsoleOutput({ userId: user.id }));
+      
+      // Sanitize input data before storing
+      const sanitizedData = sanitizeObjectData(data);
+      
       const { data: result, error } = await supabase
         .from('applications')
         .insert({
-          ...data,
+          ...sanitizedData,
           agent_id: user.id
         })
         .select()
         .single();
         
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error creating application:', sanitizeConsoleOutput(error));
+        throw error;
+      }
+      
+      console.log('✅ Application created successfully');
       return result;
     },
     onSuccess: () => {

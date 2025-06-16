@@ -3,8 +3,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from "@/hooks/use-toast";
+import { sanitizeObjectData, validateTextInput } from '@/utils/inputValidation';
+import { sanitizeConsoleOutput, formRateLimit } from '@/utils/securityUtils';
 
-// Hook para guardar borrador con soporte incremental
+// Hook para guardar borrador con soporte incremental y validación mejorada
 export const useSaveDraft = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -26,29 +28,45 @@ export const useSaveDraft = () => {
     }) => {
       if (!user?.id) throw new Error('Usuario no autenticado');
       
-      console.log('💾 useSaveDraft: Saving draft', { 
+      // Rate limiting check
+      if (!formRateLimit.isAllowed(user.id)) {
+        const remainingTime = Math.ceil(formRateLimit.getRemainingTime(user.id) / 1000 / 60);
+        throw new Error(`Demasiados intentos. Espera ${remainingTime} minutos antes de intentar de nuevo.`);
+      }
+      
+      console.log('💾 useSaveDraft: Saving draft', sanitizeConsoleOutput({ 
         isIncremental, 
-        formData: isIncremental ? changedData : formData, 
         currentStep, 
-        currentSubStep 
-      });
+        currentSubStep,
+        userId: user.id
+      }));
+      
+      // Sanitize all input data
+      const sanitizedFormData = sanitizeObjectData(formData);
+      const sanitizedChangedData = changedData ? sanitizeObjectData(changedData) : null;
       
       // Construir el nombre del cliente desde diferentes fuentes posibles
-      const clientName = formData?.fullName ||
-                        formData?.identification?.fullName || 
-                        formData?.personalInfo?.fullName || 
-                        formData?.basicData?.fullName ||
-                        (formData?.firstName && formData?.lastName ? `${formData.firstName} ${formData.lastName}` : '') ||
-                        (formData?.identification?.firstName && formData?.identification?.lastName ? `${formData.identification.firstName} ${formData.identification.lastName}` : '') ||
-                        formData?.firstName || 
+      const clientName = sanitizedFormData?.fullName ||
+                        sanitizedFormData?.identification?.fullName || 
+                        sanitizedFormData?.personalInfo?.fullName || 
+                        sanitizedFormData?.basicData?.fullName ||
+                        (sanitizedFormData?.firstName && sanitizedFormData?.lastName ? `${sanitizedFormData.firstName} ${sanitizedFormData.lastName}` : '') ||
+                        (sanitizedFormData?.identification?.firstName && sanitizedFormData?.identification?.lastName ? `${sanitizedFormData.identification.firstName} ${sanitizedFormData.identification.lastName}` : '') ||
+                        sanitizedFormData?.firstName || 
                         'Sin nombre';
       
-      console.log('👤 Extracted client name:', clientName);
+      // Validate client name
+      const nameValidation = validateTextInput(clientName, 'Nombre del cliente', 2, 100);
+      if (!nameValidation.isValid) {
+        throw new Error(nameValidation.errors[0]);
+      }
+      
+      console.log('👤 Extracted and validated client name:', sanitizeConsoleOutput({ clientName }));
       
       // Para guardado incremental, primero obtener datos existentes
-      let finalDraftData = isIncremental && changedData ? changedData : formData;
+      let finalDraftData = isIncremental && sanitizedChangedData ? sanitizedChangedData : sanitizedFormData;
       
-      if (isIncremental && changedData) {
+      if (isIncremental && sanitizedChangedData) {
         // Buscar borrador existente para combinar datos
         const { data: existingDraft } = await supabase
           .from('application_drafts')
@@ -62,12 +80,12 @@ export const useSaveDraft = () => {
           // Combinar datos existentes con cambios
           finalDraftData = {
             ...existingDraft.draft_data,
-            ...changedData
+            ...sanitizedChangedData
           };
           console.log('🔄 Combined existing draft with changes');
         } else {
           // Si no hay borrador existente, usar datos completos
-          finalDraftData = formData;
+          finalDraftData = sanitizedFormData;
           console.log('📝 No existing draft found, using full data');
         }
       }
@@ -81,7 +99,7 @@ export const useSaveDraft = () => {
         updated_at: new Date().toISOString()
       };
       
-      console.log('📦 Draft payload:', draftPayload);
+      console.log('📦 Draft payload prepared');
       
       const { data, error } = await supabase
         .from('application_drafts')
@@ -90,11 +108,11 @@ export const useSaveDraft = () => {
         .single();
         
       if (error) {
-        console.error('❌ Supabase error:', error);
+        console.error('❌ Supabase error:', sanitizeConsoleOutput(error));
         throw error;
       }
       
-      console.log('✅ Draft saved successfully:', data);
+      console.log('✅ Draft saved successfully');
       return data;
     },
     onSuccess: (data, variables) => {
@@ -113,12 +131,12 @@ export const useSaveDraft = () => {
       });
     },
     onError: (error, variables) => {
-      console.error('❌ Error saving draft:', error);
+      console.error('❌ Error saving draft:', sanitizeConsoleOutput(error));
       const saveType = variables.isIncremental ? 'guardado incremental' : 'borrador';
       
       toast({
         title: `Error al guardar ${saveType}`,
-        description: "No se pudo guardar el progreso. Inténtalo de nuevo.",
+        description: error.message || "No se pudo guardar el progreso. Inténtalo de nuevo.",
         variant: "destructive",
         duration: 3000
       });
