@@ -45,9 +45,9 @@ const Applications = () => {
     if (e) e.stopPropagation();
     
     // Determinar si es borrador basándose en el tipo de aplicación
-    // Los borradores tienen is_draft: true o no tienen status de aplicación completa
+    // Los borradores tienen isDraft: true
     const application = applications.find(app => app.id === id);
-    const isDraft = application?.is_draft || application?.status === undefined;
+    const isDraft = application?.isDraft || false;
     
     setSelectedApplication({ id, clientName, isDraft });
     setDeleteDialogOpen(true);
