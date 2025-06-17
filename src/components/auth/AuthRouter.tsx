@@ -48,6 +48,7 @@ const AuthRouter = () => {
         <Route path="/applications/:id/guarantors/new" element={<RequestForm />} />
         <Route path="/applications/:id/guarantors/:guarantorId" element={<ApplicationDetails />} />
         <Route path="/applications/:id/guarantors/:guarantorId/edit" element={<RequestForm />} />
+        <Route path="/request-form/:id" element={<RequestForm />} />
         <Route path="/prequalifications" element={<Prequalifications />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/settings/personal-info" element={<PersonalInfo />} />
