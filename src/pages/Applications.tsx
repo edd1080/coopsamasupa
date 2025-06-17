@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
@@ -20,7 +19,7 @@ const Applications = () => {
   const [activeStatusFilter, setActiveStatusFilter] = useState('all');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [cancelBottomSheetOpen, setCancelBottomSheetOpen] = useState(false);
-  const [selectedApplication, setSelectedApplication] = useState<{ id: string; clientName: string } | null>(null);
+  const [selectedApplication, setSelectedApplication] = useState<{ id: string; clientName: string; isDraft?: boolean } | null>(null);
   
   // Obtener aplicaciones reales de la base de datos
   const { data: applications = [], isLoading, error } = useApplications();
@@ -44,13 +43,22 @@ const Applications = () => {
 
   const handleDeleteApplication = (id: string, clientName: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    setSelectedApplication({ id, clientName });
+    
+    // Determinar si es borrador basándose en el tipo de aplicación
+    // Los borradores tienen is_draft: true o no tienen status de aplicación completa
+    const application = applications.find(app => app.id === id);
+    const isDraft = application?.is_draft || application?.status === undefined;
+    
+    setSelectedApplication({ id, clientName, isDraft });
     setDeleteDialogOpen(true);
   };
 
   const confirmDelete = () => {
     if (selectedApplication) {
-      deleteMutation.mutate(selectedApplication.id);
+      deleteMutation.mutate({ 
+        applicationId: selectedApplication.id, 
+        isDraft: selectedApplication.isDraft 
+      });
       setDeleteDialogOpen(false);
       setSelectedApplication(null);
     }
@@ -117,9 +125,9 @@ const Applications = () => {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar solicitud?</AlertDialogTitle>
+            <AlertDialogTitle>¿Eliminar {selectedApplication?.isDraft ? 'borrador' : 'solicitud'}?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. La solicitud de {selectedApplication?.clientName} será eliminada permanentemente del sistema.
+              Esta acción no se puede deshacer. {selectedApplication?.isDraft ? 'El borrador' : 'La solicitud'} de {selectedApplication?.clientName} será eliminado permanentemente del sistema.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
