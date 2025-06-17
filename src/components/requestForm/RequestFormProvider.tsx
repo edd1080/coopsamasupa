@@ -1,9 +1,11 @@
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 import { useSaveDraft } from '@/hooks/useDraftActions';
 import { useIncrementalSave } from '@/hooks/useIncrementalSave';
 import { useDraftFormData } from '@/hooks/useApplicationData';
+import { Loader2 } from 'lucide-react';
 
 // Generate a random 6-digit number for application IDs
 const generateRandomId = () => {
@@ -78,6 +80,10 @@ interface FormContextType {
   removeGuarantor: (index: number) => void;
   isInGuarantorForm: boolean;
   setIsInGuarantorForm: React.Dispatch<React.SetStateAction<boolean>>;
+  
+  // Loading states
+  isLoading: boolean;
+  loadingError: string | null;
 }
 
 export const FormContext = createContext<FormContextType | undefined>(undefined);
@@ -123,6 +129,8 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const { toast } = useToast();
+  
+  // State management
   const [activeStep, setActiveStep] = useState(0);
   const [subStep, setSubStep] = useState(0);
   const [formData, setFormData] = useState<Record<string, any>>({});
@@ -137,23 +145,24 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
     review: 'pending',
   });
   const [showExitDialog, setShowExitDialog] = useState(false);
-  const [toastShown, setToastShown] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
   const [hasFatca, setHasFatca] = useState(false);
   const [isPep, setIsPep] = useState(false);
   const [agentComments, setAgentComments] = useState("");
-  const [lastSavedData, setLastSavedData] = useState<Record<string, any>>({});
+  const [loadingError, setLoadingError] = useState<string | null>(null);
   
   // New guarantor states
   const [guarantors, setGuarantors] = useState<GuarantorData[]>([createEmptyGuarantor(), createEmptyGuarantor()]);
   const [currentGuarantorIndex, setCurrentGuarantorIndex] = useState(0);
-  const [guarantorFormStep, setGuarantorFormStep] = useState(0); // 0: basic info, 1: financial info
+  const [guarantorFormStep, setGuarantorFormStep] = useState(0);
   const [isInGuarantorForm, setIsInGuarantorForm] = useState(false);
   
-  // Integrar el hook useSaveDraft y useIncrementalSave
+  // Hooks
   const saveDraftMutation = useSaveDraft();
-  
-  // Cargar datos reales si estamos editando
   const { data: draftData, isLoading: isDraftLoading, error: draftError } = useDraftFormData(id || '');
+  
+  // Loading state - only show loading if we're fetching draft data
+  const isLoading = isDraftLoading && !!id;
   
   // Import the useIncrementalSave hook
   const { saveIncremental, updateLastSavedData, hasUnsavedChanges: hasIncrementalChanges } = useIncrementalSave({
@@ -171,7 +180,7 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
     }
   });
   
-  // Check if there are unsaved changes (using incremental save logic)
+  // Check if there are unsaved changes
   const hasUnsavedChanges = hasIncrementalChanges();
 
   // Mapping from sectionId to step index
@@ -194,10 +203,77 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
     'review': 'Revisión Final'
   };
 
+  // Initialize form data effect
   useEffect(() => {
     console.log('🏁 RequestFormProvider initializing...');
     console.log('📍 Current path:', location.pathname);
-    console.log('📝 Current active step:', steps[activeStep].id);
+    console.log('🔍 Draft ID:', id);
+    console.log('📊 Draft loading state:', { isDraftLoading, draftError: !!draftError });
+    
+    // If we don't have an ID, initialize with empty form
+    if (!id) {
+      console.log('✅ No ID provided, initializing empty form');
+      setDataLoaded(true);
+      setLoadingError(null);
+      return;
+    }
+    
+    // If we have an error loading the draft
+    if (draftError) {
+      console.error('❌ Error loading draft data:', draftError);
+      setLoadingError('No se pudo cargar el borrador. Iniciando solicitud nueva.');
+      setDataLoaded(true);
+      toast({
+        title: "Error cargando borrador",
+        description: "No se pudo cargar el borrador. Iniciando solicitud nueva.",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
+    
+    // If we have draft data, load it
+    if (draftData && !dataLoaded) {
+      console.log('📂 Loading draft data:', { id, clientName: draftData.client_name });
+      
+      try {
+        const loadedFormData = draftData.draft_data || {};
+        const clientName = draftData.client_name || 'Sin nombre';
+        
+        setFormData(loadedFormData);
+        setInitialFormData(loadedFormData);
+        setPersonName(clientName);
+        
+        // Restore step and sub-step
+        if (draftData.last_step !== undefined) {
+          setActiveStep(Math.max(0, Math.min(draftData.last_step, steps.length - 1)));
+        }
+        if (draftData.last_sub_step !== undefined) {
+          setSubStep(Math.max(0, draftData.last_sub_step));
+        }
+        
+        setDataLoaded(true);
+        setLoadingError(null);
+        
+        toast({
+          title: "Borrador cargado",
+          description: `Se ha cargado el borrador de ${clientName}`,
+          duration: 3000,
+          className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
+        });
+        
+        console.log('✅ Draft data loaded successfully');
+      } catch (error) {
+        console.error('❌ Error processing draft data:', error);
+        setLoadingError('Error procesando los datos del borrador');
+        setDataLoaded(true);
+      }
+    }
+  }, [id, draftData, draftError, toast, steps.length, dataLoaded]);
+  
+  // Handle navigation effect
+  useEffect(() => {
+    if (!dataLoaded) return;
     
     // Check if there's a sectionId in the navigation state
     const navigationState = location.state as { sectionId?: string } | null;
@@ -218,59 +294,24 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
         console.log(`✅ Navigated to section: ${navigationState.sectionId}, step index: ${targetStepIndex}`);
       }
     }
-    
-    // Si estamos editando un borrador existente, cargar sus datos REALES
-    if (id && draftData && !isDraftLoading && !draftError) {
-      console.log(`📂 Loading REAL draft data for ID: ${id}`);
-      
-      const loadedFormData = draftData.draft_data || {};
-      const clientName = draftData.client_name || 'Sin nombre';
-      
-      setFormData(loadedFormData);
-      setInitialFormData(loadedFormData);
-      setLastSavedData(loadedFormData);
-      setPersonName(clientName);
-      
-      // Restaurar paso y sub-paso
-      if (draftData.last_step !== undefined) {
-        setActiveStep(draftData.last_step);
-      }
-      if (draftData.last_sub_step !== undefined) {
-        setSubStep(draftData.last_sub_step);
-      }
-      
-      // Mostrar toast solo una vez si no estamos navegando a sección específica
-      if (!toastShown && !navigationState?.sectionId) {
-        toast({
-          title: "Borrador cargado",
-          description: `Se ha cargado el borrador de ${clientName}`,
-          duration: 3000,
-          className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
-        });
-        setToastShown(true);
-      }
-      
-      console.log('✅ Real draft data loaded successfully');
-    }
-    
-    // Mostrar error si hay problema cargando datos
-    if (draftError && id && !toastShown) {
-      console.error('❌ Error loading draft data:', draftError);
-      toast({
-        title: "Error cargando borrador",
-        description: "No se pudo cargar el borrador. Iniciando solicitud nueva.",
-        variant: "destructive",
-        duration: 3000,
-      });
-      setToastShown(true);
-    }
-  }, [id, draftData, isDraftLoading, draftError, navigate, activeStep, toast, toastShown, steps, location.state]);
+  }, [dataLoaded, location.state, toast]);
+  
+  // Loading component
+  if (isLoading || (!dataLoaded && !loadingError)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Cargando formulario...</p>
+        </div>
+      </div>
+    );
+  }
   
   // Check if current section has sufficient data to be marked as complete
   const checkSectionCompletion = () => {
     const currentSectionId = steps[activeStep].id;
     
-    // Basic validation - in a real app this would be more sophisticated
     switch (currentSectionId) {
       case 'identification':
         return !!(formData.fullName && formData.cui && formData.email && formData.creditPurpose);
@@ -279,7 +320,6 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
       case 'business':
         return !!(formData.businessType || formData.businessDescription);
       case 'guarantors':
-        // Check if we have at least 2 guarantors and all are completed
         return guarantors.length >= 2 && guarantors.every(g => g.basicInfoCompleted && g.financialInfoCompleted);
       case 'documents':
         return !!(formData.documentsUploaded);
@@ -304,7 +344,6 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
   
   // Handle sub-step navigation
   const handleSubNext = () => {
-    // Mark section as complete if it has sufficient data
     if (checkSectionCompletion()) {
       setSectionStatus(prev => ({ ...prev, [steps[activeStep].id]: 'complete' }));
     }
@@ -313,7 +352,6 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
       setSubStep(prev => prev + 1);
       console.log(`Moving to sub-step: ${subStep + 1} of section: ${steps[activeStep].id}`);
     } else {
-      // Move to next main section
       handleNext();
     }
     window.scrollTo(0, 0);
@@ -324,7 +362,6 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
       setSubStep(prev => prev - 1);
       console.log(`Moving back to sub-step: ${subStep - 1} of section: ${steps[activeStep].id}`);
     } else if (activeStep > 0) {
-      // Move to previous main section's last sub-step
       const prevStep = activeStep - 1;
       const prevSubSteps = getSubStepsForSection(prevStep);
       setActiveStep(prevStep);
@@ -337,7 +374,7 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
   const updateFormData = (field: string, value: any) => {
     setFormData(prev => {
       const newData = { ...prev, [field]: value };
-      console.log('📝 Form data updated:', { field, value, newData });
+      console.log('📝 Form data updated:', { field, value });
       return newData;
     });
     
@@ -353,21 +390,19 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
   
   const handleNext = () => {
     if (activeStep < steps.length - 1) {
-      // Mark current section as complete if it has data
       if (checkSectionCompletion()) {
         setSectionStatus(prev => ({ ...prev, [steps[activeStep].id]: 'complete' }));
       }
       setActiveStep(prev => prev + 1);
-      setSubStep(0); // Reset sub-step when moving to new section
+      setSubStep(0);
       console.log(`Moving to step: ${steps[activeStep + 1].id}`);
-      
       window.scrollTo(0, 0);
     }
   };
   
   const handleChangeSection = (index: number) => {
     setActiveStep(index);
-    setSubStep(0); // Reset sub-step when jumping to section
+    setSubStep(0);
     console.log(`Jumping to step: ${steps[index].id}`);
     window.scrollTo(0, 0);
   };
@@ -376,9 +411,8 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
     console.log('💾 Saving draft with incremental save...');
     
     try {
-      await saveIncremental(false); // Use incremental save
+      await saveIncremental(false);
       
-      // Mark current section as complete if it has sufficient data
       if (checkSectionCompletion()) {
         setSectionStatus(prev => ({ ...prev, [steps[activeStep].id]: 'complete' }));
       }
@@ -387,7 +421,6 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
       
     } catch (error) {
       console.error('❌ Error saving draft:', error);
-      // Error toast is already handled by the useSaveDraft hook
     }
   };
   
@@ -427,11 +460,10 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
     
     if (save) {
       try {
-        await saveIncremental(true); // Force full save on exit
+        await saveIncremental(true);
         console.log('✅ Draft saved before exit');
       } catch (error) {
         console.error('❌ Failed to save draft before exit:', error);
-        // Still proceed to exit even if save fails
       }
     }
     
@@ -451,7 +483,7 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
   };
   
   const removeGuarantor = (index: number) => {
-    if (guarantors.length > 2) { // Minimum 2 guarantors required
+    if (guarantors.length > 2) {
       setGuarantors(prev => prev.filter((_, i) => i !== index));
       if (currentGuarantorIndex >= guarantors.length - 1) {
         setCurrentGuarantorIndex(0);
@@ -491,8 +523,6 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
     isLastSubStep,
     getSubStepsForSection,
     hasUnsavedChanges,
-    
-    // New guarantor context values
     guarantors,
     setGuarantors,
     currentGuarantorIndex,
@@ -503,7 +533,9 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
     updateGuarantor,
     removeGuarantor,
     isInGuarantorForm,
-    setIsInGuarantorForm
+    setIsInGuarantorForm,
+    isLoading: isLoading || !dataLoaded,
+    loadingError
   };
 
   return (
