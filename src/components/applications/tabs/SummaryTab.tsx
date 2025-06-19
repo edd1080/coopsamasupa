@@ -29,33 +29,16 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
     return value !== null && value !== undefined && value !== '' && value !== 0;
   };
 
-  // Función mejorada para obtener valores de diferentes fuentes
-  const getSafeValue = (path: string, fallback: string = 'Por ingresar') => {
-    // Si application es un borrador, los datos están en application.data
+  // Función simplificada para obtener valores directamente del objeto de datos
+  const getSafeValue = (fieldName: string, fallback: string = 'Por ingresar') => {
+    // Obtener el objeto de datos correcto
     const dataSource = application?.data || application?.draft_data || application;
     
     if (!dataSource) return fallback;
     
-    const pathArray = path.split('.');
-    let current = dataSource;
-    
-    // También verificar en la raíz del objeto si no se encuentra en el path
-    if (pathArray.length === 2) {
-      const directValue = dataSource[pathArray[1]];
-      if (hasValue(directValue)) {
-        return directValue;
-      }
-    }
-    
-    for (const key of pathArray) {
-      if (current && typeof current === 'object' && key in current) {
-        current = current[key];
-      } else {
-        return fallback;
-      }
-    }
-    
-    return hasValue(current) ? current : fallback;
+    // Búsqueda directa en el nivel raíz
+    const value = dataSource[fieldName];
+    return hasValue(value) ? value : fallback;
   };
 
   // Función específica para obtener el nombre completo
@@ -64,24 +47,13 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
     
     if (!dataSource) return 'Por ingresar';
     
-    // Intentar diferentes fuentes para el nombre completo
-    const fullName = dataSource.fullName || 
-                     dataSource.identification?.fullName ||
-                     dataSource.personalInfo?.fullName ||
-                     dataSource.basicData?.fullName;
-    
+    // Intentar obtener el nombre completo directamente
+    const fullName = dataSource.fullName;
     if (hasValue(fullName)) return fullName;
     
     // Si no hay fullName, construir desde firstName y lastName
-    const firstName = dataSource.firstName || 
-                      dataSource.identification?.firstName ||
-                      dataSource.personalInfo?.firstName ||
-                      dataSource.basicData?.firstName;
-                      
-    const lastName = dataSource.lastName || 
-                     dataSource.identification?.lastName ||
-                     dataSource.personalInfo?.lastName ||
-                     dataSource.basicData?.lastName;
+    const firstName = dataSource.firstName;
+    const lastName = dataSource.lastName;
     
     if (hasValue(firstName) && hasValue(lastName)) {
       return `${firstName} ${lastName}`;
@@ -95,19 +67,29 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
     return 'Por ingresar';
   };
 
-  // Función para obtener información de la agencia
-  const getAgencyInfo = () => {
+  // Función para calcular gastos mensuales totales
+  const calculateMonthlyExpenses = () => {
     const dataSource = application?.data || application?.draft_data || application;
     
-    if (!dataSource) return 'Por ingresar';
+    if (!dataSource) return null;
     
-    const agency = dataSource.agency || 
-                   dataSource.identification?.agency ||
-                   dataSource.personalInfo?.agency ||
-                   dataSource.basicData?.agency ||
-                   dataSource.workInfo?.agency;
+    // Sumar todos los gastos individuales
+    const expenses = [
+      dataSource.rentExpense,
+      dataSource.foodExpense,
+      dataSource.transportExpense,
+      dataSource.servicesExpense,
+      dataSource.educationExpense,
+      dataSource.healthExpense,
+      dataSource.otherExpense
+    ];
     
-    return hasValue(agency) ? agency : 'Por ingresar';
+    const total = expenses.reduce((sum, expense) => {
+      const value = parseFloat(expense) || 0;
+      return sum + value;
+    }, 0);
+    
+    return total > 0 ? total : null;
   };
 
   return (
@@ -130,29 +112,29 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
               />
               <FieldPlaceholder
                 label="DPI"
-                value={getSafeValue('identification.cui') || getSafeValue('cui')}
+                value={getSafeValue('dpi')}
                 onEdit={() => onNavigateToSection('identification')}
                 required={true}
               />
               <FieldPlaceholder
                 label="NIT"
-                value={getSafeValue('identification.nit') || getSafeValue('nit')}
+                value={getSafeValue('nit')}
                 onEdit={() => onNavigateToSection('identification')}
               />
               <FieldPlaceholder
                 label="Teléfono"
-                value={getSafeValue('identification.phone') || getSafeValue('phone')}
+                value={getSafeValue('mobilePhone')}
                 onEdit={() => onNavigateToSection('identification')}
                 required={true}
               />
               <FieldPlaceholder
                 label="Email"
-                value={getSafeValue('identification.email') || getSafeValue('email')}
+                value={getSafeValue('email')}
                 onEdit={() => onNavigateToSection('identification')}
               />
               <FieldPlaceholder
                 label="Agencia"
-                value={getAgencyInfo()}
+                value={getSafeValue('agency')}
                 onEdit={() => onNavigateToSection('identification')}
               />
             </div>
@@ -170,18 +152,18 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
             <div className="space-y-3">
               <FieldPlaceholder
                 label="Ingresos Principales"
-                value={formatCurrency(getSafeValue('finances.primaryIncome', null) || getSafeValue('monthlyIncome', null))}
+                value={formatCurrency(getSafeValue('ingresoPrincipal', null))}
                 onEdit={() => onNavigateToSection('finances')}
                 required={true}
               />
               <FieldPlaceholder
                 label="Gastos Mensuales"
-                value={formatCurrency(getSafeValue('finances.totalExpenses', null) || getSafeValue('monthlyExpenses', null))}
+                value={formatCurrency(calculateMonthlyExpenses())}
                 onEdit={() => onNavigateToSection('finances')}
               />
               <FieldPlaceholder
                 label="Patrimonio Neto"
-                value={formatCurrency(getSafeValue('finances.netWorth', null) || getSafeValue('netWorth', null))}
+                value="Por ingresar"
                 onEdit={() => onNavigateToSection('finances')}
               />
             </div>
@@ -199,17 +181,17 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
             <div className="space-y-3">
               <FieldPlaceholder
                 label="Situación Laboral"
-                value={getSafeValue('work.employmentStatus') || getSafeValue('employmentStatus')}
+                value={getSafeValue('occupation')}
                 onEdit={() => onNavigateToSection('business')}
               />
               <FieldPlaceholder
                 label="Empresa/Negocio"
-                value={getSafeValue('work.companyName') || getSafeValue('companyName') || getSafeValue('businessName')}
+                value={getSafeValue('companyName') || getSafeValue('businessName')}
                 onEdit={() => onNavigateToSection('business')}
               />
               <FieldPlaceholder
                 label="Experiencia"
-                value={getSafeValue('work.yearsEmployed') !== 'Por ingresar' ? `${getSafeValue('work.yearsEmployed')} años` : 'Por ingresar'}
+                value={getSafeValue('experienceYears') !== 'Por ingresar' ? `${getSafeValue('experienceYears')} años` : 'Por ingresar'}
                 onEdit={() => onNavigateToSection('business')}
               />
             </div>
@@ -229,8 +211,8 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
             <div className="text-center p-3 bg-background rounded-md">
               <p className="text-xs text-muted-foreground mb-1">Monto Solicitado</p>
               <p className="font-bold text-lg">
-                {getSafeValue('creditRequest.loanAmount') !== 'Por ingresar' 
-                  ? formatCurrency(getSafeValue('creditRequest.loanAmount', null) || getSafeValue('requestedAmount', null)) || "Por definir"
+                {getSafeValue('requestedAmount') !== 'Por ingresar' 
+                  ? formatCurrency(getSafeValue('requestedAmount', null)) || "Por definir"
                   : "Por definir"
                 }
               </p>
@@ -238,8 +220,8 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
             <div className="text-center p-3 bg-background rounded-md">
               <p className="text-xs text-muted-foreground mb-1">Plazo</p>
               <p className="font-bold text-lg">
-                {getSafeValue('creditRequest.termMonths') !== 'Por ingresar' 
-                  ? `${getSafeValue('creditRequest.termMonths') || getSafeValue('termMonths')} meses`
+                {getSafeValue('termMonths') !== 'Por ingresar' 
+                  ? `${getSafeValue('termMonths')} meses`
                   : "Por definir"
                 }
               </p>
@@ -247,13 +229,13 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
             <div className="text-center p-3 bg-background rounded-md">
               <p className="text-xs text-muted-foreground mb-1">Tipo de Crédito</p>
               <p className="font-bold text-sm">
-                {getSafeValue('creditRequest.creditType', getSafeValue('creditType', 'Por definir'))}
+                {getSafeValue('creditType', 'Por definir')}
               </p>
             </div>
             <div className="text-center p-3 bg-background rounded-md">
               <p className="text-xs text-muted-foreground mb-1">Propósito</p>
               <p className="font-bold text-sm">
-                {getSafeValue('creditRequest.purpose', getSafeValue('creditPurpose', 'Por definir'))}
+                {getSafeValue('creditPurpose', 'Por definir')}
               </p>
             </div>
           </div>
