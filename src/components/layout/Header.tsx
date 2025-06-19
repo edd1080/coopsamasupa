@@ -44,7 +44,7 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, onExitFormCl
 
   const getPageTitle = () => {
     // Títulos específicos para cada pantalla principal
-    if (location.pathname === '/') return "homepage-logo"; // Identificador especial para logo
+    if (location.pathname === '/') return "Coopsama App";
     if (location.pathname === '/applications') return "Solicitudes";
     if (location.pathname === '/prequalifications') return "Precalificación";
     if (location.pathname === '/settings') return "Ajustes";
@@ -78,9 +78,9 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, onExitFormCl
 
   return (
     <header className="bg-background border-b border-border/40 sticky top-0 z-40 w-full backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container grid grid-cols-3 h-14 items-center px-4">
-        {/* Columna Izquierda - Botón Atrás */}
-        <div className="flex justify-start">
+      <div className="container flex h-14 items-center justify-between px-4">
+        {/* Left side - Back button + Title */}
+        <div className="flex items-center gap-2">
           {!isMainPage && (
             <Button
               variant="ghost"
@@ -91,28 +91,18 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, onExitFormCl
               <ArrowLeft className="h-4 w-4" />
             </Button>
           )}
+          
+          {/* Title aligned to the left */}
+          <div className="flex flex-col justify-center min-h-[32px]">
+            <h1 className="text-lg font-semibold leading-tight">{getPageTitle()}</h1>
+            {getSubtitle() && (
+              <p className="text-xs text-muted-foreground leading-tight">{getSubtitle()}</p>
+            )}
+          </div>
         </div>
 
-        {/* Columna Central - Logo o Título Centrado */}
-        <div className="flex items-center justify-center min-h-[32px]">
-          {location.pathname === '/' ? (
-            <img 
-              src="/lovable-uploads/9f6abc46-b5d3-4c4e-8dca-83c77428c52e.png" 
-              alt="COOPSAMA"
-              className="h-8 w-auto object-contain"
-            />
-          ) : (
-            <>
-              <h1 className="text-lg font-semibold leading-tight text-center">{getPageTitle()}</h1>
-              {getSubtitle() && (
-                <p className="text-xs text-muted-foreground leading-tight text-center">{getSubtitle()}</p>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* Columna Derecha - Botones de Acción */}
-        <div className="flex items-center justify-end gap-2">
+        {/* Right side - Actions */}
+        <div className="flex items-center gap-2">
           {/* Botón X para formularios */}
           {isFormPage && onExitFormClick && (
             <Button
