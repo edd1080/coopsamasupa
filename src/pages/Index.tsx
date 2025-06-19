@@ -17,16 +17,18 @@ const Index = () => {
   const { data: profile, isLoading: profileLoading } = useUserProfile();
   const { data: metrics, isLoading: metricsLoading } = useApplicationMetrics();
 
-  // Determinar el saludo inclusivo y nombre
+  // Determinar el saludo con nombre completo
   const getGreeting = () => {
     if (profileLoading) return 'Cargando...';
     
-    // Extraer el primer nombre para el saludo
-    const firstName = profile?.first_name || 
-                     (profile?.full_name ? profile.full_name.split(' ')[0] : null);
+    // Priorizar mostrar el nombre completo
+    if (profile?.full_name) {
+      return `¡Hola, ${profile.full_name}!`;
+    }
     
-    if (firstName) {
-      return `¡Hola, ${firstName}!`;
+    // Fallback al primer nombre si no hay nombre completo
+    if (profile?.first_name) {
+      return `¡Hola, ${profile.first_name}!`;
     }
     
     return '¡Hola!';
