@@ -1,5 +1,4 @@
 
-
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -45,7 +44,7 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, onExitFormCl
 
   const getPageTitle = () => {
     // Títulos específicos para cada pantalla principal
-    if (location.pathname === '/') return "Coopsama App";
+    if (location.pathname === '/') return "homepage-logo"; // Identificador especial para logo
     if (location.pathname === '/applications') return "Solicitudes";
     if (location.pathname === '/prequalifications') return "Precalificación";
     if (location.pathname === '/settings') return "Ajustes";
@@ -94,11 +93,21 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, onExitFormCl
           )}
         </div>
 
-        {/* Columna Central - Título Centrado */}
-        <div className="flex flex-col items-center justify-center min-h-[32px]">
-          <h1 className="text-lg font-semibold leading-tight text-center">{getPageTitle()}</h1>
-          {getSubtitle() && (
-            <p className="text-xs text-muted-foreground leading-tight text-center">{getSubtitle()}</p>
+        {/* Columna Central - Logo o Título Centrado */}
+        <div className="flex items-center justify-center min-h-[32px]">
+          {location.pathname === '/' ? (
+            <img 
+              src="/lovable-uploads/41e78aef-af4c-4468-83e9-ca509debd9cb.png" 
+              alt="COOPSAMA"
+              className="h-8 w-auto object-contain"
+            />
+          ) : (
+            <>
+              <h1 className="text-lg font-semibold leading-tight text-center">{getPageTitle()}</h1>
+              {getSubtitle() && (
+                <p className="text-xs text-muted-foreground leading-tight text-center">{getSubtitle()}</p>
+              )}
+            </>
           )}
         </div>
 
@@ -135,4 +144,3 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, onExitFormCl
 };
 
 export default Header;
-
