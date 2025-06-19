@@ -1,16 +1,14 @@
 
 import React, { useState } from 'react';
-import { ChevronDown, CheckCircle, X } from 'lucide-react';
+import { ChevronDown, CheckCircle } from 'lucide-react';
 import { useFormContext } from './RequestFormProvider';
 import { steps } from './formSteps';
-import { Button } from '@/components/ui/button';
 
 const DynamicFormHeader: React.FC = () => {
   const {
     activeStep,
     handleChangeSection,
-    sectionStatus,
-    handleShowExitDialog
+    sectionStatus
   } = useFormContext();
 
   const [isExpanded, setIsExpanded] = useState(false);
@@ -52,7 +50,7 @@ const DynamicFormHeader: React.FC = () => {
   return (
     <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border">
       <div className="flex items-center">
-        {/* Full width clickable title and step info */}
+        {/* Full width clickable title and step info - Removed X button */}
         <div className="w-full relative">
           <button 
             onClick={toggleExpanded} 
@@ -110,17 +108,6 @@ const DynamicFormHeader: React.FC = () => {
             </div>
           )}
         </div>
-
-        {/* Exit button - Restored X button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleShowExitDialog}
-          className="ml-2 h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
-          title="Salir de la solicitud"
-        >
-          <X className="h-4 w-4" />
-        </Button>
       </div>
       
       {/* Progress bar for mobile - linear indicator without percentage */}

@@ -20,14 +20,19 @@ const RequestFormContent = () => {
     setShowExitDialog,
     handleExit,
     hasUnsavedChanges,
-    formData
+    formData,
+    handleShowExitDialog
   } = useFormContext();
 
   console.log('🎯 RequestFormContent rendering');
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header personName={getFirstNameAndLastName(personName)} />
+      <Header 
+        personName={getFirstNameAndLastName(personName)} 
+        applicationId={formData.applicationId}
+        onExitFormClick={handleShowExitDialog}
+      />
       
       <main className="flex-1 container mx-auto px-4 py-0 pb-20 max-w-5xl">
         {/* Breadcrumb Navigation */}
@@ -35,7 +40,7 @@ const RequestFormContent = () => {
           <BreadcrumbNavigation />
         </div>
         
-        {/* Dynamic Form Header - replaces NavigationHeader and SectionHeader */}
+        {/* Dynamic Form Header - now without X button */}
         <DynamicFormHeader />
         
         {/* Step Content */}
