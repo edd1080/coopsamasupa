@@ -6,7 +6,7 @@ import FieldPlaceholder from '../placeholders/FieldPlaceholder';
 
 interface SummaryTabProps {
   application: any;
-  onNavigateToSection: (sectionId: string) => void;
+  onNavigateToSection: (sectionId: string, fieldName?: string) => void;
   onNavigateToDocuments: () => void;
 }
 
