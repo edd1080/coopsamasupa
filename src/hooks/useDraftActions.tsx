@@ -27,7 +27,19 @@ export const useSaveDraft = () => {
       isIncremental?: boolean;
       changedData?: any;
     }) => {
-      if (!user?.id) throw new Error('Usuario no autenticado');
+      console.log('💾 useSaveDraft: Starting save process', sanitizeConsoleOutput({ 
+        isIncremental, 
+        currentStep, 
+        currentSubStep,
+        userId: user?.id,
+        hasUser: !!user
+      }));
+
+      // Verificar autenticación ANTES de cualquier procesamiento
+      if (!user?.id) {
+        console.error('❌ Usuario no autenticado');
+        throw new Error('Usuario no autenticado. Por favor, inicia sesión nuevamente.');
+      }
       
       // Rate limiting check
       if (!formRateLimit.isAllowed(user.id)) {
@@ -35,12 +47,7 @@ export const useSaveDraft = () => {
         throw new Error(`Demasiados intentos. Espera ${remainingTime} minutos antes de intentar de nuevo.`);
       }
       
-      console.log('💾 useSaveDraft: Saving draft', sanitizeConsoleOutput({ 
-        isIncremental, 
-        currentStep, 
-        currentSubStep,
-        userId: user.id
-      }));
+      console.log('✅ User authenticated, proceeding with save');
       
       // Sanitize all input data
       const sanitizedFormData = sanitizeObjectData(formData);
@@ -49,6 +56,7 @@ export const useSaveDraft = () => {
       // Ensure we have a proper application ID in SCO_###### format
       if (!sanitizedFormData.applicationId) {
         sanitizedFormData.applicationId = generateApplicationId();
+        console.log('🆔 Generated new application ID:', sanitizedFormData.applicationId);
       }
       
       // Construir el nombre del cliente desde diferentes fuentes posibles
@@ -101,7 +109,7 @@ export const useSaveDraft = () => {
       
       const draftPayload = {
         id: draftId, // Ahora es texto en formato SCO_######
-        agent_id: user.id,
+        agent_id: user.id, // CRITICAL: Asegurar que coincida con auth.uid()
         client_name: clientName,
         draft_data: finalDraftData,
         last_step: currentStep,
@@ -109,7 +117,18 @@ export const useSaveDraft = () => {
         updated_at: new Date().toISOString()
       };
       
-      console.log('📦 Draft payload prepared with ID:', draftId);
+      console.log('📦 Draft payload prepared:', sanitizeConsoleOutput({
+        id: draftPayload.id,
+        agent_id: draftPayload.agent_id,
+        client_name: draftPayload.client_name,
+        last_step: draftPayload.last_step
+      }));
+      
+      // Verificar que el usuario sigue autenticado antes del upsert
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser || currentUser.id !== user.id) {
+        throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente.');
+      }
       
       const { data, error } = await supabase
         .from('application_drafts')
@@ -118,11 +137,24 @@ export const useSaveDraft = () => {
         .single();
         
       if (error) {
-        console.error('❌ Supabase error:', sanitizeConsoleOutput(error));
-        throw error;
+        console.error('❌ Supabase error:', sanitizeConsoleOutput({
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        }));
+        
+        // Proporcionar mensajes de error más específicos
+        if (error.message.includes('row-level security policy')) {
+          throw new Error('Error de permisos: No tienes autorización para guardar esta solicitud. Verifica tu sesión.');
+        } else if (error.code === '23505') {
+          throw new Error('Ya existe una solicitud con este ID. Intenta refrescar la página.');
+        } else {
+          throw new Error(`Error al guardar: ${error.message}`);
+        }
       }
       
-      console.log('✅ Draft saved successfully');
+      console.log('✅ Draft saved successfully with ID:', draftId);
       return data;
     },
     onSuccess: (data, variables) => {
@@ -141,15 +173,19 @@ export const useSaveDraft = () => {
         duration: variables.isIncremental ? 2000 : 3000,
       });
     },
-    onError: (error, variables) => {
-      console.error('❌ Error saving draft:', sanitizeConsoleOutput(error));
+    onError: (error: any, variables) => {
+      console.error('❌ Error saving draft:', sanitizeConsoleOutput({
+        message: error.message,
+        isIncremental: variables.isIncremental
+      }));
+      
       const saveType = variables.isIncremental ? 'guardado incremental' : 'borrador';
       
       toast({
         title: `Error al guardar ${saveType}`,
         description: error.message || "No se pudo guardar el progreso. Inténtalo de nuevo.",
         variant: "destructive",
-        duration: 3000
+        duration: 5000
       });
     },
   });
@@ -177,7 +213,6 @@ export const useDrafts = () => {
   });
 };
 
-// Hook para validación de datos mínimos con validación mejorada
 export const useApplicationValidation = () => {
   const validateMinimumRequiredData = (formData: any): { isValid: boolean; missingFields: string[] } => {
     const missingFields: string[] = [];

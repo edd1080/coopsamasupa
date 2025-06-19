@@ -172,6 +172,12 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
         // Use proper application ID format for new applications
         const applicationId = id || generateApplicationId();
         
+        console.log('🔄 Incremental save triggered', { 
+          applicationId, 
+          hasChanges, 
+          dataToSaveKeys: Object.keys(dataToSave) 
+        });
+        
         await saveDraftMutation.mutateAsync({
           formData: { ...formData, applicationId },
           currentStep: activeStep,
@@ -441,7 +447,7 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
   };
   
   const handleSaveDraft = async () => {
-    console.log('💾 Saving draft with incremental save...');
+    console.log('💾 Manual draft save triggered');
     
     try {
       // Ensure we have a proper application ID
@@ -452,16 +458,18 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
         setFormData(updatedFormData);
       }
       
+      // Trigger incremental save with force flag
       await saveIncremental(false);
       
       if (checkSectionCompletion()) {
         setSectionStatus(prev => ({ ...prev, [steps[activeStep].id]: 'complete' }));
       }
       
-      console.log('✅ Draft saved successfully');
+      console.log('✅ Manual draft saved successfully');
       
     } catch (error) {
-      console.error('❌ Error saving draft:', error);
+      console.error('❌ Error in manual draft save:', error);
+      // Error is already handled in the mutation onError callback
     }
   };
   
