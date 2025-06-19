@@ -34,6 +34,12 @@ const FinancialInfo: React.FC<FinancialInfoProps> = ({ formData, updateFormData 
   const [selectedBestMonths, setSelectedBestMonths] = useState<string[]>(formData.bestMonths || []);
   const [selectedWorstMonths, setSelectedWorstMonths] = useState<string[]>(formData.worstMonths || []);
   
+  // Visible screens array - only showing first 2 tabs
+  const visibleScreens = [
+    { id: 'financial-analysis', name: 'Análisis Financiero', icon: <Calculator className="w-4 h-4 mr-2" /> },
+    { id: 'patrimonial-statement', name: 'Estado Patrimonial', icon: <PieChart className="w-4 h-4 mr-2" /> }
+  ];
+  
   const calculateTotal = (index: number) => {
     const product = products[index];
     if (product.quantity && product.price) {
@@ -103,16 +109,6 @@ const FinancialInfo: React.FC<FinancialInfoProps> = ({ formData, updateFormData 
     }
   };
   
-  // Updated screens array with new tabs at the beginning
-  const screens = [
-    { id: 'financial-analysis', name: 'Análisis Financiero', icon: <Calculator className="w-4 h-4 mr-2" /> },
-    { id: 'patrimonial-statement', name: 'Estado Patrimonial', icon: <PieChart className="w-4 h-4 mr-2" /> },
-    { id: 'business-info', name: 'Información del Negocio', icon: <Store className="w-4 h-4 mr-2" /> },
-    { id: 'products', name: 'Productos', icon: <Package className="w-4 h-4 mr-2" /> },
-    { id: 'seasonality', name: 'Estacionalidad', icon: <Calendar className="w-4 h-4 mr-2" /> },
-    { id: 'expenses', name: 'Gastos', icon: <DollarSign className="w-4 h-4 mr-2" /> }
-  ];
-  
   // CSS styles for hide-scrollbar
   const hideScrollbarStyle = {
     msOverflowStyle: 'none',
@@ -124,9 +120,9 @@ const FinancialInfo: React.FC<FinancialInfoProps> = ({ formData, updateFormData 
 
   return (
     <div className="space-y-6">
-      {/* Screen Navigation */}
+      {/* Screen Navigation - Now showing only visible screens */}
       <div className="flex overflow-x-auto pb-2 -mx-1" style={hideScrollbarStyle}>
-        {screens.map((screen) => (
+        {visibleScreens.map((screen) => (
           <button
             key={screen.id}
             onClick={() => setActiveScreen(screen.id)}
