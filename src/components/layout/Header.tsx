@@ -1,26 +1,19 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Menu, User, Bell, Home, PlusCircle, X } from 'lucide-react';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from "@/hooks/use-toast";
+import { ArrowLeft, PlusCircle, X } from 'lucide-react';
 import { formatApplicationId } from '@/utils/applicationIdGenerator';
 
 interface HeaderProps {
   personName?: string;
   applicationId?: string;
-  onExitFormClick?: () => void; // Nueva prop para manejar el botón X del formulario
+  onExitFormClick?: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ personName, applicationId, onExitFormClick }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signOut } = useAuth();
-  const { toast } = useToast();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Definir páginas principales que NO deben tener botón atrás
   const mainPages = ['/', '/applications', '/prequalifications', '/settings'];
@@ -39,28 +32,6 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, onExitFormCl
   const handleNewApplication = () => {
     console.log('🎯 Header: Nueva solicitud button clicked');
     navigate('/applications/new');
-    setIsMenuOpen(false);
-  };
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      toast({
-        title: "Sesión cerrada",
-        description: "Has cerrado sesión exitosamente.",
-        duration: 3000,
-      });
-      navigate('/login');
-    } catch (error) {
-      console.error('Error signing out:', error);
-      toast({
-        title: "Error",
-        description: "Hubo un problema al cerrar sesión.",
-        variant: "destructive",
-        duration: 3000,
-      });
-    }
-    setIsMenuOpen(false);
   };
 
   const getPageTitle = () => {
@@ -126,7 +97,7 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, onExitFormCl
 
         {/* Right side - Actions */}
         <div className="flex items-center gap-2">
-          {/* Botón X para formularios - ahora en el Header principal */}
+          {/* Botón X para formularios */}
           {isFormPage && onExitFormClick && (
             <Button
               variant="ghost"
@@ -150,63 +121,6 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, onExitFormCl
               Nueva Solicitud
             </Button>
           )}
-
-          {/* Notifications */}
-          <Button variant="ghost" size="icon" className="h-9 w-9 relative">
-            <Bell className="h-4 w-4" />
-            <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs bg-red-500 text-white">
-              3
-            </Badge>
-          </Button>
-
-          {/* Menu */}
-          <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-9 w-9">
-                <Menu className="h-4 w-4" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[280px]">
-              <div className="flex flex-col gap-4 mt-6">
-                <Button
-                  variant="ghost"
-                  className="justify-start"
-                  onClick={() => { navigate('/'); setIsMenuOpen(false); }}
-                >
-                  <Home className="mr-2 h-4 w-4" />
-                  Inicio
-                </Button>
-                
-                <Button
-                  variant="ghost"
-                  className="justify-start"
-                  onClick={handleNewApplication}
-                >
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Nueva Solicitud
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  className="justify-start"
-                  onClick={() => { navigate('/settings'); setIsMenuOpen(false); }}
-                >
-                  <User className="mr-2 h-4 w-4" />
-                  Configuración
-                </Button>
-
-                <div className="border-t pt-4 mt-4">
-                  <Button
-                    variant="ghost"
-                    className="justify-start w-full text-red-600 hover:text-red-700 hover:bg-red-50"
-                    onClick={handleSignOut}
-                  >
-                    Cerrar Sesión
-                  </Button>
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
         </div>
       </div>
     </header>
