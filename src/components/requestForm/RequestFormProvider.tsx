@@ -7,11 +7,6 @@ import { useDraftFormData } from '@/hooks/useApplicationData';
 import { Loader2 } from 'lucide-react';
 import { generateApplicationId } from '@/utils/applicationIdGenerator';
 
-// Generate a random 6-digit number for application IDs
-const generateRandomId = () => {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-};
-
 // New simplified guarantor interface
 interface GuarantorData {
   id: string;
@@ -106,7 +101,7 @@ export const useFormContext = () => {
 };
 
 const createEmptyGuarantor = (): GuarantorData => ({
-  id: generateRandomId(),
+  id: Math.floor(100000 + Math.random() * 900000).toString(),
   fullName: '',
   cui: '',
   email: '',
@@ -169,17 +164,14 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
     currentData: formData,
     onSave: async (dataToSave: any, hasChanges: boolean) => {
       if (hasChanges) {
-        // Use proper application ID format for new applications
-        const applicationId = id || generateApplicationId();
-        
         console.log('🔄 Incremental save triggered', { 
-          applicationId, 
+          applicationId: formData.applicationId, 
           hasChanges, 
           dataToSaveKeys: Object.keys(dataToSave) 
         });
         
         await saveDraftMutation.mutateAsync({
-          formData: { ...formData, applicationId },
+          formData: formData,
           currentStep: activeStep,
           currentSubStep: subStep,
           isIncremental: true,
@@ -219,7 +211,7 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
     console.log('🔍 Draft ID:', id);
     console.log('📊 Draft loading state:', { isDraftLoading, draftError: !!draftError });
     
-    // If we don't have an ID, initialize with empty form and generate new ID
+    // If we don't have an ID, initialize with empty form and generate new ID ONCE
     if (!id) {
       console.log('✅ No ID provided, initializing empty form');
       const newApplicationId = generateApplicationId();
@@ -252,10 +244,8 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
         const loadedFormData = draftData.draft_data || {};
         const clientName = draftData.client_name || 'Sin nombre';
         
-        // Ensure applicationId is in the correct format
-        if (!loadedFormData.applicationId) {
-          loadedFormData.applicationId = id.startsWith('SCO_') ? id : generateApplicationId();
-        }
+        // Ensure applicationId is set to the draft ID (don't generate a new one)
+        loadedFormData.applicationId = id;
         
         setFormData(loadedFormData);
         setInitialFormData(loadedFormData);
@@ -450,14 +440,6 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
     console.log('💾 Manual draft save triggered');
     
     try {
-      // Ensure we have a proper application ID
-      const applicationId = formData.applicationId || generateApplicationId();
-      const updatedFormData = { ...formData, applicationId };
-      
-      if (applicationId !== formData.applicationId) {
-        setFormData(updatedFormData);
-      }
-      
       // Trigger incremental save with force flag
       await saveIncremental(false);
       

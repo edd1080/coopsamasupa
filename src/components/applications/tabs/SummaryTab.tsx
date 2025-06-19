@@ -129,7 +129,7 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
                 required={true}
               />
               <FieldPlaceholder
-                label="CUI"
+                label="DPI"
                 value={getSafeValue('identification.cui') || getSafeValue('cui')}
                 onEdit={() => onNavigateToSection('identification')}
                 required={true}

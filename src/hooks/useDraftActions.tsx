@@ -1,4 +1,3 @@
-
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -53,10 +52,12 @@ export const useSaveDraft = () => {
       const sanitizedFormData = sanitizeObjectData(formData);
       const sanitizedChangedData = changedData ? sanitizeObjectData(changedData) : null;
       
-      // Ensure we have a proper application ID in SCO_###### format
+      // Use existing applicationId or generate new one only if it doesn't exist
       if (!sanitizedFormData.applicationId) {
         sanitizedFormData.applicationId = generateApplicationId();
         console.log('🆔 Generated new application ID:', sanitizedFormData.applicationId);
+      } else {
+        console.log('🆔 Using existing application ID:', sanitizedFormData.applicationId);
       }
       
       // Construir el nombre del cliente desde diferentes fuentes posibles
@@ -104,11 +105,11 @@ export const useSaveDraft = () => {
         }
       }
       
-      // Use the application ID in SCO_###### format directly as the draft ID
+      // Use the application ID directly as the draft ID
       const draftId = sanitizedFormData.applicationId;
       
       const draftPayload = {
-        id: draftId, // Ahora es texto en formato SCO_######
+        id: draftId,
         agent_id: user.id, // CRITICAL: Asegurar que coincida con auth.uid()
         client_name: clientName,
         draft_data: finalDraftData,
