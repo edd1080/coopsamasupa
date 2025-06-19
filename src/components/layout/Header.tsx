@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -70,24 +69,22 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, onExitFormCl
 
   return (
     <header className="bg-background border-b border-border/40 sticky top-0 z-40 w-full backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center px-4">
-        {/* Left side - Back button (solo si NO es página principal) */}
-        <div className="flex items-center">
+      <div className="container flex h-14 items-center justify-between px-4">
+        {/* Left side - Back button + Title */}
+        <div className="flex items-center gap-2">
           {!isMainPage && (
             <Button
               variant="ghost"
               size="icon"
               onClick={handleBackClick}
-              className="h-9 w-9 mr-2"
+              className="h-9 w-9"
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
           )}
-        </div>
-
-        {/* Center - Title (centrado) */}
-        <div className="flex-1 flex justify-center">
-          <div className="flex flex-col justify-center min-h-[32px] text-center">
+          
+          {/* Title aligned to the left */}
+          <div className="flex flex-col justify-center min-h-[32px]">
             <h1 className="text-lg font-semibold leading-tight">{getPageTitle()}</h1>
             {getSubtitle() && (
               <p className="text-xs text-muted-foreground leading-tight">{getSubtitle()}</p>
