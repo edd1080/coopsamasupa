@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { User, DollarSign, Briefcase, FileText, FileCheck, ChevronRight } from 'lucide-react';
@@ -29,31 +28,26 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
     return value !== null && value !== undefined && value !== '' && value !== 0;
   };
 
-  // Función simplificada para obtener valores directamente del objeto de datos
+  // Función simplificada para obtener valores directamente del objeto application
   const getSafeValue = (fieldName: string, fallback: string = 'Por ingresar') => {
-    // Obtener el objeto de datos correcto
-    const dataSource = application?.data || application?.draft_data || application;
+    // application ya contiene los datos directos (draft_data o data)
+    if (!application) return fallback;
     
-    if (!dataSource) return fallback;
-    
-    // Búsqueda directa en el nivel raíz
-    const value = dataSource[fieldName];
+    const value = application[fieldName];
     return hasValue(value) ? value : fallback;
   };
 
   // Función específica para obtener el nombre completo
   const getFullName = () => {
-    const dataSource = application?.data || application?.draft_data || application;
-    
-    if (!dataSource) return 'Por ingresar';
+    if (!application) return 'Por ingresar';
     
     // Intentar obtener el nombre completo directamente
-    const fullName = dataSource.fullName;
+    const fullName = application.fullName;
     if (hasValue(fullName)) return fullName;
     
     // Si no hay fullName, construir desde firstName y lastName
-    const firstName = dataSource.firstName;
-    const lastName = dataSource.lastName;
+    const firstName = application.firstName;
+    const lastName = application.lastName;
     
     if (hasValue(firstName) && hasValue(lastName)) {
       return `${firstName} ${lastName}`;
@@ -61,27 +55,22 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
     
     if (hasValue(firstName)) return firstName;
     
-    // Fallback al client_name si existe
-    if (hasValue(application?.client_name)) return application.client_name;
-    
     return 'Por ingresar';
   };
 
   // Función para calcular gastos mensuales totales
   const calculateMonthlyExpenses = () => {
-    const dataSource = application?.data || application?.draft_data || application;
-    
-    if (!dataSource) return null;
+    if (!application) return null;
     
     // Sumar todos los gastos individuales
     const expenses = [
-      dataSource.rentExpense,
-      dataSource.foodExpense,
-      dataSource.transportExpense,
-      dataSource.servicesExpense,
-      dataSource.educationExpense,
-      dataSource.healthExpense,
-      dataSource.otherExpense
+      application.rentExpense,
+      application.foodExpense,
+      application.transportExpense,
+      application.servicesExpense,
+      application.educationExpense,
+      application.healthExpense,
+      application.otherExpense
     ];
     
     const total = expenses.reduce((sum, expense) => {

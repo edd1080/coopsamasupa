@@ -279,44 +279,17 @@ const ApplicationDetails = () => {
     return application.progress_step || 0;
   };
 
-  // Transformar los datos para SummaryTab - extraer desde draft_data si es borrador
+  // Simplificar para pasar datos directos sin transformación
   const getApplicationDataForSummary = () => {
     if (!application) return {};
 
-    // Si es un borrador, extraer datos del draft_data
+    // Pasar datos directamente desde draft_data o data sin transformación
     if (application.isDraft && application.draft_data) {
-      const draftData = application.draft_data;
-      
-      return {
-        identification: {
-          fullName: draftData.fullName || null,
-          cui: draftData.cui || null,
-          nit: draftData.nit || null,
-          phone: draftData.phone || null,
-          email: draftData.email || null
-        },
-        finances: {
-          primaryIncome: draftData.monthlyIncome || draftData.primaryIncome || null,
-          totalExpenses: draftData.monthlyExpenses || draftData.totalExpenses || null,
-          netWorth: draftData.netWorth || null
-        },
-        work: {
-          employmentStatus: draftData.employmentStatus || null,
-          companyName: draftData.companyName || draftData.businessName || null,
-          yearsEmployed: draftData.yearsEmployed || null
-        },
-        creditRequest: {
-          loanAmount: draftData.creditAmount || draftData.loanAmount || null,
-          termMonths: draftData.termMonths || null,
-          creditType: draftData.creditType || null,
-          purpose: draftData.creditPurpose || draftData.purpose || null
-        },
-        documents: draftData.documents || {}
-      };
+      return application.draft_data;
     }
 
     // Si es una aplicación completa, usar los datos como están
-    return application;
+    return application.data || application;
   };
 
   return (
