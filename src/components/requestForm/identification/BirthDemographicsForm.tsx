@@ -19,11 +19,22 @@ interface BirthDemographicsFormProps {
 const BirthDemographicsForm: React.FC<BirthDemographicsFormProps> = ({ formData, updateFormData }) => {
   const [calculatedAge, setCalculatedAge] = useState<number | null>(null);
 
+  // Helper function to ensure we have a valid Date object
+  const getValidDate = (dateValue: Date | string | undefined) => {
+    if (!dateValue) return null;
+    if (dateValue instanceof Date) return dateValue;
+    if (typeof dateValue === 'string') {
+      const parsed = new Date(dateValue);
+      return isNaN(parsed.getTime()) ? null : parsed;
+    }
+    return null;
+  };
+
   // Calculate age when birth date changes
   useEffect(() => {
-    if (formData.birthDate) {
+    const birthDate = getValidDate(formData.birthDate);
+    if (birthDate) {
       const today = new Date();
-      const birthDate = new Date(formData.birthDate);
       let age = today.getFullYear() - birthDate.getFullYear();
       const monthDiff = today.getMonth() - birthDate.getMonth();
       
@@ -36,6 +47,10 @@ const BirthDemographicsForm: React.FC<BirthDemographicsFormProps> = ({ formData,
     }
   }, [formData.birthDate, updateFormData]);
 
+  const handleDateSelect = (date: Date | undefined) => {
+    updateFormData('birthDate', date);
+  };
+
   return (
     <>
       {/* Fecha Nacimiento y Edad */}
@@ -43,8 +58,8 @@ const BirthDemographicsForm: React.FC<BirthDemographicsFormProps> = ({ formData,
         <div className="space-y-2">
           <Label>Fecha Nacimiento *</Label>
           <DatePicker
-            date={formData.birthDate}
-            onSelect={(date) => updateFormData('birthDate', date)}
+            date={getValidDate(formData.birthDate)}
+            onSelect={handleDateSelect}
             placeholder="Seleccionar fecha de nacimiento"
           />
         </div>

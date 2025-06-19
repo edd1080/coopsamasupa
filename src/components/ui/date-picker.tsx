@@ -23,7 +23,19 @@ const DatePicker: React.FC<DatePickerProps> = ({
   disabled = false
 }) => {
   const [isOpen, setIsOpen] = React.useState(false);
-  const [currentMonth, setCurrentMonth] = React.useState(date || new Date());
+  
+  // Ensure we always have a valid Date object
+  const getValidDate = (dateValue: Date | string | undefined) => {
+    if (!dateValue) return new Date();
+    if (dateValue instanceof Date) return dateValue;
+    if (typeof dateValue === 'string') {
+      const parsed = new Date(dateValue);
+      return isNaN(parsed.getTime()) ? new Date() : parsed;
+    }
+    return new Date();
+  };
+
+  const [currentMonth, setCurrentMonth] = React.useState(() => getValidDate(date));
 
   const currentYear = currentMonth.getFullYear();
   const currentMonthIndex = currentMonth.getMonth();
@@ -71,10 +83,11 @@ const DatePicker: React.FC<DatePickerProps> = ({
     // Días del mes
     for (let day = 1; day <= daysInMonth; day++) {
       const dayDate = new Date(currentYear, currentMonthIndex, day);
+      const validDate = getValidDate(date);
       const isSelected = date && 
-        date.getDate() === day && 
-        date.getMonth() === currentMonthIndex && 
-        date.getFullYear() === currentYear;
+        validDate.getDate() === day && 
+        validDate.getMonth() === currentMonthIndex && 
+        validDate.getFullYear() === currentYear;
 
       days.push(
         <Button
@@ -94,6 +107,9 @@ const DatePicker: React.FC<DatePickerProps> = ({
     return days;
   };
 
+  // Convert date to valid Date object for display
+  const displayDate = date ? getValidDate(date) : undefined;
+
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
@@ -107,7 +123,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
           disabled={disabled}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? format(date, "PPP") : placeholder}
+          {displayDate ? format(displayDate, "PPP") : placeholder}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
