@@ -17,12 +17,19 @@ const Index = () => {
   const { data: profile, isLoading: profileLoading } = useUserProfile();
   const { data: metrics, isLoading: metricsLoading } = useApplicationMetrics();
 
-  // Determinar el saludo y nombre
+  // Determinar el saludo inclusivo y nombre
   const getGreeting = () => {
     if (profileLoading) return 'Cargando...';
-    if (profile?.full_name) return `¡Bienvenido, ${profile.full_name.split(' ')[0]}!`;
-    if (profile?.first_name) return `¡Bienvenido, ${profile.first_name}!`;
-    return '¡Bienvenido!';
+    
+    // Extraer el primer nombre para el saludo
+    const firstName = profile?.first_name || 
+                     (profile?.full_name ? profile.full_name.split(' ')[0] : null);
+    
+    if (firstName) {
+      return `¡Hola, ${firstName}!`;
+    }
+    
+    return '¡Hola!';
   };
 
   const getUserInfo = () => {
