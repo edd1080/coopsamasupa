@@ -16,12 +16,33 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
   onNavigateToSection,
   onNavigateToDocuments
 }) => {
-  const formatCurrency = (amount: number | undefined) => {
-    if (!amount) return undefined;
+  const formatCurrency = (amount: number | undefined | null) => {
+    if (!amount || amount === 0) return null;
     return new Intl.NumberFormat('es-GT', {
       style: 'currency',
       currency: 'GTQ'
     }).format(amount);
+  };
+
+  // Función para validar si un valor existe y no está vacío
+  const hasValue = (value: any) => {
+    return value !== null && value !== undefined && value !== '' && value !== 0;
+  };
+
+  // Función para obtener valores seguros de la aplicación
+  const getSafeValue = (path: string, fallback: string = 'Por ingresar') => {
+    const pathArray = path.split('.');
+    let current = application;
+    
+    for (const key of pathArray) {
+      if (current && typeof current === 'object' && key in current) {
+        current = current[key];
+      } else {
+        return fallback;
+      }
+    }
+    
+    return hasValue(current) ? current : fallback;
   };
 
   return (
@@ -38,22 +59,30 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
             <div className="space-y-3">
               <FieldPlaceholder
                 label="Nombre"
-                value={application.identification?.fullName}
+                value={getSafeValue('identification.fullName')}
                 onEdit={() => onNavigateToSection('identification')}
+                required={true}
               />
               <FieldPlaceholder
                 label="CUI"
-                value={application.identification?.cui}
+                value={getSafeValue('identification.cui')}
                 onEdit={() => onNavigateToSection('identification')}
+                required={true}
               />
               <FieldPlaceholder
                 label="NIT"
-                value={application.identification?.nit}
+                value={getSafeValue('identification.nit')}
                 onEdit={() => onNavigateToSection('identification')}
               />
               <FieldPlaceholder
                 label="Teléfono"
-                value={application.identification?.phone}
+                value={getSafeValue('identification.phone')}
+                onEdit={() => onNavigateToSection('identification')}
+                required={true}
+              />
+              <FieldPlaceholder
+                label="Email"
+                value={getSafeValue('identification.email')}
                 onEdit={() => onNavigateToSection('identification')}
               />
             </div>
@@ -71,17 +100,18 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
             <div className="space-y-3">
               <FieldPlaceholder
                 label="Ingresos Principales"
-                value={formatCurrency(application.finances?.primaryIncome)}
+                value={formatCurrency(getSafeValue('finances.primaryIncome', null))}
                 onEdit={() => onNavigateToSection('finances')}
+                required={true}
               />
               <FieldPlaceholder
                 label="Gastos Mensuales"
-                value={formatCurrency(application.finances?.totalExpenses)}
+                value={formatCurrency(getSafeValue('finances.totalExpenses', null))}
                 onEdit={() => onNavigateToSection('finances')}
               />
               <FieldPlaceholder
                 label="Patrimonio Neto"
-                value={formatCurrency(application.finances?.netWorth)}
+                value={formatCurrency(getSafeValue('finances.netWorth', null))}
                 onEdit={() => onNavigateToSection('finances')}
               />
             </div>
@@ -99,17 +129,17 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
             <div className="space-y-3">
               <FieldPlaceholder
                 label="Situación Laboral"
-                value={application.work?.employmentStatus}
+                value={getSafeValue('work.employmentStatus')}
                 onEdit={() => onNavigateToSection('business')}
               />
               <FieldPlaceholder
                 label="Empresa/Negocio"
-                value={application.work?.companyName}
+                value={getSafeValue('work.companyName')}
                 onEdit={() => onNavigateToSection('business')}
               />
               <FieldPlaceholder
                 label="Experiencia"
-                value={application.work?.yearsEmployed ? `${application.work.yearsEmployed} años` : undefined}
+                value={getSafeValue('work.yearsEmployed') !== 'Por ingresar' ? `${getSafeValue('work.yearsEmployed')} años` : 'Por ingresar'}
                 onEdit={() => onNavigateToSection('business')}
               />
             </div>
@@ -129,8 +159,8 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
             <div className="text-center p-3 bg-background rounded-md">
               <p className="text-xs text-muted-foreground mb-1">Monto Solicitado</p>
               <p className="font-bold text-lg">
-                {application.creditRequest?.loanAmount 
-                  ? formatCurrency(application.creditRequest.loanAmount)
+                {getSafeValue('creditRequest.loanAmount') !== 'Por ingresar' 
+                  ? formatCurrency(getSafeValue('creditRequest.loanAmount', null)) || "Por definir"
                   : "Por definir"
                 }
               </p>
@@ -138,8 +168,8 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
             <div className="text-center p-3 bg-background rounded-md">
               <p className="text-xs text-muted-foreground mb-1">Plazo</p>
               <p className="font-bold text-lg">
-                {application.creditRequest?.termMonths 
-                  ? `${application.creditRequest.termMonths} meses`
+                {getSafeValue('creditRequest.termMonths') !== 'Por ingresar' 
+                  ? `${getSafeValue('creditRequest.termMonths')} meses`
                   : "Por definir"
                 }
               </p>
@@ -147,13 +177,13 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
             <div className="text-center p-3 bg-background rounded-md">
               <p className="text-xs text-muted-foreground mb-1">Tipo de Crédito</p>
               <p className="font-bold text-sm">
-                {application.creditRequest?.creditType || "Por definir"}
+                {getSafeValue('creditRequest.creditType', 'Por definir')}
               </p>
             </div>
             <div className="text-center p-3 bg-background rounded-md">
               <p className="text-xs text-muted-foreground mb-1">Propósito</p>
               <p className="font-bold text-sm">
-                {application.creditRequest?.purpose || "Por definir"}
+                {getSafeValue('creditRequest.purpose', 'Por definir')}
               </p>
             </div>
           </div>
@@ -172,29 +202,43 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-            {Object.entries(application.documents || {}).map(([key, value]: [string, any]) => (
-              <div key={key} className="flex flex-col items-center p-2 rounded-md border">
-                {value?.status === 'complete' ? (
-                  <div className="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center mb-2">
-                    <FileCheck className="h-5 w-5" />
-                  </div>
-                ) : (
+            {/* Mostrar documentos si existen, de lo contrario mostrar estado por defecto */}
+            {application?.documents && Object.keys(application.documents).length > 0 ? (
+              Object.entries(application.documents).map(([key, value]: [string, any]) => (
+                <div key={key} className="flex flex-col items-center p-2 rounded-md border">
+                  {value?.status === 'complete' ? (
+                    <div className="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center mb-2">
+                      <FileCheck className="h-5 w-5" />
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mb-2">
+                      <FileText className="h-5 w-5" />
+                    </div>
+                  )}
+                  <span className="text-xs text-center">
+                    {key === 'dpiFrontal' && 'DPI Frontal'}
+                    {key === 'dpiTrasero' && 'DPI Trasero'}
+                    {key === 'fotoSolicitante' && 'Foto Solicitante'}
+                    {key === 'recibosServicios' && 'Recibos Servicios'}
+                    {key === 'firmaCanvas' && 'Firma Digital'}
+                  </span>
+                  {value?.status !== 'complete' && (
+                    <p className="text-xs text-amber-600 mt-1">Por subir</p>
+                  )}
+                </div>
+              ))
+            ) : (
+              // Mostrar documentos por defecto cuando no hay documentos
+              ['DPI Frontal', 'DPI Trasero', 'Foto Solicitante', 'Recibos Servicios', 'Firma Digital'].map((docName) => (
+                <div key={docName} className="flex flex-col items-center p-2 rounded-md border">
                   <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mb-2">
                     <FileText className="h-5 w-5" />
                   </div>
-                )}
-                <span className="text-xs text-center">
-                  {key === 'dpiFrontal' && 'DPI Frontal'}
-                  {key === 'dpiTrasero' && 'DPI Trasero'}
-                  {key === 'fotoSolicitante' && 'Foto Solicitante'}
-                  {key === 'recibosServicios' && 'Recibos Servicios'}
-                  {key === 'firmaCanvas' && 'Firma Digital'}
-                </span>
-                {value?.status !== 'complete' && (
+                  <span className="text-xs text-center">{docName}</span>
                   <p className="text-xs text-amber-600 mt-1">Por subir</p>
-                )}
-              </div>
-            ))}
+                </div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

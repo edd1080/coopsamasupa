@@ -296,6 +296,14 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
     }
   }, [dataLoaded, location.state, toast]);
   
+  // Update person name when fullName changes
+  useEffect(() => {
+    if (formData.fullName && formData.fullName !== personName) {
+      setPersonName(formData.fullName);
+      console.log('👤 Person name updated:', formData.fullName);
+    }
+  }, [formData.fullName, personName]);
+  
   // Loading component
   if (isLoading || (!dataLoaded && !loadingError)) {
     return (
@@ -375,6 +383,12 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
     setFormData(prev => {
       const newData = { ...prev, [field]: value };
       console.log('📝 Form data updated:', { field, value });
+      
+      // Update person name if fullName is being updated
+      if (field === 'fullName' && value) {
+        setPersonName(value);
+      }
+      
       return newData;
     });
     

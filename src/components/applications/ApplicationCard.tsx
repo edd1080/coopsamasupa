@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -6,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from '@/components/ui/progress';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, ContextMenuSeparator } from "@/components/ui/context-menu";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Calendar, FileText, Edit, Trash2, MoreVertical, CheckCircle, AlertCircle, BarChart3, Banknote, FileSignature, UserCheck, FileImage, Users, X, Clock } from 'lucide-react';
+import { Calendar, FileText, Edit, Trash2, MoreVertical, CheckCircle, AlertCircle, BarChart3, Banknote, FileSignature, UserCheck, FileImage, Users, X, Clock, Eye } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
 interface Application {
@@ -38,18 +39,15 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
   const { toast } = useToast();
 
   const handleViewApplication = (id: string) => {
-    // Si es un borrador, ir al formulario para continuar editando
-    if ((application as any).isDraft) {
-      navigate(`/request-form/${id}`);
-      toast({
-        title: "Continuando borrador",
-        description: `Abriendo borrador de ${application.clientName}`,
-        duration: 3000
-      });
-    } else {
-      // Si es aplicación completa, ir a detalles
-      navigate(`/applications/${id}`);
-    }
+    // Para ambos (borradores y aplicaciones completas), ir a la página de detalles
+    navigate(`/applications/${id}`);
+    
+    const itemType = (application as any).isDraft ? 'borrador' : 'solicitud';
+    toast({
+      title: `Abriendo ${itemType}`,
+      description: `Mostrando detalles de ${application.clientName}`,
+      duration: 3000
+    });
   };
 
   const handleEditApplication = (id: string, clientName: string, e?: React.MouseEvent) => {
@@ -60,6 +58,18 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
     toast({
       title: "Edición iniciada",
       description: `Editando solicitud de ${clientName}`,
+      duration: 3000
+    });
+  };
+
+  const handleContinueApplication = (id: string, clientName: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    
+    // Ir directamente al formulario para continuar
+    navigate(`/request-form/${id}`);
+    toast({
+      title: "Continuando borrador",
+      description: `Continuando solicitud de ${clientName}`,
       duration: 3000
     });
   };
@@ -131,6 +141,8 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
     }
   };
 
+  const isDraft = (application as any).isDraft;
+
   return (
     <ContextMenu>
       <ContextMenuTrigger>
@@ -157,13 +169,20 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
                       <DropdownMenuItem onClick={() => handleViewApplication(application.id)}>
-                        <FileText className="mr-2 h-4 w-4" />
+                        <Eye className="mr-2 h-4 w-4" />
                         <span>Ver detalles</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={e => handleEditApplication(application.id, application.clientName, e)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        <span>Editar</span>
-                      </DropdownMenuItem>
+                      {isDraft ? (
+                        <DropdownMenuItem onClick={e => handleContinueApplication(application.id, application.clientName, e)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          <span>Continuar</span>
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem onClick={e => handleEditApplication(application.id, application.clientName, e)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          <span>Editar</span>
+                        </DropdownMenuItem>
+                      )}
                       {application.status !== 'cancelled' && application.status !== 'approved' && (
                         <DropdownMenuItem onClick={e => onCancel(application.id, application.clientName, e)}>
                           <X className="mr-2 h-4 w-4" />
@@ -178,7 +197,7 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
                     </DropdownMenuContent>
                   </DropdownMenu>
                   
-                  {getStatusBadge(application.status, (application as any).isDraft)}
+                  {getStatusBadge(application.status, isDraft)}
                 </div>
               </div>
               
@@ -204,13 +223,20 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
       </ContextMenuTrigger>
       <ContextMenuContent className="w-48">
         <ContextMenuItem onClick={() => handleViewApplication(application.id)}>
-          <FileText className="mr-2 h-4 w-4" />
+          <Eye className="mr-2 h-4 w-4" />
           <span>Ver detalles</span>
         </ContextMenuItem>
-        <ContextMenuItem onClick={e => onEdit(application.id, application.clientName, e)}>
-          <Edit className="mr-2 h-4 w-4" />
-          <span>Editar</span>
-        </ContextMenuItem>
+        {isDraft ? (
+          <ContextMenuItem onClick={e => handleContinueApplication(application.id, application.clientName, e)}>
+            <Edit className="mr-2 h-4 w-4" />
+            <span>Continuar</span>
+          </ContextMenuItem>
+        ) : (
+          <ContextMenuItem onClick={e => onEdit(application.id, application.clientName, e)}>
+            <Edit className="mr-2 h-4 w-4" />
+            <span>Editar</span>
+          </ContextMenuItem>
+        )}
         {application.status !== 'cancelled' && application.status !== 'approved' && (
           <ContextMenuItem onClick={e => onCancel(application.id, application.clientName, e)}>
             <X className="mr-2 h-4 w-4" />
