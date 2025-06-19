@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -78,9 +79,9 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, onExitFormCl
 
   return (
     <header className="bg-background border-b border-border/40 sticky top-0 z-40 w-full backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center justify-between px-4">
-        {/* Left side - Back button + Title */}
-        <div className="flex items-center gap-2">
+      <div className="container grid grid-cols-3 h-14 items-center px-4">
+        {/* Columna Izquierda - Botón Atrás */}
+        <div className="flex justify-start">
           {!isMainPage && (
             <Button
               variant="ghost"
@@ -91,18 +92,18 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, onExitFormCl
               <ArrowLeft className="h-4 w-4" />
             </Button>
           )}
-          
-          {/* Title aligned to the left */}
-          <div className="flex flex-col justify-center min-h-[32px]">
-            <h1 className="text-lg font-semibold leading-tight">{getPageTitle()}</h1>
-            {getSubtitle() && (
-              <p className="text-xs text-muted-foreground leading-tight">{getSubtitle()}</p>
-            )}
-          </div>
         </div>
 
-        {/* Right side - Actions */}
-        <div className="flex items-center gap-2">
+        {/* Columna Central - Título Centrado */}
+        <div className="flex flex-col items-center justify-center min-h-[32px]">
+          <h1 className="text-lg font-semibold leading-tight text-center">{getPageTitle()}</h1>
+          {getSubtitle() && (
+            <p className="text-xs text-muted-foreground leading-tight text-center">{getSubtitle()}</p>
+          )}
+        </div>
+
+        {/* Columna Derecha - Botones de Acción */}
+        <div className="flex items-center justify-end gap-2">
           {/* Botón X para formularios */}
           {isFormPage && onExitFormClick && (
             <Button
@@ -134,3 +135,4 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, onExitFormCl
 };
 
 export default Header;
+
