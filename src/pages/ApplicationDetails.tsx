@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
@@ -324,7 +323,6 @@ const ApplicationDetails = () => {
     <div className="min-h-screen flex flex-col">
       <Header 
         personName={getDisplayName().split(' ')[0] || ''} 
-        applicationStatus={application.isDraft ? 'draft' : application.status} 
         applicationId={application.id} 
       />
       
