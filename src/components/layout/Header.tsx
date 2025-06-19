@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -17,8 +18,16 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, onExitFormCl
   // Definir páginas principales que NO deben tener botón atrás
   const mainPages = ['/', '/applications', '/prequalifications', '/settings'];
   const isMainPage = mainPages.includes(location.pathname);
-  const isFormPage = location.pathname.includes('/request-form');
-  const isApplicationDetails = location.pathname.includes('/applications/') && !location.pathname.includes('/request-form');
+  
+  // Actualizar lógica para detectar formularios - incluir /applications/new
+  const isFormPage = location.pathname.includes('/request-form') || 
+                     location.pathname === '/applications/new' ||
+                     (location.pathname.includes('/applications/') && location.pathname.includes('/edit'));
+  
+  const isApplicationDetails = location.pathname.includes('/applications/') && 
+                              !location.pathname.includes('/request-form') && 
+                              !location.pathname.includes('/new') && 
+                              !location.pathname.includes('/edit');
 
   const handleBackClick = () => {
     if (isFormPage || isApplicationDetails) {
@@ -45,7 +54,7 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, onExitFormCl
       // Si hay nombre de persona, usar ese
       if (personName) return personName;
       // Si no hay applicationId o es una nueva solicitud, mostrar "Solicitud Nueva"
-      if (!applicationId) return "Solicitud Nueva";
+      if (!applicationId || location.pathname === '/applications/new') return "Solicitud Nueva";
       // Si hay applicationId pero no nombre, usar el ID formateado
       return `Solicitud ${formatApplicationId(applicationId)}`;
     }
@@ -58,7 +67,7 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, onExitFormCl
   };
 
   const getSubtitle = () => {
-    if (isFormPage && applicationId) {
+    if (isFormPage && applicationId && location.pathname !== '/applications/new') {
       return `Solicitud ${formatApplicationId(applicationId)}`;
     }
     if (isApplicationDetails && applicationId) {
