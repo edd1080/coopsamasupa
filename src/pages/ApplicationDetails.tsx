@@ -32,6 +32,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import SummaryTab from '@/components/applications/tabs/SummaryTab';
 import { useApplicationData } from '@/hooks/useApplicationData';
+import { getFieldNavigation } from '@/utils/fieldNavigation';
 
 const applicationStatuses = {
   'pending': {
@@ -110,14 +111,30 @@ const ApplicationDetails = () => {
     }
   };
   
-  const navigateToFormSection = (sectionId: string) => {
-    const editPath = application?.isDraft ? `/request-form/${id}` : `/applications/${id}/edit`;
+  const navigateToFormSection = (sectionId: string, fieldName?: string) => {
+    let editPath = application?.isDraft ? `/request-form/${id}` : `/applications/${id}/edit`;
+    let navigationState: any = { sectionId };
+    
+    // If a specific field is provided, get its exact location
+    if (fieldName) {
+      const fieldLocation = getFieldNavigation(fieldName);
+      if (fieldLocation) {
+        navigationState = {
+          sectionId: fieldLocation.section,
+          subStep: fieldLocation.step,
+          focusField: fieldLocation.field
+        };
+      }
+    }
+    
     navigate(editPath, {
-      state: { sectionId }
+      state: navigationState
     });
+    
+    const sectionName = fieldName ? `campo ${fieldName}` : `sección ${sectionId}`;
     toast({
       title: "Navegación a sección",
-      description: `Navegando a la sección: ${sectionId}`,
+      description: `Navegando a ${sectionName}`,
       duration: 2000
     });
   };

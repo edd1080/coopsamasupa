@@ -30,9 +30,36 @@ const DocumentsForm: React.FC<DocumentsFormProps> = ({ formData, updateFormData 
     return /^\d+$/.test(cif) && cif.length > 0;
   };
 
+  // Updated NIT validation - minimum 8 digits, only numbers
   const validateNIT = (nit: string) => {
-    return /^\d{8}-?\d$/.test(nit);
+    return /^\d{8,}$/.test(nit);
   };
+
+  // Complete Guatemala departments for DPI issuance
+  const guatemalaDepartments = [
+    { value: 'guatemala', label: 'Guatemala' },
+    { value: 'alta_verapaz', label: 'Alta Verapaz' },
+    { value: 'baja_verapaz', label: 'Baja Verapaz' },
+    { value: 'chimaltenango', label: 'Chimaltenango' },
+    { value: 'chiquimula', label: 'Chiquimula' },
+    { value: 'el_progreso', label: 'El Progreso' },
+    { value: 'escuintla', label: 'Escuintla' },
+    { value: 'huehuetenango', label: 'Huehuetenango' },
+    { value: 'izabal', label: 'Izabal' },
+    { value: 'jalapa', label: 'Jalapa' },
+    { value: 'jutiapa', label: 'Jutiapa' },
+    { value: 'peten', label: 'Petén' },
+    { value: 'quetzaltenango', label: 'Quetzaltenango' },
+    { value: 'quiche', label: 'Quiché' },
+    { value: 'retalhuleu', label: 'Retalhuleu' },
+    { value: 'sacatepequez', label: 'Sacatepéquez' },
+    { value: 'san_marcos', label: 'San Marcos' },
+    { value: 'santa_rosa', label: 'Santa Rosa' },
+    { value: 'solola', label: 'Sololá' },
+    { value: 'suchitepequez', label: 'Suchitepéquez' },
+    { value: 'totonicapan', label: 'Totonicapán' },
+    { value: 'zacapa', label: 'Zacapa' }
+  ];
 
   return (
     <>
@@ -74,15 +101,14 @@ const DocumentsForm: React.FC<DocumentsFormProps> = ({ formData, updateFormData 
           <Label htmlFor="dpiExtendedIn">DPI Extendido en *</Label>
           <Select value={formData.dpiExtendedIn || ''} onValueChange={(value) => updateFormData('dpiExtendedIn', value)}>
             <SelectTrigger>
-              <SelectValue placeholder="Seleccionar ubicación" />
+              <SelectValue placeholder="Seleccionar departamento" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="guatemala">Guatemala</SelectItem>
-              <SelectItem value="quetzaltenango">Quetzaltenango</SelectItem>
-              <SelectItem value="escuintla">Escuintla</SelectItem>
-              <SelectItem value="alta_verapaz">Alta Verapaz</SelectItem>
-              <SelectItem value="peten">Petén</SelectItem>
-              <SelectItem value="otro">Otro</SelectItem>
+              {guatemalaDepartments.map((dept) => (
+                <SelectItem key={dept.value} value={dept.value}>
+                  {dept.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -105,14 +131,21 @@ const DocumentsForm: React.FC<DocumentsFormProps> = ({ formData, updateFormData 
       {/* NIT */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="nit">NIT *</Label>
+          <Label htmlFor="nit">NIT (mínimo 8 dígitos) *</Label>
           <Input 
             id="nit"
             value={formData.nit || ''} 
-            onChange={(e) => updateFormData('nit', e.target.value)}
-            placeholder="12345678-9"
+            onChange={(e) => {
+              // Only allow numbers
+              const value = e.target.value.replace(/\D/g, '');
+              updateFormData('nit', value);
+            }}
+            placeholder="12345678"
             className={!validateNIT(formData.nit || '') && formData.nit ? 'border-red-500' : ''}
           />
+          {formData.nit && !validateNIT(formData.nit) && (
+            <p className="text-xs text-red-500">El NIT debe contener mínimo 8 dígitos</p>
+          )}
         </div>
         <div></div>
       </div>

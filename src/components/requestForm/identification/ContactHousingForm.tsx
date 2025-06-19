@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -134,12 +133,12 @@ const ContactHousingForm: React.FC<ContactHousingFormProps> = ({ formData, updat
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="addressReference">Referencia para la Dirección *</Label>
+            <Label htmlFor="addressReference">Referencia para la Dirección</Label>
             <Input 
               id="addressReference"
               value={formData.addressReference || ''} 
               onChange={(e) => updateFormData('addressReference', e.target.value)}
-              placeholder="Punto de referencia para ubicar la dirección"
+              placeholder="Punto de referencia para ubicar la dirección (opcional)"
             />
           </div>
         </div>

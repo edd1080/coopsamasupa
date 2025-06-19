@@ -81,6 +81,11 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
     return total > 0 ? total : null;
   };
 
+  // Helper function to handle field-specific navigation
+  const handleFieldEdit = (fieldName: string, fallbackSection: string) => {
+    onNavigateToSection(fallbackSection, fieldName);
+  };
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -96,35 +101,35 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
               <FieldPlaceholder
                 label="Nombre"
                 value={getFullName()}
-                onEdit={() => onNavigateToSection('identification')}
+                onEdit={() => handleFieldEdit('firstName', 'identification')}
                 required={true}
               />
               <FieldPlaceholder
                 label="DPI"
                 value={getSafeValue('dpi')}
-                onEdit={() => onNavigateToSection('identification')}
+                onEdit={() => handleFieldEdit('dpi', 'identification')}
                 required={true}
               />
               <FieldPlaceholder
                 label="NIT"
                 value={getSafeValue('nit')}
-                onEdit={() => onNavigateToSection('identification')}
+                onEdit={() => handleFieldEdit('nit', 'identification')}
               />
               <FieldPlaceholder
                 label="Teléfono"
                 value={getSafeValue('mobilePhone')}
-                onEdit={() => onNavigateToSection('identification')}
+                onEdit={() => handleFieldEdit('mobilePhone', 'identification')}
                 required={true}
               />
               <FieldPlaceholder
                 label="Email"
                 value={getSafeValue('email')}
-                onEdit={() => onNavigateToSection('identification')}
+                onEdit={() => handleFieldEdit('email', 'identification')}
               />
               <FieldPlaceholder
                 label="Agencia"
                 value={getSafeValue('agency')}
-                onEdit={() => onNavigateToSection('identification')}
+                onEdit={() => handleFieldEdit('agency', 'identification')}
               />
             </div>
           </CardContent>
@@ -142,13 +147,13 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
               <FieldPlaceholder
                 label="Ingresos Principales"
                 value={formatCurrency(getSafeValue('ingresoPrincipal', null))}
-                onEdit={() => onNavigateToSection('finances')}
+                onEdit={() => handleFieldEdit('ingresoPrincipal', 'finances')}
                 required={true}
               />
               <FieldPlaceholder
                 label="Gastos Mensuales"
                 value={formatCurrency(calculateMonthlyExpenses())}
-                onEdit={() => onNavigateToSection('finances')}
+                onEdit={() => handleFieldEdit('rentExpense', 'finances')}
               />
               <FieldPlaceholder
                 label="Patrimonio Neto"
@@ -171,17 +176,17 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
               <FieldPlaceholder
                 label="Situación Laboral"
                 value={getSafeValue('occupation')}
-                onEdit={() => onNavigateToSection('business')}
+                onEdit={() => handleFieldEdit('occupation', 'business')}
               />
               <FieldPlaceholder
                 label="Empresa/Negocio"
                 value={getSafeValue('companyName') || getSafeValue('businessName')}
-                onEdit={() => onNavigateToSection('business')}
+                onEdit={() => handleFieldEdit('companyName', 'business')}
               />
               <FieldPlaceholder
                 label="Experiencia"
                 value={getSafeValue('experienceYears') !== 'Por ingresar' ? `${getSafeValue('experienceYears')} años` : 'Por ingresar'}
-                onEdit={() => onNavigateToSection('business')}
+                onEdit={() => handleFieldEdit('experienceYears', 'business')}
               />
             </div>
           </CardContent>
@@ -197,7 +202,7 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-3 bg-background rounded-md">
+            <div className="text-center p-3 bg-background rounded-md cursor-pointer" onClick={() => handleFieldEdit('requestedAmount', 'identification')}>
               <p className="text-xs text-muted-foreground mb-1">Monto Solicitado</p>
               <p className="font-bold text-lg">
                 {getSafeValue('requestedAmount') !== 'Por ingresar' 
@@ -206,7 +211,7 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
                 }
               </p>
             </div>
-            <div className="text-center p-3 bg-background rounded-md">
+            <div className="text-center p-3 bg-background rounded-md cursor-pointer" onClick={() => handleFieldEdit('termMonths', 'identification')}>
               <p className="text-xs text-muted-foreground mb-1">Plazo</p>
               <p className="font-bold text-lg">
                 {getSafeValue('termMonths') !== 'Por ingresar' 
@@ -215,13 +220,13 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
                 }
               </p>
             </div>
-            <div className="text-center p-3 bg-background rounded-md">
+            <div className="text-center p-3 bg-background rounded-md cursor-pointer" onClick={() => handleFieldEdit('creditType', 'identification')}>
               <p className="text-xs text-muted-foreground mb-1">Tipo de Crédito</p>
               <p className="font-bold text-sm">
                 {getSafeValue('creditType', 'Por definir')}
               </p>
             </div>
-            <div className="text-center p-3 bg-background rounded-md">
+            <div className="text-center p-3 bg-background rounded-md cursor-pointer" onClick={() => handleFieldEdit('creditPurpose', 'identification')}>
               <p className="text-xs text-muted-foreground mb-1">Propósito</p>
               <p className="font-bold text-sm">
                 {getSafeValue('creditPurpose', 'Por definir')}
