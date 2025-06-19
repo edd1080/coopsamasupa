@@ -25,7 +25,7 @@ export type Database = {
           client_name?: string | null
           created_at?: string
           draft_data?: Json
-          id?: string
+          id: string
           last_step?: number | null
           last_sub_step?: number | null
           updated_at?: string

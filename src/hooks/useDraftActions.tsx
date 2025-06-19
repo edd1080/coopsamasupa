@@ -46,7 +46,7 @@ export const useSaveDraft = () => {
       const sanitizedFormData = sanitizeObjectData(formData);
       const sanitizedChangedData = changedData ? sanitizeObjectData(changedData) : null;
       
-      // Ensure we have a proper application ID
+      // Ensure we have a proper application ID in SCO_###### format
       if (!sanitizedFormData.applicationId) {
         sanitizedFormData.applicationId = generateApplicationId();
       }
@@ -73,20 +73,20 @@ export const useSaveDraft = () => {
       let finalDraftData = isIncremental && sanitizedChangedData ? sanitizedChangedData : sanitizedFormData;
       
       if (isIncremental && sanitizedChangedData) {
-        // Buscar borrador existente para combinar datos
+        // Buscar borrador existente para combinar datos - usando el applicationId como filtro
         const { data: existingDraft } = await supabase
           .from('application_drafts')
           .select('draft_data')
+          .eq('id', sanitizedFormData.applicationId)
           .eq('agent_id', user.id)
-          .order('updated_at', { ascending: false })
-          .limit(1)
           .maybeSingle();
         
         if (existingDraft) {
           // Combinar datos existentes con cambios
           finalDraftData = {
             ...existingDraft.draft_data,
-            ...sanitizedChangedData
+            ...sanitizedChangedData,
+            applicationId: sanitizedFormData.applicationId // Asegurar que el ID se mantenga
           };
           console.log('🔄 Combined existing draft with changes');
         } else {
@@ -96,11 +96,11 @@ export const useSaveDraft = () => {
         }
       }
       
-      // Use the application ID as the draft ID for consistency
+      // Use the application ID in SCO_###### format directly as the draft ID
       const draftId = sanitizedFormData.applicationId;
       
       const draftPayload = {
-        id: draftId,
+        id: draftId, // Ahora es texto en formato SCO_######
         agent_id: user.id,
         client_name: clientName,
         draft_data: finalDraftData,
@@ -129,7 +129,7 @@ export const useSaveDraft = () => {
       console.log('🎉 Draft save success, invalidating queries');
       queryClient.invalidateQueries({ queryKey: ['applications'] });
       queryClient.invalidateQueries({ queryKey: ['application-drafts'] });
-      queryClient.invalidateQueries({ queryKey: ['application-metrics'] }); // Add this line
+      queryClient.invalidateQueries({ queryKey: ['application-metrics'] });
       
       const saveType = variables.isIncremental ? 'guardado incremental' : 'borrador guardado';
       
