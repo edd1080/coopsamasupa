@@ -1,23 +1,32 @@
-
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Info } from 'lucide-react';
+import { ArrowLeft, User, Info, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useAgentProfile } from '@/hooks/useSupabaseQuery';
+import { useAuth } from '@/hooks/useAuth';
 
 const PersonalInfo = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    firstName: 'Carlos',
-    lastName: 'López',
-    email: 'carlos.lopez@coopsama.com',
-    phone: '+502 1234-5678',
-    position: 'Asesor de créditos',
-    branch: 'Sucursal Central'
-  });
+  const { user } = useAuth();
+  const { data: agentProfile, isLoading, error } = useAgentProfile();
+
+  // Función para obtener el valor del perfil o un valor por defecto
+  const getProfileValue = (field: string, defaultValue: string = 'No disponible') => {
+    if (isLoading) return 'Cargando...';
+    if (error || !agentProfile) return defaultValue;
+    return agentProfile[field] || defaultValue;
+  };
+
+  // Función para obtener el email del usuario autenticado
+  const getUserEmail = () => {
+    if (isLoading) return 'Cargando...';
+    if (error || !user) return 'No disponible';
+    return user.email || 'No disponible';
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -47,6 +56,7 @@ const PersonalInfo = () => {
             <CardTitle className="flex items-center gap-2">
               <User className="h-5 w-5 text-primary" />
               Datos Personales
+              {isLoading && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -55,7 +65,7 @@ const PersonalInfo = () => {
                 <Label htmlFor="firstName">Nombre</Label>
                 <Input
                   id="firstName"
-                  value={formData.firstName}
+                  value={getProfileValue('first_name')}
                   readOnly
                   className="bg-muted"
                 />
@@ -64,7 +74,7 @@ const PersonalInfo = () => {
                 <Label htmlFor="lastName">Apellido</Label>
                 <Input
                   id="lastName"
-                  value={formData.lastName}
+                  value={getProfileValue('last_name')}
                   readOnly
                   className="bg-muted"
                 />
@@ -76,7 +86,7 @@ const PersonalInfo = () => {
               <Input
                 id="email"
                 type="email"
-                value={formData.email}
+                value={getUserEmail()}
                 readOnly
                 className="bg-muted"
               />
@@ -86,7 +96,7 @@ const PersonalInfo = () => {
               <Label htmlFor="phone">Teléfono</Label>
               <Input
                 id="phone"
-                value={formData.phone}
+                value={getProfileValue('phone')}
                 readOnly
                 className="bg-muted"
               />
@@ -96,7 +106,7 @@ const PersonalInfo = () => {
               <Label htmlFor="position">Puesto</Label>
               <Input
                 id="position"
-                value={formData.position}
+                value={getProfileValue('role')}
                 readOnly
                 className="bg-muted"
               />
@@ -106,7 +116,17 @@ const PersonalInfo = () => {
               <Label htmlFor="branch">Sucursal</Label>
               <Input
                 id="branch"
-                value={formData.branch}
+                value={getProfileValue('agency')}
+                readOnly
+                className="bg-muted"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="employeeId">ID de Empleado</Label>
+              <Input
+                id="employeeId"
+                value={getProfileValue('employee_id')}
                 readOnly
                 className="bg-muted"
               />
@@ -118,4 +138,4 @@ const PersonalInfo = () => {
   );
 };
 
-export default PersonalInfo;
+export default PersonalInfo; 
