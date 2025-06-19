@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -6,6 +5,7 @@ import { useSaveDraft } from '@/hooks/useDraftActions';
 import { useIncrementalSave } from '@/hooks/useIncrementalSave';
 import { useDraftFormData } from '@/hooks/useApplicationData';
 import { Loader2 } from 'lucide-react';
+import { generateApplicationId } from '@/utils/applicationIdGenerator';
 
 // Generate a random 6-digit number for application IDs
 const generateRandomId = () => {
@@ -169,8 +169,11 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
     currentData: formData,
     onSave: async (dataToSave: any, hasChanges: boolean) => {
       if (hasChanges) {
+        // Use proper application ID format for new applications
+        const applicationId = id || generateApplicationId();
+        
         await saveDraftMutation.mutateAsync({
-          formData,
+          formData: { ...formData, applicationId },
           currentStep: activeStep,
           currentSubStep: subStep,
           isIncremental: true,
@@ -210,9 +213,12 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
     console.log('🔍 Draft ID:', id);
     console.log('📊 Draft loading state:', { isDraftLoading, draftError: !!draftError });
     
-    // If we don't have an ID, initialize with empty form
+    // If we don't have an ID, initialize with empty form and generate new ID
     if (!id) {
       console.log('✅ No ID provided, initializing empty form');
+      const newApplicationId = generateApplicationId();
+      console.log('🆔 Generated new application ID:', newApplicationId);
+      setFormData({ applicationId: newApplicationId });
       setDataLoaded(true);
       setLoadingError(null);
       return;
@@ -239,6 +245,11 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
       try {
         const loadedFormData = draftData.draft_data || {};
         const clientName = draftData.client_name || 'Sin nombre';
+        
+        // Ensure applicationId is in the correct format
+        if (!loadedFormData.applicationId) {
+          loadedFormData.applicationId = id.startsWith('SCO_') ? id : generateApplicationId();
+        }
         
         setFormData(loadedFormData);
         setInitialFormData(loadedFormData);
@@ -298,11 +309,12 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
   
   // Update person name when fullName changes
   useEffect(() => {
-    if (formData.fullName && formData.fullName !== personName) {
-      setPersonName(formData.fullName);
-      console.log('👤 Person name updated:', formData.fullName);
+    const fullName = formData.fullName || formData.firstName && formData.lastName ? `${formData.firstName} ${formData.lastName}` : '';
+    if (fullName && fullName !== personName) {
+      setPersonName(fullName);
+      console.log('👤 Person name updated:', fullName);
     }
-  }, [formData.fullName, personName]);
+  }, [formData.fullName, formData.firstName, formData.lastName, personName]);
   
   // Loading component
   if (isLoading || (!dataLoaded && !loadingError)) {
@@ -389,6 +401,13 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
         setPersonName(value);
       }
       
+      // Update person name if firstName/lastName are being updated
+      if ((field === 'firstName' || field === 'lastName') && newData.firstName && newData.lastName) {
+        const fullName = `${newData.firstName} ${newData.lastName}`;
+        setPersonName(fullName);
+        newData.fullName = fullName;
+      }
+      
       return newData;
     });
     
@@ -425,6 +444,14 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
     console.log('💾 Saving draft with incremental save...');
     
     try {
+      // Ensure we have a proper application ID
+      const applicationId = formData.applicationId || generateApplicationId();
+      const updatedFormData = { ...formData, applicationId };
+      
+      if (applicationId !== formData.applicationId) {
+        setFormData(updatedFormData);
+      }
+      
       await saveIncremental(false);
       
       if (checkSectionCompletion()) {

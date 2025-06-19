@@ -9,6 +9,7 @@ import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, C
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Calendar, FileText, Edit, Trash2, MoreVertical, CheckCircle, AlertCircle, BarChart3, Banknote, FileSignature, UserCheck, FileImage, Users, X, Clock, Eye } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import { formatApplicationId } from '@/utils/applicationIdGenerator';
 
 interface Application {
   id: string;
@@ -156,7 +157,7 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
                     <Calendar className="h-3 w-3" />
                     <span>{formatDate(application.date)}</span>
                     <FileText className="h-3 w-3 ml-2" />
-                    <span>{application.id}</span>
+                    <span>{formatApplicationId(application.id)}</span>
                   </div>
                 </div>
                 

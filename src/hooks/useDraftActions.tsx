@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from "@/hooks/use-toast";
 import { sanitizeObjectData, validateTextInput } from '@/utils/inputValidation';
 import { sanitizeConsoleOutput, formRateLimit } from '@/utils/securityUtils';
+import { generateApplicationId } from '@/utils/applicationIdGenerator';
 
 // Hook para guardar borrador con soporte incremental y validación mejorada
 export const useSaveDraft = () => {
@@ -44,6 +45,11 @@ export const useSaveDraft = () => {
       // Sanitize all input data
       const sanitizedFormData = sanitizeObjectData(formData);
       const sanitizedChangedData = changedData ? sanitizeObjectData(changedData) : null;
+      
+      // Ensure we have a proper application ID
+      if (!sanitizedFormData.applicationId) {
+        sanitizedFormData.applicationId = generateApplicationId();
+      }
       
       // Construir el nombre del cliente desde diferentes fuentes posibles
       const clientName = sanitizedFormData?.fullName ||
@@ -90,7 +96,11 @@ export const useSaveDraft = () => {
         }
       }
       
+      // Use the application ID as the draft ID for consistency
+      const draftId = sanitizedFormData.applicationId;
+      
       const draftPayload = {
+        id: draftId,
         agent_id: user.id,
         client_name: clientName,
         draft_data: finalDraftData,
@@ -99,7 +109,7 @@ export const useSaveDraft = () => {
         updated_at: new Date().toISOString()
       };
       
-      console.log('📦 Draft payload prepared');
+      console.log('📦 Draft payload prepared with ID:', draftId);
       
       const { data, error } = await supabase
         .from('application_drafts')
@@ -119,12 +129,13 @@ export const useSaveDraft = () => {
       console.log('🎉 Draft save success, invalidating queries');
       queryClient.invalidateQueries({ queryKey: ['applications'] });
       queryClient.invalidateQueries({ queryKey: ['application-drafts'] });
+      queryClient.invalidateQueries({ queryKey: ['application-metrics'] }); // Add this line
       
       const saveType = variables.isIncremental ? 'guardado incremental' : 'borrador guardado';
       
       toast({
         title: `${saveType.charAt(0).toUpperCase() + saveType.slice(1)}`,
-        description: `Tu solicitud ha sido guardada (ID: ${data.id.slice(0, 8)}...)`,
+        description: `Tu solicitud ha sido guardada (ID: ${data.id})`,
         variant: "default",
         className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
         duration: variables.isIncremental ? 2000 : 3000,
