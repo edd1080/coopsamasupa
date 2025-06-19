@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import SpouseInfoForm from './SpouseInfoForm';
 
 interface PersonalInfoFormProps {
   formData: any;
@@ -16,6 +17,8 @@ interface PersonalInfoFormProps {
 }
 
 const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ formData, updateFormData }) => {
+  const isMarried = formData.civilStatus === 'married';
+
   return (
     <>
       {/* Nombres y Apellidos */}
@@ -81,6 +84,11 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ formData, updateFor
           </Select>
         </div>
       </div>
+
+      {/* Información del Cónyuge - aparece inmediatamente después del Estado Civil */}
+      {isMarried && (
+        <SpouseInfoForm formData={formData} updateFormData={updateFormData} />
+      )}
     </>
   );
 };

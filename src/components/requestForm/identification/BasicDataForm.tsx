@@ -1,11 +1,10 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useFormContext } from '../RequestFormProvider';
 import AgencyMemberForm from './AgencyMemberForm';
 import PersonalInfoForm from './PersonalInfoForm';
 import DocumentsForm from './DocumentsForm';
 import BirthDemographicsForm from './BirthDemographicsForm';
-import SpouseInfoForm from './SpouseInfoForm';
 import DisabilityForm from './DisabilityForm';
 
 interface BasicDataFormProps {
@@ -15,11 +14,6 @@ interface BasicDataFormProps {
 
 const BasicDataForm: React.FC<BasicDataFormProps> = ({ formData, updateFormData }) => {
   const { isLoading, loadingError } = useFormContext();
-  const [isMarried, setIsMarried] = useState(formData?.civilStatus === 'married');
-
-  useEffect(() => {
-    setIsMarried(formData?.civilStatus === 'married');
-  }, [formData?.civilStatus]);
 
   console.log('🎯 BasicDataForm rendering', { 
     hasFormData: !!formData, 
@@ -78,7 +72,7 @@ const BasicDataForm: React.FC<BasicDataFormProps> = ({ formData, updateFormData 
         {/* Agencia y Tipo Socio */}
         <AgencyMemberForm formData={safeFormData} updateFormData={updateFormData} />
 
-        {/* Información Personal */}
+        {/* Información Personal - ahora incluye la lógica del cónyuge */}
         <PersonalInfoForm formData={safeFormData} updateFormData={updateFormData} />
 
         {/* Documentos */}
@@ -86,11 +80,6 @@ const BasicDataForm: React.FC<BasicDataFormProps> = ({ formData, updateFormData 
 
         {/* Fecha de Nacimiento y Demografía */}
         <BirthDemographicsForm formData={safeFormData} updateFormData={updateFormData} />
-
-        {/* Campos condicionales para cónyuge */}
-        {isMarried && (
-          <SpouseInfoForm formData={safeFormData} updateFormData={updateFormData} />
-        )}
 
         {/* Campo de Incapacidad */}
         <DisabilityForm formData={safeFormData} updateFormData={updateFormData} />
