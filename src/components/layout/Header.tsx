@@ -97,7 +97,7 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, onExitFormCl
         <div className="flex items-center justify-center min-h-[32px]">
           {location.pathname === '/' ? (
             <img 
-              src="/lovable-uploads/8517c16c-a94c-48da-9b01-9cabbde80b84.png" 
+              src="/lovable-uploads/9f6abc46-b5d3-4c4e-8dca-83c77428c52e.png" 
               alt="COOPSAMA"
               className="h-8 w-auto object-contain"
             />
