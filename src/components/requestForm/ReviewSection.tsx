@@ -26,6 +26,23 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData }) => {
     return dateObj.toLocaleDateString('es-GT');
   };
 
+  // Map of field names to user-friendly labels
+  const fieldLabels: { [key: string]: string } = {
+    agency: 'Agencia',
+    cui: 'CUI/DPI',
+    fullName: 'Nombre Completo',
+    birthDate: 'Fecha de Nacimiento',
+    civilStatus: 'Estado Civil',
+    educationLevel: 'Nivel de Educación',
+    mobilePhone: 'Teléfono Móvil',
+    email: 'Correo Electrónico',
+    housingType: 'Tipo de Vivienda',
+    address: 'Dirección',
+    profession: 'Profesión',
+    requestedAmount: 'Monto Solicitado',
+    termMonths: 'Plazo en Meses'
+  };
+
   const getCompletionStatus = () => {
     const requiredFields = [
       'agency', 'cui', 'fullName', 'birthDate', 'civilStatus', 
@@ -34,12 +51,14 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData }) => {
     ];
     
     const completedFields = requiredFields.filter(field => formData[field]);
+    const missingFields = requiredFields.filter(field => !formData[field]);
     const completionPercentage = (completedFields.length / requiredFields.length) * 100;
     
     return {
       percentage: Math.round(completionPercentage),
       completed: completedFields.length,
-      total: requiredFields.length
+      total: requiredFields.length,
+      missingFields: missingFields.map(field => fieldLabels[field] || field)
     };
   };
 
@@ -59,7 +78,10 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData }) => {
         <div className="border rounded-md p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h4 className="font-medium">Estado de Completitud</h4>
-            <Badge variant={completion.percentage === 100 ? "default" : "secondary"}>
+            <Badge 
+              variant={completion.percentage === 100 ? "default" : "secondary"}
+              className={completion.percentage === 100 ? "" : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"}
+            >
               {completion.percentage}% Completo
             </Badge>
           </div>
@@ -67,12 +89,27 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData }) => {
             {completion.percentage === 100 ? (
               <CheckCircle className="h-5 w-5 text-green-500" />
             ) : (
-              <AlertCircle className="h-5 w-5 text-yellow-500" />
+              <AlertCircle className="h-5 w-5 text-red-500" />
             )}
             <span className="text-sm">
               {completion.completed} de {completion.total} campos requeridos completados
             </span>
           </div>
+          
+          {/* Lista de campos faltantes */}
+          {completion.missingFields.length > 0 && (
+            <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-sm font-medium text-red-800 mb-2">Campos requeridos faltantes:</p>
+              <ul className="text-sm text-red-700 space-y-1">
+                {completion.missingFields.map((field, index) => (
+                  <li key={index} className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                    {field}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         {/* Información Personal */}
@@ -224,7 +261,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData }) => {
                   {doc.status === 'success' ? (
                     <CheckCircle className="h-4 w-4 text-green-500" />
                   ) : (
-                    <AlertCircle className="h-4 w-4 text-yellow-500" />
+                    <AlertCircle className="h-4 w-4 text-red-500" />
                   )}
                   <span>{key.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}</span>
                 </div>
@@ -252,7 +289,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData }) => {
               <span className="font-medium">La solicitud está lista para enviar</span>
             </div>
           ) : (
-            <div className="flex items-center gap-2 text-yellow-700">
+            <div className="flex items-center gap-2 text-red-700">
               <AlertCircle className="h-5 w-5" />
               <span className="font-medium">Faltan campos requeridos por completar</span>
             </div>
