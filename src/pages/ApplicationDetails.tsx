@@ -27,12 +27,21 @@ import {
   FileCheck,
   Briefcase,
   Plus,
-  Camera
+  Camera,
+  Calendar,
+  Phone,
+  Mail,
+  IdCard,
+  Building,
+  TrendingUp,
+  PieChart
 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import SummaryTab from '@/components/applications/tabs/SummaryTab';
 import { useApplicationData } from '@/hooks/useApplicationData';
 import { getFieldNavigation } from '@/utils/fieldNavigation';
+import { getFirstName, extractApplicationDetails } from '@/utils/nameExtraction';
+import { formatCurrency } from '@/utils/prequalificationEngine';
 
 const applicationStatuses = {
   'pending': {
@@ -56,27 +65,33 @@ const applicationStatuses = {
 const formSections = [{
   id: 'identification',
   icon: <User size={18} />,
-  name: 'Identificación y Contacto'
+  name: 'Identificación y Contacto',
+  bgColor: 'bg-blue-50'
 }, {
   id: 'finances',
   icon: <DollarSign size={18} />,
-  name: 'Finanzas y Patrimonio'
+  name: 'Finanzas y Patrimonio',
+  bgColor: 'bg-green-50'
 }, {
   id: 'business',
   icon: <MapPin size={18} />,
-  name: 'Negocio y Perfil Económico'
+  name: 'Negocio y Perfil Económico',
+  bgColor: 'bg-orange-50'
 }, {
   id: 'guarantors',
   icon: <Users size={18} />,
-  name: 'Fiadores y Referencias'
+  name: 'Fiadores y Referencias',
+  bgColor: 'bg-purple-50'
 }, {
   id: 'documents',
   icon: <FileCheck size={18} />,
-  name: 'Documentos'
+  name: 'Documentos',
+  bgColor: 'bg-yellow-50'
 }, {
   id: 'review',
   icon: <CheckCircle size={18} />,
-  name: 'Revisión Final'
+  name: 'Revisión Final',
+  bgColor: 'bg-pink-50'
 }];
 
 const ApplicationDetails = () => {
@@ -309,10 +324,13 @@ const ApplicationDetails = () => {
     return application.data || application;
   };
 
+  // Extraer detalles completos de la aplicación
+  const applicationDetails = extractApplicationDetails(application);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header 
-        personName={getDisplayName().split(' ')[0] || ''} 
+        personName={getFirstName(getDisplayName())} 
         applicationId={application.id} 
       />
       
@@ -372,7 +390,7 @@ const ApplicationDetails = () => {
                   className="h-auto py-2 flex flex-col items-center text-xs gap-1 flex-1 min-h-[5rem] sm:min-h-[4.5rem]" 
                   onClick={() => navigateToFormSection(section.id)}
                 >
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mb-1">
+                  <div className={`w-8 h-8 rounded-full ${section.bgColor} flex items-center justify-center mb-1 border border-primary/10`}>
                     {section.icon}
                   </div>
                   <span className="text-center leading-tight px-1 whitespace-normal sm:whitespace-nowrap overflow-hidden">
@@ -406,11 +424,12 @@ const ApplicationDetails = () => {
           
           <TabsContent value="details">
             <div className="space-y-6">
+              {/* Información General */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center text-lg">
-                    <User className="h-5 w-5 mr-2 text-primary" />
-                    Información de la Solicitud
+                    <IdCard className="h-5 w-5 mr-2 text-primary" />
+                    Información General
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -420,45 +439,211 @@ const ApplicationDetails = () => {
                       <p className="font-medium">{application.id}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Nombre del Cliente</p>
-                      <p className="font-medium">{getDisplayName()}</p>
+                      <p className="text-sm text-muted-foreground">Nombre Completo</p>
+                      <p className="font-medium">{applicationDetails.personalInfo.fullName || getDisplayName()}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Tipo</p>
-                      <p className="font-medium">{application.isDraft ? 'Borrador' : 'Solicitud Completa'}</p>
+                      <p className="text-sm text-muted-foreground">DPI</p>
+                      <p className="font-medium">{applicationDetails.personalInfo.dpi || 'No registrado'}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Estado</p>
+                      <p className="text-sm text-muted-foreground">Teléfono</p>
+                      <p className="font-medium flex items-center gap-1">
+                        <Phone className="h-3 w-3" />
+                        {applicationDetails.personalInfo.phone || 'No registrado'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Email</p>
+                      <p className="font-medium flex items-center gap-1">
+                        <Mail className="h-3 w-3" />
+                        {applicationDetails.personalInfo.email || 'No registrado'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Estado Civil</p>
+                      <p className="font-medium">{applicationDetails.personalInfo.civilStatus || 'No registrado'}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Información Financiera */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center text-lg">
+                    <TrendingUp className="h-5 w-5 mr-2 text-primary" />
+                    Información Financiera
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Monto Solicitado</p>
+                      <p className="font-medium text-lg text-primary">
+                        {formatCurrency(applicationDetails.metadata.requestedAmount)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Producto</p>
+                      <p className="font-medium">{applicationDetails.metadata.productType || 'No especificado'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Ingresos Mensuales</p>
+                      <p className="font-medium">
+                        {applicationDetails.financialInfo.monthlyIncome > 0 
+                          ? formatCurrency(applicationDetails.financialInfo.monthlyIncome)
+                          : 'No registrado'
+                        }
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Gastos Mensuales</p>
+                      <p className="font-medium">
+                        {applicationDetails.financialInfo.monthlyExpenses > 0 
+                          ? formatCurrency(applicationDetails.financialInfo.monthlyExpenses)
+                          : 'No registrado'
+                        }
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Patrimonio</p>
+                      <p className="font-medium">
+                        {applicationDetails.financialInfo.assets > 0 
+                          ? formatCurrency(applicationDetails.financialInfo.assets)
+                          : 'No registrado'
+                        }
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Pasivos</p>
+                      <p className="font-medium">
+                        {applicationDetails.financialInfo.liabilities > 0 
+                          ? formatCurrency(applicationDetails.financialInfo.liabilities)
+                          : 'No registrado'
+                        }
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Información del Negocio */}
+              {(applicationDetails.businessInfo.businessName || applicationDetails.businessInfo.businessType) && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center text-lg">
+                      <Building className="h-5 w-5 mr-2 text-primary" />
+                      Información del Negocio
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Nombre del Negocio</p>
+                        <p className="font-medium">{applicationDetails.businessInfo.businessName || 'No registrado'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Tipo de Negocio</p>
+                        <p className="font-medium">{applicationDetails.businessInfo.businessType || 'No registrado'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Dirección del Negocio</p>
+                        <p className="font-medium">{applicationDetails.businessInfo.businessAddress || 'No registrada'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Años en el Negocio</p>
+                        <p className="font-medium">
+                          {applicationDetails.businessInfo.yearsInBusiness > 0 
+                            ? `${applicationDetails.businessInfo.yearsInBusiness} años`
+                            : 'No registrado'
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Estado y Progreso */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center text-lg">
+                    <PieChart className="h-5 w-5 mr-2 text-primary" />
+                    Estado y Progreso
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Estado Actual</p>
                       <Badge className={getStatusClass()}>
                         {application.isDraft ? 'Borrador' : applicationStatuses[application.status as keyof typeof applicationStatuses]?.label || application.status}
                       </Badge>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Última Actualización</p>
+                      <p className="text-sm text-muted-foreground">Etapa Actual</p>
+                      <p className="font-medium">{applicationDetails.metadata.currentStage || 'En proceso'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Paso Actual</p>
+                      <p className="font-medium">{getProgress()}/6 secciones completadas</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Último Sub-paso</p>
                       <p className="font-medium">
-                        {new Date(application.updated_at).toLocaleDateString('es-GT', {
+                        {applicationDetails.metadata.lastSubStep || 'No disponible'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Fecha de Creación</p>
+                      <p className="font-medium flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {new Date(application.created_at).toLocaleDateString('es-GT', {
                           day: '2-digit',
                           month: 'long',
-                          year: 'numeric'
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
                         })}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Progreso</p>
-                      <p className="font-medium">{getProgress()}/6 pasos completados</p>
+                      <p className="text-sm text-muted-foreground">Última Actualización</p>
+                      <p className="font-medium flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {new Date(application.updated_at).toLocaleDateString('es-GT', {
+                          day: '2-digit',
+                          month: 'long',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
                     </div>
                   </div>
-                  
-                  {application.draft_data && (
-                    <div className="mt-6">
-                      <h4 className="text-sm font-medium mb-3">Datos del Formulario</h4>
-                      <div className="bg-muted/30 p-4 rounded-md">
-                        <p className="text-sm text-muted-foreground">
-                          Los datos detallados del formulario están disponibles y se pueden editar.
-                        </p>
-                      </div>
+                </CardContent>
+              </Card>
+
+              {/* Agente Asignado */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center text-lg">
+                    <User className="h-5 w-5 mr-2 text-primary" />
+                    Agente Asignado
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">ID del Agente</p>
+                      <p className="font-medium">{applicationDetails.metadata.agentId}</p>
                     </div>
-                  )}
+                    <div>
+                      <p className="text-sm text-muted-foreground">Tipo de Aplicación</p>
+                      <p className="font-medium">{application.isDraft ? 'Borrador' : 'Solicitud Completa'}</p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>

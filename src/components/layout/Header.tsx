@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, PlusCircle, X } from 'lucide-react';
 import { formatApplicationId } from '@/utils/applicationIdGenerator';
+import { getFirstName } from '@/utils/nameExtraction';
 
 interface HeaderProps {
   personName?: string;
@@ -49,28 +50,25 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, onExitFormCl
     if (location.pathname === '/prequalifications') return "Precalificación";
     if (location.pathname === '/settings') return "Ajustes";
     
-    // Para formularios de solicitud
-    if (isFormPage) {
-      // Si hay nombre de persona, usar ese
-      if (personName) return personName;
+    // Para formularios de solicitud y detalles de aplicación
+    if (isFormPage || isApplicationDetails) {
+      // Si hay nombre de persona, usar solo el primer nombre
+      if (personName) {
+        return getFirstName(personName);
+      }
       // Si no hay applicationId o es una nueva solicitud, mostrar "Solicitud Nueva"
       if (!applicationId || location.pathname === '/applications/new') return "Solicitud Nueva";
       // Si hay applicationId pero no nombre, usar el ID formateado
       return `Solicitud ${formatApplicationId(applicationId)}`;
     }
     
-    // Para detalles de aplicación
-    if (isApplicationDetails && personName) return personName;
-    
     // Fallback solo si no coincide con ningún caso anterior
     return "Coopsama App";
   };
 
   const getSubtitle = () => {
-    if (isFormPage && applicationId && location.pathname !== '/applications/new') {
-      return `Solicitud ${formatApplicationId(applicationId)}`;
-    }
-    if (isApplicationDetails && applicationId) {
+    // Solo mostrar subtítulo para formularios y detalles de aplicación
+    if ((isFormPage || isApplicationDetails) && applicationId && location.pathname !== '/applications/new') {
       return `Solicitud ${formatApplicationId(applicationId)}`;
     }
     return null;
