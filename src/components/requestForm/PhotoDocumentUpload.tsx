@@ -84,26 +84,11 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
   return <div className="space-y-6">
       <div className="text-center mb-6">
         <h3 className="font-semibold text-xl mb-2 text-left">Documentos Requeridos</h3>
-        <p className="text-muted-foreground text-left">
-          Sube los documentos específicos requeridos para procesar tu solicitud de crédito en Guatemala.
-        </p>
+        <p className="text-muted-foreground text-left">Sube los siguientes documentos requeridos para procesar la solicitud de crédito.</p>
       </div>
       
       {/* Información de documentos requeridos */}
-      <Card className="border-blue-200 bg-blue-50/50 dark:bg-blue-950/10">
-        <CardContent className="p-4">
-          <h4 className="font-medium mb-2 text-blue-900 dark:text-blue-100">
-            Documentos Obligatorios para Solicitud de Crédito:
-          </h4>
-          <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-            <li>• DPI (ambos lados) - Documento Personal de Identificación vigente</li>
-            <li>• Fotografía del solicitante (selfie frontal)</li>
-            <li>• Recibos de servicios públicos (máximo 3 meses de antigüedad)</li>
-            <li>• Fotografía con el agente de negocios</li>
-            <li>• Firma digital del solicitante</li>
-          </ul>
-        </CardContent>
-      </Card>
+      
       
       {/* Document Grid */}
       {documentRows.map((row, rowIndex) => <div key={rowIndex} className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
