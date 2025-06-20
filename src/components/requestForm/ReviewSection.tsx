@@ -3,14 +3,18 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { CheckCircle, AlertCircle } from 'lucide-react';
+import { CheckCircle, AlertCircle, Send } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useFormContext } from './RequestFormProvider';
 
 interface ReviewSectionProps {
   formData: any;
   updateFormData: (field: string, value: any) => void;
 }
 
-const ReviewSection: React.FC<ReviewSectionProps> = ({ formData }) => {
+const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData }) => {
+  const { handleSubmit } = useFormContext();
+
   const formatCurrency = (amount: number | string) => {
     const num = typeof amount === 'string' ? parseFloat(amount) : amount;
     return new Intl.NumberFormat('es-GT', { 
@@ -26,43 +30,105 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData }) => {
     return dateObj.toLocaleDateString('es-GT');
   };
 
-  // Map of field names to user-friendly labels
+  // Map of field names to user-friendly labels - updated with correct field names
   const fieldLabels: { [key: string]: string } = {
-    agency: 'Agencia',
-    cui: 'CUI/DPI',
-    fullName: 'Nombre Completo',
-    birthDate: 'Fecha de Nacimiento',
+    // Identificación básica
+    firstName: 'Nombres',
+    gender: 'Género',
     civilStatus: 'Estado Civil',
-    educationLevel: 'Nivel de Educación',
+    dpi: 'DPI (13 dígitos)',
+    dpiExtendedIn: 'DPI Extendido en',
+    cua: 'CUA - T24',
+    cif: 'CIF',
+    nit: 'NIT',
+    // Contacto
     mobilePhone: 'Teléfono Móvil',
     email: 'Correo Electrónico',
-    housingType: 'Tipo de Vivienda',
     address: 'Dirección',
-    profession: 'Profesión',
+    // Información del crédito
+    creditPurpose: 'Destino del Crédito',
     requestedAmount: 'Monto Solicitado',
     termMonths: 'Plazo en Meses'
   };
 
   const getCompletionStatus = () => {
+    // Campos absolutamente requeridos basados en la estructura real del formulario
     const requiredFields = [
-      'agency', 'cui', 'fullName', 'birthDate', 'civilStatus', 
-      'educationLevel', 'mobilePhone', 'email', 'housingType', 
-      'address', 'profession', 'requestedAmount', 'termMonths'
+      // Identificación básica - campos que aparecen en BasicDataForm
+      'firstName',
+      'gender', 
+      'civilStatus',
+      'dpi',
+      'dpiExtendedIn',
+      'cua',
+      'cif',
+      'nit',
+      // Contacto - campos que aparecen en ContactHousingForm
+      'mobilePhone',
+      'email',
+      'address',
+      // Información del crédito - campos que aparecen en CreditInfoForm
+      'creditPurpose',
+      'requestedAmount',
+      'termMonths'
     ];
     
-    const completedFields = requiredFields.filter(field => formData[field]);
-    const missingFields = requiredFields.filter(field => !formData[field]);
+    const completedFields = requiredFields.filter(field => {
+      const value = formData[field];
+      // Para campos numéricos, verificar que sean mayor a 0
+      if (field === 'requestedAmount' || field === 'termMonths') {
+        return value && parseFloat(value) > 0;
+      }
+      // Para DPI, verificar que tenga exactamente 13 dígitos
+      if (field === 'dpi') {
+        return value && value.length === 13 && /^\d{13}$/.test(value);
+      }
+      // Para NIT, verificar que tenga al menos 8 dígitos
+      if (field === 'nit') {
+        return value && value.length >= 8 && /^\d+$/.test(value);
+      }
+      // Para otros campos, verificar que no estén vacíos
+      return value && value.trim && value.trim().length > 0;
+    });
+    
+    const missingFields = requiredFields.filter(field => {
+      const value = formData[field];
+      if (field === 'requestedAmount' || field === 'termMonths') {
+        return !value || parseFloat(value) <= 0;
+      }
+      if (field === 'dpi') {
+        return !value || value.length !== 13 || !/^\d{13}$/.test(value);
+      }
+      if (field === 'nit') {
+        return !value || value.length < 8 || !/^\d+$/.test(value);
+      }
+      return !value || !value.trim || value.trim().length === 0;
+    });
+    
     const completionPercentage = (completedFields.length / requiredFields.length) * 100;
     
     return {
       percentage: Math.round(completionPercentage),
       completed: completedFields.length,
       total: requiredFields.length,
-      missingFields: missingFields.map(field => fieldLabels[field] || field)
+      missingFields: missingFields.map(field => fieldLabels[field] || field),
+      isComplete: completionPercentage === 100
     };
   };
 
   const completion = getCompletionStatus();
+
+  const handleSendApplication = () => {
+    if (completion.isComplete) {
+      // Marcar términos como aceptados antes del envío
+      updateFormData('termsAccepted', true);
+      updateFormData('dataProcessingAccepted', true);
+      updateFormData('creditCheckAccepted', true);
+      
+      // Llamar a la función de envío del contexto
+      handleSubmit();
+    }
+  };
 
   return (
     <Card className="border-0 shadow-none">
@@ -79,14 +145,14 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData }) => {
           <div className="flex items-center justify-between">
             <h4 className="font-medium">Estado de Completitud</h4>
             <Badge 
-              variant={completion.percentage === 100 ? "default" : "secondary"}
-              className={completion.percentage === 100 ? "" : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"}
+              variant={completion.isComplete ? "default" : "secondary"}
+              className={completion.isComplete ? "" : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"}
             >
               {completion.percentage}% Completo
             </Badge>
           </div>
           <div className="flex items-center gap-2">
-            {completion.percentage === 100 ? (
+            {completion.isComplete ? (
               <CheckCircle className="h-5 w-5 text-green-500" />
             ) : (
               <AlertCircle className="h-5 w-5 text-red-500" />
@@ -112,6 +178,29 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData }) => {
           )}
         </div>
 
+        {/* Botón de Enviar Solicitud - solo aparece cuando está 100% completo */}
+        {completion.isComplete && (
+          <div className="border rounded-md p-4 bg-green-50 border-green-200">
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex items-center gap-2 text-green-700">
+                <CheckCircle className="h-6 w-6" />
+                <span className="font-medium text-lg">¡Solicitud Lista para Enviar!</span>
+              </div>
+              <p className="text-sm text-green-600 text-center">
+                Todos los campos requeridos han sido completados. Puede proceder a enviar la solicitud.
+              </p>
+              <Button 
+                onClick={handleSendApplication}
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2"
+                size="lg"
+              >
+                <Send className="h-4 w-4 mr-2" />
+                Enviar Solicitud
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Información Personal */}
         <div className="space-y-4">
           <h4 className="font-medium">1. Identificación y Contacto</h4>
@@ -123,10 +212,10 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData }) => {
               <span className="font-medium">Fecha Solicitud:</span> {formatDate(formData.applicationDate)}
             </div>
             <div>
-              <span className="font-medium">CUI:</span> {formData.cui || 'No especificado'}
+              <span className="font-medium">DPI:</span> {formData.dpi || 'No especificado'}
             </div>
             <div>
-              <span className="font-medium">Nombre:</span> {formData.fullName || 'No especificado'}
+              <span className="font-medium">Nombre:</span> {formData.firstName || 'No especificado'} {formData.lastName || ''}
             </div>
             <div>
               <span className="font-medium">Estado Civil:</span> {formData.civilStatus || 'No especificado'}
@@ -281,20 +370,15 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData }) => {
           </>
         )}
 
-        {/* Mensaje de Estado */}
-        <div className="border rounded-md p-4 bg-muted/20">
-          {completion.percentage === 100 ? (
-            <div className="flex items-center gap-2 text-green-700">
-              <CheckCircle className="h-5 w-5" />
-              <span className="font-medium">La solicitud está lista para enviar</span>
-            </div>
-          ) : (
+        {/* Mensaje de Estado - solo aparece cuando NO está completo */}
+        {!completion.isComplete && (
+          <div className="border rounded-md p-4 bg-muted/20">
             <div className="flex items-center gap-2 text-red-700">
               <AlertCircle className="h-5 w-5" />
               <span className="font-medium">Faltan campos requeridos por completar</span>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
