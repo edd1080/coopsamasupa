@@ -123,7 +123,7 @@ const Prequalifications = () => {
                 <p className="font-bold text-base text-gray-800 mx-0 px-0">No hay precalificaciones registradas</p>
                 <p className="text-sm font-thin">Puedes crear una nueva precalificación usando el botón de abajo</p>
               </div>
-              <Button className="w-full" onClick={() => setShowPrequalificationModal(true)}>
+              <Button variant="success" className="w-full" onClick={() => setShowPrequalificationModal(true)}>
                 <FileSpreadsheet className="mr-2 h-4 w-4" />
                 Iniciar Pre-Calificación
               </Button>

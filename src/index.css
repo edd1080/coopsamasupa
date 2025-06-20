@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
 
 @tailwind base;
@@ -24,8 +25,8 @@
     --secondary: 210 16% 90%;
     --secondary-foreground: 219 39% 11%;
 
-    /* Accent: Verde principal #53B742 */
-    --accent: 112 47% 49%;
+    /* Accent: Verde principal #35CE55 */
+    --accent: 112 60% 51%;
     --accent-foreground: 0 0% 100%;
 
     --muted: 210 16% 93%; /* Gris claro */
@@ -39,12 +40,12 @@
     --ring: 219 69% 32%; /* Mismo que primary */
 
     /* Success, Warning, Error */
-    --success: 112 47% 49%; /* Verde accent para success */
+    --success: 112 60% 51%; /* Verde accent para success */
     --warning: 45 93% 47%; /* Amarillo vibrante */
     --error: 0 72% 51%; /* Rojo vibrante */
 
-    /* Custom hover color #EAFFE7 */
-    --soft-green-hover: 112 64% 92%;
+    /* Custom hover color #E3FFE9 */
+    --soft-green-hover: 112 100% 94%;
 
     --radius: 0.75rem;
   }
@@ -68,8 +69,8 @@
     --secondary: 219 30% 18%;
     --secondary-foreground: 210 18% 87%;
 
-    /* Accent: Verde más claro para dark mode #65D952 */
-    --accent: 112 57% 59%;
+    /* Accent: Verde #35CE55 para dark mode */
+    --accent: 112 60% 51%;
     --accent-foreground: 219 39% 11%;
 
     --muted: 219 30% 18%; /* Gris medio basado en azul */
@@ -83,7 +84,7 @@
     --ring: 217 91% 60%; /* Mismo que primary */
 
     /* Success, Warning, Error para dark mode */
-    --success: 112 57% 59%; /* Verde accent más claro */
+    --success: 112 60% 51%; /* Verde accent */
     --warning: 45 93% 47%; /* Amarillo vibrante */
     --error: 0 72% 51%; /* Rojo vibrante */
 

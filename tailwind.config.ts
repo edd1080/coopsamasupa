@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -58,13 +59,13 @@ export default {
 				accent: {
 					DEFAULT: 'hsl(var(--accent))',
 					foreground: 'hsl(var(--accent-foreground))',
-					// Verde #53B742 variations
+					// Verde #35CE55 variations
 					50: '#f0fdf4',
 					100: '#dcfce7',
 					200: '#bbf7d0',
 					300: '#86efac',
 					400: '#4ade80',
-					500: '#53B742', // Original color
+					500: '#35CE55', // New color
 					600: '#16a34a',
 					700: '#15803d',
 					800: '#166534',
@@ -108,13 +109,13 @@ export default {
 					200: '#bbf7d0',
 					300: '#86efac',
 					400: '#4ade80',
-					500: '#53B742',
+					500: '#35CE55',
 					600: '#22c55e',
 					700: '#15803d',
 					800: '#166534',
 					900: '#14532d'
 				},
-				// Soft green hover color #EAFFE7
+				// Soft green hover color #E3FFE9
 				'soft-green': {
 					'hover': 'hsl(var(--soft-green-hover))'
 				}
