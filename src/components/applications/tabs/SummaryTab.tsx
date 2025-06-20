@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { User, DollarSign, Briefcase, FileText, FileCheck, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import FieldPlaceholder from '../placeholders/FieldPlaceholder';
+import InteractiveDocumentCard from '@/components/documents/InteractiveDocumentCard';
+import { useDocumentManager, guatemalanDocuments } from '@/hooks/useDocumentManager';
 
 interface SummaryTabProps {
   application: any;
@@ -15,6 +17,8 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
   onNavigateToSection,
   onNavigateToDocuments
 }) => {
+  const { documents, loadingDocument, uploadDocument, removeDocument } = useDocumentManager();
+
   const formatCurrency = (amount: number | undefined | null) => {
     if (!amount || amount === 0) return null;
     return new Intl.NumberFormat('es-GT', {
@@ -84,6 +88,16 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
   // Helper function to handle field-specific navigation
   const handleFieldEdit = (fieldName: string, fallbackSection: string) => {
     onNavigateToSection(fallbackSection, fieldName);
+  };
+
+  const handleDocumentUpload = async (documentId: string, file: File) => {
+    await uploadDocument(documentId, file);
+  };
+
+  const handleTakePhoto = (documentId: string) => {
+    // Simular activación de cámara
+    console.log('Activating camera for:', documentId);
+    // En implementación real, aquí se activaría la cámara
   };
 
   return (
@@ -236,55 +250,31 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
         </CardContent>
       </Card>
       
-      <Card className="cursor-pointer hover:shadow-md transition-shadow duration-200" onClick={onNavigateToDocuments}>
+      <Card className="cursor-pointer hover:shadow-md transition-shadow duration-200">
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center justify-between">
             <div className="flex items-center">
-              <FileCheck className="h-4 w-4 mr-2 text-primary" />
+              <FileText className="h-4 w-4 mr-2 text-primary" />
               Estado de Documentos
             </div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            <Button variant="ghost" size="sm" onClick={onNavigateToDocuments}>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </Button>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-            {/* Mostrar documentos si existen, de lo contrario mostrar estado por defecto */}
-            {application?.documents && Object.keys(application.documents).length > 0 ? (
-              Object.entries(application.documents).map(([key, value]: [string, any]) => (
-                <div key={key} className="flex flex-col items-center p-2 rounded-md border">
-                  {value?.status === 'complete' ? (
-                    <div className="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center mb-2">
-                      <FileCheck className="h-5 w-5" />
-                    </div>
-                  ) : (
-                    <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mb-2">
-                      <FileText className="h-5 w-5" />
-                    </div>
-                  )}
-                  <span className="text-xs text-center">
-                    {key === 'dpiFrontal' && 'DPI Frontal'}
-                    {key === 'dpiTrasero' && 'DPI Trasero'}
-                    {key === 'fotoSolicitante' && 'Foto Solicitante'}
-                    {key === 'recibosServicios' && 'Recibos Servicios'}
-                    {key === 'firmaCanvas' && 'Firma Digital'}
-                  </span>
-                  {value?.status !== 'complete' && (
-                    <p className="text-xs text-amber-600 mt-1">Por subir</p>
-                  )}
-                </div>
-              ))
-            ) : (
-              // Mostrar documentos por defecto cuando no hay documentos
-              ['DPI Frontal', 'DPI Trasero', 'Foto Solicitante', 'Recibos Servicios', 'Firma Digital'].map((docName) => (
-                <div key={docName} className="flex flex-col items-center p-2 rounded-md border">
-                  <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mb-2">
-                    <FileText className="h-5 w-5" />
-                  </div>
-                  <span className="text-xs text-center">{docName}</span>
-                  <p className="text-xs text-amber-600 mt-1">Por subir</p>
-                </div>
-              ))
-            )}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {documents.map((document) => (
+              <InteractiveDocumentCard
+                key={document.id}
+                document={document}
+                isLoading={loadingDocument === document.id}
+                onUploadFile={(file) => handleDocumentUpload(document.id, file)}
+                onTakePhoto={() => handleTakePhoto(document.id)}
+                onRemove={() => removeDocument(document.id)}
+                showActions={true}
+              />
+            ))}
           </div>
         </CardContent>
       </Card>
