@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
@@ -7,6 +8,7 @@ import CancelApplicationBottomSheet from '@/components/applications/CancelApplic
 import ApplicationsHeader from '@/components/applications/ApplicationsHeader';
 import ApplicationsFilter from '@/components/applications/ApplicationsFilter';
 import ApplicationsList from '@/components/applications/ApplicationsList';
+import CreateTestApplicationButton from '@/components/applications/CreateTestApplicationButton';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useApplications } from '@/hooks/useSupabaseQuery';
@@ -103,6 +105,11 @@ const Applications = () => {
       
       <main className="flex-1 px-4 py-4 pb-20 space-y-6">
         <ApplicationsHeader />
+
+        {/* Botón para crear solicitud de prueba - solo en desarrollo */}
+        <div className="flex justify-center">
+          <CreateTestApplicationButton />
+        </div>
 
         <ApplicationsFilter
           activeStatusFilter={activeStatusFilter}
