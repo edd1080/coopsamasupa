@@ -32,9 +32,9 @@ const FormActionBar: React.FC<FormActionBarProps> = ({ steps }) => {
   const showNext = !(isLastStep && isLastSubStep);
 
   return (
-    <div className="fixed bottom-16 left-0 right-0 p-4 bg-background/95 backdrop-blur-md border-t z-40">
+    <div className="fixed bottom-16 left-0 right-0 py-6 px-4 bg-background/95 backdrop-blur-md border-t z-40">
       <div className="container max-w-5xl mx-auto">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center py-2">
           {/* Left: Anterior button */}
           <div className="flex-1">
             <Button 
