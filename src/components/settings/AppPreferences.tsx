@@ -8,7 +8,7 @@ const AppPreferences = () => {
   const { theme, toggleTheme } = useTheme();
   
   return (
-    <Card style={{ backgroundColor: '#EFF7FF' }}>
+    <Card style={{ backgroundColor: '#F8FCFF' }}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Smartphone className="h-5 w-5 text-primary" />
