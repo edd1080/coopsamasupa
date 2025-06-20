@@ -116,9 +116,14 @@ const PrequalificationCard: React.FC<PrequalificationCardProps> = ({
                 {formatCurrency(prequalification.requested_amount)}
               </div>
               
-              <DropdownMenu onClick={(e) => e.stopPropagation()}>
+              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 p-0"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
