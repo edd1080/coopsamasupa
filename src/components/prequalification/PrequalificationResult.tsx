@@ -1,10 +1,12 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle, AlertCircle, XCircle, ArrowLeft, FileSpreadsheet, UserPlus } from 'lucide-react';
 import { PrequalificationData, PrequalificationResult as Result, formatCurrency } from '@/utils/prequalificationEngine';
-import { usePrequalifications } from '@/hooks/usePrequalifications';
+import { useCreatePrequalification } from '@/hooks/useSupabaseQuery';
+import { useToast } from '@/hooks/use-toast';
 
 interface PrequalificationResultProps {
   data: PrequalificationData;
@@ -23,7 +25,9 @@ const PrequalificationResult: React.FC<PrequalificationResultProps> = ({
   onBack,
   onClose
 }) => {
-  const { savePrequalification } = usePrequalifications();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const createPrequalificationMutation = useCreatePrequalification();
 
   const getStatusIcon = () => {
     switch (result.status) {
@@ -69,14 +73,42 @@ const PrequalificationResult: React.FC<PrequalificationResultProps> = ({
     }
   };
 
-  const handleSaveAndProceed = (action: 'application' | 'prospect') => {
-    // Guardar la precalificación en localStorage
-    savePrequalification(data, result);
-    
-    if (action === 'application') {
-      onStartApplication();
-    } else {
-      onSaveAsProspect();
+  const handleSaveAndProceed = async (action: 'application' | 'prospect') => {
+    try {
+      // Guardar la precalificación en Supabase
+      const prequalificationData = {
+        ...data,
+        result: result
+      };
+
+      await createPrequalificationMutation.mutateAsync(prequalificationData);
+      
+      toast({
+        title: "Precalificación guardada",
+        description: "Los datos se han guardado correctamente",
+        duration: 3000
+      });
+
+      if (action === 'application') {
+        // Navegar al formulario de solicitud
+        navigate('/applications/new');
+      } else {
+        // Cerrar modal y mostrar mensaje de prospecto guardado
+        toast({
+          title: "Prospecto guardado",
+          description: "El cliente ha sido guardado como prospecto para seguimiento futuro",
+          duration: 3000
+        });
+        onClose();
+      }
+    } catch (error) {
+      console.error('Error saving prequalification:', error);
+      toast({
+        title: "Error al guardar",
+        description: "No se pudo guardar la precalificación. Inténtalo de nuevo.",
+        variant: "destructive",
+        duration: 3000
+      });
     }
   };
 
@@ -142,6 +174,7 @@ const PrequalificationResult: React.FC<PrequalificationResultProps> = ({
           <Button
             onClick={() => handleSaveAndProceed('application')}
             className="w-full flex items-center gap-2"
+            disabled={createPrequalificationMutation.isPending}
           >
             <FileSpreadsheet className="h-4 w-4" />
             {result.requiresAdditionalData 
@@ -155,6 +188,7 @@ const PrequalificationResult: React.FC<PrequalificationResultProps> = ({
           variant="outline"
           onClick={() => handleSaveAndProceed('prospect')}
           className="w-full flex items-center gap-2"
+          disabled={createPrequalificationMutation.isPending}
         >
           <UserPlus className="h-4 w-4" />
           Guardar como Prospecto
