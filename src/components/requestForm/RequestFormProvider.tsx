@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { generateApplicationId } from '@/utils/applicationIdGenerator';
 import { useToast } from '@/hooks/use-toast';
@@ -9,6 +10,7 @@ interface FormContextType {
   
   // Navigation state
   currentStep: number;
+  activeStep: number; // alias for currentStep for compatibility
   subStep: number;
   isFirstStep: boolean;
   isLastStep: boolean;
@@ -21,12 +23,33 @@ interface FormContextType {
   handleSubNext: () => void;
   handleSubPrevious: () => void;
   goToStep: (step: number, subStep?: number) => void;
+  handleChangeSection: (step: number) => void;
+  
+  // Section status
+  sectionStatus: Record<string, 'pending' | 'complete'>;
+  updateSectionStatus: (sectionId: string, status: 'pending' | 'complete') => void;
+  
+  // Form actions
+  handleSaveDraft: () => void;
+  handleSubmit: () => void;
   
   // Meta information
   getCurrentStepInfo: () => StepInfo;
   getTotalSteps: () => number;
   getProgressPercentage: () => number;
   getSubStepsForSection: (sectionIndex: number) => number;
+  
+  // Guarantors
+  guarantors: GuarantorData[];
+  currentGuarantorIndex: number;
+  setCurrentGuarantorIndex: (index: number) => void;
+  guarantorFormStep: number;
+  setGuarantorFormStep: (step: number) => void;
+  addGuarantor: () => void;
+  removeGuarantor: (index: number) => void;
+  updateGuarantor: (index: number, field: string, value: any) => void;
+  isInGuarantorForm: boolean;
+  setIsInGuarantorForm: (inForm: boolean) => void;
   
   // Person name
   personName: string;
@@ -95,6 +118,11 @@ interface FormData {
   prestamosLargoPlazo: string;
   montoSolicitado: string;
   
+  // Consent fields
+  termsAccepted: boolean;
+  dataProcessingAccepted: boolean;
+  creditCheckAccepted: boolean;
+  
   // Generated fields
   applicationId: string;
   
@@ -102,9 +130,23 @@ interface FormData {
 }
 
 interface StepInfo {
+  id: string;
   title: string;
-  description: string;
-  component: string;
+  icon: React.ReactNode;
+  description?: string;
+  component?: string;
+}
+
+interface GuarantorData {
+  id: string;
+  fullName: string;
+  cui: string;
+  email: string;
+  phone: string;
+  monthlyIncome: number;
+  basicInfoCompleted: boolean;
+  financialInfoCompleted: boolean;
+  [key: string]: any;
 }
 
 interface RequestFormProviderProps {
@@ -182,6 +224,11 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({ children, ste
     prestamosLargoPlazo: '',
     montoSolicitado: '',
     
+    // Consent fields
+    termsAccepted: false,
+    dataProcessingAccepted: false,
+    creditCheckAccepted: false,
+    
     // Generated fields
     applicationId: generateApplicationId(),
   }));
@@ -189,6 +236,18 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({ children, ste
   // Navigation state
   const [currentStep, setCurrentStep] = useState(0);
   const [subStep, setSubStep] = useState(0);
+  
+  // Section status
+  const [sectionStatus, setSectionStatus] = useState<Record<string, 'pending' | 'complete'>>({});
+  
+  // Guarantors state
+  const [guarantors, setGuarantors] = useState<GuarantorData[]>([
+    { id: '1', fullName: '', cui: '', email: '', phone: '', monthlyIncome: 0, basicInfoCompleted: false, financialInfoCompleted: false },
+    { id: '2', fullName: '', cui: '', email: '', phone: '', monthlyIncome: 0, basicInfoCompleted: false, financialInfoCompleted: false }
+  ]);
+  const [currentGuarantorIndex, setCurrentGuarantorIndex] = useState(0);
+  const [guarantorFormStep, setGuarantorFormStep] = useState(0);
+  const [isInGuarantorForm, setIsInGuarantorForm] = useState(false);
   
   // Exit dialog state
   const [showExitDialog, setShowExitDialog] = useState(false);
@@ -201,18 +260,50 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({ children, ste
     setHasUnsavedChanges(true);
   }, []);
 
+  // Update section status
+  const updateSectionStatus = useCallback((sectionId: string, status: 'pending' | 'complete') => {
+    setSectionStatus(prev => ({ ...prev, [sectionId]: status }));
+  }, []);
+
+  // Guarantor functions
+  const addGuarantor = useCallback(() => {
+    const newGuarantor: GuarantorData = {
+      id: `${guarantors.length + 1}`,
+      fullName: '',
+      cui: '',
+      email: '',
+      phone: '',
+      monthlyIncome: 0,
+      basicInfoCompleted: false,
+      financialInfoCompleted: false
+    };
+    setGuarantors(prev => [...prev, newGuarantor]);
+  }, [guarantors.length]);
+
+  const removeGuarantor = useCallback((index: number) => {
+    if (guarantors.length > 2) {
+      setGuarantors(prev => prev.filter((_, i) => i !== index));
+    }
+  }, [guarantors.length]);
+
+  const updateGuarantor = useCallback((index: number, field: string, value: any) => {
+    setGuarantors(prev => prev.map((guarantor, i) => 
+      i === index ? { ...guarantor, [field]: value } : guarantor
+    ));
+  }, []);
+
   // Get sub-steps for each section
   const getSubStepsForSection = useCallback((sectionIndex: number): number => {
     switch (sectionIndex) {
-      case 0: // IdentificationContact - REDUCED from 3 to 2
+      case 0: // IdentificationContact - 2 sub-steps
         return 2; 
       case 1: // FinancialAnalysis
         return 1;
       case 2: // BusinessEconomicProfile (Estado Patrimonial)
         return 1;
-      case 3: // DocumentsSection
+      case 3: // GuarantorsSection
         return 1;
-      case 4: // ConsentSection
+      case 4: // DocumentsSection
         return 1;
       case 5: // ReviewSection
         return 1;
@@ -229,7 +320,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({ children, ste
 
   // Get current step info
   const getCurrentStepInfo = useCallback((): StepInfo => {
-    return steps[currentStep] || { title: '', description: '', component: '' };
+    return steps[currentStep] || { id: '', title: '', icon: null };
   }, [currentStep, steps]);
 
   // Get progress percentage
@@ -239,7 +330,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({ children, ste
     return Math.round((currentSubSteps / totalSubSteps) * 100);
   }, [currentStep, subStep, steps, getSubStepsForSection]);
 
-  // Navigation functions - OPTIMIZED to prevent multiple renders
+  // Navigation functions
   const handleNext = useCallback(() => {
     if (isLastStep) return;
     
@@ -295,10 +386,31 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({ children, ste
     setSubStep(subStepIndex);
   }, []);
 
+  const handleChangeSection = useCallback((step: number) => {
+    setCurrentStep(step);
+    setSubStep(0);
+  }, []);
+
+  // Form actions
+  const handleSaveDraft = useCallback(() => {
+    toast({
+      title: "Borrador Guardado",
+      description: "Los datos del formulario se han guardado como borrador.",
+    });
+    setHasUnsavedChanges(false);
+  }, [toast]);
+
+  const handleSubmit = useCallback(() => {
+    console.log('📋 Form submitted:', formData);
+    toast({
+      title: "Solicitud Enviada",
+      description: "Su solicitud de crédito ha sido enviada exitosamente.",
+    });
+  }, [formData, toast]);
+
   // Exit handling
   const handleExit = useCallback(() => {
     setShowExitDialog(false);
-    // Here you could add logic to save draft or navigate away
     window.history.back();
   }, []);
 
@@ -323,6 +435,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({ children, ste
     
     // Navigation state
     currentStep,
+    activeStep: currentStep, // alias for compatibility
     subStep,
     isFirstStep,
     isLastStep,
@@ -335,12 +448,33 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({ children, ste
     handleSubNext,
     handleSubPrevious,
     goToStep,
+    handleChangeSection,
+    
+    // Section status
+    sectionStatus,
+    updateSectionStatus,
+    
+    // Form actions
+    handleSaveDraft,
+    handleSubmit,
     
     // Meta information
     getCurrentStepInfo,
     getTotalSteps: () => steps.length,
     getProgressPercentage,
     getSubStepsForSection,
+    
+    // Guarantors
+    guarantors,
+    currentGuarantorIndex,
+    setCurrentGuarantorIndex,
+    guarantorFormStep,
+    setGuarantorFormStep,
+    addGuarantor,
+    removeGuarantor,
+    updateGuarantor,
+    isInGuarantorForm,
+    setIsInGuarantorForm,
     
     // Person name
     personName,
