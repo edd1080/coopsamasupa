@@ -241,11 +241,14 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
       console.log('📂 Loading draft data:', { id, clientName: draftData.client_name });
       
       try {
-        const loadedFormData = draftData.draft_data || {};
+        // Type cast the draft_data as Record<string, any> to handle the JSON type
+        const loadedFormData = (draftData.draft_data as Record<string, any>) || {};
         const clientName = draftData.client_name || 'Sin nombre';
         
         // Ensure applicationId is set to the draft ID (don't generate a new one)
-        loadedFormData.applicationId = id;
+        if (loadedFormData && typeof loadedFormData === 'object') {
+          loadedFormData.applicationId = id;
+        }
         
         setFormData(loadedFormData);
         setInitialFormData(loadedFormData);
@@ -509,7 +512,7 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
   
   const updateGuarantor = (index: number, field: string, value: any) => {
     setGuarantors(prev => prev.map((guarantor, i) => 
-      i === index ? { ...guarantor, [field]: value } : guarantor
+      i === index ? { ...guantor, [field]: value } : guarantor
     ));
   };
   

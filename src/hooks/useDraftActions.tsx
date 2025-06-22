@@ -1,3 +1,4 @@
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -90,10 +91,10 @@ export const useSaveDraft = () => {
           .eq('agent_id', user.id)
           .maybeSingle();
         
-        if (existingDraft) {
+        if (existingDraft && existingDraft.draft_data && typeof existingDraft.draft_data === 'object') {
           // Combinar datos existentes con cambios
           finalDraftData = {
-            ...existingDraft.draft_data,
+            ...(existingDraft.draft_data as Record<string, any>),
             ...sanitizedChangedData,
             applicationId: sanitizedFormData.applicationId // Asegurar que el ID se mantenga
           };

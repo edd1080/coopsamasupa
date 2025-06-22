@@ -43,6 +43,28 @@ import { getFieldNavigation } from '@/utils/fieldNavigation';
 import { getFirstName, extractApplicationDetails } from '@/utils/nameExtraction';
 import { formatCurrency } from '@/utils/prequalificationEngine';
 
+// Define proper type interfaces for application data
+interface ApplicationData {
+  id: string;
+  client_name: string;
+  created_at: string;
+  updated_at: string;
+  agent_id: string;
+  isDraft: boolean;
+  type: string;
+  // For applications
+  amount_requested?: number;
+  current_stage?: string;
+  draft_data?: any;
+  is_draft?: boolean;
+  product?: string;
+  progress_step?: number;
+  status?: string;
+  // For drafts
+  last_step?: number;
+  last_sub_step?: number;
+}
+
 const applicationStatuses = {
   'pending': {
     label: 'Pendiente',
@@ -181,7 +203,7 @@ const ApplicationDetails = () => {
   const isApplicationReadyToSubmit = () => {
     if (!application || application.isDraft) return false;
     // Para aplicaciones completas, verificar si están listas para envío
-    return application.progress_step >= 6;
+    return (application.progress_step || 0) >= 6;
   };
 
   const handleSubmitApplication = async () => {
@@ -274,12 +296,14 @@ const ApplicationDetails = () => {
     );
   }
 
+  // Type-safe helper functions
   const getStatusIcon = () => {
     if (application.isDraft) {
       return <Clock className="h-5 w-5 text-blue-600" />;
     }
     
-    switch (application.status) {
+    const status = application.status;
+    switch (status) {
       case 'pending':
         return <Clock className="h-5 w-5 text-amber-600" />;
       case 'reviewing':
@@ -297,7 +321,8 @@ const ApplicationDetails = () => {
     if (application.isDraft) {
       return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
     }
-    return applicationStatuses[application.status as keyof typeof applicationStatuses]?.color || '';
+    const status = application.status;
+    return applicationStatuses[status as keyof typeof applicationStatuses]?.color || '';
   };
 
   const getDisplayName = () => {
@@ -321,7 +346,7 @@ const ApplicationDetails = () => {
     }
 
     // Si es una aplicación completa, usar los datos como están
-    return application.data || application;
+    return application.draft_data || application;
   };
 
   // Extraer detalles completos de la aplicación
@@ -578,7 +603,7 @@ const ApplicationDetails = () => {
                     <div>
                       <p className="text-sm text-muted-foreground">Estado Actual</p>
                       <Badge className={getStatusClass()}>
-                        {application.isDraft ? 'Borrador' : applicationStatuses[application.status as keyof typeof applicationStatuses]?.label || application.status}
+                        {application.isDraft ? 'Borrador' : (application.status ? applicationStatuses[application.status as keyof typeof applicationStatuses]?.label || application.status : 'Sin estado')}
                       </Badge>
                     </div>
                     <div>
