@@ -141,19 +141,26 @@ const GeolocationCapture: React.FC<GeolocationCaptureProps> = ({
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div>
                 <span className="text-muted-foreground">Latitud:</span>
-                <p className="font-mono">{currentLocation.latitude.toFixed(6)}</p>
+                <p className="font-mono">
+                  {typeof currentLocation.latitude === 'number' ? currentLocation.latitude.toFixed(6) : 'N/A'}
+                </p>
               </div>
               <div>
                 <span className="text-muted-foreground">Longitud:</span>
-                <p className="font-mono">{currentLocation.longitude.toFixed(6)}</p>
+                <p className="font-mono">
+                  {typeof currentLocation.longitude === 'number' ? currentLocation.longitude.toFixed(6) : 'N/A'}
+                </p>
               </div>
             </div>
             
             <div className="flex items-center justify-between text-xs">
               <div>
                 <span className="text-muted-foreground">Precisión:</span>
-                <span className={`ml-1 font-medium ${getAccuracyStatus(currentLocation.accuracy).color}`}>
-                  {Math.round(currentLocation.accuracy)}m ({getAccuracyStatus(currentLocation.accuracy).label})
+                <span className={`ml-1 font-medium ${typeof currentLocation.accuracy === 'number' ? getAccuracyStatus(currentLocation.accuracy).color : 'text-gray-500'}`}>
+                  {typeof currentLocation.accuracy === 'number' 
+                    ? `${Math.round(currentLocation.accuracy)}m (${getAccuracyStatus(currentLocation.accuracy).label})`
+                    : 'N/A'
+                  }
                 </span>
               </div>
               <Button
@@ -168,7 +175,10 @@ const GeolocationCapture: React.FC<GeolocationCaptureProps> = ({
             </div>
             
             <div className="text-xs text-muted-foreground">
-              Capturada: {new Date(currentLocation.timestamp).toLocaleString('es-GT')}
+              Capturada: {typeof currentLocation.timestamp === 'number' 
+                ? new Date(currentLocation.timestamp).toLocaleString('es-GT')
+                : 'N/A'
+              }
             </div>
           </div>
         )}
