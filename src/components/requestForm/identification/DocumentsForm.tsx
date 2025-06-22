@@ -2,6 +2,7 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { formatDPI, validateDPIFormat } from '@/utils/formatters';
 import { 
   Select,
   SelectContent,
@@ -16,23 +17,14 @@ interface DocumentsFormProps {
 }
 
 const DocumentsForm: React.FC<DocumentsFormProps> = ({ formData, updateFormData }) => {
-  // Validation functions
-  const validateDPIField = (dpi: string) => {
-    if (dpi.length !== 13) return false;
-    return /^\d{13}$/.test(dpi);
-  };
-
-  const validateCUA = (cua: string) => {
-    return /^\d+$/.test(cua) && cua.length > 0;
-  };
-
-  const validateCIF = (cif: string) => {
-    return /^\d+$/.test(cif) && cif.length > 0;
-  };
-
-  // Updated NIT validation - minimum 8 digits, only numbers
+  // Enhanced NIT validation - minimum 8 digits, only numbers
   const validateNIT = (nit: string) => {
     return /^\d{8,}$/.test(nit);
+  };
+
+  const handleDPIChange = (value: string) => {
+    const formatted = formatDPI(value);
+    updateFormData('dpi', formatted);
   };
 
   // Complete Guatemala departments for DPI issuance
@@ -70,14 +62,14 @@ const DocumentsForm: React.FC<DocumentsFormProps> = ({ formData, updateFormData 
           <Input 
             id="dpi"
             value={formData.dpi || ''} 
-            onChange={(e) => {
-              const value = e.target.value.replace(/\D/g, '').slice(0, 13);
-              updateFormData('dpi', value);
-            }}
-            placeholder="1234567890123"
-            maxLength={13}
-            className={!validateDPIField(formData.dpi || '') && formData.dpi ? 'border-red-500' : ''}
+            onChange={(e) => handleDPIChange(e.target.value)}
+            placeholder="0000 00000 0000"
+            maxLength={16}
+            className={!validateDPIFormat(formData.dpi || '') && formData.dpi ? 'border-red-500' : ''}
           />
+          {formData.dpi && !validateDPIFormat(formData.dpi) && (
+            <p className="text-xs text-red-500">Formato: 0000 00000 0000 (13 dígitos)</p>
+          )}
         </div>
 
         <div className="space-y-2">

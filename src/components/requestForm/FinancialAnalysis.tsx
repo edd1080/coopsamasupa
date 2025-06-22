@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Calculator, TrendingUp, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
+import { formatCurrency, parseCurrency } from '@/utils/formatters';
 import { 
   Select,
   SelectContent,
@@ -34,6 +35,17 @@ const expenseCategories = [
 ];
 
 const FinancialAnalysis: React.FC<FinancialAnalysisProps> = ({ formData, updateFormData }) => {
+  const handleCurrencyChange = (field: string, value: string) => {
+    // Store the clean numeric value for calculations
+    const cleanValue = parseCurrency(value);
+    updateFormData(field, cleanValue);
+  };
+
+  const formatDisplayValue = (value: string | number) => {
+    if (!value || value === '') return '';
+    return formatCurrency(value);
+  };
+
   // Calculate totals
   const totalIncome = (parseFloat(formData.ingresoPrincipal || '0') + parseFloat(formData.ingresoSecundario || '0'));
   const totalExpenses = expenseCategories.reduce((sum, category) => {
@@ -92,10 +104,9 @@ const FinancialAnalysis: React.FC<FinancialAnalysisProps> = ({ formData, updateF
                 <Input 
                   id="ingresoPrincipal"
                   className="pl-7"
-                  type="number"
                   placeholder="0.00"
-                  value={formData.ingresoPrincipal || ''}
-                  onChange={(e) => updateFormData('ingresoPrincipal', e.target.value)}
+                  value={formatDisplayValue(formData.ingresoPrincipal)}
+                  onChange={(e) => handleCurrencyChange('ingresoPrincipal', e.target.value)}
                 />
               </div>
             </div>
@@ -106,10 +117,9 @@ const FinancialAnalysis: React.FC<FinancialAnalysisProps> = ({ formData, updateF
                 <Input 
                   id="ingresoSecundario"
                   className="pl-7"
-                  type="number"
                   placeholder="0.00"
-                  value={formData.ingresoSecundario || ''}
-                  onChange={(e) => updateFormData('ingresoSecundario', e.target.value)}
+                  value={formatDisplayValue(formData.ingresoSecundario)}
+                  onChange={(e) => handleCurrencyChange('ingresoSecundario', e.target.value)}
                 />
               </div>
             </div>
@@ -141,10 +151,9 @@ const FinancialAnalysis: React.FC<FinancialAnalysisProps> = ({ formData, updateF
                   <Input 
                     id={category.key}
                     className="pl-7"
-                    type="number"
                     placeholder="0.00"
-                    value={formData[category.key] || ''}
-                    onChange={(e) => updateFormData(category.key, e.target.value)}
+                    value={formatDisplayValue(formData[category.key])}
+                    onChange={(e) => handleCurrencyChange(category.key, e.target.value)}
                   />
                 </div>
               </div>
@@ -169,7 +178,7 @@ const FinancialAnalysis: React.FC<FinancialAnalysisProps> = ({ formData, updateF
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">Q</span>
                 <Input 
                   className="pl-7 bg-muted"
-                  value={totalIncome.toFixed(2)}
+                  value={formatCurrency(totalIncome)}
                   readOnly
                 />
               </div>
@@ -180,7 +189,7 @@ const FinancialAnalysis: React.FC<FinancialAnalysisProps> = ({ formData, updateF
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">Q</span>
                 <Input 
                   className="pl-7 bg-muted"
-                  value={totalExpenses.toFixed(2)}
+                  value={formatCurrency(totalExpenses)}
                   readOnly
                 />
               </div>
@@ -191,7 +200,7 @@ const FinancialAnalysis: React.FC<FinancialAnalysisProps> = ({ formData, updateF
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">Q</span>
                 <Input 
                   className={`pl-7 bg-muted ${disponibilidad < 0 ? 'text-destructive' : 'text-green-600'}`}
-                  value={disponibilidad.toFixed(2)}
+                  value={formatCurrency(disponibilidad)}
                   readOnly
                 />
               </div>
@@ -203,10 +212,9 @@ const FinancialAnalysis: React.FC<FinancialAnalysisProps> = ({ formData, updateF
                 <Input 
                   id="cuotaSolicitada"
                   className="pl-7"
-                  type="number"
                   placeholder="0.00"
-                  value={formData.cuotaSolicitada || ''}
-                  onChange={(e) => updateFormData('cuotaSolicitada', e.target.value)}
+                  value={formatDisplayValue(formData.cuotaSolicitada)}
+                  onChange={(e) => handleCurrencyChange('cuotaSolicitada', e.target.value)}
                 />
               </div>
             </div>

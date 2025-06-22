@@ -1,8 +1,11 @@
+
 import React, { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import GeolocationCapture from '../GeolocationCapture';
+import { formatPhone, validatePhoneFormat } from '@/utils/formatters';
 import { 
   Select,
   SelectContent,
@@ -66,6 +69,15 @@ const ContactHousingForm: React.FC<ContactHousingFormProps> = ({ formData, updat
     }
   };
 
+  const handlePhoneChange = (field: string, value: string) => {
+    const formatted = formatPhone(value);
+    updateFormData(field, formatted);
+  };
+
+  const handleLocationCaptured = (location: any) => {
+    updateFormData('geolocation', location);
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -83,13 +95,14 @@ const ContactHousingForm: React.FC<ContactHousingFormProps> = ({ formData, updat
             <Input 
               id="mobilePhone"
               value={formData.mobilePhone || ''} 
-              onChange={(e) => {
-                const value = e.target.value.replace(/\D/g, '').slice(0, 8);
-                updateFormData('mobilePhone', value);
-              }}
-              placeholder="12345678"
-              maxLength={8}
+              onChange={(e) => handlePhoneChange('mobilePhone', e.target.value)}
+              placeholder="0000 0000"
+              maxLength={9}
+              className={!validatePhoneFormat(formData.mobilePhone || '') && formData.mobilePhone ? 'border-red-500' : ''}
             />
+            {formData.mobilePhone && !validatePhoneFormat(formData.mobilePhone) && (
+              <p className="text-xs text-red-500">Formato: 0000 0000 (8 dígitos)</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -97,13 +110,14 @@ const ContactHousingForm: React.FC<ContactHousingFormProps> = ({ formData, updat
             <Input 
               id="homePhone"
               value={formData.homePhone || ''} 
-              onChange={(e) => {
-                const value = e.target.value.replace(/\D/g, '').slice(0, 8);
-                updateFormData('homePhone', value);
-              }}
-              placeholder="12345678"
-              maxLength={8}
+              onChange={(e) => handlePhoneChange('homePhone', e.target.value)}
+              placeholder="0000 0000"
+              maxLength={9}
+              className={formData.homePhone && !validatePhoneFormat(formData.homePhone) ? 'border-red-500' : ''}
             />
+            {formData.homePhone && !validatePhoneFormat(formData.homePhone) && (
+              <p className="text-xs text-red-500">Formato: 0000 0000 (8 dígitos)</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -131,6 +145,12 @@ const ContactHousingForm: React.FC<ContactHousingFormProps> = ({ formData, updat
               minLength={10}
             />
           </div>
+
+          {/* Geolocalización Component */}
+          <GeolocationCapture 
+            onLocationCaptured={handleLocationCaptured}
+            currentLocation={formData.geolocation}
+          />
 
           <div className="space-y-2">
             <Label htmlFor="addressReference">Referencia para la Dirección</Label>
@@ -244,19 +264,6 @@ const ContactHousingForm: React.FC<ContactHousingFormProps> = ({ formData, updat
               {formData.residenceStability && getStabilityBadge(formData.residenceStability)}
             </div>
           </div>
-        </div>
-
-        {/* Hidden Geolocalización field - kept in code but not displayed */}
-        <div style={{ display: 'none' }}>
-          <Select value={formData.geolocation || ''} onValueChange={(value) => updateFormData('geolocation', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Activar geotagging" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="enabled">Activar geolocalización</SelectItem>
-              <SelectItem value="disabled">No activar geolocalización</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
       </div>
     </div>
