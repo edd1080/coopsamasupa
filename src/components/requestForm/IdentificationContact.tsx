@@ -3,7 +3,6 @@ import React from 'react';
 import { useFormContext } from './RequestFormProvider';
 import BasicDataForm from './identification/BasicDataForm';
 import ContactHousingForm from './identification/ContactHousingForm';
-import DocumentsForm from './identification/DocumentsForm';
 
 interface IdentificationContactProps {
   formData: any;
@@ -19,8 +18,6 @@ const IdentificationContact: React.FC<IdentificationContactProps> = ({ formData,
         return <BasicDataForm formData={formData} updateFormData={updateFormData} />;
       case 1:
         return <ContactHousingForm formData={formData} updateFormData={updateFormData} />;
-      case 2:
-        return <DocumentsForm formData={formData} updateFormData={updateFormData} />;
       default:
         return <BasicDataForm formData={formData} updateFormData={updateFormData} />;
     }

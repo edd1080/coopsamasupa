@@ -2,8 +2,10 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { MapPin, Loader2, AlertCircle, CheckCircle, RotateCcw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import InteractiveMap from './InteractiveMap';
+import LocationShare from './LocationShare';
 
 interface GeolocationData {
   latitude: number;
@@ -132,11 +134,24 @@ const GeolocationCapture: React.FC<GeolocationCaptureProps> = ({
             </Button>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-green-700">Ubicación Capturada</span>
-              <CheckCircle className="h-4 w-4 text-green-600" />
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <LocationShare 
+                  latitude={currentLocation.latitude} 
+                  longitude={currentLocation.longitude} 
+                />
+              </div>
             </div>
+
+            {/* Interactive Map */}
+            <InteractiveMap 
+              latitude={currentLocation.latitude}
+              longitude={currentLocation.longitude}
+              accuracy={currentLocation.accuracy}
+            />
             
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div>
@@ -167,9 +182,10 @@ const GeolocationCapture: React.FC<GeolocationCaptureProps> = ({
                 onClick={captureLocation}
                 disabled={isCapturing}
                 size="sm"
-                variant="ghost"
-                className="h-6 px-2 text-xs"
+                variant="secondary"
+                className="h-7 px-3 text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200"
               >
+                <RotateCcw className="h-3 w-3 mr-1" />
                 Recapturar
               </Button>
             </div>

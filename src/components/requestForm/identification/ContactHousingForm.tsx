@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -132,7 +131,7 @@ const ContactHousingForm: React.FC<ContactHousingFormProps> = ({ formData, updat
           </div>
         </div>
 
-        {/* Dirección y Referencia */}
+        {/* Dirección */}
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="address">Dirección *</Label>
@@ -146,12 +145,7 @@ const ContactHousingForm: React.FC<ContactHousingFormProps> = ({ formData, updat
             />
           </div>
 
-          {/* Geolocalización Component */}
-          <GeolocationCapture 
-            onLocationCaptured={handleLocationCaptured}
-            currentLocation={formData.geolocation}
-          />
-
+          {/* Referencia para la Dirección - MOVIDO ARRIBA */}
           <div className="space-y-2">
             <Label htmlFor="addressReference">Referencia para la Dirección</Label>
             <Input 
@@ -161,6 +155,12 @@ const ContactHousingForm: React.FC<ContactHousingFormProps> = ({ formData, updat
               placeholder="Punto de referencia para ubicar la dirección (opcional)"
             />
           </div>
+
+          {/* Geolocalización Component */}
+          <GeolocationCapture 
+            onLocationCaptured={handleLocationCaptured}
+            currentLocation={formData.geolocation}
+          />
         </div>
 
         {/* Departamento y Municipio */}
