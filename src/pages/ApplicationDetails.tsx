@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -119,6 +118,21 @@ const ApplicationDetails = () => {
     return {};
   };
 
+  const getAmountRequested = (data: any) => {
+    if (!data) return 0;
+    if ('amount_requested' in data) return data.amount_requested || 0;
+    // For drafts, try to get from form data
+    const formData = getFormData(data);
+    return formData.requestedAmount || 0;
+  };
+
+  const getProduct = (data: any) => {
+    if (!data) return 'Crédito General';
+    if ('product' in data) return data.product;
+    if ('type' in data) return data.type;
+    return 'Crédito General';
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -168,6 +182,8 @@ const ApplicationDetails = () => {
   const status = getStatus(displayData);
   const lastStep = getLastStep(displayData);
   const formData = getFormData(displayData);
+  const amountRequested = getAmountRequested(displayData);
+  const product = getProduct(displayData);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -321,7 +337,7 @@ const ApplicationDetails = () => {
                   <div>
                     <p className="text-sm text-gray-600">Monto Solicitado</p>
                     <p className="font-medium">
-                      Q {(displayData.amount_requested || formData.requestedAmount || 0).toLocaleString()}
+                      Q {amountRequested.toLocaleString()}
                     </p>
                   </div>
                 </div>
@@ -334,7 +350,7 @@ const ApplicationDetails = () => {
                   <FileText className="h-5 w-5 text-gray-400 mr-2" />
                   <div>
                     <p className="text-sm text-gray-600">Producto</p>
-                    <p className="font-medium">{displayData.product || displayData.type || 'Crédito General'}</p>
+                    <p className="font-medium">{product}</p>
                   </div>
                 </div>
               </CardContent>
