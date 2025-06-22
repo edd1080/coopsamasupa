@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, Loader2, AlertCircle, CheckCircle, RotateCcw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import InteractiveMap from './InteractiveMap';
+import CoordinateDisplay from './CoordinateDisplay';
 import LocationShare from './LocationShare';
 
 interface GeolocationData {
@@ -94,12 +94,6 @@ const GeolocationCapture: React.FC<GeolocationCaptureProps> = ({
     );
   };
 
-  const getAccuracyStatus = (accuracy: number) => {
-    if (accuracy <= 10) return { label: 'Excelente', color: 'text-green-600', icon: CheckCircle };
-    if (accuracy <= 50) return { label: 'Buena', color: 'text-yellow-600', icon: CheckCircle };
-    return { label: 'Regular', color: 'text-orange-600', icon: AlertCircle };
-  };
-
   return (
     <Card className="border border-dashed border-gray-300">
       <CardHeader className="pb-3">
@@ -146,37 +140,19 @@ const GeolocationCapture: React.FC<GeolocationCaptureProps> = ({
               </div>
             </div>
 
-            {/* Interactive Map */}
-            <InteractiveMap 
+            {/* Coordinate Display */}
+            <CoordinateDisplay 
               latitude={currentLocation.latitude}
               longitude={currentLocation.longitude}
               accuracy={currentLocation.accuracy}
             />
             
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div>
-                <span className="text-muted-foreground">Latitud:</span>
-                <p className="font-mono">
-                  {typeof currentLocation.latitude === 'number' ? currentLocation.latitude.toFixed(6) : 'N/A'}
-                </p>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Longitud:</span>
-                <p className="font-mono">
-                  {typeof currentLocation.longitude === 'number' ? currentLocation.longitude.toFixed(6) : 'N/A'}
-                </p>
-              </div>
-            </div>
-            
             <div className="flex items-center justify-between text-xs">
-              <div>
-                <span className="text-muted-foreground">Precisión:</span>
-                <span className={`ml-1 font-medium ${typeof currentLocation.accuracy === 'number' ? getAccuracyStatus(currentLocation.accuracy).color : 'text-gray-500'}`}>
-                  {typeof currentLocation.accuracy === 'number' 
-                    ? `${Math.round(currentLocation.accuracy)}m (${getAccuracyStatus(currentLocation.accuracy).label})`
-                    : 'N/A'
-                  }
-                </span>
+              <div className="text-muted-foreground">
+                Capturada: {typeof currentLocation.timestamp === 'number' 
+                  ? new Date(currentLocation.timestamp).toLocaleString('es-GT')
+                  : 'N/A'
+                }
               </div>
               <Button
                 onClick={captureLocation}
@@ -188,13 +164,6 @@ const GeolocationCapture: React.FC<GeolocationCaptureProps> = ({
                 <RotateCcw className="h-3 w-3 mr-1" />
                 Recapturar
               </Button>
-            </div>
-            
-            <div className="text-xs text-muted-foreground">
-              Capturada: {typeof currentLocation.timestamp === 'number' 
-                ? new Date(currentLocation.timestamp).toLocaleString('es-GT')
-                : 'N/A'
-              }
             </div>
           </div>
         )}
