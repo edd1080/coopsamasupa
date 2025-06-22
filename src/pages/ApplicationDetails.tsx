@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -34,8 +35,8 @@ import {
 import Header from '@/components/layout/Header';
 import BottomNavigation from '@/components/layout/BottomNavigation';
 import BreadcrumbNavigation from '@/components/navigation/BreadcrumbNavigation';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabaseClient';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { getFirstNameAndLastName } from '@/lib/nameUtils';
 
 const ApplicationDetails = () => {
@@ -66,7 +67,7 @@ const ApplicationDetails = () => {
       if (!user?.id) return [];
       
       const { data, error } = await supabase
-        .from('drafts')
+        .from('application_drafts')
         .select('*')
         .eq('agent_id', user.id);
 
@@ -208,7 +209,7 @@ const ApplicationDetails = () => {
     try {
       if (isDraft) {
         const { error } = await supabase
-          .from('drafts')
+          .from('application_drafts')
           .delete()
           .eq('id', id);
 
@@ -228,10 +229,12 @@ const ApplicationDetails = () => {
     }
   };
 
+  const personName = displayData.client_name || `${formData.firstName || ''} ${formData.lastName || ''}`.trim();
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header 
-        personName={displayData.client_name || getFirstNameAndLastName(formData.firstName, formData.lastName)}
+        personName={getFirstNameAndLastName(personName)}
         applicationId={displayData.id || ''}
         onExitFormClick={() => navigate('/applications')}
       />
