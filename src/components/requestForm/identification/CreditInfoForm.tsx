@@ -75,37 +75,31 @@ const CreditInfoForm: React.FC<CreditInfoFormProps> = ({ formData, updateFormDat
           </div>
         </div>
 
-        {/* Formas de Pago */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="capitalPayment">Forma Pago Capital *</Label>
-            <Select value={formData.capitalPayment || ''} onValueChange={(value) => updateFormData('capitalPayment', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccionar forma" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="monthly">Mensual</SelectItem>
-                <SelectItem value="biweekly">Quincenal</SelectItem>
-                <SelectItem value="weekly">Semanal</SelectItem>
-                <SelectItem value="end_term">Al Vencimiento</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        {/* Hidden payment forms - kept in code but not displayed */}
+        <div style={{ display: 'none' }}>
+          <Select value={formData.capitalPayment || ''} onValueChange={(value) => updateFormData('capitalPayment', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccionar forma" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="monthly">Mensual</SelectItem>
+              <SelectItem value="biweekly">Quincenal</SelectItem>
+              <SelectItem value="weekly">Semanal</SelectItem>
+              <SelectItem value="end_term">Al Vencimiento</SelectItem>
+            </SelectContent>
+          </Select>
 
-          <div className="space-y-2">
-            <Label htmlFor="interestPayment">Forma Pago Interés *</Label>
-            <Select value={formData.interestPayment || ''} onValueChange={(value) => updateFormData('interestPayment', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccionar forma" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="monthly">Mensual</SelectItem>
-                <SelectItem value="biweekly">Quincenal</SelectItem>
-                <SelectItem value="weekly">Semanal</SelectItem>
-                <SelectItem value="deducted">Descontado</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <Select value={formData.interestPayment || ''} onValueChange={(value) => updateFormData('interestPayment', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccionar forma" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="monthly">Mensual</SelectItem>
+              <SelectItem value="biweekly">Quincenal</SelectItem>
+              <SelectItem value="weekly">Semanal</SelectItem>
+              <SelectItem value="deducted">Descontado</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Observaciones */}

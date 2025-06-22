@@ -7,6 +7,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Calculator, TrendingUp, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface FinancialAnalysisProps {
   formData: any;
@@ -14,28 +21,19 @@ interface FinancialAnalysisProps {
 }
 
 const expenseCategories = [
-  { key: 'alimentacion', label: 'Alimentación', defaultValue: '1200.00' },
-  { key: 'vestuario', label: 'Vestuario', defaultValue: '0.00' },
-  { key: 'serviciosBasicos', label: 'Servicios Básicos', defaultValue: '200.00' },
-  { key: 'educacion', label: 'Educación', defaultValue: '0.00' },
-  { key: 'vivienda', label: 'Vivienda', defaultValue: '0.00' },
-  { key: 'transporte', label: 'Transporte', defaultValue: '200.00' },
-  { key: 'compromisos', label: 'Compromisos', defaultValue: '0.00' },
-  { key: 'gastosFinancieros', label: 'Gastos Financieros', defaultValue: '394.00' },
-  { key: 'descuentosPlanilla', label: 'Descuentos de Planilla', defaultValue: '0.00' },
-  { key: 'otros', label: 'Otros', defaultValue: '0.00' }
+  { key: 'alimentacion', label: 'Alimentación' },
+  { key: 'vestuario', label: 'Vestuario' },
+  { key: 'serviciosBasicos', label: 'Servicios Básicos' },
+  { key: 'educacion', label: 'Educación' },
+  { key: 'vivienda', label: 'Vivienda' },
+  { key: 'transporte', label: 'Transporte' },
+  { key: 'compromisos', label: 'Compromisos' },
+  { key: 'gastosFinancieros', label: 'Gastos Financieros' },
+  { key: 'descuentosPlanilla', label: 'Descuentos de Planilla' },
+  { key: 'otros', label: 'Otros' }
 ];
 
 const FinancialAnalysis: React.FC<FinancialAnalysisProps> = ({ formData, updateFormData }) => {
-  // Initialize default values if not present
-  React.useEffect(() => {
-    expenseCategories.forEach(category => {
-      if (!formData[category.key]) {
-        updateFormData(category.key, category.defaultValue);
-      }
-    });
-  }, []);
-
   // Calculate totals
   const totalIncome = (parseFloat(formData.ingresoPrincipal || '0') + parseFloat(formData.ingresoSecundario || '0'));
   const totalExpenses = expenseCategories.reduce((sum, category) => {
@@ -68,6 +66,24 @@ const FinancialAnalysis: React.FC<FinancialAnalysisProps> = ({ formData, updateF
           <CardTitle className="text-base">Ingresos</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Nueva pregunta: Fuente de Ingresos Principal */}
+          <div className="space-y-2">
+            <Label htmlFor="incomeSource">Fuente de Ingresos Principal *</Label>
+            <Select value={formData.incomeSource || ''} onValueChange={(value) => updateFormData('incomeSource', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar fuente principal de ingresos" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="asalariado">Asalariado</SelectItem>
+                <SelectItem value="negocio_propio">Negocio Propio</SelectItem>
+                <SelectItem value="remesas">Remesas</SelectItem>
+                <SelectItem value="pension">Pensión</SelectItem>
+                <SelectItem value="jubilacion">Jubilación</SelectItem>
+                <SelectItem value="otros_ingresos">Otros Ingresos</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="ingresoPrincipal">Ingreso Principal</Label>
@@ -127,7 +143,7 @@ const FinancialAnalysis: React.FC<FinancialAnalysisProps> = ({ formData, updateF
                     className="pl-7"
                     type="number"
                     placeholder="0.00"
-                    value={formData[category.key] || category.defaultValue}
+                    value={formData[category.key] || ''}
                     onChange={(e) => updateFormData(category.key, e.target.value)}
                   />
                 </div>

@@ -63,7 +63,7 @@ const DocumentsForm: React.FC<DocumentsFormProps> = ({ formData, updateFormData 
 
   return (
     <>
-      {/* DPI y CUA */}
+      {/* DPI y NIT */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="dpi">DPI (13 dígitos) *</Label>
@@ -81,56 +81,6 @@ const DocumentsForm: React.FC<DocumentsFormProps> = ({ formData, updateFormData 
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="cua">CUA - T24 *</Label>
-          <Input 
-            id="cua"
-            value={formData.cua || ''} 
-            onChange={(e) => {
-              const value = e.target.value.replace(/\D/g, '');
-              updateFormData('cua', value);
-            }}
-            placeholder="Código CUA"
-            className={!validateCUA(formData.cua || '') && formData.cua ? 'border-red-500' : ''}
-          />
-        </div>
-      </div>
-
-      {/* DPI Extendido en y CIF */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="dpiExtendedIn">DPI Extendido en *</Label>
-          <Select value={formData.dpiExtendedIn || ''} onValueChange={(value) => updateFormData('dpiExtendedIn', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Seleccionar departamento" />
-            </SelectTrigger>
-            <SelectContent>
-              {guatemalaDepartments.map((dept) => (
-                <SelectItem key={dept.value} value={dept.value}>
-                  {dept.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="cif">CIF *</Label>
-          <Input 
-            id="cif"
-            value={formData.cif || ''} 
-            onChange={(e) => {
-              const value = e.target.value.replace(/\D/g, '');
-              updateFormData('cif', value);
-            }}
-            placeholder="Código CIF"
-            className={!validateCIF(formData.cif || '') && formData.cif ? 'border-red-500' : ''}
-          />
-        </div>
-      </div>
-
-      {/* NIT */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
           <Label htmlFor="nit">NIT (mínimo 8 dígitos) *</Label>
           <Input 
             id="nit"
@@ -147,7 +97,44 @@ const DocumentsForm: React.FC<DocumentsFormProps> = ({ formData, updateFormData 
             <p className="text-xs text-red-500">El NIT debe contener mínimo 8 dígitos</p>
           )}
         </div>
+      </div>
+
+      {/* DPI Extendido en */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="dpiExtendedIn">DPI Extendido en *</Label>
+          <Select value={formData.dpiExtendedIn || ''} onValueChange={(value) => updateFormData('dpiExtendedIn', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccionar departamento" />
+            </SelectTrigger>
+            <SelectContent>
+              {guatemalaDepartments.map((dept) => (
+                <SelectItem key={dept.value} value={dept.value}>
+                  {dept.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <div></div>
+      </div>
+
+      {/* Hidden fields - kept in code but not displayed */}
+      <div style={{ display: 'none' }}>
+        <Input 
+          value={formData.cua || ''} 
+          onChange={(e) => {
+            const value = e.target.value.replace(/\D/g, '');
+            updateFormData('cua', value);
+          }}
+        />
+        <Input 
+          value={formData.cif || ''} 
+          onChange={(e) => {
+            const value = e.target.value.replace(/\D/g, '');
+            updateFormData('cif', value);
+          }}
+        />
       </div>
     </>
   );

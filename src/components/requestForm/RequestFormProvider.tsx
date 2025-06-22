@@ -512,7 +512,7 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
   
   const updateGuarantor = (index: number, field: string, value: any) => {
     setGuarantors(prev => prev.map((guarantor, i) => 
-      i === index ? { ...guantor, [field]: value } : guarantor
+      i === index ? { ...guarantor, [field]: value } : guarantor
     ));
   };
   
@@ -531,19 +531,101 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
     activeStep,
     setActiveStep,
     formData,
-    updateFormData,
+    updateFormData: (field: string, value: any) => {
+      setFormData(prev => {
+        const newData = { ...prev, [field]: value };
+        console.log('📝 Form data updated:', { field, value });
+        
+        // Update person name if fullName is being updated
+        if (field === 'fullName' && value) {
+          setPersonName(value);
+        }
+        
+        // Update person name if firstName/lastName are being updated
+        if ((field === 'firstName' || field === 'lastName') && newData.firstName && newData.lastName) {
+          const fullName = `${newData.firstName} ${newData.lastName}`;
+          setPersonName(fullName);
+          newData.fullName = fullName;
+        }
+        
+        return newData;
+      });
+    },
     personName,
     sectionStatus,
     setSectionStatus,
-    handleNext,
-    handleChangeSection,
-    handleSaveDraft,
-    handleSubmit,
-    handleShowExitDialog,
-    isLastStep,
+    handleNext: () => {
+      if (activeStep < steps.length - 1) {
+        setActiveStep(prev => prev + 1);
+        setSubStep(0);
+        console.log(`Moving to step: ${steps[activeStep + 1].id}`);
+        window.scrollTo(0, 0);
+      }
+    },
+    handleChangeSection: (index: number) => {
+      setActiveStep(index);
+      setSubStep(0);
+      console.log(`Jumping to step: ${steps[index].id}`);
+      window.scrollTo(0, 0);
+    },
+    handleSaveDraft: async () => {
+      console.log('💾 Manual draft save triggered');
+      
+      try {
+        // Trigger incremental save with force flag
+        await saveIncremental(false);
+        console.log('✅ Manual draft saved successfully');
+      } catch (error) {
+        console.error('❌ Error in manual draft save:', error);
+      }
+    },
+    handleSubmit: () => {
+      console.log('Submitting form:', formData);
+      
+      if (!formData.termsAccepted || !formData.dataProcessingAccepted || !formData.creditCheckAccepted) {
+        toast({
+          title: "Error en el envío",
+          description: "Debes aceptar los términos obligatorios para continuar.",
+          variant: "destructive",
+          className: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100",
+          duration: 3000,
+        });
+        return;
+      }
+      
+      toast({
+        title: "Solicitud enviada",
+        description: "Tu solicitud ha sido enviada correctamente.",
+        variant: "default",
+        className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
+        duration: 3000,
+      });
+      
+      setTimeout(() => {
+        navigate('/applications');
+      }, 1000);
+    },
+    handleShowExitDialog: () => {
+      setShowExitDialog(true);
+    },
+    isLastStep: activeStep === steps.length - 1,
     showExitDialog,
     setShowExitDialog,
-    handleExit,
+    handleExit: async (save: boolean) => {
+      console.log('🚪 Exiting application, save:', save);
+      
+      if (save) {
+        try {
+          await saveIncremental(true);
+          console.log('✅ Draft saved before exit');
+        } catch (error) {
+          console.error('❌ Failed to save draft before exit:', error);
+        }
+      }
+      
+      setShowExitDialog(false);
+      navigate('/applications');
+    },
     hasFatca,
     setHasFatca,
     isPep,
@@ -552,10 +634,40 @@ export const RequestFormProvider: React.FC<Props> = ({ children, steps }) => {
     setAgentComments,
     subStep,
     setSubStep,
-    handleSubNext,
-    handleSubPrevious,
-    isLastSubStep,
-    getSubStepsForSection,
+    handleSubNext: () => {
+      if (subStep < 2) {
+        setSubStep(prev => prev + 1);
+        console.log(`Moving to sub-step: ${subStep + 1}`);
+      } else {
+        if (activeStep < steps.length - 1) {
+          setActiveStep(prev => prev + 1);
+          setSubStep(0);
+          console.log(`Moving to step: ${steps[activeStep + 1].id}`);
+        }
+      }
+      window.scrollTo(0, 0);
+    },
+    handleSubPrevious: () => {
+      if (subStep > 0) {
+        setSubStep(prev => prev - 1);
+        console.log(`Moving back to sub-step: ${subStep - 1}`);
+      } else if (activeStep > 0) {
+        const prevStep = activeStep - 1;
+        setActiveStep(prevStep);
+        setSubStep(2);
+        console.log(`Moving back to previous section: ${steps[prevStep].id}`);
+      }
+      window.scrollTo(0, 0);
+    },
+    isLastSubStep: subStep >= 2,
+    getSubStepsForSection: (sectionIndex: number) => {
+      switch (sectionIndex) {
+        case 0: // Identificación y Contacto
+          return 3;
+        default:
+          return 1;
+      }
+    },
     hasUnsavedChanges,
     guarantors,
     setGuarantors,
