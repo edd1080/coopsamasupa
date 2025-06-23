@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useFormContext } from './RequestFormProvider';
-import BasicDataForm from './identification/BasicDataForm';
+import PersonalIdentificationForm from './identification/PersonalIdentificationForm';
 import ContactHousingForm from './identification/ContactHousingForm';
 
 interface IdentificationContactProps {
@@ -15,11 +15,11 @@ const IdentificationContact: React.FC<IdentificationContactProps> = ({ formData,
   const renderSubStep = () => {
     switch (subStep) {
       case 0:
-        return <BasicDataForm formData={formData} updateFormData={updateFormData} />;
+        return <PersonalIdentificationForm formData={formData} updateFormData={updateFormData} />;
       case 1:
         return <ContactHousingForm formData={formData} updateFormData={updateFormData} />;
       default:
-        return <BasicDataForm formData={formData} updateFormData={updateFormData} />;
+        return <PersonalIdentificationForm formData={formData} updateFormData={updateFormData} />;
     }
   };
 
