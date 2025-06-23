@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -134,6 +135,36 @@ const ApplicationDetails = () => {
       return (applicationData as any).product;
     }
     return 'Crédito General';
+  };
+
+  // Helper function to safely format birth date
+  const formatBirthDate = (birthDate: any) => {
+    if (!birthDate) return null;
+    
+    // If it's already a string, return it
+    if (typeof birthDate === 'string') {
+      return birthDate;
+    }
+    
+    // If it's an object, try to extract meaningful data
+    if (typeof birthDate === 'object') {
+      // If it's an empty object, return null
+      if (Object.keys(birthDate).length === 0) {
+        return null;
+      }
+      
+      // If it has date properties, try to format them
+      if (birthDate.day && birthDate.month && birthDate.year) {
+        return `${birthDate.day}/${birthDate.month}/${birthDate.year}`;
+      }
+      
+      // If it's a Date object, format it
+      if (birthDate instanceof Date) {
+        return format(birthDate, 'dd/MM/yyyy');
+      }
+    }
+    
+    return null;
   };
 
   const progressStep = getProgressStep();
@@ -334,10 +365,10 @@ const ApplicationDetails = () => {
                     <Label className="text-sm font-medium text-gray-500">Nombre Completo</Label>
                     <p>{`${formData.firstName || ''} ${formData.middleName || ''} ${formData.lastName || ''}`.trim()}</p>
                   </div>
-                  {formData.birthDate && (
+                  {formatBirthDate(formData.birthDate) && (
                     <div>
                       <Label className="text-sm font-medium text-gray-500">Fecha de Nacimiento</Label>
-                      <p>{formData.birthDate}</p>
+                      <p>{formatBirthDate(formData.birthDate)}</p>
                     </div>
                   )}
                   {formData.dpi && (
