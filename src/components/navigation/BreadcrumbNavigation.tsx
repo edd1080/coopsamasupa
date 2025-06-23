@@ -1,15 +1,12 @@
-
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { ChevronRight, Home } from 'lucide-react';
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from '@/components/ui/breadcrumb';
-
 interface BreadcrumbPath {
   path: string;
   label: string;
   isLast?: boolean;
 }
-
 const BreadcrumbNavigation = () => {
   const location = useLocation();
   const pathSegments = location.pathname.split('/').filter(Boolean);
@@ -24,11 +21,10 @@ const BreadcrumbNavigation = () => {
     }
     return null;
   };
-
   const getFormSectionLabel = (sectionId: string): string => {
     const sectionLabels: Record<string, string> = {
       'identification': 'Identificación y Contacto',
-      'finances': 'Finanzas y Patrimonio', 
+      'finances': 'Finanzas y Patrimonio',
       'business': 'Negocio y Perfil Económico',
       'guarantors': 'Garantías, Fiadores y Referencias',
       'documents': 'Documentos y Cierre',
@@ -36,7 +32,6 @@ const BreadcrumbNavigation = () => {
     };
     return sectionLabels[sectionId] || sectionId;
   };
-
   const getBreadcrumbPaths = (): BreadcrumbPath[] => {
     const result: BreadcrumbPath[] = [];
 
@@ -45,7 +40,6 @@ const BreadcrumbNavigation = () => {
       path: '/',
       label: 'Inicio'
     });
-
     if (pathSegments.length === 0) {
       return result;
     }
@@ -55,7 +49,6 @@ const BreadcrumbNavigation = () => {
     pathSegments.forEach((segment, index) => {
       currentPath += `/${segment}`;
       const isLast = index === pathSegments.length - 1;
-      
       switch (segment) {
         case 'applications':
           result.push({
@@ -91,7 +84,7 @@ const BreadcrumbNavigation = () => {
             label: 'Editar',
             isLast: !getCurrentFormSection() // Only last if no section
           });
-          
+
           // Add current form section if available
           const currentSection = getCurrentFormSection();
           if (currentSection) {
@@ -155,40 +148,12 @@ const BreadcrumbNavigation = () => {
           }
       }
     });
-
     return result;
   };
-
   const breadcrumbPaths = getBreadcrumbPaths();
-
   if (breadcrumbPaths.length <= 1) {
     return null; // Don't show breadcrumbs on home page
   }
-
-  return (
-    <div className="py-[12px] px-[4px]">
-      <Breadcrumb>
-        <BreadcrumbList>
-          {breadcrumbPaths.map((item, index) => (
-            <React.Fragment key={item.path}>
-              <BreadcrumbItem>
-                {item.isLast ? (
-                  <BreadcrumbPage>{item.label}</BreadcrumbPage>
-                ) : (
-                  <BreadcrumbLink asChild>
-                    <Link to={item.path}>
-                      {index === 0 ? <Home className="h-3.5 w-3.5" /> : item.label}
-                    </Link>
-                  </BreadcrumbLink>
-                )}
-              </BreadcrumbItem>
-              {index < breadcrumbPaths.length - 1 && <BreadcrumbSeparator />}
-            </React.Fragment>
-          ))}
-        </BreadcrumbList>
-      </Breadcrumb>
-    </div>
-  );
+  return;
 };
-
 export default BreadcrumbNavigation;
