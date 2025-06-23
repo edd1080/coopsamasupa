@@ -8,27 +8,50 @@ import { DocumentItem } from '@/hooks/useDocumentManager';
 
 interface InteractiveDocumentCardProps {
   document: DocumentItem;
-  onUpload: (file: File) => void;
+  onUpload?: (file: File) => void | Promise<void> | Promise<boolean>;
+  onUploadFile?: (file: File) => void | Promise<void> | Promise<boolean>;
+  onTakePhoto?: () => void | Promise<void>;
   onRemove: () => void;
+  onView?: () => void;
   isLoading?: boolean;
+  showActions?: boolean;
 }
 
 const InteractiveDocumentCard: React.FC<InteractiveDocumentCardProps> = ({
   document,
   onUpload,
+  onUploadFile,
+  onTakePhoto,
   onRemove,
-  isLoading = false
+  onView,
+  isLoading = false,
+  showActions = true
 }) => {
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      onUpload(file);
+      // Use onUploadFile if provided, otherwise fallback to onUpload
+      const uploadHandler = onUploadFile || onUpload;
+      if (uploadHandler) {
+        uploadHandler(file);
+      }
     }
   };
 
   const handleCameraCapture = () => {
-    // Camera capture logic
-    console.log('Camera capture for:', document.id);
+    if (onTakePhoto) {
+      onTakePhoto();
+    } else {
+      console.log('Camera capture for:', document.id);
+    }
+  };
+
+  const handleView = () => {
+    if (onView) {
+      onView();
+    } else {
+      console.log('View document:', document.id);
+    }
   };
 
   const getStatusColor = () => {
@@ -84,83 +107,85 @@ const InteractiveDocumentCard: React.FC<InteractiveDocumentCardProps> = ({
         </div>
       )}
 
-      <div className="flex flex-wrap gap-2">
-        {document.status === 'empty' && (
-          <>
-            <input
-              type="file"
-              id={`file-${document.id}`}
-              className="hidden"
-              accept={document.type === 'photo' ? 'image/*' : '*'}
-              onChange={handleFileSelect}
-              disabled={isLoading}
-            />
-            <label htmlFor={`file-${document.id}`}>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs"
-                asChild
+      {showActions && (
+        <div className="flex flex-wrap gap-2">
+          {document.status === 'empty' && (
+            <>
+              <input
+                type="file"
+                id={`file-${document.id}`}
+                className="hidden"
+                accept={document.type === 'photo' ? 'image/*' : '*'}
+                onChange={handleFileSelect}
                 disabled={isLoading}
-              >
-                <span>
-                  <Upload className="h-3 w-3 mr-1" />
-                  Subir
-                </span>
-              </Button>
-            </label>
-            
-            {document.type === 'photo' && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs"
-                onClick={handleCameraCapture}
-                disabled={isLoading}
-              >
-                <Camera className="h-3 w-3 mr-1" />
-                Cámara
-              </Button>
-            )}
-          </>
-        )}
+              />
+              <label htmlFor={`file-${document.id}`}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs"
+                  asChild
+                  disabled={isLoading}
+                >
+                  <span>
+                    <Upload className="h-3 w-3 mr-1" />
+                    Subir
+                  </span>
+                </Button>
+              </label>
+              
+              {document.type === 'photo' && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs"
+                  onClick={handleCameraCapture}
+                  disabled={isLoading}
+                >
+                  <Camera className="h-3 w-3 mr-1" />
+                  Cámara
+                </Button>
+              )}
+            </>
+          )}
 
-        {document.status === 'success' && (
-          <>
+          {document.status === 'success' && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                onClick={handleView}
+              >
+                <Eye className="h-3 w-3 mr-1" />
+                Ver
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs text-red-600 hover:text-red-700"
+                onClick={onRemove}
+              >
+                <Trash2 className="h-3 w-3 mr-1" />
+                Eliminar
+              </Button>
+            </>
+          )}
+
+          {document.status === 'error' && (
             <Button
               variant="outline"
               size="sm"
               className="text-xs"
-              onClick={() => console.log('View document')}
+              onClick={() => console.log('Retry upload')}
+              disabled={isLoading}
             >
-              <Eye className="h-3 w-3 mr-1" />
-              Ver
+              <Upload className="h-3 w-3 mr-1" />
+              Reintentar
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs text-red-600 hover:text-red-700"
-              onClick={onRemove}
-            >
-              <Trash2 className="h-3 w-3 mr-1" />
-              Eliminar
-            </Button>
-          </>
-        )}
-
-        {document.status === 'error' && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-xs"
-            onClick={() => console.log('Retry upload')}
-            disabled={isLoading}
-          >
-            <Upload className="h-3 w-3 mr-1" />
-            Reintentar
-          </Button>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {isLoading && (
         <div className="mt-2 text-xs text-muted-foreground flex items-center">

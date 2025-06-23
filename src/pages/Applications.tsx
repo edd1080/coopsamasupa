@@ -5,22 +5,22 @@ import BottomNavigation from '@/components/layout/BottomNavigation';
 import ApplicationsHeader from '@/components/applications/ApplicationsHeader';
 import ApplicationsList from '@/components/applications/ApplicationsList';
 import BreadcrumbNavigation from '@/components/navigation/BreadcrumbNavigation';
-import { useApplicationData } from '@/hooks/useApplicationData';
+import { useApplicationsList } from '@/hooks/useApplicationsList';
 
 const Applications = () => {
-  const { data: applications, isLoading } = useApplicationData();
+  const { data: applications, isLoading } = useApplicationsList();
 
   // Mock functions for now since they were removed from the hook
-  const editApplication = (id: string) => {
-    console.log('Edit application:', id);
+  const editApplication = (id: string, clientName: string, e?: React.MouseEvent) => {
+    console.log('Edit application:', id, clientName);
   };
 
-  const cancelApplication = (id: string) => {
-    console.log('Cancel application:', id);
+  const cancelApplication = (id: string, clientName: string, e?: React.MouseEvent) => {
+    console.log('Cancel application:', id, clientName);
   };
 
-  const deleteApplication = (id: string) => {
-    console.log('Delete application:', id);
+  const deleteApplication = (id: string, clientName: string, e?: React.MouseEvent) => {
+    console.log('Delete application:', id, clientName);
   };
 
   return (
