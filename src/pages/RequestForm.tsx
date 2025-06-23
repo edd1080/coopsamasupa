@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import BottomNavigation from '@/components/layout/BottomNavigation';
 import BreadcrumbNavigation from '@/components/navigation/BreadcrumbNavigation';
@@ -68,9 +69,16 @@ const RequestFormContent = () => {
 
 const RequestForm = () => {
   console.log('🚀 RequestForm component initializing');
+  const navigate = useNavigate();
+  
+  // Create navigation function to pass to provider
+  const handleNavigateToApplications = () => {
+    console.log('🔄 Navigating to applications list...');
+    navigate('/applications');
+  };
   
   return (
-    <RequestFormProvider steps={steps}>
+    <RequestFormProvider steps={steps} onNavigateAfterExit={handleNavigateToApplications}>
       <RequestFormContent />
     </RequestFormProvider>
   );

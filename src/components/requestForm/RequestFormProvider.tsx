@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { generateApplicationId } from '@/utils/applicationIdGenerator';
 import { useToast } from '@/hooks/use-toast';
@@ -153,6 +152,7 @@ interface GuarantorData {
 interface RequestFormProviderProps {
   children: React.ReactNode;
   steps: StepInfo[];
+  onNavigateAfterExit?: () => void;
 }
 
 const FormContext = createContext<FormContextType | undefined>(undefined);
@@ -165,7 +165,11 @@ export const useFormContext = (): FormContextType => {
   return context;
 };
 
-const RequestFormProvider: React.FC<RequestFormProviderProps> = ({ children, steps }) => {
+const RequestFormProvider: React.FC<RequestFormProviderProps> = ({ 
+  children, 
+  steps, 
+  onNavigateAfterExit 
+}) => {
   const { toast } = useToast();
   
   // Initialize form data with application ID
@@ -414,7 +418,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({ children, ste
     });
   }, [formData, toast]);
 
-  // Updated exit handling with save functionality
+  // Updated exit handling with save functionality and proper navigation
   const handleExit = useCallback(async (shouldSave: boolean = false) => {
     console.log('🚪 handleExit called with shouldSave:', shouldSave);
     
@@ -452,9 +456,16 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({ children, ste
     
     // Close the dialog and navigate
     setShowExitDialog(false);
-    console.log('🔄 Navigating back...');
-    window.history.back();
-  }, [formData, currentStep, subStep, saveDraftMutation]);
+    
+    // Use the provided navigation function or fallback to history.back()
+    if (onNavigateAfterExit) {
+      console.log('🔄 Using provided navigation function...');
+      onNavigateAfterExit();
+    } else {
+      console.log('🔄 Falling back to history.back()...');
+      window.history.back();
+    }
+  }, [formData, currentStep, subStep, saveDraftMutation, onNavigateAfterExit]);
 
   const handleShowExitDialog = useCallback(() => {
     setShowExitDialog(true);
