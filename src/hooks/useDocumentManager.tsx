@@ -10,10 +10,10 @@ export interface DocumentItem {
   file?: File | null;
   status: 'empty' | 'success' | 'error' | 'loading';
   thumbnailUrl?: string;
-  type: 'photo' | 'document' | 'signature';
+  type: 'photo' | 'document';
 }
 
-// Documentos específicos para Guatemala
+// Documentos específicos para Guatemala (sin firmaCanvas)
 export const guatemalanDocuments: DocumentItem[] = [
   {
     id: 'dpiFrontal',
@@ -61,14 +61,6 @@ export const guatemalanDocuments: DocumentItem[] = [
     description: 'Local comercial o lugar de residencia',
     type: 'photo',
     required: false,
-    status: 'empty'
-  },
-  {
-    id: 'firmaCanvas',
-    title: 'Firma Digital',
-    description: 'Firma del solicitante',
-    type: 'signature',
-    required: true,
     status: 'empty'
   }
 ];

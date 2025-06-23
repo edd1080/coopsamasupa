@@ -23,8 +23,16 @@ const MinimumDataAlert: React.FC<MinimumDataAlertProps> = ({
             Información mínima requerida
           </AlertDialogTitle>
           <AlertDialogDescription>
-            Para guardar el progreso de la solicitud, es necesario ingresar como mínimo el nombre completo del solicitante. 
-            Por favor, complete este campo antes de continuar.
+            Para guardar el progreso de la solicitud, es necesario ingresar como mínimo:
+            <br />
+            • Nombre completo del solicitante
+            <br />
+            • DPI (Documento Personal de Identificación)
+            <br />
+            • Teléfono móvil
+            <br />
+            <br />
+            Por favor, complete estos campos antes de continuar.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

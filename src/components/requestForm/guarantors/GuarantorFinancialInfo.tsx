@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -31,6 +31,12 @@ const GuarantorFinancialInfo: React.FC<GuarantorFinancialInfoProps> = ({ guarant
       updateGuarantor(guarantorIndex, 'financialInfoCompleted', isCompleted);
     }
   };
+
+  // Calculate available flow automatically
+  const monthlyIncome = Number(guarantor.monthlyIncome) || 0;
+  const otherIncome = Number(guarantor.otherIncome) || 0;
+  const monthlyExpenses = Number(guarantor.monthlyExpenses) || 0;
+  const availableFlow = monthlyIncome + otherIncome - monthlyExpenses;
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-GT', {
@@ -72,11 +78,12 @@ const GuarantorFinancialInfo: React.FC<GuarantorFinancialInfoProps> = ({ guarant
                   placeholder="0.00"
                   className="pl-8"
                   min="0"
+                  step="0.01"
                 />
               </div>
-              {guarantor.monthlyIncome > 0 && (
+              {monthlyIncome > 0 && (
                 <p className="text-sm text-muted-foreground">
-                  {formatCurrency(guarantor.monthlyIncome)}
+                  {formatCurrency(monthlyIncome)}
                 </p>
               )}
             </div>
@@ -93,11 +100,12 @@ const GuarantorFinancialInfo: React.FC<GuarantorFinancialInfoProps> = ({ guarant
                   placeholder="0.00"
                   className="pl-8"
                   min="0"
+                  step="0.01"
                 />
               </div>
-              {guarantor.monthlyExpenses > 0 && (
+              {monthlyExpenses > 0 && (
                 <p className="text-sm text-muted-foreground">
-                  {formatCurrency(guarantor.monthlyExpenses)}
+                  {formatCurrency(monthlyExpenses)}
                 </p>
               )}
             </div>
@@ -115,26 +123,27 @@ const GuarantorFinancialInfo: React.FC<GuarantorFinancialInfoProps> = ({ guarant
                 placeholder="0.00"
                 className="pl-8"
                 min="0"
+                step="0.01"
               />
             </div>
-            {guarantor.otherIncome > 0 && (
+            {otherIncome > 0 && (
               <p className="text-sm text-muted-foreground">
-                {formatCurrency(guarantor.otherIncome)}
+                {formatCurrency(otherIncome)}
               </p>
             )}
           </div>
 
-          {/* Flujo disponible */}
-          {guarantor.monthlyIncome > 0 && guarantor.monthlyExpenses >= 0 && (
+          {/* Flujo disponible - Fixed calculation */}
+          {(monthlyIncome > 0 || monthlyExpenses > 0) && (
             <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
               <div className="flex justify-between items-center">
                 <span className="font-medium">Flujo disponible mensual:</span>
                 <span className={`font-bold ${
-                  (guarantor.monthlyIncome + guarantor.otherIncome - guarantor.monthlyExpenses) > 0 
+                  availableFlow > 0 
                     ? 'text-green-600' 
                     : 'text-red-600'
                 }`}>
-                  {formatCurrency(guarantor.monthlyIncome + guarantor.otherIncome - guarantor.monthlyExpenses)}
+                  {formatCurrency(availableFlow)}
                 </span>
               </div>
             </div>

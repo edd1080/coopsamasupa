@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Users, Plus, Check, Clock, Edit, Trash2 } from 'lucide-react';
 import { useFormContext } from './RequestFormProvider';
 import GuarantorBasicInfo from './guarantors/GuarantorBasicInfo';
-import GuarantorFinancialInfo from './guarantors/GuarantorFinancialInfo';
 
 interface GuarantorsSectionProps {
   formData: Record<string, any>;
@@ -29,9 +28,9 @@ const GuarantorsSection: React.FC<GuarantorsSectionProps> = ({
     setIsInGuarantorForm
   } = useFormContext();
 
-  const handleEditGuarantor = (index: number, step: number = 0) => {
+  const handleEditGuarantor = (index: number) => {
     setCurrentGuarantorIndex(index);
-    setGuarantorFormStep(step);
+    setGuarantorFormStep(0);
     setIsInGuarantorForm(true);
   };
 
@@ -40,28 +39,13 @@ const GuarantorsSection: React.FC<GuarantorsSectionProps> = ({
     setGuarantorFormStep(0);
   };
 
-  const handleNextStep = () => {
-    if (guarantorFormStep === 0) {
-      setGuarantorFormStep(1);
-    } else {
-      // Form completed, go back to list
-      handleBackToList();
-    }
-  };
-
-  const handlePreviousStep = () => {
-    if (guarantorFormStep === 1) {
-      setGuarantorFormStep(0);
-    } else {
-      handleBackToList();
-    }
+  const handleCompleteGuarantor = () => {
+    handleBackToList();
   };
 
   const getGuarantorStatus = (guarantor: any) => {
-    if (guarantor.basicInfoCompleted && guarantor.financialInfoCompleted) {
+    if (guarantor.basicInfoCompleted) {
       return 'complete';
-    } else if (guarantor.basicInfoCompleted || guarantor.financialInfoCompleted) {
-      return 'partial';
     }
     return 'pending';
   };
@@ -70,80 +54,44 @@ const GuarantorsSection: React.FC<GuarantorsSectionProps> = ({
     switch (status) {
       case 'complete':
         return <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"><Check className="h-3 w-3 mr-1" />Completo</Badge>;
-      case 'partial':
-        return <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"><Clock className="h-3 w-3 mr-1" />Parcial</Badge>;
       default:
         return <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" />Pendiente</Badge>;
     }
   };
 
   const currentGuarantor = guarantors[currentGuarantorIndex];
-  const canProceedToFinancial = currentGuarantor?.basicInfoCompleted;
-  const isFormComplete = currentGuarantor?.basicInfoCompleted && currentGuarantor?.financialInfoCompleted;
 
   if (isInGuarantorForm) {
     return (
       <div className="space-y-6">
-        {/* Form Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold">
-              {guarantorFormStep === 0 ? 'Información Básica' : 'Análisis Financiero'} - Fiador {currentGuarantorIndex + 1}
-            </h2>
-            <p className="text-muted-foreground">
-              Paso {guarantorFormStep + 1} de 2
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline">
-              {guarantorFormStep === 0 ? 'Datos Personales' : 'Información Financiera'}
-            </Badge>
-          </div>
-        </div>
-
-        {/* Progress indicator */}
-        <div className="flex items-center space-x-2">
-          <div className={`h-2 w-full rounded ${guarantorFormStep >= 0 ? 'bg-primary' : 'bg-gray-200'}`}></div>
-          <div className={`h-2 w-full rounded ${guarantorFormStep >= 1 ? 'bg-primary' : 'bg-gray-200'}`}></div>
+        {/* Form Header with improved contrast */}
+        <div className="bg-green-600 text-white p-4 rounded-lg">
+          <h2 className="text-xl font-semibold text-white">
+            Información Básica - Fiador {currentGuarantorIndex + 1}
+          </h2>
+          <p className="text-green-100">
+            Complete la información personal del fiador
+          </p>
         </div>
 
         {/* Form Content */}
-        {guarantorFormStep === 0 && (
-          <GuarantorBasicInfo guarantorIndex={currentGuarantorIndex} />
-        )}
-        
-        {guarantorFormStep === 1 && (
-          <GuarantorFinancialInfo guarantorIndex={currentGuarantorIndex} />
-        )}
+        <GuarantorBasicInfo guarantorIndex={currentGuarantorIndex} />
 
         {/* Navigation Buttons */}
         <div className="flex justify-between pt-6">
           <Button 
             variant="outline" 
-            onClick={handlePreviousStep}
+            onClick={handleBackToList}
           >
-            {guarantorFormStep === 0 ? 'Volver a Lista' : 'Anterior'}
+            Volver a Lista
           </Button>
           
-          <div className="flex gap-2">
-            {guarantorFormStep === 0 && (
-              <Button 
-                onClick={handleNextStep}
-                disabled={!canProceedToFinancial}
-              >
-                Continuar a Finanzas
-              </Button>
-            )}
-            
-            {guarantorFormStep === 1 && (
-              <Button 
-                onClick={handleNextStep}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                {isFormComplete ? 'Completar Fiador' : 'Guardar y Continuar'}
-              </Button>
-            )}
-          </div>
+          <Button 
+            onClick={handleCompleteGuarantor}
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            Completar Fiador
+          </Button>
         </div>
       </div>
     );
@@ -205,11 +153,7 @@ const GuarantorsSection: React.FC<GuarantorsSectionProps> = ({
                         <span className="font-medium">Teléfono:</span> {guarantor.phone || 'No proporcionado'}
                       </div>
                       <div>
-                        <span className="font-medium">Ingresos:</span> {
-                          guarantor.monthlyIncome > 0 
-                            ? `Q${guarantor.monthlyIncome.toLocaleString()}`
-                            : 'No proporcionado'
-                        }
+                        <span className="font-medium">Profesión:</span> {guarantor.profession || 'No proporcionado'}
                       </div>
                     </div>
                   ) : (
@@ -220,20 +164,10 @@ const GuarantorsSection: React.FC<GuarantorsSectionProps> = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleEditGuarantor(index, 0)}
+                      onClick={() => handleEditGuarantor(index)}
                     >
                       <Edit className="h-4 w-4 mr-1" />
-                      Información Básica
-                    </Button>
-                    
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEditGuarantor(index, 1)}
-                      disabled={!guarantor.basicInfoCompleted}
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
-                      Análisis Financiero
+                      Editar Información
                     </Button>
                   </div>
                 </div>

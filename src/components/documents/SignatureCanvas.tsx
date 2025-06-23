@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { RotateCcw, Check, X } from 'lucide-react';
@@ -18,55 +18,96 @@ const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasSignature, setHasSignature] = useState(false);
+  const [lastPoint, setLastPoint] = useState<{x: number, y: number} | null>(null);
 
-  useEffect(() => {
-    if (open && canvasRef.current) {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        // Configurar canvas
-        canvas.width = 400;
-        canvas.height = 200;
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 2;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-      }
-    }
+  const initializeCanvas = useCallback(() => {
+    if (!open || !canvasRef.current) return;
+    
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Set canvas size
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * window.devicePixelRatio;
+    canvas.height = rect.height * window.devicePixelRatio;
+    
+    // Scale context for high DPI displays
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    
+    // Set canvas style size
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.height + 'px';
+    
+    // Configure drawing context
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
   }, [open]);
 
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    setIsDrawing(true);
-    setHasSignature(true);
+  useEffect(() => {
+    initializeCanvas();
+  }, [initializeCanvas]);
+
+  const getEventPos = (e: React.MouseEvent | React.TouchEvent) => {
     const canvas = canvasRef.current;
-    if (canvas) {
-      const rect = canvas.getBoundingClientRect();
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.beginPath();
-        ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
-      }
-    }
+    if (!canvas) return { x: 0, y: 0 };
+
+    const rect = canvas.getBoundingClientRect();
+    const clientX = 'touches' in e ? e.touches[0]?.clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0]?.clientY : e.clientY;
+    
+    return {
+      x: (clientX - rect.left) * (canvas.width / rect.width) / window.devicePixelRatio,
+      y: (clientY - rect.top) * (canvas.height / rect.height) / window.devicePixelRatio
+    };
   };
 
-  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDrawing) return;
+  const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    setIsDrawing(true);
+    setHasSignature(true);
+    
+    const pos = getEventPos(e);
+    setLastPoint(pos);
     
     const canvas = canvasRef.current;
     if (canvas) {
-      const rect = canvas.getBoundingClientRect();
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
       }
     }
   };
 
-  const stopDrawing = () => {
+  const draw = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    if (!isDrawing || !lastPoint) return;
+    
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    const pos = getEventPos(e);
+    
+    ctx.beginPath();
+    ctx.moveTo(lastPoint.x, lastPoint.y);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+    
+    setLastPoint(pos);
+  };
+
+  const stopDrawing = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
     setIsDrawing(false);
+    setLastPoint(null);
   };
 
   const clearSignature = () => {
@@ -89,6 +130,7 @@ const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
           const file = new File([blob], `signature_${Date.now()}.png`, { type: 'image/png' });
           onSave(file);
           onOpenChange(false);
+          clearSignature();
         }
       }, 'image/png');
     }
@@ -105,15 +147,17 @@ const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
           <div className="border-2 border-dashed border-muted-foreground/30 rounded-md p-4">
             <canvas
               ref={canvasRef}
-              className="border border-gray-300 rounded cursor-crosshair w-full"
-              style={{ maxWidth: '100%', height: 'auto' }}
+              className="border border-gray-300 rounded cursor-crosshair w-full h-40 touch-none"
               onMouseDown={startDrawing}
               onMouseMove={draw}
               onMouseUp={stopDrawing}
               onMouseLeave={stopDrawing}
+              onTouchStart={startDrawing}
+              onTouchMove={draw}
+              onTouchEnd={stopDrawing}
             />
             <p className="text-xs text-muted-foreground mt-2 text-center">
-              Firme en el área de arriba usando el mouse o touch
+              Firme en el área de arriba usando el mouse o toque
             </p>
           </div>
           
