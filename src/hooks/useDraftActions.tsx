@@ -161,6 +161,8 @@ export const useSaveDraft = () => {
     },
     onSuccess: (data, variables) => {
       console.log('🎉 Draft save success, invalidating queries');
+      // Invalidar el query key correcto que usa useApplicationsList
+      queryClient.invalidateQueries({ queryKey: ['applications-list', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['applications'] });
       queryClient.invalidateQueries({ queryKey: ['application-drafts'] });
       queryClient.invalidateQueries({ queryKey: ['application-metrics'] });

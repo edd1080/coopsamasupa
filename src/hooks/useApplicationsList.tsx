@@ -37,12 +37,12 @@ export const useApplicationsList = () => {
         throw appError;
       }
       
-      // Also fetch drafts
+      // Also fetch drafts - ordenar por updated_at para mostrar los más recientes primero
       const { data: drafts, error: draftError } = await supabase
         .from('application_drafts')
         .select('*')
         .eq('agent_id', user.id)
-        .order('created_at', { ascending: false });
+        .order('updated_at', { ascending: false });
         
       if (draftError) {
         console.error('❌ Error fetching drafts:', sanitizeConsoleOutput(draftError));
@@ -67,7 +67,7 @@ export const useApplicationsList = () => {
           product: 'Borrador',
           amount: '0',
           status: 'draft',
-          date: new Date(draft.created_at).toLocaleDateString(),
+          date: new Date(draft.updated_at).toLocaleDateString(),
           progress: draft.last_step || 0,
           stage: 'Borrador'
         }))
