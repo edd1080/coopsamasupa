@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -80,6 +81,32 @@ const ApplicationDetails = () => {
   const isDraft = !applicationData;
   const draftData = drafts?.find(draft => draft.id === id);
   const displayData = applicationData || draftData;
+
+  // Helper function to safely format birthDate values
+  const formatBirthDate = (birthDate: any): string => {
+    if (!birthDate) return '';
+    
+    // If it's already a string, return it
+    if (typeof birthDate === 'string') return birthDate;
+    
+    // If it's an object, check if it has date properties
+    if (typeof birthDate === 'object') {
+      // Handle empty objects
+      if (Object.keys(birthDate).length === 0) return '';
+      
+      // Handle objects with day, month, year properties
+      if (birthDate.day && birthDate.month && birthDate.year) {
+        return `${birthDate.day}/${birthDate.month}/${birthDate.year}`;
+      }
+      
+      // Handle Date objects
+      if (birthDate instanceof Date) {
+        return format(birthDate, 'dd/MM/yyyy');
+      }
+    }
+    
+    return '';
+  };
 
   // Helper functions to safely access union type properties
   const getProgressStep = (data: any) => {
@@ -378,7 +405,7 @@ const ApplicationDetails = () => {
                   {formData.birthDate && (
                     <div>
                       <Label className="text-sm font-medium text-gray-500">Fecha de Nacimiento</Label>
-                      <p>{formData.birthDate}</p>
+                      <p>{formatBirthDate(formData.birthDate)}</p>
                     </div>
                   )}
                   {formData.dpi && (
