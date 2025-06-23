@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Header from '@/components/layout/Header';
 import BottomNavigation from '@/components/layout/BottomNavigation';
@@ -12,16 +11,18 @@ import { useDeleteApplication, useCancelApplication } from '@/hooks/useApplicati
 import { Trash2, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from "@/hooks/use-toast";
-
 const Applications = () => {
-  const { user } = useAuth();
-  const { toast } = useToast();
+  const {
+    user
+  } = useAuth();
+  const {
+    toast
+  } = useToast();
   const {
     data: applications,
     isLoading,
     refetch
   } = useApplicationsList();
-
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
     applicationId: string;
@@ -33,7 +34,6 @@ const Applications = () => {
     clientName: '',
     isDraft: false
   });
-
   const deleteApplication = useDeleteApplication();
   const cancelApplication = useCancelApplication();
 
@@ -51,7 +51,6 @@ const Applications = () => {
       })) || []
     });
   }, [user, applications, isLoading]);
-
   const handleRefresh = async () => {
     console.log('🔄 Manual refresh triggered by user');
     toast({
@@ -59,7 +58,6 @@ const Applications = () => {
       description: "Refrescando solicitudes...",
       duration: 2000
     });
-    
     try {
       await refetch();
       toast({
@@ -77,29 +75,28 @@ const Applications = () => {
       });
     }
   };
-
   const editApplication = (id: string, clientName: string, e?: React.MouseEvent) => {
     console.log('Edit application:', id, clientName);
   };
-
   const handleCancelApplication = (id: string, clientName: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    
     cancelApplication.mutate({
       applicationId: id,
       reason: 'Cancelado por el usuario'
     });
   };
-
   const handleDeleteApplication = (id: string, clientName: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    
+
     // Determinar si es borrador basándose en si existe en la lista con status 'draft'
     const application = applications?.find(app => app.id === id);
     const isDraft = application?.status === 'draft';
-    
-    console.log('🗑️ Delete triggered:', { id, clientName, isDraft, application });
-    
+    console.log('🗑️ Delete triggered:', {
+      id,
+      clientName,
+      isDraft,
+      application
+    });
     setDeleteDialog({
       open: true,
       applicationId: id,
@@ -107,15 +104,12 @@ const Applications = () => {
       isDraft
     });
   };
-
   const confirmDelete = () => {
     console.log('🗑️ Confirming delete:', deleteDialog);
-    
     deleteApplication.mutate({
       applicationId: deleteDialog.applicationId,
       isDraft: deleteDialog.isDraft
     });
-    
     setDeleteDialog({
       open: false,
       applicationId: '',
@@ -123,7 +117,6 @@ const Applications = () => {
       isDraft: false
     });
   };
-
   const cancelDelete = () => {
     setDeleteDialog({
       open: false,
@@ -132,9 +125,7 @@ const Applications = () => {
       isDraft: false
     });
   };
-
-  return (
-    <div className="min-h-screen flex flex-col">
+  return <div className="min-h-screen flex flex-col">
       <Header />
       
       <main className="flex-1 container mx-auto pb-20 max-w-5xl py-[4px] px-[17px]">
@@ -145,39 +136,27 @@ const Applications = () => {
         <ApplicationsHeader />
         
         {/* Debug info and refresh button */}
-        <div className="mb-4 p-3 bg-gray-50 rounded-lg border">
+        <div className="mb-4 p-3 bg-gray-50 rounded-lg border py-[12px] my-[16px]">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-600">
               <span>Usuario: {user?.id?.slice(0, 8)}... | </span>
               <span>Solicitudes: {applications?.length || 0} | </span>
               <span>Cargando: {isLoading ? 'Sí' : 'No'}</span>
             </div>
-            <Button 
-              onClick={handleRefresh} 
-              variant="outline" 
-              size="sm"
-              disabled={isLoading}
-              className="flex items-center gap-2"
-            >
+            <Button onClick={handleRefresh} variant="outline" size="sm" disabled={isLoading} className="flex items-center gap-2">
               <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
               Actualizar
             </Button>
           </div>
         </div>
         
-        <ApplicationsList 
-          applications={applications || []} 
-          isLoading={isLoading} 
-          onEdit={editApplication} 
-          onCancel={handleCancelApplication} 
-          onDelete={handleDeleteApplication} 
-        />
+        <ApplicationsList applications={applications || []} isLoading={isLoading} onEdit={editApplication} onCancel={handleCancelApplication} onDelete={handleDeleteApplication} />
       </main>
       
       <BottomNavigation />
 
       {/* Diálogo de confirmación de eliminación */}
-      <AlertDialog open={deleteDialog.open} onOpenChange={(open) => !open && cancelDelete()}>
+      <AlertDialog open={deleteDialog.open} onOpenChange={open => !open && cancelDelete()}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
@@ -195,17 +174,12 @@ const Applications = () => {
             <AlertDialogCancel onClick={cancelDelete}>
               Cancelar
             </AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmDelete}
-              className="bg-red-500 hover:bg-red-600 text-white"
-            >
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-500 hover:bg-red-600 text-white">
               Eliminar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
-  );
+    </div>;
 };
-
 export default Applications;
