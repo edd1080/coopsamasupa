@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -43,7 +42,7 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
     // Para ambos (borradores y aplicaciones completas), ir a la página de detalles
     navigate(`/applications/${id}`);
     
-    const itemType = (application as any).isDraft ? 'borrador' : 'solicitud';
+    const itemType = application.status === 'draft' ? 'borrador' : 'solicitud';
     toast({
       title: `Abriendo ${itemType}`,
       description: `Mostrando detalles de ${application.clientName}`,
@@ -77,7 +76,7 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
 
   const getStatusBadge = (status: string, isDraft?: boolean) => {
     // Para borradores, mostrar como "Activo" pero con indicador visual sutil
-    if (isDraft) {
+    if (status === 'draft') {
       return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 flex items-center gap-1 text-sm px-3 py-1">
           <BarChart3 className="h-4 w-4" />
           <span>Activo</span>
@@ -142,7 +141,7 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
     }
   };
 
-  const isDraft = (application as any).isDraft;
+  const isDraft = application.status === 'draft';
 
   return (
     <ContextMenu>
