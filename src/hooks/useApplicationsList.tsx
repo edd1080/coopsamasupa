@@ -37,6 +37,8 @@ export const useApplicationsList = () => {
         throw appError;
       }
       
+      console.log('📋 Raw applications fetched:', applications?.length || 0);
+      
       // Also fetch drafts - ordenar por updated_at para mostrar los más recientes primero
       const { data: drafts, error: draftError } = await supabase
         .from('application_drafts')
@@ -47,6 +49,24 @@ export const useApplicationsList = () => {
       if (draftError) {
         console.error('❌ Error fetching drafts:', sanitizeConsoleOutput(draftError));
         throw draftError;
+      }
+      
+      console.log('📝 Raw drafts fetched:', drafts?.length || 0);
+      console.log('📝 Draft details:', sanitizeConsoleOutput(drafts?.map(d => ({
+        id: d.id,
+        client_name: d.client_name,
+        agent_id: d.agent_id,
+        updated_at: d.updated_at
+      })) || []));
+      
+      // Debug: Check if user ID matches agent IDs
+      const draftsWithMismatch = drafts?.filter(draft => draft.agent_id !== user.id) || [];
+      if (draftsWithMismatch.length > 0) {
+        console.warn('⚠️ Found drafts with mismatched agent_id:', sanitizeConsoleOutput(draftsWithMismatch.map(d => ({
+          id: d.id,
+          expected_agent_id: user.id,
+          actual_agent_id: d.agent_id
+        }))));
       }
       
       // Transform data to match Application interface
@@ -73,7 +93,13 @@ export const useApplicationsList = () => {
         }))
       ];
       
-      console.log('✅ Applications list fetched successfully:', transformedApplications.length);
+      console.log('✅ Final transformed applications list:', transformedApplications.length);
+      console.log('📊 Applications by type:', {
+        fullApplications: (applications || []).length,
+        drafts: (drafts || []).length,
+        total: transformedApplications.length
+      });
+      
       return transformedApplications;
     },
     enabled: !!user?.id,

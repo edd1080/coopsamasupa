@@ -41,6 +41,9 @@ export const useSaveDraft = () => {
         throw new Error('Usuario no autenticado. Por favor, inicia sesión nuevamente.');
       }
       
+      // Debug: Log the current user ID being used
+      console.log('👤 Current authenticated user ID for save:', sanitizeConsoleOutput({ userId: user.id }));
+      
       // Rate limiting check
       if (!formRateLimit.isAllowed(user.id)) {
         const remainingTime = Math.ceil(formRateLimit.getRemainingTime(user.id) / 1000 / 60);
@@ -123,14 +126,26 @@ export const useSaveDraft = () => {
         id: draftPayload.id,
         agent_id: draftPayload.agent_id,
         client_name: draftPayload.client_name,
-        last_step: draftPayload.last_step
+        last_step: draftPayload.last_step,
+        expected_user_id: user.id,
+        agent_id_matches_user: draftPayload.agent_id === user.id
       }));
       
-      // Verificar que el usuario sigue autenticado antes del upsert
+      // Debug: Double-check user authentication before upsert
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       if (!currentUser || currentUser.id !== user.id) {
+        console.error('❌ Session verification failed:', {
+          expected: user.id,
+          actual: currentUser?.id,
+          sessionValid: !!currentUser
+        });
         throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente.');
       }
+      
+      console.log('🔒 Session verified before save:', {
+        userId: currentUser.id,
+        matches: currentUser.id === user.id
+      });
       
       const { data, error } = await supabase
         .from('application_drafts')
@@ -143,7 +158,12 @@ export const useSaveDraft = () => {
           message: error.message,
           code: error.code,
           details: error.details,
-          hint: error.hint
+          hint: error.hint,
+          draftPayload: {
+            id: draftPayload.id,
+            agent_id: draftPayload.agent_id,
+            client_name: draftPayload.client_name
+          }
         }));
         
         // Proporcionar mensajes de error más específicos
@@ -157,10 +177,24 @@ export const useSaveDraft = () => {
       }
       
       console.log('✅ Draft saved successfully with ID:', draftId);
+      console.log('✅ Draft save verification:', {
+        savedId: data.id,
+        savedAgentId: data.agent_id,
+        expectedUserId: user.id,
+        idsMatch: data.agent_id === user.id
+      });
+      
       return data;
     },
     onSuccess: (data, variables) => {
       console.log('🎉 Draft save success, invalidating queries');
+      console.log('🎉 Saved draft details:', {
+        id: data.id,
+        agent_id: data.agent_id,
+        client_name: data.client_name,
+        updated_at: data.updated_at
+      });
+      
       // Invalidar el query key correcto que usa useApplicationsList
       queryClient.invalidateQueries({ queryKey: ['applications-list', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['applications'] });
@@ -180,7 +214,8 @@ export const useSaveDraft = () => {
     onError: (error: any, variables) => {
       console.error('❌ Error saving draft:', sanitizeConsoleOutput({
         message: error.message,
-        isIncremental: variables.isIncremental
+        isIncremental: variables.isIncremental,
+        currentUserId: user?.id
       }));
       
       const saveType = variables.isIncremental ? 'guardado incremental' : 'borrador';

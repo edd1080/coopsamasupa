@@ -5,15 +5,21 @@ import BottomNavigation from '@/components/layout/BottomNavigation';
 import ApplicationsHeader from '@/components/applications/ApplicationsHeader';
 import ApplicationsList from '@/components/applications/ApplicationsList';
 import BreadcrumbNavigation from '@/components/navigation/BreadcrumbNavigation';
+import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useApplicationsList } from '@/hooks/useApplicationsList';
 import { useDeleteApplication, useCancelApplication } from '@/hooks/useApplicationActions';
-import { Trash2 } from 'lucide-react';
+import { Trash2, RefreshCw } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from "@/hooks/use-toast";
 
 const Applications = () => {
+  const { user } = useAuth();
+  const { toast } = useToast();
   const {
     data: applications,
-    isLoading
+    isLoading,
+    refetch
   } = useApplicationsList();
 
   const [deleteDialog, setDeleteDialog] = useState<{
@@ -30,6 +36,47 @@ const Applications = () => {
 
   const deleteApplication = useDeleteApplication();
   const cancelApplication = useCancelApplication();
+
+  // Debug: Log current user and applications
+  React.useEffect(() => {
+    console.log('🔍 Applications page debug info:', {
+      currentUser: user?.id,
+      applicationsCount: applications?.length || 0,
+      isLoading,
+      applications: applications?.map(app => ({
+        id: app.id,
+        clientName: app.clientName,
+        status: app.status,
+        isDraft: app.status === 'draft'
+      })) || []
+    });
+  }, [user, applications, isLoading]);
+
+  const handleRefresh = async () => {
+    console.log('🔄 Manual refresh triggered by user');
+    toast({
+      title: "Actualizando lista",
+      description: "Refrescando solicitudes...",
+      duration: 2000
+    });
+    
+    try {
+      await refetch();
+      toast({
+        title: "Lista actualizada",
+        description: "Las solicitudes se han actualizado correctamente",
+        duration: 2000
+      });
+    } catch (error) {
+      console.error('❌ Error during manual refresh:', error);
+      toast({
+        title: "Error al actualizar",
+        description: "No se pudo actualizar la lista. Inténtalo de nuevo.",
+        variant: "destructive",
+        duration: 3000
+      });
+    }
+  };
 
   const editApplication = (id: string, clientName: string, e?: React.MouseEvent) => {
     console.log('Edit application:', id, clientName);
@@ -51,6 +98,8 @@ const Applications = () => {
     const application = applications?.find(app => app.id === id);
     const isDraft = application?.status === 'draft';
     
+    console.log('🗑️ Delete triggered:', { id, clientName, isDraft, application });
+    
     setDeleteDialog({
       open: true,
       applicationId: id,
@@ -60,6 +109,8 @@ const Applications = () => {
   };
 
   const confirmDelete = () => {
+    console.log('🗑️ Confirming delete:', deleteDialog);
+    
     deleteApplication.mutate({
       applicationId: deleteDialog.applicationId,
       isDraft: deleteDialog.isDraft
@@ -92,6 +143,28 @@ const Applications = () => {
         </div>
         
         <ApplicationsHeader />
+        
+        {/* Debug info and refresh button */}
+        <div className="mb-4 p-3 bg-gray-50 rounded-lg border">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              <span>Usuario: {user?.id?.slice(0, 8)}... | </span>
+              <span>Solicitudes: {applications?.length || 0} | </span>
+              <span>Cargando: {isLoading ? 'Sí' : 'No'}</span>
+            </div>
+            <Button 
+              onClick={handleRefresh} 
+              variant="outline" 
+              size="sm"
+              disabled={isLoading}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              Actualizar
+            </Button>
+          </div>
+        </div>
+        
         <ApplicationsList 
           applications={applications || []} 
           isLoading={isLoading} 
