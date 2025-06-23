@@ -1,6 +1,6 @@
-
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import {
   Card,
@@ -34,17 +34,104 @@ import {
 import Header from '@/components/layout/Header';
 import BottomNavigation from '@/components/layout/BottomNavigation';
 import BreadcrumbNavigation from '@/components/navigation/BreadcrumbNavigation';
-import { useApplicationData } from '@/hooks/useApplicationData';
-import { getFirstNameAndLastName } from '@/lib/nameUtils';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { getFirstNameAndLastName } from '@/lib/nameUtils';
 
 const ApplicationDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   
-  console.log('🔍 ApplicationDetails - ID from params:', id);
-  
-  const { data: applicationData, isLoading, error } = useApplicationData(id || '');
+  const { data: applicationData, isLoading, error } = useQuery({
+    queryKey: ['application', id],
+    queryFn: async () => {
+      if (!id) throw new Error('No application ID provided');
+      
+      const { data, error } = await supabase
+        .from('applications')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
+
+  const { data: drafts } = useQuery({
+    queryKey: ['drafts', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('application_drafts')
+        .select('*')
+        .eq('agent_id', user.id);
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id,
+  });
+
+  // Determine if this is a draft or application
+  const isDraft = !applicationData;
+  const draftData = drafts?.find(draft => draft.id === id);
+  const displayData = applicationData || draftData;
+
+  // Helper functions to safely access union type properties
+  const getProgressStep = (data: any) => {
+    if (!data) return 0;
+    if ('progress_step' in data) return data.progress_step || 0;
+    if ('last_step' in data) return data.last_step || 0;
+    return 0;
+  };
+
+  const getStatus = (data: any) => {
+    if (!data) return 'draft';
+    if ('status' in data) return data.status;
+    return 'draft';
+  };
+
+  const getLastStep = (data: any) => {
+    if (!data) return 0;
+    if ('last_step' in data) return data.last_step || 0;
+    if ('progress_step' in data) return data.progress_step || 0;
+    return 0;
+  };
+
+  const getFormData = (data: any) => {
+    if (!data) return {};
+    if ('draft_data' in data && data.draft_data) {
+      if (typeof data.draft_data === 'object') {
+        return data.draft_data;
+      }
+      try {
+        return JSON.parse(data.draft_data as string);
+      } catch {
+        return {};
+      }
+    }
+    if ('data' in data) return data.data || {};
+    return {};
+  };
+
+  const getAmountRequested = (data: any) => {
+    if (!data) return 0;
+    if ('amount_requested' in data) return data.amount_requested || 0;
+    // For drafts, try to get from form data
+    const formData = getFormData(data);
+    return formData.requestedAmount || 0;
+  };
+
+  const getProduct = (data: any) => {
+    if (!data) return 'Crédito General';
+    if ('product' in data) return data.product;
+    if ('type' in data) return data.type;
+    return 'Crédito General';
+  };
 
   if (isLoading) {
     return (
@@ -67,8 +154,7 @@ const ApplicationDetails = () => {
     );
   }
 
-  if (error || !applicationData) {
-    console.error('❌ ApplicationDetails - Error or no data:', { error, applicationData, id });
+  if (error || !displayData) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header 
@@ -80,7 +166,7 @@ const ApplicationDetails = () => {
           <div className="text-center">
             <h2 className="text-xl font-semibold mb-4">Solicitud no encontrada</h2>
             <p className="text-muted-foreground mb-4">
-              No se pudo encontrar la solicitud solicitada (ID: {id}).
+              No se pudo encontrar la solicitud solicitada.
             </p>
             <Button onClick={() => navigate('/applications')}>
               Volver a Solicitudes
@@ -92,86 +178,12 @@ const ApplicationDetails = () => {
     );
   }
 
-  console.log('✅ ApplicationDetails - Data loaded:', applicationData);
-
-  const isDraft = applicationData.isDraft || applicationData.type === 'draft';
-  
-  // Helper functions to safely access data with proper type checking
-  const getProgressStep = () => {
-    if (isDraft) {
-      return (applicationData as any).last_step || 0;
-    }
-    return (applicationData as any).progress_step || 0;
-  };
-
-  const getStatus = () => {
-    if (isDraft) return 'draft';
-    return (applicationData as any).status || 'pending';
-  };
-
-  const getFormData = () => {
-    if (!applicationData.draft_data) return {};
-    if (typeof applicationData.draft_data === 'object') {
-      return applicationData.draft_data;
-    }
-    try {
-      return JSON.parse(applicationData.draft_data as string);
-    } catch {
-      return {};
-    }
-  };
-
-  const getAmountRequested = () => {
-    if (!isDraft && (applicationData as any).amount_requested) {
-      return (applicationData as any).amount_requested;
-    }
-    // For drafts, try to get from form data
-    const formData = getFormData();
-    return formData.requestedAmount || 0;
-  };
-
-  const getProduct = () => {
-    if (!isDraft && (applicationData as any).product) {
-      return (applicationData as any).product;
-    }
-    return 'Crédito General';
-  };
-
-  // Helper function to safely format birth date
-  const formatBirthDate = (birthDate: any) => {
-    if (!birthDate) return null;
-    
-    // If it's already a string, return it
-    if (typeof birthDate === 'string') {
-      return birthDate;
-    }
-    
-    // If it's an object, try to extract meaningful data
-    if (typeof birthDate === 'object') {
-      // If it's an empty object, return null
-      if (Object.keys(birthDate).length === 0) {
-        return null;
-      }
-      
-      // If it has date properties, try to format them
-      if (birthDate.day && birthDate.month && birthDate.year) {
-        return `${birthDate.day}/${birthDate.month}/${birthDate.year}`;
-      }
-      
-      // If it's a Date object, format it
-      if (birthDate instanceof Date) {
-        return format(birthDate, 'dd/MM/yyyy');
-      }
-    }
-    
-    return null;
-  };
-
-  const progressStep = getProgressStep();
-  const status = getStatus();
-  const formData = getFormData();
-  const amountRequested = getAmountRequested();
-  const product = getProduct();
+  const progressStep = getProgressStep(displayData);
+  const status = getStatus(displayData);
+  const lastStep = getLastStep(displayData);
+  const formData = getFormData(displayData);
+  const amountRequested = getAmountRequested(displayData);
+  const product = getProduct(displayData);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -202,8 +214,6 @@ const ApplicationDetails = () => {
       navigate(`/request-form/${id}`);
     } else {
       console.log('Editing application:', id);
-      // For now, redirect to draft editing - this can be enhanced later
-      navigate(`/request-form/${id}`);
     }
   };
 
@@ -235,13 +245,13 @@ const ApplicationDetails = () => {
     }
   };
 
-  const personName = applicationData.client_name || `${formData.firstName || ''} ${formData.lastName || ''}`.trim();
+  const personName = displayData.client_name || `${formData.firstName || ''} ${formData.lastName || ''}`.trim();
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header 
         personName={getFirstNameAndLastName(personName)}
-        applicationId={applicationData.id || ''}
+        applicationId={displayData.id || ''}
         onExitFormClick={() => navigate('/applications')}
       />
       
@@ -256,10 +266,10 @@ const ApplicationDetails = () => {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
-                {isDraft ? 'Borrador' : 'Solicitud'} #{applicationData.id}
+                {isDraft ? 'Borrador' : 'Solicitud'} #{displayData.id}
               </h1>
               <p className="text-gray-600">
-                {applicationData.client_name || `${formData.firstName || ''} ${formData.lastName || ''}`.trim()}
+                {displayData.client_name || `${formData.firstName || ''} ${formData.lastName || ''}`.trim()}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -313,7 +323,7 @@ const ApplicationDetails = () => {
                   <div>
                     <p className="text-sm text-gray-600">Creado</p>
                     <p className="font-medium">
-                      {format(new Date(applicationData.created_at), 'dd/MM/yyyy')}
+                      {format(new Date(displayData.created_at), 'dd/MM/yyyy')}
                     </p>
                   </div>
                 </div>
@@ -327,7 +337,7 @@ const ApplicationDetails = () => {
                   <div>
                     <p className="text-sm text-gray-600">Monto Solicitado</p>
                     <p className="font-medium">
-                      Q {Number(amountRequested).toLocaleString()}
+                      Q {amountRequested.toLocaleString()}
                     </p>
                   </div>
                 </div>
@@ -365,10 +375,10 @@ const ApplicationDetails = () => {
                     <Label className="text-sm font-medium text-gray-500">Nombre Completo</Label>
                     <p>{`${formData.firstName || ''} ${formData.middleName || ''} ${formData.lastName || ''}`.trim()}</p>
                   </div>
-                  {formatBirthDate(formData.birthDate) && (
+                  {formData.birthDate && (
                     <div>
                       <Label className="text-sm font-medium text-gray-500">Fecha de Nacimiento</Label>
-                      <p>{formatBirthDate(formData.birthDate)}</p>
+                      <p>{formData.birthDate}</p>
                     </div>
                   )}
                   {formData.dpi && (
