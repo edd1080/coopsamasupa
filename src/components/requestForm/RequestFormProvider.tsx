@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { generateApplicationId } from '@/utils/applicationIdGenerator';
 import { useToast } from '@/hooks/use-toast';
+import { useSaveDraft } from '@/hooks/useDraftActions';
 
 interface FormContextType {
   // Form state
@@ -54,10 +55,10 @@ interface FormContextType {
   // Person name
   personName: string;
   
-  // Exit dialog
+  // Exit dialog - updated signature
   showExitDialog: boolean;
   setShowExitDialog: (show: boolean) => void;
-  handleExit: () => void;
+  handleExit: (shouldSave?: boolean) => Promise<void> | void;
   hasUnsavedChanges: boolean;
   handleShowExitDialog: () => void;
 }
@@ -253,6 +254,9 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({ children, ste
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
+  // Add save draft mutation
+  const saveDraftMutation = useSaveDraft();
+
   // Update form data function
   const updateFormData = useCallback((field: string, value: any) => {
     console.log('📝 Form data updated:', { field, value });
@@ -393,12 +397,14 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({ children, ste
 
   // Form actions
   const handleSaveDraft = useCallback(() => {
-    toast({
-      title: "Borrador Guardado",
-      description: "Los datos del formulario se han guardado como borrador.",
+    saveDraftMutation.mutate({
+      formData,
+      currentStep,
+      currentSubStep: subStep,
+      isIncremental: false
     });
     setHasUnsavedChanges(false);
-  }, [toast]);
+  }, [formData, currentStep, subStep, saveDraftMutation]);
 
   const handleSubmit = useCallback(() => {
     console.log('📋 Form submitted:', formData);
@@ -408,11 +414,47 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({ children, ste
     });
   }, [formData, toast]);
 
-  // Exit handling
-  const handleExit = useCallback(() => {
+  // Updated exit handling with save functionality
+  const handleExit = useCallback(async (shouldSave: boolean = false) => {
+    console.log('🚪 handleExit called with shouldSave:', shouldSave);
+    
+    if (shouldSave) {
+      try {
+        console.log('💾 Attempting to save before exit...');
+        
+        // Save the draft
+        await new Promise((resolve, reject) => {
+          saveDraftMutation.mutate({
+            formData,
+            currentStep,
+            currentSubStep: subStep,
+            isIncremental: false
+          }, {
+            onSuccess: (data) => {
+              console.log('✅ Save successful before exit:', data);
+              setHasUnsavedChanges(false);
+              resolve(data);
+            },
+            onError: (error) => {
+              console.error('❌ Save failed before exit:', error);
+              reject(error);
+            }
+          });
+        });
+        
+        console.log('✅ Save completed, proceeding with exit');
+      } catch (error) {
+        console.error('❌ Exit with save failed:', error);
+        // Don't exit if save failed - let the user see the error toast
+        return;
+      }
+    }
+    
+    // Close the dialog and navigate
     setShowExitDialog(false);
+    console.log('🔄 Navigating back...');
     window.history.back();
-  }, []);
+  }, [formData, currentStep, subStep, saveDraftMutation]);
 
   const handleShowExitDialog = useCallback(() => {
     setShowExitDialog(true);
@@ -479,7 +521,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({ children, ste
     // Person name
     personName,
     
-    // Exit dialog
+    // Exit dialog - updated to pass the save parameter
     showExitDialog,
     setShowExitDialog,
     handleExit,
