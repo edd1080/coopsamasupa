@@ -44,43 +44,64 @@ const ApplicationDetails = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   
+  // Refactored query to combine applications and drafts strategy
   const { data: applicationData, isLoading, error } = useQuery({
-    queryKey: ['application', id],
+    queryKey: ['application-details', id, user?.id],
     queryFn: async () => {
-      if (!id) throw new Error('No application ID provided');
+      if (!id || !user?.id) throw new Error('No application ID or user provided');
       
-      const { data, error } = await supabase
+      console.log('🔍 Fetching application details for ID:', id);
+      
+      // First, try to get from applications table
+      const { data: application, error: appError } = await supabase
         .from('applications')
         .select('*')
         .eq('id', id)
-        .single();
+        .eq('agent_id', user.id)
+        .maybeSingle();
 
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!id,
-  });
+      if (appError && appError.code !== 'PGRST116') { // PGRST116 = no rows returned
+        console.error('❌ Error fetching application:', appError);
+        throw appError;
+      }
 
-  const { data: drafts } = useQuery({
-    queryKey: ['drafts', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      
-      const { data, error } = await supabase
+      if (application) {
+        console.log('✅ Found application in applications table');
+        return {
+          ...application,
+          isDraft: false,
+          sourceTable: 'applications'
+        };
+      }
+
+      // If not found in applications, try drafts table
+      const { data: draft, error: draftError } = await supabase
         .from('application_drafts')
         .select('*')
-        .eq('agent_id', user.id);
+        .eq('id', id)
+        .eq('agent_id', user.id)
+        .maybeSingle();
 
-      if (error) throw error;
-      return data || [];
+      if (draftError && draftError.code !== 'PGRST116') {
+        console.error('❌ Error fetching draft:', draftError);
+        throw draftError;
+      }
+
+      if (draft) {
+        console.log('✅ Found draft in application_drafts table');
+        return {
+          ...draft,
+          isDraft: true,
+          sourceTable: 'application_drafts'
+        };
+      }
+
+      // If not found in either table
+      console.log('❌ Application/draft not found in either table');
+      throw new Error('Solicitud no encontrada');
     },
-    enabled: !!user?.id,
+    enabled: !!id && !!user?.id,
   });
-
-  // Determine if this is a draft or application
-  const isDraft = !applicationData;
-  const draftData = drafts?.find(draft => draft.id === id);
-  const displayData = applicationData || draftData;
 
   // Helper function to safely format birthDate values
   const formatBirthDate = (birthDate: any): string => {
@@ -118,6 +139,8 @@ const ApplicationDetails = () => {
 
   const getStatus = (data: any) => {
     if (!data) return 'draft';
+    // Improved draft detection
+    if (data.isDraft || data.sourceTable === 'application_drafts') return 'draft';
     if ('status' in data) return data.status;
     return 'draft';
   };
@@ -181,7 +204,7 @@ const ApplicationDetails = () => {
     );
   }
 
-  if (error || !displayData) {
+  if (error || !applicationData) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header 
@@ -205,12 +228,14 @@ const ApplicationDetails = () => {
     );
   }
 
-  const progressStep = getProgressStep(displayData);
-  const status = getStatus(displayData);
-  const lastStep = getLastStep(displayData);
-  const formData = getFormData(displayData);
-  const amountRequested = getAmountRequested(displayData);
-  const product = getProduct(displayData);
+  // Use the improved data accessors
+  const isDraft = applicationData.isDraft || applicationData.sourceTable === 'application_drafts';
+  const progressStep = getProgressStep(applicationData);
+  const status = getStatus(applicationData);
+  const lastStep = getLastStep(applicationData);
+  const formData = getFormData(applicationData);
+  const amountRequested = getAmountRequested(applicationData);
+  const product = getProduct(applicationData);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -272,13 +297,13 @@ const ApplicationDetails = () => {
     }
   };
 
-  const personName = displayData.client_name || `${formData.firstName || ''} ${formData.lastName || ''}`.trim();
+  const personName = applicationData.client_name || `${formData.firstName || ''} ${formData.lastName || ''}`.trim();
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header 
         personName={getFirstNameAndLastName(personName)}
-        applicationId={displayData.id || ''}
+        applicationId={applicationData.id || ''}
         onExitFormClick={() => navigate('/applications')}
       />
       
@@ -293,10 +318,10 @@ const ApplicationDetails = () => {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
-                {isDraft ? 'Borrador' : 'Solicitud'} #{displayData.id}
+                {isDraft ? 'Borrador' : 'Solicitud'} #{applicationData.id}
               </h1>
               <p className="text-gray-600">
-                {displayData.client_name || `${formData.firstName || ''} ${formData.lastName || ''}`.trim()}
+                {applicationData.client_name || `${formData.firstName || ''} ${formData.lastName || ''}`.trim()}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -350,7 +375,7 @@ const ApplicationDetails = () => {
                   <div>
                     <p className="text-sm text-gray-600">Creado</p>
                     <p className="font-medium">
-                      {format(new Date(displayData.created_at), 'dd/MM/yyyy')}
+                      {format(new Date(applicationData.created_at), 'dd/MM/yyyy')}
                     </p>
                   </div>
                 </div>
