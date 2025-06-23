@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -96,15 +95,17 @@ const ApplicationDetails = () => {
 
   const isDraft = applicationData.isDraft || applicationData.type === 'draft';
   
-  // Helper functions to safely access data
+  // Helper functions to safely access data with proper type checking
   const getProgressStep = () => {
-    if (isDraft) return applicationData.last_step || 0;
-    return applicationData.progress_step || 0;
+    if (isDraft) {
+      return (applicationData as any).last_step || 0;
+    }
+    return (applicationData as any).progress_step || 0;
   };
 
   const getStatus = () => {
     if (isDraft) return 'draft';
-    return applicationData.status || 'pending';
+    return (applicationData as any).status || 'pending';
   };
 
   const getFormData = () => {
@@ -120,8 +121,8 @@ const ApplicationDetails = () => {
   };
 
   const getAmountRequested = () => {
-    if (!isDraft && applicationData.amount_requested) {
-      return applicationData.amount_requested;
+    if (!isDraft && (applicationData as any).amount_requested) {
+      return (applicationData as any).amount_requested;
     }
     // For drafts, try to get from form data
     const formData = getFormData();
@@ -129,7 +130,9 @@ const ApplicationDetails = () => {
   };
 
   const getProduct = () => {
-    if (!isDraft && applicationData.product) return applicationData.product;
+    if (!isDraft && (applicationData as any).product) {
+      return (applicationData as any).product;
+    }
     return 'Crédito General';
   };
 
