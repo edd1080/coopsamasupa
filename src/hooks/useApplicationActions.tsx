@@ -49,6 +49,8 @@ export const useDeleteApplication = () => {
       return { id: applicationId, type: 'application' };
     },
     onSuccess: (data) => {
+      // Invalidar el query key correcto que usa useApplicationsList
+      queryClient.invalidateQueries({ queryKey: ['applications-list', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['applications'] });
       queryClient.invalidateQueries({ queryKey: ['application-metrics'] });
       queryClient.invalidateQueries({ queryKey: ['application-drafts'] });
@@ -99,8 +101,11 @@ export const useCancelApplication = () => {
       return data;
     },
     onSuccess: (data) => {
+      // Invalidar el query key correcto que usa useApplicationsList
+      queryClient.invalidateQueries({ queryKey: ['applications-list', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['applications'] });
       queryClient.invalidateQueries({ queryKey: ['application-metrics'] });
+      
       toast({
         title: "Solicitud cancelada",
         description: `La solicitud de ${data.client_name} ha sido cancelada`,
