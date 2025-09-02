@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, FileSpreadsheet, AlertCircle, Settings, User, CheckSquare } from 'lucide-react';
+import { Home, FileSpreadsheet, AlertCircle, Settings, User } from 'lucide-react';
 
 const BottomNavigation = () => {
   const location = useLocation();
@@ -15,7 +15,7 @@ const BottomNavigation = () => {
       <div className="flex justify-around items-center h-20 pb-safe">
         <Link 
           to="/" 
-          className={`flex flex-col items-center justify-center w-1/4 py-2 ${isActive('/') && !isActive('/applications') && !isActive('/prequalifications') && !isActive('/settings') ? 'text-primary' : 'text-muted-foreground'}`}
+          className={`flex flex-col items-center justify-center w-1/3 py-2 ${isActive('/') && !isActive('/applications') && !isActive('/settings') ? 'text-primary' : 'text-muted-foreground'}`}
         >
           <Home className="h-6 w-6 mb-1" />
           <span className="text-xs">Inicio</span>
@@ -23,18 +23,10 @@ const BottomNavigation = () => {
 
         <Link 
           to="/applications" 
-          className={`flex flex-col items-center justify-center w-1/4 py-2 ${isActive('/applications') ? 'text-primary' : 'text-muted-foreground'}`}
+          className={`flex flex-col items-center justify-center w-1/3 py-2 ${isActive('/applications') ? 'text-primary' : 'text-muted-foreground'}`}
         >
           <FileSpreadsheet className="h-6 w-6 mb-1" />
           <span className="text-xs">Solicitudes</span>
-        </Link>
-
-        <Link 
-          to="/prequalifications" 
-          className={`flex flex-col items-center justify-center w-1/4 py-2 ${isActive('/prequalifications') ? 'text-primary' : 'text-muted-foreground'}`}
-        >
-          <CheckSquare className="h-6 w-6 mb-1" />
-          <span className="text-xs">Precalif.</span>
         </Link>
 
         {/* Alertas section commented out but preserved for future use
@@ -49,7 +41,7 @@ const BottomNavigation = () => {
 
         <Link 
           to="/settings" 
-          className={`flex flex-col items-center justify-center w-1/4 py-2 ${isActive('/settings') ? 'text-primary' : 'text-muted-foreground'}`}
+          className={`flex flex-col items-center justify-center w-1/3 py-2 ${isActive('/settings') ? 'text-primary' : 'text-muted-foreground'}`}
         >
           <Settings className="h-6 w-6 mb-1" />
           <span className="text-xs">Ajustes</span>

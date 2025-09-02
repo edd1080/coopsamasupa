@@ -17,7 +17,7 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, onExitFormCl
   const location = useLocation();
 
   // Definir páginas principales que NO deben tener botón atrás
-  const mainPages = ['/', '/applications', '/prequalifications', '/settings'];
+  const mainPages = ['/', '/applications', '/settings'];
   const isMainPage = mainPages.includes(location.pathname);
   
   // Actualizar lógica para detectar formularios - incluir /applications/new
@@ -47,7 +47,6 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, onExitFormCl
     // Títulos específicos para cada pantalla principal
     if (location.pathname === '/') return "Coopsama App";
     if (location.pathname === '/applications') return "Solicitudes";
-    if (location.pathname === '/prequalifications') return "Precalificación";
     if (location.pathname === '/settings') return "Ajustes";
     
     // Para formularios de solicitud y detalles de aplicación

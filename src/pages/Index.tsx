@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import BottomNavigation from '@/components/layout/BottomNavigation';
-import PrequalificationModal from '@/components/prequalification/PrequalificationModal';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileSpreadsheet, Users, TrendingUp, CheckCircle, AlertCircle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,7 @@ import { useApplicationMetrics } from '@/hooks/useApplicationMetrics';
 
 const Index = () => {
   const navigate = useNavigate();
-  const [showPrequalificationModal, setShowPrequalificationModal] = useState(false);
+  
   
   const { data: profile, isLoading: profileLoading } = useUserProfile();
   const { data: metrics, isLoading: metricsLoading } = useApplicationMetrics();
@@ -116,28 +116,26 @@ const Index = () => {
           </Card>
         </div>
         
-        <div className="grid grid-cols-1 gap-6 mb-6">
-          <Card className="card-hover" onClick={handleNewApplication}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+        <div className="mb-6">
+          <div className="cursor-pointer" onClick={handleNewApplication}>
+            <div className="mb-4">
+              <h3 className="text-xl font-semibold flex items-center gap-2 mb-2">
                 <FileSpreadsheet className="h-5 w-5 text-primary" />
                 Nueva Solicitud
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Crear una nueva solicitud de crédito</p>
-              <Button className="mt-4 w-full" onClick={handleNewApplication}>
+              </h3>
+              <p className="text-muted-foreground mb-4">Crear una nueva solicitud de crédito</p>
+              <Button className="w-full" onClick={handleNewApplication}>
                 <FileSpreadsheet className="mr-2 h-4 w-4" />
                 Comenzar solicitud
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </main>
       
       <BottomNavigation />
       
-      <PrequalificationModal open={showPrequalificationModal} onOpenChange={setShowPrequalificationModal} />
+      
     </div>
   );
 };

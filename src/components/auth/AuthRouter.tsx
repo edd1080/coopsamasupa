@@ -12,7 +12,7 @@ import Settings from "@/pages/Settings";
 import NotFound from "@/pages/NotFound";
 import RequestForm from "@/pages/RequestForm";
 import ApplicationDetails from "@/pages/ApplicationDetails";
-import Prequalifications from "@/pages/Prequalifications";
+
 import PersonalInfo from "@/pages/PersonalInfo";
 import ChangePassword from "@/pages/ChangePassword";
 import ReportProblem from "@/pages/ReportProblem";
@@ -49,7 +49,7 @@ const AuthRouter = () => {
         <Route path="/applications/:id/guarantors/:guarantorId" element={<ApplicationDetails />} />
         <Route path="/applications/:id/guarantors/:guarantorId/edit" element={<RequestForm />} />
         <Route path="/request-form/:id" element={<RequestForm />} />
-        <Route path="/prequalifications" element={<Prequalifications />} />
+        
         <Route path="/settings" element={<Settings />} />
         <Route path="/settings/personal-info" element={<PersonalInfo />} />
         <Route path="/settings/change-password" element={<ChangePassword />} />
