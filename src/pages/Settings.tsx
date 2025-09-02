@@ -2,54 +2,32 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { ChevronRight, LogOut, User, HelpCircle, AlertTriangle } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ChevronRight, LogOut, User, Bell, Smartphone, HelpCircle, AlertTriangle, Info } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import BottomNavigation from '@/components/layout/BottomNavigation';
 import { useAuth } from '@/hooks/useAuth';
-// DeviceInfo commented out but preserved for future use
-// import DeviceInfo from '@/components/settings/DeviceInfo';
-import NotificationSettings from '@/components/settings/NotificationSettings';
-import AppPreferences from '@/components/settings/AppPreferences';
-// SecuritySettings commented out but preserved for future use
-// import SecuritySettings from '@/components/settings/SecuritySettings';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { useTheme } from '@/context/ThemeContext';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 const Settings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { signOut } = useAuth();
+  const { data: userProfile } = useUserProfile();
+  const { theme, toggleTheme } = useTheme();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
-
-  // DeviceInfo data commented out but preserved for future use
-  /*
-  const deviceInfo = {
-    ram: {
-      total: '4GB',
-      used: '2.5GB',
-      free: '1.5GB'
-    },
-    storage: {
-      total: '64GB',
-      available: '32.5GB'
-    },
-    gps: {
-      status: 'online'
-    },
-    system: {
-      os: 'Android 13',
-      model: 'Pixel 6',
-      name: 'Pixel-Device'
-    }
-  };
-  */
+  const [pushNotifications, setPushNotifications] = useState(true);
+  const [systemAlerts, setSystemAlerts] = useState(true);
+  const [highResolution, setHighResolution] = useState(true);
 
   const handleLogout = async () => {
     try {
       await signOut();
-      // No need to navigate - AuthRouter will handle the redirect
       setShowLogoutDialog(false);
     } catch (error) {
       console.error('Error during logout:', error);
@@ -65,75 +43,167 @@ const Settings = () => {
     setShowLogoutDialog(true);
   };
 
+  const getUserInitials = (fullName: string) => {
+    if (!fullName) return 'U';
+    const names = fullName.split(' ');
+    if (names.length >= 2) {
+      return `${names[0][0]}${names[1][0]}`.toUpperCase();
+    }
+    return fullName[0].toUpperCase();
+  };
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       <Header />
       
       <main className="flex-1 px-4 pb-20 my-[20px]">
+        {/* User Profile Header */}
+        <div className="mb-6 p-4 bg-card rounded-lg border">
+          <div className="flex items-center gap-4">
+            <Avatar className="w-16 h-16">
+              <AvatarImage src="" alt="Profile" />
+              <AvatarFallback className="bg-primary text-primary-foreground text-xl">
+                {getUserInitials(userProfile?.full_name || '')}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <h2 className="text-xl font-semibold">{userProfile?.full_name || 'Usuario'}</h2>
+              <p className="text-muted-foreground">{userProfile?.role || 'Miembro'}</p>
+              <p className="text-sm text-muted-foreground">{userProfile?.agency || 'Coopsama'}</p>
+            </div>
+          </div>
+        </div>
+
         <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5 text-primary" />
-                Perfil
-              </CardTitle>
-              <CardDescription>
-                Gestiona tu información personal y preferencias
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between py-2 cursor-pointer hover:bg-accent/50 rounded-md px-2" onClick={() => navigate('/settings/personal-info')}>
-                <div>
-                  <p className="font-medium">Información personal</p>
-                  <p className="text-sm text-muted-foreground">Nombre, correo, teléfono</p>
+          {/* Cuenta Section */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <User className="h-5 w-5 text-primary" />
+              Cuenta
+            </h3>
+            <div className="space-y-1">
+              <div 
+                className="flex items-center justify-between py-3 px-3 cursor-pointer hover:bg-accent/50 rounded-md transition-colors border-b border-border/50"
+                onClick={() => navigate('/settings/personal-info')}
+              >
+                <div className="flex items-center gap-3">
+                  <Info className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">Información personal</p>
+                    <p className="text-sm text-muted-foreground">Nombre, correo, teléfono</p>
+                  </div>
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </div>
-              <div className="flex items-center justify-between py-2 rounded-md px-2 opacity-50 cursor-not-allowed">
-                <div>
-                  <p className="font-medium text-muted-foreground">Cambiar contraseña</p>
-                  <p className="text-sm text-muted-foreground">No disponible en esta versión</p>
+            </div>
+          </div>
+
+          {/* Notificaciones Section */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Bell className="h-5 w-5 text-primary" />
+              Notificaciones
+            </h3>
+            <div className="space-y-1">
+              <div className="flex items-center justify-between py-3 px-3 border-b border-border/50">
+                <div className="flex items-center gap-3">
+                  <Bell className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">Notificaciones push</p>
+                    <p className="text-sm text-muted-foreground">Recibe alertas en tu dispositivo</p>
+                  </div>
+                </div>
+                <Switch 
+                  checked={pushNotifications}
+                  onCheckedChange={setPushNotifications}
+                />
+              </div>
+              <div className="flex items-center justify-between py-3 px-3 border-b border-border/50">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">Alertas de sistema</p>
+                    <p className="text-sm text-muted-foreground">Cambios de estado en solicitudes</p>
+                  </div>
+                </div>
+                <Switch 
+                  checked={systemAlerts}
+                  onCheckedChange={setSystemAlerts}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Preferencias del app Section */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Smartphone className="h-5 w-5 text-primary" />
+              Preferencias del app
+            </h3>
+            <div className="space-y-1">
+              <div className="flex items-center justify-between py-3 px-3 border-b border-border/50">
+                <div className="flex items-center gap-3">
+                  <Smartphone className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">Tema oscuro</p>
+                    <p className="text-sm text-muted-foreground">Activa el modo oscuro</p>
+                  </div>
+                </div>
+                <Switch 
+                  checked={theme === 'dark'} 
+                  onCheckedChange={toggleTheme}
+                />
+              </div>
+              <div className="flex items-center justify-between py-3 px-3 border-b border-border/50">
+                <div className="flex items-center gap-3">
+                  <Smartphone className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">Alta resolución</p>
+                    <p className="text-sm text-muted-foreground">Mejora la calidad visual</p>
+                  </div>
+                </div>
+                <Switch 
+                  checked={highResolution}
+                  onCheckedChange={setHighResolution}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Ayuda y soporte Section */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <HelpCircle className="h-5 w-5 text-primary" />
+              Ayuda y soporte
+            </h3>
+            <div className="space-y-1">
+              <div 
+                className="flex items-center justify-between py-3 px-3 cursor-pointer hover:bg-accent/50 rounded-md transition-colors border-b border-border/50"
+                onClick={() => navigate('/settings/report-problem')}
+              >
+                <div className="flex items-center gap-3">
+                  <HelpCircle className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">Reportar problema</p>
+                    <p className="text-sm text-muted-foreground">Informa sobre errores o fallos</p>
+                  </div>
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </div>
-            </CardContent>
-          </Card>
-          
-          {/* DeviceInfo component commented out but preserved for future use
-           <DeviceInfo deviceInfo={deviceInfo} />
-           */}
-          <NotificationSettings />
-          <AppPreferences />
-          
-          {/* SecuritySettings component commented out but preserved for future use
-           <SecuritySettings />
-           */}
-          
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <HelpCircle className="h-5 w-5 text-primary" />
-                Ayuda y soporte
-              </CardTitle>
-              <CardDescription>
-                Encuentra ayuda y recursos para usar Coopsama App
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between py-2 cursor-pointer hover:bg-accent/50 rounded-md px-2" onClick={() => navigate('/settings/report-problem')}>
-                <div>
-                  <p className="font-medium">Reportar problema</p>
-                  <p className="text-sm text-muted-foreground">Informa sobre errores o fallos</p>
-                </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Button variant="destructive" className="w-full flex items-center justify-center gap-2" onClick={handleLogoutClick}>
-            <LogOut className="h-5 w-5" />
-            Cerrar sesión
-          </Button>
+            </div>
+          </div>
+
+          {/* Logout Button */}
+          <div className="pt-4">
+            <Button 
+              variant="destructive" 
+              className="w-full flex items-center justify-center gap-2" 
+              onClick={handleLogoutClick}
+            >
+              <LogOut className="h-5 w-5" />
+              Cerrar sesión
+            </Button>
+          </div>
         </div>
       </main>
       
