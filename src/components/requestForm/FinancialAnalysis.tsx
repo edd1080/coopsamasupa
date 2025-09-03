@@ -7,7 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Calculator, TrendingUp, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
-import { formatCurrency, parseCurrency, normalizeDecimalInput } from '@/utils/formatters';
+import { formatCurrency, normalizeDecimalInput } from '@/utils/formatters';
+import CurrencyInput from '@/components/ui/currency-input';
 import { 
   Select,
   SelectContent,
@@ -36,15 +37,7 @@ const expenseCategories = [
 
 const FinancialAnalysis: React.FC<FinancialAnalysisProps> = ({ formData, updateFormData }) => {
   const handleCurrencyChange = (field: string, value: string) => {
-    // Store the clean numeric value for calculations
-    const normalizedValue = normalizeDecimalInput(value);
-    const cleanValue = parseCurrency(normalizedValue);
-    updateFormData(field, cleanValue);
-  };
-
-  const formatDisplayValue = (value: string | number) => {
-    if (!value || value === '') return '';
-    return formatCurrency(value);
+    updateFormData(field, value);
   };
 
   // Calculate totals
@@ -100,35 +93,21 @@ const FinancialAnalysis: React.FC<FinancialAnalysisProps> = ({ formData, updateF
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="ingresoPrincipal">Ingreso Principal</Label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">Q</span>
-                <Input 
-                  id="ingresoPrincipal"
-                  type="text"
-                  inputMode="decimal"
-                  pattern="[0-9]*\.?[0-9]*"
-                  className="pl-7"
-                  placeholder="0.00"
-                  value={formatDisplayValue(formData.ingresoPrincipal)}
-                  onChange={(e) => handleCurrencyChange('ingresoPrincipal', e.target.value)}
-                />
-              </div>
+              <CurrencyInput
+                id="ingresoPrincipal"
+                value={formData.ingresoPrincipal || ''}
+                onValueChange={(value) => handleCurrencyChange('ingresoPrincipal', value)}
+                placeholder="0.00"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="ingresoSecundario">Ingreso Secundario (Opcional)</Label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">Q</span>
-                <Input 
-                  id="ingresoSecundario"
-                  type="text"
-                  inputMode="decimal"
-                  pattern="[0-9]*\.?[0-9]*"
-                  className="pl-7"
-                  placeholder="0.00"
-                  value={formatDisplayValue(formData.ingresoSecundario)}
-                  onChange={(e) => handleCurrencyChange('ingresoSecundario', e.target.value)}
-                />
-              </div>
+              <CurrencyInput
+                id="ingresoSecundario"
+                value={formData.ingresoSecundario || ''}
+                onValueChange={(value) => handleCurrencyChange('ingresoSecundario', value)}
+                placeholder="0.00"
+              />
             </div>
           </div>
           <div className="space-y-2">
@@ -153,19 +132,12 @@ const FinancialAnalysis: React.FC<FinancialAnalysisProps> = ({ formData, updateF
             {expenseCategories.map((category) => (
               <div key={category.key} className="space-y-2">
                 <Label htmlFor={category.key}>{category.label}</Label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">Q</span>
-                  <Input 
-                    id={category.key}
-                    type="text"
-                    inputMode="decimal"
-                    pattern="[0-9]*\.?[0-9]*"
-                    className="pl-7"
-                    placeholder="0.00"
-                    value={formatDisplayValue(formData[category.key])}
-                    onChange={(e) => handleCurrencyChange(category.key, e.target.value)}
-                  />
-                </div>
+                <CurrencyInput
+                  id={category.key}
+                  value={formData[category.key] || ''}
+                  onValueChange={(value) => handleCurrencyChange(category.key, value)}
+                  placeholder="0.00"
+                />
               </div>
             ))}
           </div>
@@ -217,19 +189,12 @@ const FinancialAnalysis: React.FC<FinancialAnalysisProps> = ({ formData, updateF
             </div>
             <div className="space-y-2">
               <Label htmlFor="cuotaSolicitada">Cuota Solicitada</Label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">Q</span>
-                <Input 
-                  id="cuotaSolicitada"
-                  type="text"
-                  inputMode="decimal"
-                  pattern="[0-9]*\.?[0-9]*"
-                  className="pl-7"
-                  placeholder="0.00"
-                  value={formatDisplayValue(formData.cuotaSolicitada)}
-                  onChange={(e) => handleCurrencyChange('cuotaSolicitada', e.target.value)}
-                />
-              </div>
+              <CurrencyInput
+                id="cuotaSolicitada"
+                value={formData.cuotaSolicitada || ''}
+                onValueChange={(value) => handleCurrencyChange('cuotaSolicitada', value)}
+                placeholder="0.00"
+              />
             </div>
           </div>
 

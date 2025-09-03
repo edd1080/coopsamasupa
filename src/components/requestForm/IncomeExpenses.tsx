@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from "@/components/ui/separator";
 import { normalizeDecimalInput } from '@/utils/formatters';
+import CurrencyInput from '@/components/ui/currency-input';
 
 interface IncomeExpensesProps {
   formData: any;
@@ -27,36 +28,24 @@ const IncomeExpenses: React.FC<IncomeExpensesProps> = ({ formData, updateFormDat
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="primaryIncome">Ingreso Principal</Label>
-                    <div className="relative">
-                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">$</span>
-                      <Input 
-                        id="primaryIncome" 
-                        type="text"
-                        inputMode="decimal"
-                        pattern="[0-9]*\.?[0-9]*"
-                        value={formData.primaryIncome || ''} 
-                        onChange={(e) => updateFormData('primaryIncome', normalizeDecimalInput(e.target.value))} 
-                        placeholder="0.00"
-                        className="pl-8"
-                      />
-                    </div>
+                    <CurrencyInput
+                      id="primaryIncome"
+                      value={formData.primaryIncome || ''}
+                      onValueChange={(value) => updateFormData('primaryIncome', value)}
+                      placeholder="0.00"
+                      currencySymbol="Q"
+                    />
                   </div>
                 
                   <div className="space-y-2">
                     <Label htmlFor="secondaryIncome">Otros Ingresos</Label>
-                    <div className="relative">
-                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">$</span>
-                      <Input 
-                        id="secondaryIncome" 
-                        type="text"
-                        inputMode="decimal"
-                        pattern="[0-9]*\.?[0-9]*"
-                        value={formData.secondaryIncome || ''} 
-                        onChange={(e) => updateFormData('secondaryIncome', normalizeDecimalInput(e.target.value))} 
-                        placeholder="0.00"
-                        className="pl-8"
-                      />
-                    </div>
+                    <CurrencyInput
+                      id="secondaryIncome"
+                      value={formData.secondaryIncome || ''}
+                      onValueChange={(value) => updateFormData('secondaryIncome', value)}
+                      placeholder="0.00"
+                      currencySymbol="Q"
+                    />
                   </div>
               </div>
               
@@ -80,90 +69,60 @@ const IncomeExpenses: React.FC<IncomeExpensesProps> = ({ formData, updateFormDat
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="rent">Renta / Hipoteca</Label>
-                    <div className="relative">
-                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">$</span>
-                      <Input 
-                        id="rent" 
-                        type="text"
-                        inputMode="decimal"
-                        pattern="[0-9]*\.?[0-9]*"
-                        value={formData.rent || ''} 
-                        onChange={(e) => updateFormData('rent', normalizeDecimalInput(e.target.value))} 
-                        placeholder="0.00"
-                        className="pl-8"
-                      />
-                    </div>
+                    <CurrencyInput
+                      id="rent"
+                      value={formData.rent || ''}
+                      onValueChange={(value) => updateFormData('rent', value)}
+                      placeholder="0.00"
+                      currencySymbol="Q"
+                    />
                   </div>
                 
                   <div className="space-y-2">
                     <Label htmlFor="utilities">Servicios (Luz, Agua, etc.)</Label>
-                    <div className="relative">
-                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">$</span>
-                      <Input 
-                        id="utilities" 
-                        type="text"
-                        inputMode="decimal"
-                        pattern="[0-9]*\.?[0-9]*"
-                        value={formData.utilities || ''} 
-                        onChange={(e) => updateFormData('utilities', normalizeDecimalInput(e.target.value))} 
-                        placeholder="0.00"
-                        className="pl-8"
-                      />
-                    </div>
+                    <CurrencyInput
+                      id="utilities"
+                      value={formData.utilities || ''}
+                      onValueChange={(value) => updateFormData('utilities', value)}
+                      placeholder="0.00"
+                      currencySymbol="Q"
+                    />
                   </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="food">Alimentación</Label>
-                    <div className="relative">
-                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">$</span>
-                      <Input 
-                        id="food" 
-                        type="text"
-                        inputMode="decimal"
-                        pattern="[0-9]*\.?[0-9]*"
-                        value={formData.food || ''} 
-                        onChange={(e) => updateFormData('food', normalizeDecimalInput(e.target.value))} 
-                        placeholder="0.00"
-                        className="pl-8"
-                      />
-                    </div>
+                    <CurrencyInput
+                      id="food"
+                      value={formData.food || ''}
+                      onValueChange={(value) => updateFormData('food', value)}
+                      placeholder="0.00"
+                      currencySymbol="Q"
+                    />
                   </div>
                 
                   <div className="space-y-2">
                     <Label htmlFor="transportation">Transporte</Label>
-                    <div className="relative">
-                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">$</span>
-                      <Input 
-                        id="transportation" 
-                        type="text"
-                        inputMode="decimal"
-                        pattern="[0-9]*\.?[0-9]*"
-                        value={formData.transportation || ''} 
-                        onChange={(e) => updateFormData('transportation', normalizeDecimalInput(e.target.value))} 
-                        placeholder="0.00"
-                        className="pl-8"
-                      />
-                    </div>
+                    <CurrencyInput
+                      id="transportation"
+                      value={formData.transportation || ''}
+                      onValueChange={(value) => updateFormData('transportation', value)}
+                      placeholder="0.00"
+                      currencySymbol="Q"
+                    />
                   </div>
               </div>
               
                 <div className="space-y-2">
                   <Label htmlFor="otherExpenses">Otros Gastos</Label>
-                  <div className="relative">
-                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">$</span>
-                    <Input 
-                      id="otherExpenses" 
-                      type="text"
-                      inputMode="decimal"
-                      pattern="[0-9]*\.?[0-9]*"
-                      value={formData.otherExpenses || ''} 
-                      onChange={(e) => updateFormData('otherExpenses', normalizeDecimalInput(e.target.value))} 
-                      placeholder="0.00"
-                      className="pl-8"
-                    />
-                  </div>
+                  <CurrencyInput
+                    id="otherExpenses"
+                    value={formData.otherExpenses || ''}
+                    onValueChange={(value) => updateFormData('otherExpenses', value)}
+                    placeholder="0.00"
+                    currencySymbol="Q"
+                  />
                 </div>
             </div>
           </div>
@@ -176,36 +135,24 @@ const IncomeExpenses: React.FC<IncomeExpensesProps> = ({ formData, updateFormDat
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="currentLoans">Préstamos / Créditos</Label>
-                    <div className="relative">
-                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">$</span>
-                      <Input 
-                        id="currentLoans" 
-                        type="text"
-                        inputMode="decimal"
-                        pattern="[0-9]*\.?[0-9]*"
-                        value={formData.currentLoans || ''} 
-                        onChange={(e) => updateFormData('currentLoans', normalizeDecimalInput(e.target.value))} 
-                        placeholder="0.00"
-                        className="pl-8"
-                      />
-                    </div>
+                    <CurrencyInput
+                      id="currentLoans"
+                      value={formData.currentLoans || ''}
+                      onValueChange={(value) => updateFormData('currentLoans', value)}
+                      placeholder="0.00"
+                      currencySymbol="Q"
+                    />
                   </div>
                 
                   <div className="space-y-2">
                     <Label htmlFor="creditCards">Tarjetas de Crédito</Label>
-                    <div className="relative">
-                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">$</span>
-                      <Input 
-                        id="creditCards" 
-                        type="text"
-                        inputMode="decimal"
-                        pattern="[0-9]*\.?[0-9]*"
-                        value={formData.creditCards || ''} 
-                        onChange={(e) => updateFormData('creditCards', normalizeDecimalInput(e.target.value))} 
-                        placeholder="0.00"
-                        className="pl-8"
-                      />
-                    </div>
+                    <CurrencyInput
+                      id="creditCards"
+                      value={formData.creditCards || ''}
+                      onValueChange={(value) => updateFormData('creditCards', value)}
+                      placeholder="0.00"
+                      currencySymbol="Q"
+                    />
                   </div>
               </div>
             </div>

@@ -357,8 +357,12 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
         return 5;
       case 1: // FinancialAnalysis
         return 1;
-      case 2: // BusinessEconomicProfile (Estado Patrimonial)
-        return 1;
+      case 2: // BusinessEconomicProfile
+        // Conditional substeps based on applicant type
+        if (formData.applicantType === 'negocio_propio') {
+          return 4; // 4 substeps for business owners
+        }
+        return 1; // 1 substep for employees
       case 3: // GuarantorsSection
         return 1;
       case 4: // DocumentsSection
@@ -368,7 +372,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
       default:
         return 1;
     }
-  }, []);
+  }, [formData.applicantType]);
 
   // Navigation helpers
   const isFirstStep = currentStep === 0 && subStep === 0;

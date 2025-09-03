@@ -11,6 +11,8 @@ import { Separator } from '@/components/ui/separator';
 import { Plus, Trash2, HelpCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { normalizeDecimalInput, normalizeIntegerInput } from '@/utils/formatters';
+import CurrencyInput from '@/components/ui/currency-input';
+import { useFormContext } from './RequestFormProvider';
 
 interface Product {
   id: string;
@@ -28,6 +30,7 @@ interface BusinessEconomicProfileProps {
 }
 
 const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formData, updateFormData }) => {
+  const { subStep, currentStep, goToStep } = useFormContext();
   const [products, setProducts] = useState<Product[]>(formData.products || []);
   const [applicantType, setApplicantType] = useState(formData.applicantType || '');
 
@@ -37,7 +40,12 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
 
   useEffect(() => {
     updateFormData('applicantType', applicantType);
-  }, [applicantType, updateFormData]);
+    // If user changes from 'negocio_propio' to 'asalariado' while in later substeps, 
+    // navigate back to first substep
+    if (applicantType === 'asalariado' && subStep > 0) {
+      goToStep(currentStep, 0);
+    }
+  }, [applicantType, updateFormData, subStep, currentStep, goToStep]);
 
   const addProduct = () => {
     const newProduct: Product = {
@@ -70,6 +78,488 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
     }));
   };
 
+  const renderSubStepContent = () => {
+    if (applicantType === 'asalariado') {
+      // For employees, show only the applicant type selector
+      return (
+        <div className="space-y-4">
+          <Label className="text-base font-medium">Tipo de Solicitante *</Label>
+          <RadioGroup 
+            value={applicantType} 
+            onValueChange={setApplicantType}
+            className="flex flex-col space-y-2"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="asalariado" id="asalariado" />
+              <Label htmlFor="asalariado">Asalariado</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="negocio_propio" id="negocio_propio" />
+              <Label htmlFor="negocio_propio">Negocio Propio</Label>
+            </div>
+          </RadioGroup>
+        </div>
+      );
+    }
+
+    if (applicantType === 'negocio_propio') {
+      // Substep 0: Applicant type + Basic business info to monthly sales
+      if (subStep === 0) {
+        return (
+          <div className="space-y-6">
+            {/* Tipo de Solicitante - Radio Button */}
+            <div className="space-y-4">
+              <Label className="text-base font-medium">Tipo de Solicitante *</Label>
+              <RadioGroup 
+                value={applicantType} 
+                onValueChange={setApplicantType}
+                className="flex flex-col space-y-2"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="asalariado" id="asalariado" />
+                  <Label htmlFor="asalariado">Asalariado</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="negocio_propio" id="negocio_propio" />
+                  <Label htmlFor="negocio_propio">Negocio Propio</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* Nombre del Negocio */}
+            <div className="space-y-2">
+              <Label htmlFor="businessName">Nombre del Negocio *</Label>
+              <Input 
+                id="businessName"
+                value={formData.businessName || ''} 
+                onChange={(e) => updateFormData('businessName', e.target.value)}
+                placeholder="Nombre comercial del negocio"
+              />
+            </div>
+
+            {/* Información Básica del Negocio */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="activityType">Tipo de Actividad *</Label>
+                <Select value={formData.activityType || ''} onValueChange={(value) => updateFormData('activityType', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar actividad CNAE" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="agriculture">Agricultura, ganadería, silvicultura y pesca</SelectItem>
+                    <SelectItem value="mining">Explotación de minas y canteras</SelectItem>
+                    <SelectItem value="manufacturing">Industrias manufactureras</SelectItem>
+                    <SelectItem value="construction">Construcción</SelectItem>
+                    <SelectItem value="commerce">Comercio al por mayor y menor</SelectItem>
+                    <SelectItem value="transport">Transporte y almacenamiento</SelectItem>
+                    <SelectItem value="accommodation">Alojamiento y servicios de comida</SelectItem>
+                    <SelectItem value="information">Información y comunicaciones</SelectItem>
+                    <SelectItem value="financial">Actividades financieras y de seguros</SelectItem>
+                    <SelectItem value="real_estate">Actividades inmobiliarias</SelectItem>
+                    <SelectItem value="professional">Actividades profesionales, científicas y técnicas</SelectItem>
+                    <SelectItem value="administrative">Actividades de servicios administrativos</SelectItem>
+                    <SelectItem value="education">Enseñanza</SelectItem>
+                    <SelectItem value="health">Actividades de atención de la salud humana</SelectItem>
+                    <SelectItem value="arts">Actividades artísticas, de entretenimiento</SelectItem>
+                    <SelectItem value="other_services">Otras actividades de servicios</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="experienceYears">Años de Experiencia *</Label>
+                <Input 
+                  id="experienceYears"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={formData.experienceYears || ''} 
+                  onChange={(e) => updateFormData('experienceYears', normalizeIntegerInput(e.target.value))}
+                  placeholder="0"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="businessAddress">Dirección del Negocio *</Label>
+              <Textarea 
+                id="businessAddress"
+                value={formData.businessAddress || ''} 
+                onChange={(e) => updateFormData('businessAddress', e.target.value)}
+                placeholder="Dirección completa del negocio"
+                rows={2}
+              />
+            </div>
+
+            {/* Ventas Mensuales */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="cashSales">Ventas Mensuales de Contado Q *</Label>
+                <CurrencyInput
+                  id="cashSales"
+                  value={formData.cashSales || ''}
+                  onValueChange={(value) => updateFormData('cashSales', value)}
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="creditSales">Ventas Mensuales a Crédito Q *</Label>
+                <CurrencyInput
+                  id="creditSales"
+                  value={formData.creditSales || ''}
+                  onValueChange={(value) => updateFormData('creditSales', value)}
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // Substep 1: Products and seasonality
+      if (subStep === 1) {
+        return (
+          <div className="space-y-6">
+            {/* Productos */}
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h4 className="font-medium">Productos/Servicios</h4>
+                <Button type="button" variant="outline" size="sm" onClick={addProduct}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Agregar Producto
+                </Button>
+              </div>
+
+              {products.length === 0 ? (
+                <p className="text-muted-foreground text-sm">No hay productos agregados</p>
+              ) : (
+                <div className="space-y-4">
+                  {products.map((product, index) => (
+                    <div key={product.id} className="border rounded-md p-4 space-y-4">
+                      <div className="flex justify-between items-center">
+                        <h5 className="font-medium">Producto {index + 1}</h5>
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => removeProduct(product.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label>Nombre *</Label>
+                          <Input 
+                            value={product.name}
+                            onChange={(e) => updateProduct(product.id, 'name', e.target.value)}
+                            placeholder="Nombre del producto"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Unidad *</Label>
+                          <Input 
+                            value={product.unit}
+                            onChange={(e) => updateProduct(product.id, 'unit', e.target.value)}
+                            placeholder="kg, unidad, litro, etc."
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Cantidad *</Label>
+                          <Input 
+                            type="text"
+                            inputMode="decimal"
+                            pattern="[0-9]*\.?[0-9]*"
+                            value={product.quantity}
+                            onChange={(e) => updateProduct(product.id, 'quantity', parseFloat(normalizeDecimalInput(e.target.value)) || 0)}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Precio Unitario Q *</Label>
+                          <CurrencyInput
+                            value={product.price.toString()}
+                            onValueChange={(value) => updateProduct(product.id, 'price', parseFloat(value) || 0)}
+                            placeholder="0.00"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Total Q</Label>
+                          <CurrencyInput
+                            value={product.total.toString()}
+                            onValueChange={() => {}} // Read only
+                            readOnly
+                            className=""
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Utilidad Q</Label>
+                          <CurrencyInput
+                            value={product.profit.toString()}
+                            onValueChange={(value) => updateProduct(product.id, 'profit', parseFloat(value) || 0)}
+                            placeholder="0.00"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <Separator />
+
+            {/* Estacionalidad */}
+            <div className="space-y-4">
+              <h4 className="font-medium">Estacionalidad del Negocio</h4>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="highSeasonMonths">Meses de Temporada Alta</Label>
+                  <Input 
+                    id="highSeasonMonths"
+                    value={formData.highSeasonMonths || ''} 
+                    onChange={(e) => updateFormData('highSeasonMonths', e.target.value)}
+                    placeholder="Ej: Enero, Febrero, Diciembre"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="highSeasonAmount">Ventas Temporada Alta Q</Label>
+                  <CurrencyInput
+                    id="highSeasonAmount"
+                    value={formData.highSeasonAmount || ''}
+                    onValueChange={(value) => updateFormData('highSeasonAmount', value)}
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="lowSeasonMonths">Meses de Temporada Baja</Label>
+                  <Input 
+                    id="lowSeasonMonths"
+                    value={formData.lowSeasonMonths || ''} 
+                    onChange={(e) => updateFormData('lowSeasonMonths', e.target.value)}
+                    placeholder="Ej: Marzo, Abril, Mayo"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="lowSeasonAmount">Ventas Temporada Baja Q</Label>
+                  <CurrencyInput
+                    id="lowSeasonAmount"
+                    value={formData.lowSeasonAmount || ''}
+                    onValueChange={(value) => updateFormData('lowSeasonAmount', value)}
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // Substep 2: Administrative expenses
+      if (subStep === 2) {
+        return (
+          <div className="space-y-4">
+            <h4 className="font-medium">Gastos Administrativos Mensuales</h4>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="bonuses">Bonificaciones Q</Label>
+                <CurrencyInput
+                  id="bonuses"
+                  value={formData.bonuses || ''}
+                  onValueChange={(value) => updateFormData('bonuses', value)}
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="salaries">Sueldos Q</Label>
+                <CurrencyInput
+                  id="salaries"
+                  value={formData.salaries || ''}
+                  onValueChange={(value) => updateFormData('salaries', value)}
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="rent">Alquiler Q</Label>
+                <CurrencyInput
+                  id="rent"
+                  value={formData.rent || ''}
+                  onValueChange={(value) => updateFormData('rent', value)}
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="utilities">Servicios Q</Label>
+                <CurrencyInput
+                  id="utilities"
+                  value={formData.utilities || ''}
+                  onValueChange={(value) => updateFormData('utilities', value)}
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="transport">Transporte Q</Label>
+                <CurrencyInput
+                  id="transport"
+                  value={formData.transport || ''}
+                  onValueChange={(value) => updateFormData('transport', value)}
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="otherExpenses">Otros Gastos Q</Label>
+                <CurrencyInput
+                  id="otherExpenses"
+                  value={formData.otherExpenses || ''}
+                  onValueChange={(value) => updateFormData('otherExpenses', value)}
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // Substep 3: Business analysis
+      if (subStep === 3) {
+        return (
+          <TooltipProvider>
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <h4 className="font-medium">Análisis del Negocio (para uso exclusivo del agente de créditos)</h4>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Esta sección es únicamente para el análisis interno del agente de créditos</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="incomeRisks">Riesgo de Ingresos *</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Describa los principales factores que podrían afectar negativamente los ingresos del negocio, como estacionalidad, competencia, cambios en el mercado, etc.
+                  </p>
+                  <Textarea 
+                    id="incomeRisks"
+                    value={formData.incomeRisks || ''} 
+                    onChange={(e) => updateFormData('incomeRisks', e.target.value)}
+                    placeholder="Ejemplo: El negocio depende de temporadas altas navideñas, existe competencia directa en la zona..."
+                    rows={3}
+                    minLength={20}
+                    maxLength={500}
+                  />
+                  <div className="text-xs text-muted-foreground">
+                    {(formData.incomeRisks || '').length}/500 caracteres
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="opportunities">Oportunidades *</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Identifique las oportunidades de crecimiento, expansión o mejora que tiene el negocio a corto y mediano plazo.
+                  </p>
+                  <Textarea 
+                    id="opportunities"
+                    value={formData.opportunities || ''} 
+                    onChange={(e) => updateFormData('opportunities', e.target.value)}
+                    placeholder="Ejemplo: Posibilidad de abrir sucursal, incorporar nuevos productos, mejorar procesos..."
+                    rows={3}
+                    minLength={20}
+                    maxLength={500}
+                  />
+                  <div className="text-xs text-muted-foreground">
+                    {(formData.opportunities || '').length}/500 caracteres
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="riskMitigation">Mitigación de Riesgos *</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Describa las estrategias que el solicitante tiene o podría implementar para reducir los riesgos identificados.
+                  </p>
+                  <Textarea 
+                    id="riskMitigation"
+                    value={formData.riskMitigation || ''} 
+                    onChange={(e) => updateFormData('riskMitigation', e.target.value)}
+                    placeholder="Ejemplo: Diversificar productos, buscar nuevos canales de venta, mantener inventario de seguridad..."
+                    rows={3}
+                    minLength={20}
+                    maxLength={500}
+                  />
+                  <div className="text-xs text-muted-foreground">
+                    {(formData.riskMitigation || '').length}/500 caracteres
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="marketEvaluation">Evaluación del Mercado *</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Analice el mercado en el que opera: demanda, competencia, ubicación, potencial de crecimiento del sector.
+                  </p>
+                  <Textarea 
+                    id="marketEvaluation"
+                    value={formData.marketEvaluation || ''} 
+                    onChange={(e) => updateFormData('marketEvaluation', e.target.value)}
+                    placeholder="Ejemplo: Mercado con demanda estable, ubicación estratégica, competencia moderada..."
+                    rows={3}
+                    minLength={20}
+                    maxLength={500}
+                  />
+                  <div className="text-xs text-muted-foreground">
+                    {(formData.marketEvaluation || '').length}/500 caracteres
+                  </div>
+                </div>
+              </div>
+            </div>
+          </TooltipProvider>
+        );
+      }
+    }
+
+    // Default fallback
+    return (
+      <div className="space-y-4">
+        <Label className="text-base font-medium">Tipo de Solicitante *</Label>
+        <RadioGroup 
+          value={applicantType} 
+          onValueChange={setApplicantType}
+          className="flex flex-col space-y-2"
+        >
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="asalariado" id="asalariado" />
+            <Label htmlFor="asalariado">Asalariado</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="negocio_propio" id="negocio_propio" />
+            <Label htmlFor="negocio_propio">Negocio Propio</Label>
+          </div>
+        </RadioGroup>
+      </div>
+    );
+  };
+
   return (
     <Card className="border-0 shadow-none">
       <CardContent className="p-0 space-y-6">
@@ -80,464 +570,7 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
           </p>
         </div>
 
-        <div className="space-y-6">
-          {/* Tipo de Solicitante - Radio Button */}
-          <div className="space-y-4">
-            <Label className="text-base font-medium">Tipo de Solicitante *</Label>
-            <RadioGroup 
-              value={applicantType} 
-              onValueChange={setApplicantType}
-              className="flex flex-col space-y-2"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="asalariado" id="asalariado" />
-                <Label htmlFor="asalariado">Asalariado</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="negocio_propio" id="negocio_propio" />
-                <Label htmlFor="negocio_propio">Negocio Propio</Label>
-              </div>
-            </RadioGroup>
-          </div>
-
-          {/* Show business fields only if "Negocio Propio" is selected */}
-          {applicantType === 'negocio_propio' && (
-            <>
-              {/* Nombre del Negocio - Moved to top */}
-              <div className="space-y-2">
-                <Label htmlFor="businessName">Nombre del Negocio *</Label>
-                <Input 
-                  id="businessName"
-                  value={formData.businessName || ''} 
-                  onChange={(e) => updateFormData('businessName', e.target.value)}
-                  placeholder="Nombre comercial del negocio"
-                />
-              </div>
-
-              {/* Información Básica del Negocio */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="activityType">Tipo de Actividad *</Label>
-                  <Select value={formData.activityType || ''} onValueChange={(value) => updateFormData('activityType', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar actividad CNAE" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="agriculture">Agricultura, ganadería, silvicultura y pesca</SelectItem>
-                      <SelectItem value="mining">Explotación de minas y canteras</SelectItem>
-                      <SelectItem value="manufacturing">Industrias manufactureras</SelectItem>
-                      <SelectItem value="construction">Construcción</SelectItem>
-                      <SelectItem value="commerce">Comercio al por mayor y menor</SelectItem>
-                      <SelectItem value="transport">Transporte y almacenamiento</SelectItem>
-                      <SelectItem value="accommodation">Alojamiento y servicios de comida</SelectItem>
-                      <SelectItem value="information">Información y comunicaciones</SelectItem>
-                      <SelectItem value="financial">Actividades financieras y de seguros</SelectItem>
-                      <SelectItem value="real_estate">Actividades inmobiliarias</SelectItem>
-                      <SelectItem value="professional">Actividades profesionales, científicas y técnicas</SelectItem>
-                      <SelectItem value="administrative">Actividades de servicios administrativos</SelectItem>
-                      <SelectItem value="education">Enseñanza</SelectItem>
-                      <SelectItem value="health">Actividades de atención de la salud humana</SelectItem>
-                      <SelectItem value="arts">Actividades artísticas, de entretenimiento</SelectItem>
-                      <SelectItem value="other_services">Otras actividades de servicios</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="experienceYears">Años de Experiencia *</Label>
-                  <Input 
-                    id="experienceYears"
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    value={formData.experienceYears || ''} 
-                    onChange={(e) => updateFormData('experienceYears', normalizeIntegerInput(e.target.value))}
-                    placeholder="0"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="businessAddress">Dirección del Negocio *</Label>
-                <Textarea 
-                  id="businessAddress"
-                  value={formData.businessAddress || ''} 
-                  onChange={(e) => updateFormData('businessAddress', e.target.value)}
-                  placeholder="Dirección completa del negocio"
-                  rows={2}
-                />
-              </div>
-
-              {/* Ventas Mensuales */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="cashSales">Ventas Mensuales de Contado Q *</Label>
-                  <Input 
-                    id="cashSales"
-                    type="text"
-                    inputMode="decimal"
-                    pattern="[0-9]*\.?[0-9]*"
-                    value={formData.cashSales || ''} 
-                    onChange={(e) => updateFormData('cashSales', normalizeDecimalInput(e.target.value))}
-                    placeholder="0.00"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="creditSales">Ventas Mensuales a Crédito Q *</Label>
-                  <Input 
-                    id="creditSales"
-                    type="text"
-                    inputMode="decimal"
-                    pattern="[0-9]*\.?[0-9]*"
-                    value={formData.creditSales || ''} 
-                    onChange={(e) => updateFormData('creditSales', normalizeDecimalInput(e.target.value))}
-                    placeholder="0.00"
-                  />
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Productos */}
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h4 className="font-medium">Productos/Servicios</h4>
-                  <Button type="button" variant="outline" size="sm" onClick={addProduct}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Agregar Producto
-                  </Button>
-                </div>
-
-                {products.length === 0 ? (
-                  <p className="text-muted-foreground text-sm">No hay productos agregados</p>
-                ) : (
-                  <div className="space-y-4">
-                    {products.map((product, index) => (
-                      <div key={product.id} className="border rounded-md p-4 space-y-4">
-                        <div className="flex justify-between items-center">
-                          <h5 className="font-medium">Producto {index + 1}</h5>
-                          <Button 
-                            type="button" 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => removeProduct(product.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          <div className="space-y-2">
-                            <Label>Nombre *</Label>
-                            <Input 
-                              value={product.name}
-                              onChange={(e) => updateProduct(product.id, 'name', e.target.value)}
-                              placeholder="Nombre del producto"
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>Unidad *</Label>
-                            <Input 
-                              value={product.unit}
-                              onChange={(e) => updateProduct(product.id, 'unit', e.target.value)}
-                              placeholder="kg, unidad, litro, etc."
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>Cantidad *</Label>
-                            <Input 
-                              type="text"
-                              inputMode="decimal"
-                              pattern="[0-9]*\.?[0-9]*"
-                              value={product.quantity}
-                              onChange={(e) => updateProduct(product.id, 'quantity', parseFloat(normalizeDecimalInput(e.target.value)) || 0)}
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>Precio Unitario Q *</Label>
-                            <Input 
-                              type="text"
-                              inputMode="decimal"
-                              pattern="[0-9]*\.?[0-9]*"
-                              value={product.price}
-                              onChange={(e) => updateProduct(product.id, 'price', parseFloat(normalizeDecimalInput(e.target.value)) || 0)}
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>Total Q</Label>
-                            <Input 
-                              type="text"
-                              value={product.total}
-                              readOnly
-                              className="bg-muted"
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>Utilidad Q</Label>
-                            <Input 
-                              type="text"
-                              inputMode="decimal"
-                              pattern="[0-9]*\.?[0-9]*"
-                              value={product.profit}
-                              onChange={(e) => updateProduct(product.id, 'profit', parseFloat(normalizeDecimalInput(e.target.value)) || 0)}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <Separator />
-
-              {/* Estacionalidad */}
-              <div className="space-y-4">
-                <h4 className="font-medium">Estacionalidad del Negocio</h4>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="highSeasonMonths">Meses de Temporada Alta</Label>
-                    <Input 
-                      id="highSeasonMonths"
-                      value={formData.highSeasonMonths || ''} 
-                      onChange={(e) => updateFormData('highSeasonMonths', e.target.value)}
-                      placeholder="Ej: Enero, Febrero, Diciembre"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="highSeasonAmount">Ventas Temporada Alta Q</Label>
-                    <Input 
-                      id="highSeasonAmount"
-                      type="text"
-                      inputMode="decimal"
-                      pattern="[0-9]*\.?[0-9]*"
-                      value={formData.highSeasonAmount || ''} 
-                      onChange={(e) => updateFormData('highSeasonAmount', normalizeDecimalInput(e.target.value))}
-                      placeholder="0.00"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="lowSeasonMonths">Meses de Temporada Baja</Label>
-                    <Input 
-                      id="lowSeasonMonths"
-                      value={formData.lowSeasonMonths || ''} 
-                      onChange={(e) => updateFormData('lowSeasonMonths', e.target.value)}
-                      placeholder="Ej: Marzo, Abril, Mayo"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="lowSeasonAmount">Ventas Temporada Baja Q</Label>
-                    <Input 
-                      id="lowSeasonAmount"
-                      type="text"
-                      inputMode="decimal"
-                      pattern="[0-9]*\.?[0-9]*"
-                      value={formData.lowSeasonAmount || ''} 
-                      onChange={(e) => updateFormData('lowSeasonAmount', normalizeDecimalInput(e.target.value))}
-                      placeholder="0.00"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Gastos Administrativos */}
-              <div className="space-y-4">
-                <h4 className="font-medium">Gastos Administrativos Mensuales</h4>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="bonuses">Bonificaciones Q</Label>
-                    <Input 
-                      id="bonuses"
-                      type="text"
-                      inputMode="decimal"
-                      pattern="[0-9]*\.?[0-9]*"
-                      value={formData.bonuses || ''} 
-                      onChange={(e) => updateFormData('bonuses', normalizeDecimalInput(e.target.value))}
-                      placeholder="0.00"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="salaries">Sueldos Q</Label>
-                    <Input 
-                      id="salaries"
-                      type="text"
-                      inputMode="decimal"
-                      pattern="[0-9]*\.?[0-9]*"
-                      value={formData.salaries || ''} 
-                      onChange={(e) => updateFormData('salaries', normalizeDecimalInput(e.target.value))}
-                      placeholder="0.00"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="rent">Alquiler Q</Label>
-                    <Input 
-                      id="rent"
-                      type="text"
-                      inputMode="decimal"
-                      pattern="[0-9]*\.?[0-9]*"
-                      value={formData.rent || ''} 
-                      onChange={(e) => updateFormData('rent', normalizeDecimalInput(e.target.value))}
-                      placeholder="0.00"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="utilities">Servicios Q</Label>
-                    <Input 
-                      id="utilities"
-                      type="text"
-                      inputMode="decimal"
-                      pattern="[0-9]*\.?[0-9]*"
-                      value={formData.utilities || ''} 
-                      onChange={(e) => updateFormData('utilities', normalizeDecimalInput(e.target.value))}
-                      placeholder="0.00"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="transport">Transporte Q</Label>
-                    <Input 
-                      id="transport"
-                      type="text"
-                      inputMode="decimal"
-                      pattern="[0-9]*\.?[0-9]*"
-                      value={formData.transport || ''} 
-                      onChange={(e) => updateFormData('transport', normalizeDecimalInput(e.target.value))}
-                      placeholder="0.00"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="otherExpenses">Otros Gastos Q</Label>
-                    <Input 
-                      id="otherExpenses"
-                      type="text"
-                      inputMode="decimal"
-                      pattern="[0-9]*\.?[0-9]*"
-                      value={formData.otherExpenses || ''} 
-                      onChange={(e) => updateFormData('otherExpenses', normalizeDecimalInput(e.target.value))}
-                      placeholder="0.00"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Análisis Cualitativo */}
-              <TooltipProvider>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-medium">Análisis del Negocio (para uso exclusivo del agente de créditos)</h4>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Esta sección es únicamente para el análisis interno del agente de créditos</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="incomeRisks">Riesgo de Ingresos *</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Describa los principales factores que podrían afectar negativamente los ingresos del negocio, como estacionalidad, competencia, cambios en el mercado, etc.
-                      </p>
-                      <Textarea 
-                        id="incomeRisks"
-                        value={formData.incomeRisks || ''} 
-                        onChange={(e) => updateFormData('incomeRisks', e.target.value)}
-                        placeholder="Ejemplo: El negocio depende de temporadas altas navideñas, existe competencia directa en la zona..."
-                        rows={3}
-                        minLength={20}
-                        maxLength={500}
-                      />
-                      <div className="text-xs text-muted-foreground">
-                        {(formData.incomeRisks || '').length}/500 caracteres
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="opportunities">Oportunidades *</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Identifique las oportunidades de crecimiento, expansión o mejora que tiene el negocio a corto y mediano plazo.
-                      </p>
-                      <Textarea 
-                        id="opportunities"
-                        value={formData.opportunities || ''} 
-                        onChange={(e) => updateFormData('opportunities', e.target.value)}
-                        placeholder="Ejemplo: Posibilidad de abrir sucursal, incorporar nuevos productos, mejorar procesos..."
-                        rows={3}
-                        minLength={20}
-                        maxLength={500}
-                      />
-                      <div className="text-xs text-muted-foreground">
-                        {(formData.opportunities || '').length}/500 caracteres
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="riskMitigation">Mitigación de Riesgos *</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Describa las estrategias que el solicitante tiene o podría implementar para reducir los riesgos identificados.
-                      </p>
-                      <Textarea 
-                        id="riskMitigation"
-                        value={formData.riskMitigation || ''} 
-                        onChange={(e) => updateFormData('riskMitigation', e.target.value)}
-                        placeholder="Ejemplo: Diversificar productos, buscar nuevos canales de venta, mantener inventario de seguridad..."
-                        rows={3}
-                        minLength={20}
-                        maxLength={500}
-                      />
-                      <div className="text-xs text-muted-foreground">
-                        {(formData.riskMitigation || '').length}/500 caracteres
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="marketEvaluation">Evaluación del Mercado *</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Analice el mercado en el que opera: demanda, competencia, ubicación, potencial de crecimiento del sector.
-                      </p>
-                      <Textarea 
-                        id="marketEvaluation"
-                        value={formData.marketEvaluation || ''} 
-                        onChange={(e) => updateFormData('marketEvaluation', e.target.value)}
-                        placeholder="Ejemplo: Mercado con demanda estable, ubicación estratégica, competencia moderada..."
-                        rows={3}
-                        minLength={20}
-                        maxLength={500}
-                      />
-                      <div className="text-xs text-muted-foreground">
-                        {(formData.marketEvaluation || '').length}/500 caracteres
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </TooltipProvider>
-            </>
-          )}
-        </div>
+        {renderSubStepContent()}
       </CardContent>
     </Card>
   );
