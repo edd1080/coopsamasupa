@@ -2,17 +2,19 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, PlusCircle, X } from 'lucide-react';
 import { formatApplicationId } from '@/utils/applicationIdGenerator';
-import { getFirstName } from '@/utils/nameExtraction';
+import { getFirstNameAndLastName } from '@/lib/nameUtils';
 
 interface HeaderProps {
   personName?: string;
   applicationId?: string;
+  applicationStatus?: string;
   onExitFormClick?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ personName, applicationId, onExitFormClick }) => {
+const Header: React.FC<HeaderProps> = ({ personName, applicationId, applicationStatus, onExitFormClick }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -51,9 +53,9 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, onExitFormCl
     
     // Para formularios de solicitud y detalles de aplicación
     if (isFormPage || isApplicationDetails) {
-      // Si hay nombre de persona, usar solo el primer nombre
+      // Si hay nombre de persona, usar primer nombre y apellido
       if (personName) {
-        return getFirstName(personName);
+        return getFirstNameAndLastName(personName);
       }
       // Si no hay applicationId o es una nueva solicitud, mostrar "Solicitud Nueva"
       if (!applicationId || location.pathname === '/applications/new') return "Solicitud Nueva";
@@ -71,6 +73,28 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, onExitFormCl
       return `Solicitud ${formatApplicationId(applicationId)}`;
     }
     return null;
+  };
+
+  const getStatusBadgeVariant = (status?: string) => {
+    switch (status) {
+      case 'approved': return 'default';
+      case 'reviewing': return 'secondary';
+      case 'pending': return 'outline';
+      case 'rejected': return 'destructive';
+      case 'draft': return 'outline';
+      default: return 'outline';
+    }
+  };
+
+  const getStatusLabel = (status?: string) => {
+    switch (status) {
+      case 'approved': return 'Aprobada';
+      case 'reviewing': return 'En Revisión';
+      case 'pending': return 'Pendiente';
+      case 'rejected': return 'Rechazada';
+      case 'draft': return 'Borrador';
+      default: return 'Sin Estado';
+    }
   };
 
   return (
@@ -100,6 +124,16 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, onExitFormCl
 
         {/* Right side - Actions */}
         <div className="flex items-center gap-2">
+          {/* Status badge para formularios y detalles de aplicación */}
+          {(isFormPage || isApplicationDetails) && applicationStatus && (
+            <Badge 
+              variant={getStatusBadgeVariant(applicationStatus)}
+              className="text-xs"
+            >
+              {getStatusLabel(applicationStatus)}
+            </Badge>
+          )}
+
           {/* Botón X para formularios */}
           {isFormPage && onExitFormClick && (
             <Button

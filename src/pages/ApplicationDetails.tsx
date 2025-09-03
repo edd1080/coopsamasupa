@@ -241,6 +241,7 @@ const ApplicationDetails = () => {
       <Header 
         personName={getFirstNameAndLastName(personName)}
         applicationId={applicationData.id || ''}
+        applicationStatus={('status' in applicationData) ? applicationData.status : 'draft'}
         onExitFormClick={() => navigate('/applications')}
       />
       
@@ -252,24 +253,27 @@ const ApplicationDetails = () => {
 
         {/* Application Header */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-xl font-medium text-foreground">
+          {/* Full-width name */}
+          <div className="mb-4">
+            <h1 className="text-xl font-medium text-foreground w-full">
               {personName}
             </h1>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={() => navigate(`/request-form/${id}`)}>
-                <Edit className="h-4 w-4 mr-2" />
-                Editar
-              </Button>
-              <Button 
-                onClick={handleSubmitApplication}
-                disabled={!isApplicationReadyToSubmit()}
-                className={!isApplicationReadyToSubmit() ? 'opacity-50 cursor-not-allowed' : ''}
-              >
-                <Send className="h-4 w-4 mr-2" />
-                Enviar Solicitud
-              </Button>
-            </div>
+          </div>
+          
+          {/* Buttons below name */}
+          <div className="flex items-center gap-2 mb-4">
+            <Button variant="outline" onClick={() => navigate(`/request-form/${id}`)}>
+              <Edit className="h-4 w-4 mr-2" />
+              Editar
+            </Button>
+            <Button 
+              onClick={handleSubmitApplication}
+              disabled={!isApplicationReadyToSubmit()}
+              className={!isApplicationReadyToSubmit() ? 'opacity-50 cursor-not-allowed' : ''}
+            >
+              <Send className="h-4 w-4 mr-2" />
+              Enviar Solicitud
+            </Button>
           </div>
 
           {/* Progress Summary */}
@@ -296,13 +300,18 @@ const ApplicationDetails = () => {
                     <Button
                       key={section.id}
                       variant="outline"
-                      className="h-auto py-2 flex flex-col items-center text-xs gap-1 flex-1 min-h-[5rem] sm:min-h-[4.5rem]"
+                      className="h-auto py-2 flex flex-col items-center text-xs gap-1 flex-1 min-h-[5rem] sm:min-h-[4.5rem] whitespace-normal break-words overflow-hidden"
                       onClick={() => navigateToFormSection(section.id)}
                     >
                       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                         <Icon className="h-4 w-4" />
                       </div>
-                      <span className="text-center leading-tight">{section.name}</span>
+                      <span className="text-center leading-tight line-clamp-2" style={{
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden'
+                      }}>{section.name}</span>
                     </Button>
                   );
                 })}
@@ -444,25 +453,25 @@ const ApplicationDetails = () => {
                 <CardContent className="space-y-2">
                   <dl className="space-y-1">
                     <div>
-                      <dt className="text-xs text-muted-foreground">Nombre</dt>
-                      <dd className="text-sm">{personName}</dd>
+                      <dt className="text-xs text-muted-foreground font-semibold">Nombre</dt>
+                      <dd className="text-sm font-medium">{personName}</dd>
                     </div>
                     {formData.dpi && (
                       <div>
-                        <dt className="text-xs text-muted-foreground">CUI</dt>
-                        <dd className="text-sm">{formData.dpi}</dd>
+                        <dt className="text-xs text-muted-foreground font-semibold">CUI</dt>
+                        <dd className="text-sm font-medium">{formData.dpi}</dd>
                       </div>
                     )}
                     {formData.nit && (
                       <div>
-                        <dt className="text-xs text-muted-foreground">NIT</dt>
-                        <dd className="text-sm">{formData.nit}</dd>
+                        <dt className="text-xs text-muted-foreground font-semibold">NIT</dt>
+                        <dd className="text-sm font-medium">{formData.nit}</dd>
                       </div>
                     )}
                     {formData.mobilePhone && (
                       <div>
-                        <dt className="text-xs text-muted-foreground">Teléfono</dt>
-                        <dd className="text-sm">{formData.mobilePhone}</dd>
+                        <dt className="text-xs text-muted-foreground font-semibold">Teléfono</dt>
+                        <dd className="text-sm font-medium">{formData.mobilePhone}</dd>
                       </div>
                     )}
                   </dl>
@@ -480,16 +489,16 @@ const ApplicationDetails = () => {
                 <CardContent className="space-y-2">
                   <dl className="space-y-1">
                     <div>
-                      <dt className="text-xs text-muted-foreground">Ingresos Principales</dt>
-                      <dd className="text-sm">Q {Number(formData.ingresoPrincipal || 0).toLocaleString()}</dd>
+                      <dt className="text-xs text-muted-foreground font-semibold">Ingresos Principales</dt>
+                      <dd className="text-sm font-medium">Q {Number(formData.ingresoPrincipal || 0).toLocaleString()}</dd>
                     </div>
                     <div>
-                      <dt className="text-xs text-muted-foreground">Gastos Mensuales</dt>
-                      <dd className="text-sm">Q {Number(formData.totalExpenses || 0).toLocaleString()}</dd>
+                      <dt className="text-xs text-muted-foreground font-semibold">Gastos Mensuales</dt>
+                      <dd className="text-sm font-medium">Q {Number(formData.totalExpenses || 0).toLocaleString()}</dd>
                     </div>
                     <div>
-                      <dt className="text-xs text-muted-foreground">Patrimonio Neto</dt>
-                      <dd className="text-sm">Q {Number(formData.netWorth || 0).toLocaleString()}</dd>
+                      <dt className="text-xs text-muted-foreground font-semibold">Patrimonio Neto</dt>
+                      <dd className="text-sm font-medium">Q {Number(formData.netWorth || 0).toLocaleString()}</dd>
                     </div>
                   </dl>
                 </CardContent>
@@ -506,16 +515,16 @@ const ApplicationDetails = () => {
                 <CardContent className="space-y-2">
                   <dl className="space-y-1">
                     <div>
-                      <dt className="text-xs text-muted-foreground">Situación Laboral</dt>
-                      <dd className="text-sm">{formData.employmentStatus || 'Por ingresar'}</dd>
+                      <dt className="text-xs text-muted-foreground font-semibold">Situación Laboral</dt>
+                      <dd className="text-sm font-medium">{formData.employmentStatus || 'Por ingresar'}</dd>
                     </div>
                     <div>
-                      <dt className="text-xs text-muted-foreground">Empresa/Negocio</dt>
-                      <dd className="text-sm">{formData.companyName || 'Por ingresar'}</dd>
+                      <dt className="text-xs text-muted-foreground font-semibold">Empresa/Negocio</dt>
+                      <dd className="text-sm font-medium">{formData.companyName || 'Por ingresar'}</dd>
                     </div>
                     <div>
-                      <dt className="text-xs text-muted-foreground">Años de Experiencia</dt>
-                      <dd className="text-sm">{formData.yearsEmployed || 0} años</dd>
+                      <dt className="text-xs text-muted-foreground font-semibold">Años de Experiencia</dt>
+                      <dd className="text-sm font-medium">{formData.yearsEmployed || 0} años</dd>
                     </div>
                   </dl>
                 </CardContent>
@@ -548,21 +557,26 @@ const ApplicationDetails = () => {
                     const doc = documents[key];
                     const isComplete = doc?.status === 'complete';
                     return (
-                      <div key={key} className="text-center">
-                        <div className={`w-8 h-8 rounded-full mx-auto mb-1 flex items-center justify-center ${
-                          isComplete ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'
-                        }`}>
-                          {isComplete ? (
-                            <CheckCircle className="h-4 w-4" />
-                          ) : (
-                            <Clock className="h-4 w-4" />
-                          )}
+                      <Card key={key} className={`p-3 border ${isComplete ? 'border-green-200 bg-green-50' : 'border-amber-200 bg-amber-50'}`}>
+                        <div className="text-center">
+                          <div className={`w-8 h-8 rounded-full mx-auto mb-2 flex items-center justify-center ${
+                            isComplete ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'
+                          }`}>
+                            {isComplete ? (
+                              <CheckCircle className="h-4 w-4" />
+                            ) : (
+                              <Clock className="h-4 w-4" />
+                            )}
+                          </div>
+                          <p className="text-xs font-medium mb-1">{label}</p>
+                          <Badge 
+                            variant={isComplete ? "default" : "secondary"}
+                            className={`text-xs ${isComplete ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"}`}
+                          >
+                            {isComplete ? 'Completo' : 'Pendiente'}
+                          </Badge>
                         </div>
-                        <p className="text-xs">{label}</p>
-                        {!isComplete && (
-                          <p className="text-xs text-amber-600">Pendiente</p>
-                        )}
-                      </div>
+                      </Card>
                     );
                   })}
                 </div>
@@ -579,72 +593,72 @@ const ApplicationDetails = () => {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Agencia</Label>
-                    <p>{formData.agencia || 'Por ingresar'}</p>
+                    <Label className="text-sm font-semibold text-muted-foreground">Agencia</Label>
+                    <p className="font-medium">{formData.agencia || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Tipo Socio</Label>
-                    <p>{formData.tipoSocio || 'Por ingresar'}</p>
+                    <Label className="text-sm font-semibold text-muted-foreground">Tipo Socio</Label>
+                    <p className="font-medium">{formData.tipoSocio || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">CUI</Label>
-                    <p>{formData.dpi || 'Por ingresar'}</p>
+                    <Label className="text-sm font-semibold text-muted-foreground">CUI</Label>
+                    <p className="font-medium">{formData.dpi || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">NIT</Label>
-                    <p>{formData.nit || 'Por ingresar'}</p>
+                    <Label className="text-sm font-semibold text-muted-foreground">NIT</Label>
+                    <p className="font-medium">{formData.nit || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Nombre</Label>
-                    <p>{personName}</p>
+                    <Label className="text-sm font-semibold text-muted-foreground">Nombre</Label>
+                    <p className="font-medium">{personName}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Estado Civil</Label>
-                    <p>{formData.estadoCivil || 'Por ingresar'}</p>
+                    <Label className="text-sm font-semibold text-muted-foreground">Estado Civil</Label>
+                    <p className="font-medium">{formData.estadoCivil || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Fecha de Nacimiento</Label>
-                    <p>{formData.birthDate || 'Por ingresar'}</p>
+                    <Label className="text-sm font-semibold text-muted-foreground">Fecha de Nacimiento</Label>
+                    <p className="font-medium">{formData.birthDate || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Nacionalidad</Label>
-                    <p>{formData.nacionalidad || 'Por ingresar'}</p>
+                    <Label className="text-sm font-semibold text-muted-foreground">Nacionalidad</Label>
+                    <p className="font-medium">{formData.nacionalidad || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Género</Label>
-                    <p>{formData.genero || 'Por ingresar'}</p>
+                    <Label className="text-sm font-semibold text-muted-foreground">Género</Label>
+                    <p className="font-medium">{formData.genero || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Profesión</Label>
-                    <p>{formData.profesion || 'Por ingresar'}</p>
+                    <Label className="text-sm font-semibold text-muted-foreground">Profesión</Label>
+                    <p className="font-medium">{formData.profesion || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Nivel Educativo</Label>
-                    <p>{formData.educationLevel || 'Por ingresar'}</p>
+                    <Label className="text-sm font-semibold text-muted-foreground">Nivel Educativo</Label>
+                    <p className="font-medium">{formData.educationLevel || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Tipo de Vivienda</Label>
-                    <p>{formData.housingType || 'Por ingresar'}</p>
+                    <Label className="text-sm font-semibold text-muted-foreground">Tipo de Vivienda</Label>
+                    <p className="font-medium">{formData.housingType || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Años en Vivienda</Label>
-                    <p>{formData.housingYears || 'Por ingresar'}</p>
+                    <Label className="text-sm font-semibold text-muted-foreground">Años en Vivienda</Label>
+                    <p className="font-medium">{formData.housingYears || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Dependientes</Label>
-                    <p>{formData.dependents || 'Por ingresar'}</p>
+                    <Label className="text-sm font-semibold text-muted-foreground">Dependientes</Label>
+                    <p className="font-medium">{formData.dependents || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Email</Label>
-                    <p>{formData.email || 'Por ingresar'}</p>
+                    <Label className="text-sm font-semibold text-muted-foreground">Email</Label>
+                    <p className="font-medium">{formData.email || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Teléfono</Label>
-                    <p>{formData.mobilePhone || 'Por ingresar'}</p>
+                    <Label className="text-sm font-semibold text-muted-foreground">Teléfono</Label>
+                    <p className="font-medium">{formData.mobilePhone || 'Por ingresar'}</p>
                   </div>
                   <div className="md:col-span-2">
-                    <Label className="text-sm font-medium text-muted-foreground">Dirección</Label>
-                    <p>{formData.address || 'Por ingresar'}</p>
+                    <Label className="text-sm font-semibold text-muted-foreground">Dirección</Label>
+                    <p className="font-medium">{formData.address || 'Por ingresar'}</p>
                   </div>
                 </div>
 
@@ -654,20 +668,20 @@ const ApplicationDetails = () => {
                     <h4 className="font-medium mb-4">Información del Cónyuge</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-sm font-medium text-muted-foreground">Nombre</Label>
-                        <p>{formData.conyuge.nombre || 'Por ingresar'}</p>
+                        <Label className="text-sm font-semibold text-muted-foreground">Nombre</Label>
+                        <p className="font-medium">{formData.conyuge.nombre || 'Por ingresar'}</p>
                       </div>
                       <div>
-                        <Label className="text-sm font-medium text-muted-foreground">DPI</Label>
-                        <p>{formData.conyuge.dpi || 'Por ingresar'}</p>
+                        <Label className="text-sm font-semibold text-muted-foreground">DPI</Label>
+                        <p className="font-medium">{formData.conyuge.dpi || 'Por ingresar'}</p>
                       </div>
                       <div>
-                        <Label className="text-sm font-medium text-muted-foreground">Teléfono</Label>
-                        <p>{formData.conyuge.telefono || 'Por ingresar'}</p>
+                        <Label className="text-sm font-semibold text-muted-foreground">Teléfono</Label>
+                        <p className="font-medium">{formData.conyuge.telefono || 'Por ingresar'}</p>
                       </div>
                       <div>
-                        <Label className="text-sm font-medium text-muted-foreground">Ocupación</Label>
-                        <p>{formData.conyuge.trabajo || 'Por ingresar'}</p>
+                        <Label className="text-sm font-semibold text-muted-foreground">Ocupación</Label>
+                        <p className="font-medium">{formData.conyuge.trabajo || 'Por ingresar'}</p>
                       </div>
                     </div>
                   </>
@@ -683,36 +697,36 @@ const ApplicationDetails = () => {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Situación</Label>
-                    <p>{formData.employmentStatus || 'Por ingresar'}</p>
+                    <Label className="text-sm font-semibold text-muted-foreground">Situación</Label>
+                    <p className="font-medium">{formData.employmentStatus || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Empresa/Negocio</Label>
-                    <p>{formData.companyName || 'Por ingresar'}</p>
+                    <Label className="text-sm font-semibold text-muted-foreground">Empresa/Negocio</Label>
+                    <p className="font-medium">{formData.companyName || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Puesto</Label>
-                    <p>{formData.position || 'Por ingresar'}</p>
+                    <Label className="text-sm font-semibold text-muted-foreground">Puesto</Label>
+                    <p className="font-medium">{formData.position || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Años de Experiencia</Label>
-                    <p>{formData.yearsEmployed || 0} años</p>
+                    <Label className="text-sm font-semibold text-muted-foreground">Años de Experiencia</Label>
+                    <p className="font-medium">{formData.yearsEmployed || 0} años</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Tipo de Trabajo</Label>
-                    <p>{formData.workType || 'Por ingresar'}</p>
+                    <Label className="text-sm font-semibold text-muted-foreground">Tipo de Trabajo</Label>
+                    <p className="font-medium">{formData.workType || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Estabilidad de Ingresos</Label>
-                    <p>{formData.incomeStability || 'Por ingresar'}</p>
+                    <Label className="text-sm font-semibold text-muted-foreground">Estabilidad de Ingresos</Label>
+                    <p className="font-medium">{formData.incomeStability || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Teléfono Trabajo</Label>
-                    <p>{formData.workPhone || 'Por ingresar'}</p>
+                    <Label className="text-sm font-semibold text-muted-foreground">Teléfono Trabajo</Label>
+                    <p className="font-medium">{formData.workPhone || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Dirección Trabajo</Label>
-                    <p>{formData.workAddress || 'Por ingresar'}</p>
+                    <Label className="text-sm font-semibold text-muted-foreground">Dirección Trabajo</Label>
+                    <p className="font-medium">{formData.workAddress || 'Por ingresar'}</p>
                   </div>
                 </div>
               </CardContent>
@@ -729,16 +743,16 @@ const ApplicationDetails = () => {
                   <h4 className="font-medium mb-4">Ingresos</h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <Label className="text-sm font-medium text-muted-foreground">Ingresos Principales</Label>
-                      <p>Q {Number(formData.ingresoPrincipal || 0).toLocaleString()}</p>
+                      <Label className="text-sm font-semibold text-muted-foreground">Ingresos Principales</Label>
+                      <p className="font-medium">Q {Number(formData.ingresoPrincipal || 0).toLocaleString()}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-muted-foreground">Ingresos Secundarios</Label>
-                      <p>Q {Number(formData.ingresoSecundario || 0).toLocaleString()}</p>
+                      <Label className="text-sm font-semibold text-muted-foreground">Ingresos Secundarios</Label>
+                      <p className="font-medium">Q {Number(formData.ingresoSecundario || 0).toLocaleString()}</p>
                     </div>
                     <div className="md:col-span-2">
-                      <Label className="text-sm font-medium text-muted-foreground">Fuente</Label>
-                      <p>{formData.incomeSource || 'Por ingresar'}</p>
+                      <Label className="text-sm font-semibold text-muted-foreground">Fuente</Label>
+                      <p className="font-medium">{formData.incomeSource || 'Por ingresar'}</p>
                     </div>
                   </div>
                 </div>
@@ -750,27 +764,27 @@ const ApplicationDetails = () => {
                   <h4 className="font-medium mb-4">Gastos Mensuales</h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <Label className="text-sm font-medium text-muted-foreground">Renta</Label>
-                      <p>Q {Number(formData.rent || 0).toLocaleString()}</p>
+                      <Label className="text-sm font-semibold text-muted-foreground">Renta</Label>
+                      <p className="font-medium">Q {Number(formData.rent || 0).toLocaleString()}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-muted-foreground">Servicios</Label>
-                      <p>Q {Number(formData.utilities || 0).toLocaleString()}</p>
+                      <Label className="text-sm font-semibold text-muted-foreground">Servicios</Label>
+                      <p className="font-medium">Q {Number(formData.utilities || 0).toLocaleString()}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-muted-foreground">Alimentación</Label>
-                      <p>Q {Number(formData.food || 0).toLocaleString()}</p>
+                      <Label className="text-sm font-semibold text-muted-foreground">Alimentación</Label>
+                      <p className="font-medium">Q {Number(formData.food || 0).toLocaleString()}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-muted-foreground">Transporte</Label>
-                      <p>Q {Number(formData.transportation || 0).toLocaleString()}</p>
+                      <Label className="text-sm font-semibold text-muted-foreground">Transporte</Label>
+                      <p className="font-medium">Q {Number(formData.transportation || 0).toLocaleString()}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-muted-foreground">Otros</Label>
-                      <p>Q {Number(formData.otherExpenses || 0).toLocaleString()}</p>
+                      <Label className="text-sm font-semibold text-muted-foreground">Otros</Label>
+                      <p className="font-medium">Q {Number(formData.otherExpenses || 0).toLocaleString()}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-muted-foreground">Total Gastos</Label>
+                      <Label className="text-sm font-semibold text-muted-foreground">Total Gastos</Label>
                       <p className="font-bold">Q {Number(formData.totalExpenses || 0).toLocaleString()}</p>
                     </div>
                   </div>
@@ -783,12 +797,12 @@ const ApplicationDetails = () => {
                   <h4 className="font-medium mb-4">Deudas Actuales</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-sm font-medium text-muted-foreground">Préstamos</Label>
-                      <p>Q {Number(formData.currentLoans || 0).toLocaleString()}</p>
+                      <Label className="text-sm font-semibold text-muted-foreground">Préstamos</Label>
+                      <p className="font-medium">Q {Number(formData.currentLoans || 0).toLocaleString()}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-muted-foreground">Tarjetas</Label>
-                      <p>Q {Number(formData.creditCards || 0).toLocaleString()}</p>
+                      <Label className="text-sm font-semibold text-muted-foreground">Tarjetas</Label>
+                      <p className="font-medium">Q {Number(formData.creditCards || 0).toLocaleString()}</p>
                     </div>
                   </div>
                 </div>
@@ -800,15 +814,15 @@ const ApplicationDetails = () => {
                   <h4 className="font-medium mb-4">Evaluación Financiera</h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <Label className="text-sm font-medium text-muted-foreground">Ingreso Neto</Label>
+                      <Label className="text-sm font-semibold text-muted-foreground">Ingreso Neto</Label>
                       <p className="text-green-600 font-bold">Q {Number(formData.netIncome || 0).toLocaleString()}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-muted-foreground">Ratio Deuda/Ingreso</Label>
+                      <Label className="text-sm font-semibold text-muted-foreground">Ratio Deuda/Ingreso</Label>
                       <p className="font-bold">{Number(formData.debtToIncomeRatio || 0).toFixed(1)}%</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-muted-foreground">Capacidad de Pago</Label>
+                      <Label className="text-sm font-semibold text-muted-foreground">Capacidad de Pago</Label>
                       <p className="text-purple-600 font-bold">Q {Number(formData.paymentCapacity || 0).toLocaleString()}</p>
                     </div>
                   </div>
