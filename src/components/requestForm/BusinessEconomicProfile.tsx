@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Trash2, HelpCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { normalizeDecimalInput, normalizeIntegerInput } from '@/utils/formatters';
@@ -32,6 +33,7 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
   const [products, setProducts] = useState<Product[]>(formData.products || []);
   const [applicantType, setApplicantType] = useState(formData.applicantType || '');
   const [internalSubStep, setInternalSubStep] = useState(0);
+  const tabsListRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     updateFormData('products', products);
@@ -44,6 +46,40 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
       setInternalSubStep(0);
     }
   }, [applicantType, updateFormData]);
+
+  // Auto-center active tab
+  const centerActiveTab = () => {
+    if (!tabsListRef.current) return;
+    
+    const container = tabsListRef.current;
+    const activeTab = container.querySelector('[data-state="active"]') as HTMLElement;
+    
+    if (activeTab) {
+      const containerWidth = container.clientWidth;
+      const activeTabWidth = activeTab.offsetWidth;
+      const activeTabLeft = activeTab.offsetLeft;
+      
+      const desiredScrollLeft = Math.max(
+        0,
+        Math.min(
+          activeTabLeft - (containerWidth / 2 - activeTabWidth / 2),
+          container.scrollWidth - containerWidth
+        )
+      );
+      
+      container.scrollTo({
+        left: desiredScrollLeft,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  // Center tab when internalSubStep changes
+  useEffect(() => {
+    if (applicantType === 'negocio_propio') {
+      setTimeout(centerActiveTab, 100); // Small delay to ensure DOM is updated
+    }
+  }, [internalSubStep, applicantType]);
 
   const addProduct = () => {
     const newProduct: Product = {
@@ -83,8 +119,13 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
     return (
       <div className="flex justify-between mt-6">
         <Button 
-          variant="outline" 
-          onClick={() => setInternalSubStep(Math.max(0, internalSubStep - 1))}
+          variant="success" 
+          size="md"
+          onClick={() => {
+            const newStep = Math.max(0, internalSubStep - 1);
+            setInternalSubStep(newStep);
+            setTimeout(centerActiveTab, 100);
+          }}
           disabled={internalSubStep === 0}
         >
           Anterior
@@ -93,11 +134,64 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
           Paso {internalSubStep + 1} de 4
         </span>
         <Button 
-          onClick={() => setInternalSubStep(Math.min(3, internalSubStep + 1))}
+          variant="success"
+          size="md"
+          onClick={() => {
+            const newStep = Math.min(3, internalSubStep + 1);
+            setInternalSubStep(newStep);
+            setTimeout(centerActiveTab, 100);
+          }}
           disabled={internalSubStep === 3}
         >
           Siguiente
         </Button>
+      </div>
+    );
+  };
+
+  // Render tabs for business substeps
+  const renderTabsHeader = () => {
+    if (applicantType !== 'negocio_propio') return null;
+    
+    return (
+      <div className="mb-6">
+        <Tabs 
+          value={String(internalSubStep)} 
+          onValueChange={(value) => {
+            setInternalSubStep(Number(value));
+            setTimeout(centerActiveTab, 100);
+          }}
+        >
+          <TabsList 
+            ref={tabsListRef}
+            className="w-full overflow-x-auto hide-scrollbar bg-transparent p-0"
+          >
+            <TabsTrigger 
+              value="0" 
+              className="flex-shrink-0 px-4 py-2"
+            >
+              Info general
+            </TabsTrigger>
+            <TabsTrigger 
+              value="1" 
+              className="flex-shrink-0 px-4 py-2"
+            >
+              Productos
+            </TabsTrigger>
+            <TabsTrigger 
+              value="2" 
+              className="flex-shrink-0 px-4 py-2"
+            >
+              Gastos administrativos
+            </TabsTrigger>
+            <TabsTrigger 
+              value="3" 
+              className="flex-shrink-0 px-4 py-2"
+            >
+              Análisis del negocio
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
     );
   };
@@ -594,6 +688,7 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
           </p>
         </div>
 
+        {renderTabsHeader()}
         {renderSubStepContent()}
         {renderSubStepNavigation()}
       </CardContent>
