@@ -10,8 +10,8 @@ import { Button } from '@/components/ui/button';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useApplicationMetrics } from '@/hooks/useApplicationMetrics';
 import { useWeeklyApplications } from '@/hooks/useWeeklyApplications';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts';
+import { ChartContainer } from "@/components/ui/chart";
+import { BarChart, Bar, XAxis, Cell } from 'recharts';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -122,11 +122,14 @@ const Index = () => {
 
         {/* Weekly Progress Chart */}
         <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+          <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+            <div className="bg-primary/10 rounded-xl p-2 mr-3">
               <BarChart3 className="h-5 w-5 text-primary" />
-              Progreso Semanal
-            </CardTitle>
+            </div>
+            <div className="flex flex-col">
+              <CardTitle className="text-lg">Progreso Semanal</CardTitle>
+              <p className="text-sm text-muted-foreground">Solicitudes procesadas</p>
+            </div>
           </CardHeader>
           <CardContent>
             {weeklyLoading ? (
@@ -141,39 +144,55 @@ const Index = () => {
                 config={{
                   solicitudes: {
                     label: "Solicitudes",
-                    color: "hsl(var(--primary))",
+                    color: "#0B63F6",
                   },
                 }}
                 className="h-48"
               >
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={weeklyData}>
-                    <XAxis 
-                      dataKey="day" 
-                      tick={{ fontSize: 12 }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis 
-                      tick={{ fontSize: 12 }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar 
-                      dataKey="solicitudes" 
-                      fill="var(--color-solicitudes)"
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
+                <BarChart 
+                  data={weeklyData} 
+                  margin={{ top: 20, right: 20, left: 20, bottom: 40 }}
+                  barCategoryGap="30%"
+                >
+                  <XAxis 
+                    dataKey="day" 
+                    tick={(props) => {
+                      const { x, y, payload, index } = props;
+                      const data = weeklyData?.[index];
+                      return (
+                        <g>
+                          <text x={x} y={y + 10} textAnchor="middle" className="fill-foreground text-sm font-medium">
+                            {payload.value}
+                          </text>
+                          <text x={x} y={y + 25} textAnchor="middle" className="fill-muted-foreground text-xs">
+                            {data?.solicitudes || 0}
+                          </text>
+                        </g>
+                      );
+                    }}
+                    axisLine={false}
+                    tickLine={false}
+                    interval={0}
+                  />
+                  <Bar 
+                    dataKey="solicitudes" 
+                    barSize={20}
+                    radius={[8, 8, 0, 0]}
+                  >
+                    {weeklyData?.map((entry, index) => {
+                      const maxValue = Math.max(...(weeklyData?.map(d => d.solicitudes) || [0]));
+                      const isMaxValue = entry.solicitudes === maxValue && maxValue > 0;
+                      return (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={isMaxValue ? "#22C55E" : "#0B63F6"} 
+                        />
+                      );
+                    })}
+                  </Bar>
+                </BarChart>
               </ChartContainer>
             )}
-            <div className="mt-3 text-center">
-              <p className="text-sm text-muted-foreground">
-                Solicitudes procesadas por día en la última semana
-              </p>
-            </div>
           </CardContent>
         </Card>
         
