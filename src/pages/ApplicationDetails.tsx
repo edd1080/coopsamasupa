@@ -1,7 +1,6 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import {
   Card,
@@ -13,145 +12,58 @@ import { Label } from "@/components/ui/label"
 import { Button } from '@/components/ui/button';
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Separator } from "@/components/ui/separator"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import {
-  Calendar,
-  DollarSign,
-  FileText,
-  User,
-  Phone,
+  ArrowLeft,
   Edit,
-  Download,
-  Trash2,
-  MoreVertical,
-  ArrowLeft
+  Send,
+  DollarSign,
+  Users,
+  Building2,
+  BarChart3,
+  MapPin,
+  FileCheck,
+  User,
+  Briefcase,
+  FileSignature,
+  CheckCircle,
+  Clock,
+  Camera,
+  Plus,
+  PartyPopper,
+  ChevronRight,
+  UserCheck
 } from 'lucide-react';
 
 import Header from '@/components/layout/Header';
 import BottomNavigation from '@/components/layout/BottomNavigation';
 import BreadcrumbNavigation from '@/components/navigation/BreadcrumbNavigation';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
+import CircularProgress from '@/components/requestForm/CircularProgress';
+import { NewGuarantorSheet } from '@/components/requestForm/guarantors/NewGuarantorSheet';
+import { useApplicationData } from '@/hooks/useApplicationData';
 import { getFirstNameAndLastName } from '@/lib/nameUtils';
+import { useToast } from '@/hooks/use-toast';
 
 const ApplicationDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { toast } = useToast();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Refactored query to combine applications and drafts strategy
-  const { data: applicationData, isLoading, error } = useQuery({
-    queryKey: ['application-details', id, user?.id],
-    queryFn: async () => {
-      if (!id || !user?.id) throw new Error('No application ID or user provided');
-      
-      console.log('🔍 Fetching application details for ID:', id);
-      
-      // First, try to get from applications table
-      const { data: application, error: appError } = await supabase
-        .from('applications')
-        .select('*')
-        .eq('id', id)
-        .eq('agent_id', user.id)
-        .maybeSingle();
+  const { data: applicationData, isLoading, error } = useApplicationData(id || '');
 
-      if (appError && appError.code !== 'PGRST116') { // PGRST116 = no rows returned
-        console.error('❌ Error fetching application:', appError);
-        throw appError;
-      }
-
-      if (application) {
-        console.log('✅ Found application in applications table');
-        return {
-          ...application,
-          isDraft: false,
-          sourceTable: 'applications'
-        };
-      }
-
-      // If not found in applications, try drafts table
-      const { data: draft, error: draftError } = await supabase
-        .from('application_drafts')
-        .select('*')
-        .eq('id', id)
-        .eq('agent_id', user.id)
-        .maybeSingle();
-
-      if (draftError && draftError.code !== 'PGRST116') {
-        console.error('❌ Error fetching draft:', draftError);
-        throw draftError;
-      }
-
-      if (draft) {
-        console.log('✅ Found draft in application_drafts table');
-        return {
-          ...draft,
-          isDraft: true,
-          sourceTable: 'application_drafts'
-        };
-      }
-
-      // If not found in either table
-      console.log('❌ Application/draft not found in either table');
-      throw new Error('Solicitud no encontrada');
-    },
-    enabled: !!id && !!user?.id,
-  });
-
-  // Helper function to safely format birthDate values
-  const formatBirthDate = (birthDate: any): string => {
-    if (!birthDate) return '';
-    
-    // If it's already a string, return it
-    if (typeof birthDate === 'string') return birthDate;
-    
-    // If it's an object, check if it has date properties
-    if (typeof birthDate === 'object') {
-      // Handle empty objects
-      if (Object.keys(birthDate).length === 0) return '';
-      
-      // Handle objects with day, month, year properties
-      if (birthDate.day && birthDate.month && birthDate.year) {
-        return `${birthDate.day}/${birthDate.month}/${birthDate.year}`;
-      }
-      
-      // Handle Date objects
-      if (birthDate instanceof Date) {
-        return format(birthDate, 'dd/MM/yyyy');
-      }
-    }
-    
-    return '';
-  };
-
-  // Helper functions to safely access union type properties
-  const getProgressStep = (data: any) => {
-    if (!data) return 0;
-    if ('progress_step' in data) return data.progress_step || 0;
-    if ('last_step' in data) return data.last_step || 0;
-    return 0;
-  };
-
-  const getStatus = (data: any) => {
-    if (!data) return 'draft';
-    // Improved draft detection
-    if (data.isDraft || data.sourceTable === 'application_drafts') return 'draft';
-    if ('status' in data) return data.status;
-    return 'draft';
-  };
-
-  const getLastStep = (data: any) => {
-    if (!data) return 0;
-    if ('last_step' in data) return data.last_step || 0;
-    if ('progress_step' in data) return data.progress_step || 0;
-    return 0;
-  };
-
+  // Helper functions to safely access and format data
   const getFormData = (data: any) => {
     if (!data) return {};
     if ('draft_data' in data && data.draft_data) {
@@ -164,23 +76,106 @@ const ApplicationDetails = () => {
         return {};
       }
     }
-    if ('data' in data) return data.data || {};
     return {};
   };
 
-  const getAmountRequested = (data: any) => {
-    if (!data) return 0;
-    if ('amount_requested' in data) return data.amount_requested || 0;
-    // For drafts, try to get from form data
-    const formData = getFormData(data);
-    return formData.requestedAmount || 0;
+  const getFormSections = (type: string) => {
+    if (type === 'oficial') {
+      return [
+        { id: 'credit-details', name: 'Detalles del Credito e Info Personal', icon: DollarSign },
+        { id: 'character', name: 'Análisis de Carácter', icon: Users },
+        { id: 'business-financial', name: 'Info del Negocio', icon: Building2 },
+        { id: 'financial-info', name: 'Info Financiera', icon: BarChart3 },
+        { id: 'documents', name: 'Documentos e Imágenes', icon: MapPin },
+        { id: 'signature', name: 'Cláusula y Firma', icon: FileCheck }
+      ];
+    }
+    return [
+      { id: 'identification', name: 'Identificación y Contacto', icon: User },
+      { id: 'finances', name: 'Finanzas y Patrimonio', icon: DollarSign },
+      { id: 'business', name: 'Negocio y Perfil Económico', icon: Briefcase },
+      { id: 'guarantors', name: 'Garantías, Fiadores y Referencias', icon: Users },
+      { id: 'documents', name: 'Documentos y Cierre', icon: FileSignature },
+      { id: 'review', name: 'Revisión Final', icon: CheckCircle }
+    ];
   };
 
-  const getProduct = (data: any) => {
-    if (!data) return 'Crédito General';
-    if ('product' in data) return data.product;
-    if ('type' in data) return data.type;
-    return 'Crédito General';
+  const isApplicationReadyToSubmit = () => {
+    if (!applicationData) return false;
+    const formData = getFormData(applicationData);
+    const progress = (applicationData.isDraft && 'last_step' in applicationData) ? 
+      applicationData.last_step : 
+      ('progress_step' in applicationData) ? applicationData.progress_step : 0;
+    const documents = formData.documents || {};
+    const guarantors = formData.guarantors || [];
+
+    const allSectionsComplete = progress >= 6;
+    const requiredDocsComplete = ['dpiFrontal', 'dpiTrasero', 'fotoSolicitante']
+      .every(docKey => documents[docKey]?.status === 'complete');
+    const hasGuarantors = guarantors.length > 0;
+
+    return allSectionsComplete && requiredDocsComplete && hasGuarantors;
+  };
+
+  const navigateToFormSection = (sectionId: string) => {
+    toast({
+      title: "Navegando a sección",
+      description: `Abriendo ${sectionId}...`,
+    });
+    navigate(`/request-form/${id}`, { 
+      state: { 
+        sectionId,
+        applicationId: id 
+      } 
+    });
+  };
+
+  const handleAddGuarantor = async (guarantorData: any) => {
+    const newGuarantor = {
+      id: Date.now().toString(),
+      ...guarantorData,
+      porcentajeCobertura: 0,
+      status: 'draft',
+      progress: 0
+    };
+
+    // Update the draft data
+    const currentFormData = getFormData(applicationData);
+    const updatedGuarantors = [...(currentFormData.guarantors || []), newGuarantor];
+    
+    toast({
+      title: "Fiador agregado",
+      description: `${guarantorData.nombre} ha sido agregado exitosamente.`,
+      variant: "success"
+    });
+  };
+
+  const handleSubmitApplication = () => {
+    if (!isApplicationReadyToSubmit()) {
+      toast({
+        title: "Solicitud incompleta",
+        description: "Complete todas las secciones y documentos antes de enviar.",
+        variant: "destructive"
+      });
+      return;
+    }
+    setShowConfirmDialog(true);
+  };
+
+  const confirmSubmission = async () => {
+    setIsSubmitting(true);
+    setShowConfirmDialog(false);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    setIsSubmitting(false);
+    setShowSuccessDialog(true);
+  };
+
+  const handleSuccessClose = () => {
+    setShowSuccessDialog(false);
+    navigate('/applications');
   };
 
   if (isLoading) {
@@ -195,7 +190,7 @@ const ApplicationDetails = () => {
           <div className="flex justify-center items-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-              <p>Cargando detalles...</p>
+              <p>Cargando solicitud...</p>
             </div>
           </div>
         </main>
@@ -228,76 +223,18 @@ const ApplicationDetails = () => {
     );
   }
 
-  // Use the improved data accessors
-  const isDraft = applicationData.isDraft || applicationData.sourceTable === 'application_drafts';
-  const progressStep = getProgressStep(applicationData);
-  const status = getStatus(applicationData);
-  const lastStep = getLastStep(applicationData);
   const formData = getFormData(applicationData);
-  const amountRequested = getAmountRequested(applicationData);
-  const product = getProduct(applicationData);
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return <Badge className="bg-green-100 text-green-800">Aprobada</Badge>;
-      case 'rejected':
-        return <Badge variant="destructive">Rechazada</Badge>;
-      case 'pending':
-        return <Badge variant="secondary">Pendiente</Badge>;
-      case 'in_review':
-        return <Badge className="bg-blue-100 text-blue-800">En Revisión</Badge>;
-      case 'draft':
-        return <Badge variant="outline">Borrador</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
-
-  const calculateProgress = () => {
-    const totalSteps = 10;
-    return Math.round((progressStep / totalSteps) * 100);
-  };
-
-  const progress = calculateProgress();
-
-  const handleEdit = () => {
-    if (isDraft) {
-      navigate(`/request-form/${id}`);
-    } else {
-      console.log('Editing application:', id);
-    }
-  };
-
-  const handleDownloadPDF = () => {
-    console.log('Downloading PDF for:', id);
-  };
-
-  const handleDelete = async () => {
-    try {
-      if (isDraft) {
-        const { error } = await supabase
-          .from('application_drafts')
-          .delete()
-          .eq('id', id);
-
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('applications')
-          .delete()
-          .eq('id', id);
-
-        if (error) throw error;
-      }
-
-      navigate('/applications');
-    } catch (error) {
-      console.error('Error deleting:', error);
-    }
-  };
-
-  const personName = applicationData.client_name || `${formData.firstName || ''} ${formData.lastName || ''}`.trim();
+  const guarantors = formData.guarantors || [];
+  const documents = formData.documents || {};
+  const progress = (applicationData.isDraft && 'last_step' in applicationData) ? 
+    applicationData.last_step : 
+    ('progress_step' in applicationData) ? applicationData.progress_step : 0;
+  const progressPercentage = Math.round((progress / 6) * 100);
+  const sections = getFormSections('legacy');
+  
+  const personName = applicationData.client_name || 
+    `${formData.firstName || ''} ${formData.lastName || ''}`.trim() || 
+    'Sin nombre';
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -316,244 +253,723 @@ const ApplicationDetails = () => {
         {/* Application Header */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                {isDraft ? 'Borrador' : 'Solicitud'} #{applicationData.id}
-              </h1>
-              <p className="text-gray-600">
-                {applicationData.client_name || `${formData.firstName || ''} ${formData.lastName || ''}`.trim()}
-              </p>
-            </div>
+            <h1 className="text-xl font-medium text-foreground">
+              {personName}
+            </h1>
             <div className="flex items-center gap-2">
-              {getStatusBadge(status)}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={handleEdit}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Editar
-                  </DropdownMenuItem>
-                  {!isDraft && (
-                    <DropdownMenuItem onClick={handleDownloadPDF}>
-                      <Download className="h-4 w-4 mr-2" />
-                      Descargar PDF
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem 
-                    onClick={handleDelete}
-                    className="text-red-600"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Eliminar
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700">
-                Progreso del formulario
-              </span>
-              <span className="text-sm text-gray-500">{progress}%</span>
-            </div>
-            <Progress value={progress} className="h-2" />
-          </div>
-
-          {/* Basic Info Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center">
-                  <Calendar className="h-5 w-5 text-gray-400 mr-2" />
-                  <div>
-                    <p className="text-sm text-gray-600">Creado</p>
-                    <p className="font-medium">
-                      {format(new Date(applicationData.created_at), 'dd/MM/yyyy')}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center">
-                  <DollarSign className="h-5 w-5 text-gray-400 mr-2" />
-                  <div>
-                    <p className="text-sm text-gray-600">Monto Solicitado</p>
-                    <p className="font-medium">
-                      Q {amountRequested.toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center">
-                  <FileText className="h-5 w-5 text-gray-400 mr-2" />
-                  <div>
-                    <p className="text-sm text-gray-600">Producto</p>
-                    <p className="font-medium">{product}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Form Data Sections */}
-        <div className="space-y-6">
-          {/* Personal Information */}
-          {(formData.firstName || formData.lastName) && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <User className="h-5 w-5 mr-2" />
-                  Información Personal
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm font-medium text-gray-500">Nombre Completo</Label>
-                    <p>{`${formData.firstName || ''} ${formData.middleName || ''} ${formData.lastName || ''}`.trim()}</p>
-                  </div>
-                  {formData.birthDate && (
-                    <div>
-                      <Label className="text-sm font-medium text-gray-500">Fecha de Nacimiento</Label>
-                      <p>{formatBirthDate(formData.birthDate)}</p>
-                    </div>
-                  )}
-                  {formData.dpi && (
-                    <div>
-                      <Label className="text-sm font-medium text-gray-500">DPI</Label>
-                      <p>{formData.dpi}</p>
-                    </div>
-                  )}
-                  {formData.nit && (
-                    <div>
-                      <Label className="text-sm font-medium text-gray-500">NIT</Label>
-                      <p>{formData.nit}</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Contact Information */}
-          {(formData.mobilePhone || formData.email || formData.address) && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Phone className="h-5 w-5 mr-2" />
-                  Información de Contacto
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {formData.mobilePhone && (
-                    <div>
-                      <Label className="text-sm font-medium text-gray-500">Teléfono Móvil</Label>
-                      <p>{formData.mobilePhone}</p>
-                    </div>
-                  )}
-                  {formData.homePhone && (
-                    <div>
-                      <Label className="text-sm font-medium text-gray-500">Teléfono Casa</Label>
-                      <p>{formData.homePhone}</p>
-                    </div>
-                  )}
-                  {formData.email && (
-                    <div>
-                      <Label className="text-sm font-medium text-gray-500">Email</Label>
-                      <p>{formData.email}</p>
-                    </div>
-                  )}
-                  {formData.address && (
-                    <div className="md:col-span-2">
-                      <Label className="text-sm font-medium text-gray-500">Dirección</Label>
-                      <p>{formData.address}</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Financial Information */}
-          {(formData.ingresoPrincipal || formData.requestedAmount) && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <DollarSign className="h-5 w-5 mr-2" />
-                  Información Financiera
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {formData.ingresoPrincipal && (
-                    <div>
-                      <Label className="text-sm font-medium text-gray-500">Ingreso Principal</Label>
-                      <p>Q {Number(formData.ingresoPrincipal).toLocaleString()}</p>
-                    </div>
-                  )}
-                  {formData.ingresoSecundario && (
-                    <div>
-                      <Label className="text-sm font-medium text-gray-500">Ingreso Secundario</Label>
-                      <p>Q {Number(formData.ingresoSecundario).toLocaleString()}</p>
-                    </div>
-                  )}
-                  {formData.requestedAmount && (
-                    <div>
-                      <Label className="text-sm font-medium text-gray-500">Monto Solicitado</Label>
-                      <p>Q {Number(formData.requestedAmount).toLocaleString()}</p>
-                    </div>
-                  )}
-                  {formData.termMonths && (
-                    <div>
-                      <Label className="text-sm font-medium text-gray-500">Plazo</Label>
-                      <p>{formData.termMonths} meses</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Action Buttons */}
-          <div className="flex gap-4 justify-end">
-            <Button
-              variant="outline"
-              onClick={() => navigate('/applications')}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Volver
-            </Button>
-            
-            <Button onClick={handleEdit}>
-              <Edit className="h-4 w-4 mr-2" />
-              {isDraft ? 'Continuar Editando' : 'Editar'}
-            </Button>
-
-            {!isDraft && status === 'pending' && (
-              <Button onClick={handleDownloadPDF}>
-                <Download className="h-4 w-4 mr-2" />
-                Descargar PDF
+              <Button variant="outline" onClick={() => navigate(`/request-form/${id}`)}>
+                <Edit className="h-4 w-4 mr-2" />
+                Editar
               </Button>
-            )}
+              <Button 
+                onClick={handleSubmitApplication}
+                disabled={!isApplicationReadyToSubmit()}
+                className={!isApplicationReadyToSubmit() ? 'opacity-50 cursor-not-allowed' : ''}
+              >
+                <Send className="h-4 w-4 mr-2" />
+                Enviar Solicitud
+              </Button>
+            </div>
           </div>
+
+          {/* Progress Summary */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">
+                Progreso: {progress}/6 secciones completadas
+              </span>
+              <span className="text-sm text-muted-foreground">{progressPercentage}%</span>
+            </div>
+            <Progress value={progressPercentage} className="h-2" />
+          </div>
+
+          {/* Quick Access Card */}
+          <Card className="mb-6 border-primary/20 bg-primary/5">
+            <CardHeader>
+              <CardTitle>Acceso Rápido</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+                {sections.map((section) => {
+                  const Icon = section.icon;
+                  return (
+                    <Button
+                      key={section.id}
+                      variant="outline"
+                      className="h-auto py-2 flex flex-col items-center text-xs gap-1 flex-1 min-h-[5rem] sm:min-h-[4.5rem]"
+                      onClick={() => navigateToFormSection(section.id)}
+                    >
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <span className="text-center leading-tight">{section.name}</span>
+                    </Button>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Credit Summary Card */}
+          <Card className="mb-6 border-primary/20 bg-primary/5">
+            <CardHeader>
+              <CardTitle>Resumen de Solicitud de Crédito</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center p-3 bg-background rounded-md border">
+                  <p className="text-xs text-muted-foreground mb-1">Monto Solicitado</p>
+                  <p className="font-bold">Q {Number(formData.requestedAmount || 0).toLocaleString()}</p>
+                </div>
+                <div className="text-center p-3 bg-background rounded-md border">
+                  <p className="text-xs text-muted-foreground mb-1">Plazo</p>
+                  <p className="font-bold">{formData.termMonths || 0} meses</p>
+                </div>
+                <div className="text-center p-3 bg-background rounded-md border">
+                  <p className="text-xs text-muted-foreground mb-1">Tipo de Crédito</p>
+                  <p className="font-bold">{formData.creditType || 'Por definir'}</p>
+                </div>
+                <div className="text-center p-3 bg-background rounded-md border">
+                  <p className="text-xs text-muted-foreground mb-1">Propósito</p>
+                  <p className="font-bold">{formData.purpose || 'Por definir'}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Guarantors Card */}
+          <Card className="mb-6">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center">
+                  <Users className="h-5 w-5 mr-2" />
+                  Fiadores
+                </CardTitle>
+                <Badge 
+                  variant={guarantors.length >= 2 ? "default" : "destructive"}
+                  className={guarantors.length >= 2 ? "bg-green-100 text-green-800" : ""}
+                >
+                  {guarantors.length} de 2 mínimo
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {guarantors.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+                    <Users className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <h3 className="font-medium mb-2">No hay fiadores agregados</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Agregue al menos un fiador para continuar con la solicitud
+                  </p>
+                  <NewGuarantorSheet
+                    trigger={
+                      <Button className="bg-[#E18E33] hover:bg-[#E18E33]/90 text-white border-0">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Agregar Primer Fiador
+                      </Button>
+                    }
+                    onCreateGuarantor={handleAddGuarantor}
+                    onDiscard={() => {}}
+                  />
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {guarantors.map((guarantor: any, index: number) => (
+                    <div
+                      key={guarantor.id || index}
+                      className="p-4 rounded-xl border bg-gradient-to-r from-primary/5 to-accent/5 hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                            <UserCheck className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium">{guarantor.nombre}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              {guarantor.parentesco} • {guarantor.dpi}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right flex items-center gap-3">
+                          <div>
+                            <p className="text-sm font-medium">Q {Number(guarantor.salario || 0).toLocaleString()}</p>
+                            <p className="text-xs text-muted-foreground">{guarantor.progress || 0}% completo</p>
+                          </div>
+                          <CircularProgress 
+                            progress={guarantor.progress || 0} 
+                            size={40}
+                            strokeWidth={3}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <NewGuarantorSheet
+                    trigger={
+                      <Button className="w-full bg-[#E18E33] hover:bg-[#E18E33]/90 text-white border-0">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Agregar Otro Fiador
+                      </Button>
+                    }
+                    onCreateGuarantor={handleAddGuarantor}
+                    onDiscard={() => {}}
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
+
+        {/* Tabs */}
+        <Tabs defaultValue="resumen" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="resumen">Resumen</TabsTrigger>
+            <TabsTrigger value="detalles">Detalles</TabsTrigger>
+            <TabsTrigger value="documentos">Documentos</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="resumen" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Identification Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center text-base">
+                    <User className="h-4 w-4 mr-2" />
+                    Identificación
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <dl className="space-y-1">
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Nombre</dt>
+                      <dd className="text-sm">{personName}</dd>
+                    </div>
+                    {formData.dpi && (
+                      <div>
+                        <dt className="text-xs text-muted-foreground">CUI</dt>
+                        <dd className="text-sm">{formData.dpi}</dd>
+                      </div>
+                    )}
+                    {formData.nit && (
+                      <div>
+                        <dt className="text-xs text-muted-foreground">NIT</dt>
+                        <dd className="text-sm">{formData.nit}</dd>
+                      </div>
+                    )}
+                    {formData.mobilePhone && (
+                      <div>
+                        <dt className="text-xs text-muted-foreground">Teléfono</dt>
+                        <dd className="text-sm">{formData.mobilePhone}</dd>
+                      </div>
+                    )}
+                  </dl>
+                </CardContent>
+              </Card>
+
+              {/* Finances Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center text-base">
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    Finanzas
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <dl className="space-y-1">
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Ingresos Principales</dt>
+                      <dd className="text-sm">Q {Number(formData.ingresoPrincipal || 0).toLocaleString()}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Gastos Mensuales</dt>
+                      <dd className="text-sm">Q {Number(formData.totalExpenses || 0).toLocaleString()}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Patrimonio Neto</dt>
+                      <dd className="text-sm">Q {Number(formData.netWorth || 0).toLocaleString()}</dd>
+                    </div>
+                  </dl>
+                </CardContent>
+              </Card>
+
+              {/* Work Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center text-base">
+                    <Briefcase className="h-4 w-4 mr-2" />
+                    Trabajo
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <dl className="space-y-1">
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Situación Laboral</dt>
+                      <dd className="text-sm">{formData.employmentStatus || 'Por ingresar'}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Empresa/Negocio</dt>
+                      <dd className="text-sm">{formData.companyName || 'Por ingresar'}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Años de Experiencia</dt>
+                      <dd className="text-sm">{formData.yearsEmployed || 0} años</dd>
+                    </div>
+                  </dl>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Document Status Card */}
+            <Card 
+              className="cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => navigateToFormSection('documents')}
+            >
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between text-base">
+                  <span className="flex items-center">
+                    <FileCheck className="h-4 w-4 mr-2" />
+                    Estado de Documentos
+                  </span>
+                  <ChevronRight className="h-4 w-4" />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                  {Object.entries({
+                    dpiFrontal: 'DPI Frontal',
+                    dpiTrasero: 'DPI Trasero',
+                    fotoSolicitante: 'Foto Solicitante',
+                    recibosServicios: 'Recibos Servicios',
+                    firmaCanvas: 'Firma Digital'
+                  }).map(([key, label]) => {
+                    const doc = documents[key];
+                    const isComplete = doc?.status === 'complete';
+                    return (
+                      <div key={key} className="text-center">
+                        <div className={`w-8 h-8 rounded-full mx-auto mb-1 flex items-center justify-center ${
+                          isComplete ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'
+                        }`}>
+                          {isComplete ? (
+                            <CheckCircle className="h-4 w-4" />
+                          ) : (
+                            <Clock className="h-4 w-4" />
+                          )}
+                        </div>
+                        <p className="text-xs">{label}</p>
+                        {!isComplete && (
+                          <p className="text-xs text-amber-600">Pendiente</p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="detalles" className="space-y-6">
+            {/* Personal Information Detailed */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Información Personal Detallada</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Agencia</Label>
+                    <p>{formData.agencia || 'Por ingresar'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Tipo Socio</Label>
+                    <p>{formData.tipoSocio || 'Por ingresar'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">CUI</Label>
+                    <p>{formData.dpi || 'Por ingresar'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">NIT</Label>
+                    <p>{formData.nit || 'Por ingresar'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Nombre</Label>
+                    <p>{personName}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Estado Civil</Label>
+                    <p>{formData.estadoCivil || 'Por ingresar'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Fecha de Nacimiento</Label>
+                    <p>{formData.birthDate || 'Por ingresar'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Nacionalidad</Label>
+                    <p>{formData.nacionalidad || 'Por ingresar'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Género</Label>
+                    <p>{formData.genero || 'Por ingresar'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Profesión</Label>
+                    <p>{formData.profesion || 'Por ingresar'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Nivel Educativo</Label>
+                    <p>{formData.educationLevel || 'Por ingresar'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Tipo de Vivienda</Label>
+                    <p>{formData.housingType || 'Por ingresar'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Años en Vivienda</Label>
+                    <p>{formData.housingYears || 'Por ingresar'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Dependientes</Label>
+                    <p>{formData.dependents || 'Por ingresar'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Email</Label>
+                    <p>{formData.email || 'Por ingresar'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Teléfono</Label>
+                    <p>{formData.mobilePhone || 'Por ingresar'}</p>
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label className="text-sm font-medium text-muted-foreground">Dirección</Label>
+                    <p>{formData.address || 'Por ingresar'}</p>
+                  </div>
+                </div>
+
+                {formData.conyuge && (
+                  <>
+                    <Separator className="my-6" />
+                    <h4 className="font-medium mb-4">Información del Cónyuge</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">Nombre</Label>
+                        <p>{formData.conyuge.nombre || 'Por ingresar'}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">DPI</Label>
+                        <p>{formData.conyuge.dpi || 'Por ingresar'}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">Teléfono</Label>
+                        <p>{formData.conyuge.telefono || 'Por ingresar'}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">Ocupación</Label>
+                        <p>{formData.conyuge.trabajo || 'Por ingresar'}</p>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Work Information Detailed */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Información Laboral Detallada</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Situación</Label>
+                    <p>{formData.employmentStatus || 'Por ingresar'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Empresa/Negocio</Label>
+                    <p>{formData.companyName || 'Por ingresar'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Puesto</Label>
+                    <p>{formData.position || 'Por ingresar'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Años de Experiencia</Label>
+                    <p>{formData.yearsEmployed || 0} años</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Tipo de Trabajo</Label>
+                    <p>{formData.workType || 'Por ingresar'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Estabilidad de Ingresos</Label>
+                    <p>{formData.incomeStability || 'Por ingresar'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Teléfono Trabajo</Label>
+                    <p>{formData.workPhone || 'Por ingresar'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Dirección Trabajo</Label>
+                    <p>{formData.workAddress || 'Por ingresar'}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Financial Analysis Detailed */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Análisis Financiero Detallado</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Income */}
+                <div>
+                  <h4 className="font-medium mb-4">Ingresos</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Ingresos Principales</Label>
+                      <p>Q {Number(formData.ingresoPrincipal || 0).toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Ingresos Secundarios</Label>
+                      <p>Q {Number(formData.ingresoSecundario || 0).toLocaleString()}</p>
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label className="text-sm font-medium text-muted-foreground">Fuente</Label>
+                      <p>{formData.incomeSource || 'Por ingresar'}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Expenses */}
+                <div>
+                  <h4 className="font-medium mb-4">Gastos Mensuales</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Renta</Label>
+                      <p>Q {Number(formData.rent || 0).toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Servicios</Label>
+                      <p>Q {Number(formData.utilities || 0).toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Alimentación</Label>
+                      <p>Q {Number(formData.food || 0).toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Transporte</Label>
+                      <p>Q {Number(formData.transportation || 0).toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Otros</Label>
+                      <p>Q {Number(formData.otherExpenses || 0).toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Total Gastos</Label>
+                      <p className="font-bold">Q {Number(formData.totalExpenses || 0).toLocaleString()}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Current Debts */}
+                <div>
+                  <h4 className="font-medium mb-4">Deudas Actuales</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Préstamos</Label>
+                      <p>Q {Number(formData.currentLoans || 0).toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Tarjetas</Label>
+                      <p>Q {Number(formData.creditCards || 0).toLocaleString()}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Financial Evaluation */}
+                <div className="bg-purple-50 dark:bg-purple-950 p-4 rounded-md">
+                  <h4 className="font-medium mb-4">Evaluación Financiera</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Ingreso Neto</Label>
+                      <p className="text-green-600 font-bold">Q {Number(formData.netIncome || 0).toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Ratio Deuda/Ingreso</Label>
+                      <p className="font-bold">{Number(formData.debtToIncomeRatio || 0).toFixed(1)}%</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Capacidad de Pago</Label>
+                      <p className="text-purple-600 font-bold">Q {Number(formData.paymentCapacity || 0).toLocaleString()}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Patrimony */}
+                <div>
+                  <h4 className="font-medium mb-4">Estado Patrimonial</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Assets */}
+                    <div>
+                      <h5 className="font-medium text-green-600 mb-3">Activos</h5>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-sm">Efectivo</span>
+                          <span className="text-sm">Q {Number(formData.assets?.cash || 0).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm">Inventario</span>
+                          <span className="text-sm">Q {Number(formData.assets?.inventory || 0).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm">Equipos</span>
+                          <span className="text-sm">Q {Number(formData.assets?.equipment || 0).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm">Bienes Inmuebles</span>
+                          <span className="text-sm">Q {Number(formData.assets?.realEstate || 0).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm">Vehículos</span>
+                          <span className="text-sm">Q {Number(formData.assets?.vehicles || 0).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between font-bold border-t pt-2">
+                          <span>Total Activos</span>
+                          <span>Q {Number(formData.assets?.total || 0).toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Liabilities */}
+                    <div>
+                      <h5 className="font-medium text-red-600 mb-3">Pasivos</h5>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-sm">Préstamos</span>
+                          <span className="text-sm">Q {Number(formData.liabilities?.loans || 0).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm">Tarjetas</span>
+                          <span className="text-sm">Q {Number(formData.liabilities?.creditCards || 0).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm">Proveedores</span>
+                          <span className="text-sm">Q {Number(formData.liabilities?.suppliers || 0).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between font-bold border-t pt-2">
+                          <span>Total Pasivos</span>
+                          <span>Q {Number(formData.liabilities?.total || 0).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between font-bold text-primary border-t pt-2 mt-4">
+                          <span>Patrimonio Neto</span>
+                          <span>Q {Number(formData.netWorth || 0).toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="documentos" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {Object.entries({
+                dpiFrontal: 'DPI Frontal',
+                dpiTrasero: 'DPI Trasero',
+                fotoSolicitante: 'Foto Solicitante',
+                recibosServicios: 'Recibos Servicios',
+                firmaCanvas: 'Firma Digital'
+              }).map(([key, label]) => {
+                const doc = documents[key];
+                const isComplete = doc?.status === 'complete';
+                return (
+                  <Card 
+                    key={key} 
+                    className={`border-2 ${isComplete ? 'border-green-200' : 'border-amber-200'}`}
+                  >
+                    <CardContent className="p-4">
+                      <div className="aspect-square mb-3">
+                        {isComplete && doc.url ? (
+                          <img 
+                            src={doc.url} 
+                            alt={label}
+                            className="w-full h-full object-cover rounded-md"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-muted rounded-md flex items-center justify-center">
+                            <Camera className="h-8 w-8 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-center">
+                        <h4 className="font-medium text-sm mb-2">{label}</h4>
+                        <Badge 
+                          variant={isComplete ? "default" : "secondary"}
+                          className={isComplete ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"}
+                        >
+                          {isComplete ? 'Completo' : 'Pendiente'}
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </TabsContent>
+        </Tabs>
       </main>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar Envío de Solicitud</DialogTitle>
+            <DialogDescription>
+              ¿Está seguro que desea enviar esta solicitud? Una vez enviada no podrá ser modificada.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={confirmSubmission} disabled={isSubmitting}>
+              {isSubmitting ? 'Enviando...' : 'Confirmar Envío'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Dialog */}
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <PartyPopper className="h-5 w-5 text-primary" />
+              ¡Solicitud Enviada!
+            </DialogTitle>
+            <DialogDescription>
+              Su solicitud ha sido enviada exitosamente y está siendo procesada.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={handleSuccessClose}>
+              Continuar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       <BottomNavigation />
     </div>
