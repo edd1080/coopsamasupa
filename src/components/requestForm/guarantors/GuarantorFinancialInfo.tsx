@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DollarSign, Home, Car, Banknote } from 'lucide-react';
 import { useFormContext } from '../RequestFormProvider';
+import { normalizeDecimalInput } from '@/utils/formatters';
 
 interface GuarantorFinancialInfoProps {
   guarantorIndex: number;
@@ -72,12 +73,13 @@ const GuarantorFinancialInfo: React.FC<GuarantorFinancialInfoProps> = ({ guarant
                 <span className="absolute left-3 top-3 text-muted-foreground">Q</span>
                 <Input
                   id={`monthlyIncome-${guarantorIndex}`}
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
+                  pattern="[0-9]*\.?[0-9]*"
                   value={guarantor.monthlyIncome || ''}
-                  onChange={(e) => handleInputChange('monthlyIncome', parseFloat(e.target.value) || 0)}
+                  onChange={(e) => handleInputChange('monthlyIncome', parseFloat(normalizeDecimalInput(e.target.value)) || 0)}
                   placeholder="0.00"
                   className="pl-8"
-                  min="0"
                   step="0.01"
                 />
               </div>
@@ -94,13 +96,13 @@ const GuarantorFinancialInfo: React.FC<GuarantorFinancialInfoProps> = ({ guarant
                 <span className="absolute left-3 top-3 text-muted-foreground">Q</span>
                 <Input
                   id={`monthlyExpenses-${guarantorIndex}`}
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
+                  pattern="[0-9]*\.?[0-9]*"
                   value={guarantor.monthlyExpenses || ''}
-                  onChange={(e) => handleInputChange('monthlyExpenses', parseFloat(e.target.value) || 0)}
+                  onChange={(e) => handleInputChange('monthlyExpenses', parseFloat(normalizeDecimalInput(e.target.value)) || 0)}
                   placeholder="0.00"
                   className="pl-8"
-                  min="0"
-                  step="0.01"
                 />
               </div>
               {monthlyExpenses > 0 && (
@@ -117,13 +119,13 @@ const GuarantorFinancialInfo: React.FC<GuarantorFinancialInfoProps> = ({ guarant
               <span className="absolute left-3 top-3 text-muted-foreground">Q</span>
               <Input
                 id={`otherIncome-${guarantorIndex}`}
-                type="number"
+                type="text"
+                inputMode="decimal"
+                pattern="[0-9]*\.?[0-9]*"
                 value={guarantor.otherIncome || ''}
-                onChange={(e) => handleInputChange('otherIncome', parseFloat(e.target.value) || 0)}
+                onChange={(e) => handleInputChange('otherIncome', parseFloat(normalizeDecimalInput(e.target.value)) || 0)}
                 placeholder="0.00"
                 className="pl-8"
-                min="0"
-                step="0.01"
               />
             </div>
             {otherIncome > 0 && (
@@ -177,12 +179,13 @@ const GuarantorFinancialInfo: React.FC<GuarantorFinancialInfoProps> = ({ guarant
                   <span className="absolute left-3 top-3 text-muted-foreground">Q</span>
                   <Input
                     id={`propertyValue-${guarantorIndex}`}
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
+                    pattern="[0-9]*\.?[0-9]*"
                     value={guarantor.propertyValue || ''}
-                    onChange={(e) => handleInputChange('propertyValue', parseFloat(e.target.value) || 0)}
+                    onChange={(e) => handleInputChange('propertyValue', parseFloat(normalizeDecimalInput(e.target.value)) || 0)}
                     placeholder="0.00"
                     className="pl-8"
-                    min="0"
                   />
                 </div>
                 {guarantor.propertyValue && guarantor.propertyValue > 0 && (
@@ -211,12 +214,13 @@ const GuarantorFinancialInfo: React.FC<GuarantorFinancialInfoProps> = ({ guarant
                   <span className="absolute left-3 top-3 text-muted-foreground">Q</span>
                   <Input
                     id={`vehicleValue-${guarantorIndex}`}
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
+                    pattern="[0-9]*\.?[0-9]*"
                     value={guarantor.vehicleValue || ''}
-                    onChange={(e) => handleInputChange('vehicleValue', parseFloat(e.target.value) || 0)}
+                    onChange={(e) => handleInputChange('vehicleValue', parseFloat(normalizeDecimalInput(e.target.value)) || 0)}
                     placeholder="0.00"
                     className="pl-8"
-                    min="0"
                   />
                 </div>
                 {guarantor.vehicleValue && guarantor.vehicleValue > 0 && (

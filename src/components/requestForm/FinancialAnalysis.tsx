@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Calculator, TrendingUp, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
-import { formatCurrency, parseCurrency } from '@/utils/formatters';
+import { formatCurrency, parseCurrency, normalizeDecimalInput } from '@/utils/formatters';
 import { 
   Select,
   SelectContent,
@@ -37,7 +37,8 @@ const expenseCategories = [
 const FinancialAnalysis: React.FC<FinancialAnalysisProps> = ({ formData, updateFormData }) => {
   const handleCurrencyChange = (field: string, value: string) => {
     // Store the clean numeric value for calculations
-    const cleanValue = parseCurrency(value);
+    const normalizedValue = normalizeDecimalInput(value);
+    const cleanValue = parseCurrency(normalizedValue);
     updateFormData(field, cleanValue);
   };
 
@@ -103,6 +104,9 @@ const FinancialAnalysis: React.FC<FinancialAnalysisProps> = ({ formData, updateF
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">Q</span>
                 <Input 
                   id="ingresoPrincipal"
+                  type="text"
+                  inputMode="decimal"
+                  pattern="[0-9]*\.?[0-9]*"
                   className="pl-7"
                   placeholder="0.00"
                   value={formatDisplayValue(formData.ingresoPrincipal)}
@@ -116,6 +120,9 @@ const FinancialAnalysis: React.FC<FinancialAnalysisProps> = ({ formData, updateF
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">Q</span>
                 <Input 
                   id="ingresoSecundario"
+                  type="text"
+                  inputMode="decimal"
+                  pattern="[0-9]*\.?[0-9]*"
                   className="pl-7"
                   placeholder="0.00"
                   value={formatDisplayValue(formData.ingresoSecundario)}
@@ -150,6 +157,9 @@ const FinancialAnalysis: React.FC<FinancialAnalysisProps> = ({ formData, updateF
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">Q</span>
                   <Input 
                     id={category.key}
+                    type="text"
+                    inputMode="decimal"
+                    pattern="[0-9]*\.?[0-9]*"
                     className="pl-7"
                     placeholder="0.00"
                     value={formatDisplayValue(formData[category.key])}
@@ -211,6 +221,9 @@ const FinancialAnalysis: React.FC<FinancialAnalysisProps> = ({ formData, updateF
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">Q</span>
                 <Input 
                   id="cuotaSolicitada"
+                  type="text"
+                  inputMode="decimal"
+                  pattern="[0-9]*\.?[0-9]*"
                   className="pl-7"
                   placeholder="0.00"
                   value={formatDisplayValue(formData.cuotaSolicitada)}

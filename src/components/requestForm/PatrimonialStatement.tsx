@@ -3,6 +3,7 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { normalizeDecimalInput } from '@/utils/formatters';
 import { Separator } from '@/components/ui/separator';
 import { PieChart, TrendingDown, TrendingUp } from 'lucide-react';
 
@@ -70,10 +71,12 @@ const PatrimonialStatement: React.FC<PatrimonialStatementProps> = ({ formData, u
                   <Input 
                     id={category.key}
                     className="pl-7"
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
+                    pattern="[0-9]*\.?[0-9]*"
                     placeholder="0.00"
                     value={formData[category.key] || ''}
-                    onChange={(e) => updateFormData(category.key, e.target.value)}
+                    onChange={(e) => updateFormData(category.key, normalizeDecimalInput(e.target.value))}
                   />
                 </div>
               </div>
@@ -112,10 +115,12 @@ const PatrimonialStatement: React.FC<PatrimonialStatementProps> = ({ formData, u
                   <Input 
                     id={category.key}
                     className="pl-7"
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
+                    pattern="[0-9]*\.?[0-9]*"
                     placeholder="0.00"
                     value={formData[category.key] || ''}
-                    onChange={(e) => updateFormData(category.key, e.target.value)}
+                    onChange={(e) => updateFormData(category.key, normalizeDecimalInput(e.target.value))}
                   />
                 </div>
               </div>
@@ -183,10 +188,12 @@ const PatrimonialStatement: React.FC<PatrimonialStatementProps> = ({ formData, u
                 <Input 
                   id="montoSolicitado"
                   className="pl-7"
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
+                  pattern="[0-9]*\.?[0-9]*"
                   placeholder="0.00"
                   value={formData.montoSolicitado || ''}
-                  onChange={(e) => updateFormData('montoSolicitado', e.target.value)}
+                  onChange={(e) => updateFormData('montoSolicitado', normalizeDecimalInput(e.target.value))}
                 />
               </div>
             </div>

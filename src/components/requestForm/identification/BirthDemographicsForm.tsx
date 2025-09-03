@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { DatePicker } from '@/components/ui/date-picker';
+import { normalizeIntegerInput } from '@/utils/formatters';
 import { 
   Select,
   SelectContent,
@@ -86,10 +87,11 @@ const BirthDemographicsForm: React.FC<BirthDemographicsFormProps> = ({ formData,
           <Label htmlFor="dependents">Dependientes *</Label>
           <Input 
             id="dependents"
-            type="number"
-            min="0"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
             value={formData.dependents || ''} 
-            onChange={(e) => updateFormData('dependents', e.target.value)}
+            onChange={(e) => updateFormData('dependents', normalizeIntegerInput(e.target.value))}
             placeholder="0"
           />
         </div>

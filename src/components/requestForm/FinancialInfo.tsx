@@ -6,6 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PlusCircle, MinusCircle, Upload, DollarSign, Calendar, Store, Package, TrendingUp, Calculator, PieChart } from 'lucide-react';
+import { normalizeDecimalInput } from '@/utils/formatters';
 
 // Import the new components
 import FinancialAnalysis from './FinancialAnalysis';
@@ -189,10 +190,12 @@ const FinancialInfo: React.FC<FinancialInfoProps> = ({ formData, updateFormData 
                 <Input 
                   id="monthlySales" 
                   className="pl-7"
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
+                  pattern="[0-9]*\.?[0-9]*"
                   placeholder="0.00"
                   value={formData.monthlySales || ''}
-                  onChange={(e) => updateFormData('monthlySales', e.target.value)}
+                  onChange={(e) => updateFormData('monthlySales', normalizeDecimalInput(e.target.value))}
                 />
               </div>
             </div>

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { formatDPI, validateDPIFormat } from '@/utils/formatters';
+import { formatDPI, validateDPIFormat, normalizeIntegerInput } from '@/utils/formatters';
 import { 
   Select,
   SelectContent,
@@ -187,9 +187,11 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
             <Label htmlFor="cua">CUA (T24)</Label>
             <Input 
               id="cua"
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={formData.cua || ''} 
-              onChange={(e) => updateFormData('cua', e.target.value)}
+              onChange={(e) => updateFormData('cua', normalizeIntegerInput(e.target.value))}
               placeholder="Número CUA"
             />
           </div>

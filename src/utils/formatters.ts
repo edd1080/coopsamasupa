@@ -49,3 +49,19 @@ export const validatePhoneFormat = (phone: string): boolean => {
   const cleaned = phone.replace(/\s/g, '');
   return /^\d{8}$/.test(cleaned);
 };
+
+// Utility functions for numeric input normalization
+export const normalizeIntegerInput = (value: string): string => {
+  // Remove all non-digit characters
+  return value.replace(/\D/g, '');
+};
+
+export const normalizeDecimalInput = (value: string): string => {
+  // Allow only digits and one decimal point
+  const cleaned = value.replace(/[^\d.]/g, '');
+  const parts = cleaned.split('.');
+  if (parts.length > 2) {
+    return parts[0] + '.' + parts.slice(1).join('');
+  }
+  return cleaned;
+};

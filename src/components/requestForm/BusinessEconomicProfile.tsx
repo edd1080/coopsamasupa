@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { Plus, Trash2, HelpCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { normalizeDecimalInput, normalizeIntegerInput } from '@/utils/formatters';
 
 interface Product {
   id: string;
@@ -146,10 +147,11 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
                   <Label htmlFor="experienceYears">Años de Experiencia *</Label>
                   <Input 
                     id="experienceYears"
-                    type="number"
-                    min="0"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     value={formData.experienceYears || ''} 
-                    onChange={(e) => updateFormData('experienceYears', e.target.value)}
+                    onChange={(e) => updateFormData('experienceYears', normalizeIntegerInput(e.target.value))}
                     placeholder="0"
                   />
                 </div>
@@ -172,10 +174,11 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
                   <Label htmlFor="cashSales">Ventas Mensuales de Contado Q *</Label>
                   <Input 
                     id="cashSales"
-                    type="number"
-                    min="0"
+                    type="text"
+                    inputMode="decimal"
+                    pattern="[0-9]*\.?[0-9]*"
                     value={formData.cashSales || ''} 
-                    onChange={(e) => updateFormData('cashSales', e.target.value)}
+                    onChange={(e) => updateFormData('cashSales', normalizeDecimalInput(e.target.value))}
                     placeholder="0.00"
                   />
                 </div>
@@ -184,10 +187,11 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
                   <Label htmlFor="creditSales">Ventas Mensuales a Crédito Q *</Label>
                   <Input 
                     id="creditSales"
-                    type="number"
-                    min="0"
+                    type="text"
+                    inputMode="decimal"
+                    pattern="[0-9]*\.?[0-9]*"
                     value={formData.creditSales || ''} 
-                    onChange={(e) => updateFormData('creditSales', e.target.value)}
+                    onChange={(e) => updateFormData('creditSales', normalizeDecimalInput(e.target.value))}
                     placeholder="0.00"
                   />
                 </div>
@@ -245,28 +249,29 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
                           <div className="space-y-2">
                             <Label>Cantidad *</Label>
                             <Input 
-                              type="number"
-                              min="0"
+                              type="text"
+                              inputMode="decimal"
+                              pattern="[0-9]*\.?[0-9]*"
                               value={product.quantity}
-                              onChange={(e) => updateProduct(product.id, 'quantity', parseFloat(e.target.value) || 0)}
+                              onChange={(e) => updateProduct(product.id, 'quantity', parseFloat(normalizeDecimalInput(e.target.value)) || 0)}
                             />
                           </div>
 
                           <div className="space-y-2">
                             <Label>Precio Unitario Q *</Label>
                             <Input 
-                              type="number"
-                              min="0"
-                              step="0.01"
+                              type="text"
+                              inputMode="decimal"
+                              pattern="[0-9]*\.?[0-9]*"
                               value={product.price}
-                              onChange={(e) => updateProduct(product.id, 'price', parseFloat(e.target.value) || 0)}
+                              onChange={(e) => updateProduct(product.id, 'price', parseFloat(normalizeDecimalInput(e.target.value)) || 0)}
                             />
                           </div>
 
                           <div className="space-y-2">
                             <Label>Total Q</Label>
                             <Input 
-                              type="number"
+                              type="text"
                               value={product.total}
                               readOnly
                               className="bg-muted"
@@ -276,11 +281,11 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
                           <div className="space-y-2">
                             <Label>Utilidad Q</Label>
                             <Input 
-                              type="number"
-                              min="0"
-                              step="0.01"
+                              type="text"
+                              inputMode="decimal"
+                              pattern="[0-9]*\.?[0-9]*"
                               value={product.profit}
-                              onChange={(e) => updateProduct(product.id, 'profit', parseFloat(e.target.value) || 0)}
+                              onChange={(e) => updateProduct(product.id, 'profit', parseFloat(normalizeDecimalInput(e.target.value)) || 0)}
                             />
                           </div>
                         </div>
@@ -311,10 +316,11 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
                     <Label htmlFor="highSeasonAmount">Ventas Temporada Alta Q</Label>
                     <Input 
                       id="highSeasonAmount"
-                      type="number"
-                      min="0"
+                      type="text"
+                      inputMode="decimal"
+                      pattern="[0-9]*\.?[0-9]*"
                       value={formData.highSeasonAmount || ''} 
-                      onChange={(e) => updateFormData('highSeasonAmount', e.target.value)}
+                      onChange={(e) => updateFormData('highSeasonAmount', normalizeDecimalInput(e.target.value))}
                       placeholder="0.00"
                     />
                   </div>
@@ -335,10 +341,11 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
                     <Label htmlFor="lowSeasonAmount">Ventas Temporada Baja Q</Label>
                     <Input 
                       id="lowSeasonAmount"
-                      type="number"
-                      min="0"
+                      type="text"
+                      inputMode="decimal"
+                      pattern="[0-9]*\.?[0-9]*"
                       value={formData.lowSeasonAmount || ''} 
-                      onChange={(e) => updateFormData('lowSeasonAmount', e.target.value)}
+                      onChange={(e) => updateFormData('lowSeasonAmount', normalizeDecimalInput(e.target.value))}
                       placeholder="0.00"
                     />
                   </div>
@@ -356,10 +363,11 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
                     <Label htmlFor="bonuses">Bonificaciones Q</Label>
                     <Input 
                       id="bonuses"
-                      type="number"
-                      min="0"
+                      type="text"
+                      inputMode="decimal"
+                      pattern="[0-9]*\.?[0-9]*"
                       value={formData.bonuses || ''} 
-                      onChange={(e) => updateFormData('bonuses', e.target.value)}
+                      onChange={(e) => updateFormData('bonuses', normalizeDecimalInput(e.target.value))}
                       placeholder="0.00"
                     />
                   </div>
@@ -368,10 +376,11 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
                     <Label htmlFor="salaries">Sueldos Q</Label>
                     <Input 
                       id="salaries"
-                      type="number"
-                      min="0"
+                      type="text"
+                      inputMode="decimal"
+                      pattern="[0-9]*\.?[0-9]*"
                       value={formData.salaries || ''} 
-                      onChange={(e) => updateFormData('salaries', e.target.value)}
+                      onChange={(e) => updateFormData('salaries', normalizeDecimalInput(e.target.value))}
                       placeholder="0.00"
                     />
                   </div>
@@ -380,10 +389,11 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
                     <Label htmlFor="rent">Alquiler Q</Label>
                     <Input 
                       id="rent"
-                      type="number"
-                      min="0"
+                      type="text"
+                      inputMode="decimal"
+                      pattern="[0-9]*\.?[0-9]*"
                       value={formData.rent || ''} 
-                      onChange={(e) => updateFormData('rent', e.target.value)}
+                      onChange={(e) => updateFormData('rent', normalizeDecimalInput(e.target.value))}
                       placeholder="0.00"
                     />
                   </div>
@@ -392,10 +402,11 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
                     <Label htmlFor="utilities">Servicios Q</Label>
                     <Input 
                       id="utilities"
-                      type="number"
-                      min="0"
+                      type="text"
+                      inputMode="decimal"
+                      pattern="[0-9]*\.?[0-9]*"
                       value={formData.utilities || ''} 
-                      onChange={(e) => updateFormData('utilities', e.target.value)}
+                      onChange={(e) => updateFormData('utilities', normalizeDecimalInput(e.target.value))}
                       placeholder="0.00"
                     />
                   </div>
@@ -404,10 +415,11 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
                     <Label htmlFor="transport">Transporte Q</Label>
                     <Input 
                       id="transport"
-                      type="number"
-                      min="0"
+                      type="text"
+                      inputMode="decimal"
+                      pattern="[0-9]*\.?[0-9]*"
                       value={formData.transport || ''} 
-                      onChange={(e) => updateFormData('transport', e.target.value)}
+                      onChange={(e) => updateFormData('transport', normalizeDecimalInput(e.target.value))}
                       placeholder="0.00"
                     />
                   </div>
@@ -416,10 +428,11 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
                     <Label htmlFor="otherExpenses">Otros Gastos Q</Label>
                     <Input 
                       id="otherExpenses"
-                      type="number"
-                      min="0"
+                      type="text"
+                      inputMode="decimal"
+                      pattern="[0-9]*\.?[0-9]*"
                       value={formData.otherExpenses || ''} 
-                      onChange={(e) => updateFormData('otherExpenses', e.target.value)}
+                      onChange={(e) => updateFormData('otherExpenses', normalizeDecimalInput(e.target.value))}
                       placeholder="0.00"
                     />
                   </div>
