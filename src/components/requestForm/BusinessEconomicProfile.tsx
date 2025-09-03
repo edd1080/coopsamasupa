@@ -12,7 +12,6 @@ import { Plus, Trash2, HelpCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { normalizeDecimalInput, normalizeIntegerInput } from '@/utils/formatters';
 import CurrencyInput from '@/components/ui/currency-input';
-import { useFormContext } from './RequestFormProvider';
 
 interface Product {
   id: string;
@@ -30,9 +29,9 @@ interface BusinessEconomicProfileProps {
 }
 
 const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formData, updateFormData }) => {
-  const { subStep, currentStep, goToStep } = useFormContext();
   const [products, setProducts] = useState<Product[]>(formData.products || []);
   const [applicantType, setApplicantType] = useState(formData.applicantType || '');
+  const [internalSubStep, setInternalSubStep] = useState(0);
 
   useEffect(() => {
     updateFormData('products', products);
@@ -40,12 +39,11 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
 
   useEffect(() => {
     updateFormData('applicantType', applicantType);
-    // If user changes from 'negocio_propio' to 'asalariado' while in later substeps, 
-    // navigate back to first substep
-    if (applicantType === 'asalariado' && subStep > 0) {
-      goToStep(currentStep, 0);
+    // Reset substep when changing applicant type
+    if (applicantType === 'asalariado') {
+      setInternalSubStep(0);
     }
-  }, [applicantType, updateFormData, subStep, currentStep, goToStep]);
+  }, [applicantType, updateFormData]);
 
   const addProduct = () => {
     const newProduct: Product = {
@@ -78,6 +76,32 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
     }));
   };
 
+  // Add navigation buttons for substeps when in business mode
+  const renderSubStepNavigation = () => {
+    if (applicantType !== 'negocio_propio') return null;
+    
+    return (
+      <div className="flex justify-between mt-6">
+        <Button 
+          variant="outline" 
+          onClick={() => setInternalSubStep(Math.max(0, internalSubStep - 1))}
+          disabled={internalSubStep === 0}
+        >
+          Anterior
+        </Button>
+        <span className="flex items-center text-sm text-muted-foreground">
+          Paso {internalSubStep + 1} de 4
+        </span>
+        <Button 
+          onClick={() => setInternalSubStep(Math.min(3, internalSubStep + 1))}
+          disabled={internalSubStep === 3}
+        >
+          Siguiente
+        </Button>
+      </div>
+    );
+  };
+
   const renderSubStepContent = () => {
     if (applicantType === 'asalariado') {
       // For employees, show only the applicant type selector
@@ -104,7 +128,7 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
 
     if (applicantType === 'negocio_propio') {
       // Substep 0: Applicant type + Basic business info to monthly sales
-      if (subStep === 0) {
+      if (internalSubStep === 0) {
         return (
           <div className="space-y-6">
             {/* Tipo de Solicitante - Radio Button */}
@@ -218,7 +242,7 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
       }
 
       // Substep 1: Products and seasonality
-      if (subStep === 1) {
+      if (internalSubStep === 1) {
         return (
           <div className="space-y-6">
             {/* Productos */}
@@ -368,7 +392,7 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
       }
 
       // Substep 2: Administrative expenses
-      if (subStep === 2) {
+      if (internalSubStep === 2) {
         return (
           <div className="space-y-4">
             <h4 className="font-medium">Gastos Administrativos Mensuales</h4>
@@ -439,7 +463,7 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
       }
 
       // Substep 3: Business analysis
-      if (subStep === 3) {
+      if (internalSubStep === 3) {
         return (
           <TooltipProvider>
             <div className="space-y-4">
@@ -571,6 +595,7 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
         </div>
 
         {renderSubStepContent()}
+        {renderSubStepNavigation()}
       </CardContent>
     </Card>
   );
