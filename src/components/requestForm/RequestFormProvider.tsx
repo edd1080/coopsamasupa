@@ -187,6 +187,17 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     cua: '',
     cif: '',
     
+    // Birth Demographics and Disability Information
+    birthDate: null,
+    age: '',
+    dependents: '',
+    ethnicity: '',
+    educationLevel: '',
+    profession: '',
+    occupation: '',
+    hasDisability: false,
+    disabilityDescription: '',
+    
     // Spouse information
     spouseFirstName: '',
     spouseSecondName: '',
@@ -342,8 +353,8 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   // Get sub-steps for each section
   const getSubStepsForSection = useCallback((sectionIndex: number): number => {
     switch (sectionIndex) {
-      case 0: // IdentificationContact - 4 sub-steps
-        return 4; 
+      case 0: // IdentificationContact - 5 sub-steps
+        return 5;
       case 1: // FinancialAnalysis
         return 1;
       case 2: // BusinessEconomicProfile (Estado Patrimonial)
