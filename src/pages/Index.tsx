@@ -1,9 +1,7 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import BottomNavigation from '@/components/layout/BottomNavigation';
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileSpreadsheet, Users, TrendingUp, CheckCircle, AlertCircle, Clock, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,47 +10,48 @@ import { useApplicationMetrics } from '@/hooks/useApplicationMetrics';
 import { useWeeklyApplications } from '@/hooks/useWeeklyApplications';
 import { ChartContainer } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, Cell } from 'recharts';
-
 const Index = () => {
   const navigate = useNavigate();
-  
-  
-  const { data: profile, isLoading: profileLoading } = useUserProfile();
-  const { data: metrics, isLoading: metricsLoading } = useApplicationMetrics();
-  const { data: weeklyData, isLoading: weeklyLoading } = useWeeklyApplications();
+  const {
+    data: profile,
+    isLoading: profileLoading
+  } = useUserProfile();
+  const {
+    data: metrics,
+    isLoading: metricsLoading
+  } = useApplicationMetrics();
+  const {
+    data: weeklyData,
+    isLoading: weeklyLoading
+  } = useWeeklyApplications();
 
   // Determinar el saludo con nombre completo
   const getGreeting = () => {
     if (profileLoading) return 'Cargando...';
-    
+
     // Priorizar mostrar el nombre completo
     if (profile?.full_name) {
       return `¡Hola, ${profile.full_name}!`;
     }
-    
+
     // Fallback al primer nombre si no hay nombre completo
     if (profile?.first_name) {
       return `¡Hola, ${profile.first_name}!`;
     }
-    
     return '¡Hola!';
   };
-
   const getUserInfo = () => {
     if (profileLoading) return 'Cargando información...';
     const role = profile?.role || 'Asesor de créditos';
     const agency = profile?.agency || 'Agencia Central';
     return `${role} | ${agency}`;
   };
-
   const handleNewApplication = () => {
     console.log('🎯 Nueva solicitud button clicked');
     console.log('📍 Navigating to /applications/new');
     navigate('/applications/new');
   };
-
-  return (
-    <div className="min-h-screen flex flex-col bg-background">
+  return <div className="min-h-screen flex flex-col bg-background">
       <Header />
       
       <main className="flex-1 px-4 py-8 pb-20">
@@ -123,76 +122,56 @@ const Index = () => {
         {/* Weekly Progress Chart */}
         <Card className="mb-6">
           <CardHeader className="flex flex-row items-center space-y-0 pb-2">
-            <div className="bg-primary/10 rounded-xl p-2 mr-3">
-              <BarChart3 className="h-5 w-5 text-primary" />
-            </div>
+            
             <div className="flex flex-col">
               <CardTitle className="text-lg">Progreso Semanal</CardTitle>
               <p className="text-sm text-muted-foreground">Solicitudes procesadas</p>
             </div>
           </CardHeader>
           <CardContent>
-            {weeklyLoading ? (
-              <div className="h-48 flex items-center justify-center">
+            {weeklyLoading ? <div className="h-48 flex items-center justify-center">
                 <div className="text-center">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2"></div>
                   <p className="text-sm text-muted-foreground">Cargando datos...</p>
                 </div>
-              </div>
-            ) : (
-              <ChartContainer
-                config={{
-                  solicitudes: {
-                    label: "Solicitudes",
-                    color: "#0B63F6",
-                  },
-                }}
-                className="h-48"
-              >
-                <BarChart 
-                  data={weeklyData} 
-                  margin={{ top: 20, right: 20, left: 20, bottom: 40 }}
-                  barCategoryGap="30%"
-                >
-                  <XAxis 
-                    dataKey="day" 
-                    tick={(props) => {
-                      const { x, y, payload, index } = props;
-                      const data = weeklyData?.[index];
-                      return (
-                        <g>
+              </div> : <ChartContainer config={{
+            solicitudes: {
+              label: "Solicitudes",
+              color: "#0B63F6"
+            }
+          }} className="h-48">
+                <BarChart data={weeklyData} margin={{
+              top: 20,
+              right: 20,
+              left: 20,
+              bottom: 40
+            }} barCategoryGap="30%">
+                  <XAxis dataKey="day" tick={props => {
+                const {
+                  x,
+                  y,
+                  payload,
+                  index
+                } = props;
+                const data = weeklyData?.[index];
+                return <g>
                           <text x={x} y={y + 10} textAnchor="middle" className="fill-foreground text-sm font-medium">
                             {payload.value}
                           </text>
                           <text x={x} y={y + 25} textAnchor="middle" className="fill-muted-foreground text-xs">
                             {data?.solicitudes || 0}
                           </text>
-                        </g>
-                      );
-                    }}
-                    axisLine={false}
-                    tickLine={false}
-                    interval={0}
-                  />
-                  <Bar 
-                    dataKey="solicitudes" 
-                    barSize={20}
-                    radius={[8, 8, 0, 0]}
-                  >
+                        </g>;
+              }} axisLine={false} tickLine={false} interval={0} />
+                  <Bar dataKey="solicitudes" barSize={20} radius={[8, 8, 0, 0]}>
                     {weeklyData?.map((entry, index) => {
-                      const maxValue = Math.max(...(weeklyData?.map(d => d.solicitudes) || [0]));
-                      const isMaxValue = entry.solicitudes === maxValue && maxValue > 0;
-                      return (
-                        <Cell 
-                          key={`cell-${index}`} 
-                          fill={isMaxValue ? "#22C55E" : "#0B63F6"} 
-                        />
-                      );
-                    })}
+                  const maxValue = Math.max(...(weeklyData?.map(d => d.solicitudes) || [0]));
+                  const isMaxValue = entry.solicitudes === maxValue && maxValue > 0;
+                  return <Cell key={`cell-${index}`} fill={isMaxValue ? "#22C55E" : "#0B63F6"} />;
+                })}
                   </Bar>
                 </BarChart>
-              </ChartContainer>
-            )}
+              </ChartContainer>}
           </CardContent>
         </Card>
         
@@ -200,11 +179,11 @@ const Index = () => {
           <div className="cursor-pointer" onClick={handleNewApplication}>
             <div className="mb-4">
               <h3 className="text-xl font-semibold flex items-center gap-2 mb-2 whitespace-normal break-words overflow-hidden" style={{
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden'
-              }}>
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden'
+            }}>
                 <FileSpreadsheet className="h-5 w-5 text-primary flex-shrink-0" />
                 Nueva Solicitud
               </h3>
@@ -221,8 +200,6 @@ const Index = () => {
       <BottomNavigation />
       
       
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
