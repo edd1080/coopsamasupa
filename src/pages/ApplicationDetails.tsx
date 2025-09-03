@@ -262,11 +262,12 @@ const ApplicationDetails = () => {
           
           {/* Buttons below name */}
           <div className="flex items-center gap-2 mb-4">
-            <Button variant="outline" onClick={() => navigate(`/request-form/${id}`)}>
+            <Button variant="outline" size="md" onClick={() => navigate(`/request-form/${id}`)}>
               <Edit className="h-4 w-4 mr-2" />
               Editar
             </Button>
             <Button 
+              size="md"
               onClick={handleSubmitApplication}
               disabled={!isApplicationReadyToSubmit()}
               className={!isApplicationReadyToSubmit() ? 'opacity-50 cursor-not-allowed' : ''}

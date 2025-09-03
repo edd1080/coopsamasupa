@@ -22,15 +22,16 @@ const buttonVariants = cva(
         success: "bg-accent text-accent-foreground hover:bg-accent/90 active:bg-accent/95",
       },
       size: {
-        default: "h-12 px-4 py-2",
-        sm: "h-12 rounded-md px-3",
-        lg: "h-12 rounded-md px-8",
+        xs: "h-6 px-2",
+        sm: "h-8 px-3", 
+        md: "h-[30px] px-4",
+        lg: "h-12 px-6",
         icon: "h-12 w-12",
       },
     },
     defaultVariants: {
       variant: "default",
-      size: "default",
+      size: "lg",
     },
   }
 )
