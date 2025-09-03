@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
@@ -13,18 +12,25 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useTheme } from '@/context/ThemeContext';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-
 const Settings = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { signOut } = useAuth();
-  const { data: userProfile } = useUserProfile();
-  const { theme, toggleTheme } = useTheme();
+  const {
+    toast
+  } = useToast();
+  const {
+    signOut
+  } = useAuth();
+  const {
+    data: userProfile
+  } = useUserProfile();
+  const {
+    theme,
+    toggleTheme
+  } = useTheme();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [systemAlerts, setSystemAlerts] = useState(true);
   const [highResolution, setHighResolution] = useState(true);
-
   const handleLogout = async () => {
     try {
       await signOut();
@@ -38,11 +44,9 @@ const Settings = () => {
       });
     }
   };
-
   const handleLogoutClick = () => {
     setShowLogoutDialog(true);
   };
-
   const getUserInitials = (fullName: string) => {
     if (!fullName) return 'U';
     const names = fullName.split(' ');
@@ -51,9 +55,7 @@ const Settings = () => {
     }
     return fullName[0].toUpperCase();
   };
-
-  return (
-    <div className="min-h-screen flex flex-col bg-background">
+  return <div className="min-h-screen flex flex-col bg-background">
       <Header />
       
       <main className="flex-1 px-4 pb-20 my-[20px]">
@@ -78,14 +80,11 @@ const Settings = () => {
           {/* Cuenta Section */}
           <div>
             <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-              <User className="h-5 w-5 text-primary" />
+              
               Cuenta
             </h3>
             <div className="space-y-1">
-              <div 
-                className="flex items-center justify-between py-3 px-3 cursor-pointer hover:bg-accent/50 rounded-md transition-colors border-b border-border/50"
-                onClick={() => navigate('/settings/personal-info')}
-              >
+              <div className="flex items-center justify-between py-3 px-3 cursor-pointer hover:bg-accent/50 rounded-md transition-colors border-b border-border/50" onClick={() => navigate('/settings/personal-info')}>
                 <div className="flex items-center gap-3">
                   <Info className="h-5 w-5 text-muted-foreground" />
                   <div>
@@ -101,35 +100,29 @@ const Settings = () => {
           {/* Notificaciones Section */}
           <div>
             <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-              <Bell className="h-5 w-5 text-primary" />
+              
               Notificaciones
             </h3>
             <div className="space-y-1">
               <div className="flex items-center justify-between py-3 px-3 border-b border-border/50">
                 <div className="flex items-center gap-3">
-                  <Bell className="h-5 w-5 text-muted-foreground" />
+                  <Bell className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="font-medium">Notificaciones push</p>
                     <p className="text-sm text-muted-foreground">Recibe alertas en tu dispositivo</p>
                   </div>
                 </div>
-                <Switch 
-                  checked={pushNotifications}
-                  onCheckedChange={setPushNotifications}
-                />
+                <Switch checked={pushNotifications} onCheckedChange={setPushNotifications} />
               </div>
               <div className="flex items-center justify-between py-3 px-3 border-b border-border/50">
                 <div className="flex items-center gap-3">
-                  <AlertTriangle className="h-5 w-5 text-muted-foreground" />
+                  <AlertTriangle className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="font-medium">Alertas de sistema</p>
                     <p className="text-sm text-muted-foreground">Cambios de estado en solicitudes</p>
                   </div>
                 </div>
-                <Switch 
-                  checked={systemAlerts}
-                  onCheckedChange={setSystemAlerts}
-                />
+                <Switch checked={systemAlerts} onCheckedChange={setSystemAlerts} />
               </div>
             </div>
           </div>
@@ -137,35 +130,29 @@ const Settings = () => {
           {/* Preferencias del app Section */}
           <div>
             <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-              <Smartphone className="h-5 w-5 text-primary" />
+              
               Preferencias del app
             </h3>
             <div className="space-y-1">
               <div className="flex items-center justify-between py-3 px-3 border-b border-border/50">
                 <div className="flex items-center gap-3">
-                  <Smartphone className="h-5 w-5 text-muted-foreground" />
+                  <Smartphone className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="font-medium">Tema oscuro</p>
                     <p className="text-sm text-muted-foreground">Activa el modo oscuro</p>
                   </div>
                 </div>
-                <Switch 
-                  checked={theme === 'dark'} 
-                  onCheckedChange={toggleTheme}
-                />
+                <Switch checked={theme === 'dark'} onCheckedChange={toggleTheme} />
               </div>
               <div className="flex items-center justify-between py-3 px-3 border-b border-border/50">
                 <div className="flex items-center gap-3">
-                  <Smartphone className="h-5 w-5 text-muted-foreground" />
+                  <Smartphone className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="font-medium">Alta resolución</p>
                     <p className="text-sm text-muted-foreground">Mejora la calidad visual</p>
                   </div>
                 </div>
-                <Switch 
-                  checked={highResolution}
-                  onCheckedChange={setHighResolution}
-                />
+                <Switch checked={highResolution} onCheckedChange={setHighResolution} />
               </div>
             </div>
           </div>
@@ -173,14 +160,11 @@ const Settings = () => {
           {/* Ayuda y soporte Section */}
           <div>
             <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-              <HelpCircle className="h-5 w-5 text-primary" />
+              
               Ayuda y soporte
             </h3>
             <div className="space-y-1">
-              <div 
-                className="flex items-center justify-between py-3 px-3 cursor-pointer hover:bg-accent/50 rounded-md transition-colors border-b border-border/50"
-                onClick={() => navigate('/settings/report-problem')}
-              >
+              <div className="flex items-center justify-between py-3 px-3 cursor-pointer hover:bg-accent/50 rounded-md transition-colors border-b border-border/50" onClick={() => navigate('/settings/report-problem')}>
                 <div className="flex items-center gap-3">
                   <HelpCircle className="h-5 w-5 text-muted-foreground" />
                   <div>
@@ -195,11 +179,7 @@ const Settings = () => {
 
           {/* Logout Button */}
           <div className="pt-4">
-            <Button 
-              variant="destructive" 
-              className="w-full flex items-center justify-center gap-2" 
-              onClick={handleLogoutClick}
-            >
+            <Button variant="destructive" className="w-full flex items-center justify-center gap-2" onClick={handleLogoutClick}>
               <LogOut className="h-5 w-5" />
               Cerrar sesión
             </Button>
@@ -228,8 +208,6 @@ const Settings = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
-  );
+    </div>;
 };
-
 export default Settings;
