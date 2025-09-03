@@ -187,6 +187,16 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     cua: '',
     cif: '',
     
+    // Spouse information
+    spouseFirstName: '',
+    spouseSecondName: '',
+    spouseFirstLastName: '',
+    spouseSecondLastName: '',
+    spouseWorkplace: '',
+    spouseJobStability: '',
+    spouseMobilePhone: '',
+    spouseBirthDate: '',
+    
     // Contact and housing
     mobilePhone: '',
     homePhone: '',
@@ -198,6 +208,35 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     residenceMunicipality: '',
     housingType: '',
     residenceStability: '',
+    
+    // Credit information
+    creditPurpose: '',
+    requestedAmount: '',
+    termMonths: '',
+    capitalPayment: '',
+    interestPayment: '',
+    capitalAmortization: '',
+    memberType: '',
+    interestRate: '',
+    interestAmortization: '',
+    applicationType: '',
+    obtainedCreditsCount: '',
+    fundsOrigin: '',
+    characterObservations: '',
+    
+    // Credit destination
+    investmentPlaceDepartment: '',
+    investmentPlaceMunicipality: '',
+    destinationGroup: '',
+    creditDestination: '',
+    destinationCategory: '',
+    sowingLatitude: '',
+    sowingLongitude: '',
+    destinationDescription: '',
+    destinationObservations: '',
+    sourceTypes: '',
+    sourceQuantity: '',
+    sourceObservations: '',
     
     // Financial analysis
     incomeSource: '',
@@ -303,8 +342,8 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   // Get sub-steps for each section
   const getSubStepsForSection = useCallback((sectionIndex: number): number => {
     switch (sectionIndex) {
-      case 0: // IdentificationContact - 2 sub-steps
-        return 2; 
+      case 0: // IdentificationContact - 4 sub-steps
+        return 4; 
       case 1: // FinancialAnalysis
         return 1;
       case 2: // BusinessEconomicProfile (Estado Patrimonial)
@@ -475,10 +514,8 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   const personName = [
     formData.firstName,
     formData.secondName,
-    formData.thirdName,
     formData.firstLastName,
-    formData.secondLastName,
-    formData.marriedLastName
+    formData.secondLastName
   ].filter(Boolean).join(' ').trim();
 
   const contextValue: FormContextType = {

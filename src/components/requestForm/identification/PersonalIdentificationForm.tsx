@@ -18,7 +18,7 @@ interface PersonalIdentificationFormProps {
 }
 
 const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({ formData, updateFormData }) => {
-  const isMarried = formData.civilStatus === 'married';
+  const isMarried = formData.civilStatus === 'casado';
 
   // Enhanced NIT validation - minimum 8 digits, only numbers
   const validateNIT = (nit: string) => {
@@ -66,10 +66,10 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
       </div>
       
       <div className="space-y-6">
-        {/* Nombres y Apellidos - Solo 2 campos */}
+        {/* Nombres - 4 campos separados */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="firstName">Nombres *</Label>
+            <Label htmlFor="firstName">Primer Nombre *</Label>
             <Input 
               id="firstName"
               value={formData.firstName || ''} 
@@ -77,20 +77,49 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
                 const value = e.target.value.replace(/[0-9]/g, '');
                 updateFormData('firstName', value);
               }}
-              placeholder="Nombres completos"
+              placeholder="Primer nombre"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="lastName">Apellidos</Label>
+            <Label htmlFor="secondName">Segundo Nombre</Label>
             <Input 
-              id="lastName"
-              value={formData.lastName || ''} 
+              id="secondName"
+              value={formData.secondName || ''} 
               onChange={(e) => {
                 const value = e.target.value.replace(/[0-9]/g, '');
-                updateFormData('lastName', value);
+                updateFormData('secondName', value);
               }}
-              placeholder="Apellidos completos"
+              placeholder="Segundo nombre"
+            />
+          </div>
+        </div>
+
+        {/* Apellidos - 2 campos separados */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="firstLastName">Primer Apellido *</Label>
+            <Input 
+              id="firstLastName"
+              value={formData.firstLastName || ''} 
+              onChange={(e) => {
+                const value = e.target.value.replace(/[0-9]/g, '');
+                updateFormData('firstLastName', value);
+              }}
+              placeholder="Primer apellido"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="secondLastName">Segundo Apellido</Label>
+            <Input 
+              id="secondLastName"
+              value={formData.secondLastName || ''} 
+              onChange={(e) => {
+                const value = e.target.value.replace(/[0-9]/g, '');
+                updateFormData('secondLastName', value);
+              }}
+              placeholder="Segundo apellido"
             />
           </div>
         </div>
@@ -104,8 +133,9 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
                 <SelectValue placeholder="Seleccionar género" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="masculino">Masculino</SelectItem>
-                <SelectItem value="femenino">Femenino</SelectItem>
+                <SelectItem value="hombre">Hombre</SelectItem>
+                <SelectItem value="mujer">Mujer</SelectItem>
+                <SelectItem value="nd">N/D</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -120,11 +150,12 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
                 <SelectValue placeholder="Seleccionar estado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="single">Soltero/a</SelectItem>
-                <SelectItem value="married">Casado/a</SelectItem>
-                <SelectItem value="divorced">Divorciado/a</SelectItem>
-                <SelectItem value="widowed">Viudo/a</SelectItem>
-                <SelectItem value="cohabiting">Unión libre</SelectItem>
+                <SelectItem value="casado">Casado</SelectItem>
+                <SelectItem value="divorciado">Divorciado</SelectItem>
+                <SelectItem value="nd">N/D</SelectItem>
+                <SelectItem value="soltero">Soltero</SelectItem>
+                <SelectItem value="unido">Unido</SelectItem>
+                <SelectItem value="viudo">Viudo</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -135,8 +166,8 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
           <SpouseInfoForm formData={formData} updateFormData={updateFormData} />
         )}
 
-        {/* DPI y NIT */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* DPI, CUA y NIT */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
             <Label htmlFor="dpi">DPI (13 dígitos) *</Label>
             <Input 
@@ -150,6 +181,17 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
             {formData.dpi && !validateDPIFormat(formData.dpi) && (
               <p className="text-xs text-red-500">Formato: 0000 00000 0000 (13 dígitos)</p>
             )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="cua">CUA (T24)</Label>
+            <Input 
+              id="cua"
+              type="number"
+              value={formData.cua || ''} 
+              onChange={(e) => updateFormData('cua', e.target.value)}
+              placeholder="Número CUA"
+            />
           </div>
 
           <div className="space-y-2">
