@@ -5,14 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Users, Plus, Check, Clock, Edit, Trash2 } from 'lucide-react';
 import { useFormContext } from './RequestFormProvider';
-import ReferenceBasicInfo from './guarantors/GuarantorBasicInfo';
+import ReferenceBasicInfo from './references/ReferenceBasicInfo';
 
-interface GuarantorsSectionProps {
+interface ReferencesSectionProps {
   formData: Record<string, any>;
   updateFormData: (field: string, value: any) => void;
 }
 
-const GuarantorsSection: React.FC<GuarantorsSectionProps> = ({
+const ReferencesSection: React.FC<ReferencesSectionProps> = ({
   formData,
   updateFormData
 }) => {
@@ -209,4 +209,4 @@ const GuarantorsSection: React.FC<GuarantorsSectionProps> = ({
   );
 };
 
-export default GuarantorsSection;
+export default ReferencesSection;

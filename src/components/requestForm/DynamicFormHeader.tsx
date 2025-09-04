@@ -28,7 +28,7 @@ const DynamicFormHeader: React.FC = () => {
       case 'business':
         return 'Perfil económico';
       case 'guarantors':
-        return 'Fiadores y referencias';
+        return 'Referencias personales';
       case 'documents':
         return 'Documentos y cierre';
       case 'review':

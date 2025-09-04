@@ -4,7 +4,7 @@ import { useFormContext } from './RequestFormProvider';
 import IdentificationContact from './IdentificationContact';
 import FinancialInfo from './FinancialInfo';
 import BusinessEconomicProfile from './BusinessEconomicProfile';
-import GuarantorsSection from './GuarantorsSection';
+import ReferencesSection from './ReferencesSection';
 import PhotoDocumentUpload from './PhotoDocumentUpload';
 import ReviewSection from './ReviewSection';
 import FormTypeBanner from '../forms/FormTypeBanner';
@@ -21,7 +21,7 @@ const StepContent: React.FC = () => {
       case 2:
         return <BusinessEconomicProfile formData={formData} updateFormData={updateFormData} />;
       case 3:
-        return <GuarantorsSection formData={formData} updateFormData={updateFormData} />;
+        return <ReferencesSection formData={formData} updateFormData={updateFormData} />;
       case 4:
         return <PhotoDocumentUpload formData={formData} updateFormData={updateFormData} />;
       case 5:
@@ -33,16 +33,16 @@ const StepContent: React.FC = () => {
 
   // Determine form type based on current section and state
   const getFormType = () => {
-    if (activeStep === 3 && isInGuarantorForm) {
-      return 'guarantor';
+    if (activeStep === 3 && isInReferenceForm) {
+      return 'reference';
     }
     return 'applicant';
   };
 
   return (
     <div className="mb-24">
-      {/* Only show banner for guarantor forms */}
-      {activeStep === 3 && isInGuarantorForm && (
+      {/* Only show banner for reference forms */}
+      {activeStep === 3 && isInReferenceForm && (
         <div className="mb-6">
           <FormTypeBanner type={getFormType()} />
         </div>
