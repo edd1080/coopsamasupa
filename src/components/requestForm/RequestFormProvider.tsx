@@ -62,6 +62,15 @@ interface FormContextType {
   handleShowExitDialog: () => void;
 }
 
+interface InvestmentPlanItem {
+  id: string;
+  quantity: string;
+  unit: string;
+  description: string;
+  unitPrice: string;
+  total: string;
+}
+
 interface FormData {
   // Basic identification
   firstName: string;
@@ -117,6 +126,10 @@ interface FormData {
   deudasCortoPlazo: string;
   prestamosLargoPlazo: string;
   montoSolicitado: string;
+  
+  // Investment plan
+  investmentPlanItems: InvestmentPlanItem[];
+  investmentPlanTotal: string;
   
   // Consent fields
   termsAccepted: boolean;
@@ -280,6 +293,10 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     prestamosLargoPlazo: '',
     montoSolicitado: '',
     
+    // Investment plan
+    investmentPlanItems: [],
+    investmentPlanTotal: '',
+    
     // Consent fields
     termsAccepted: false,
     dataProcessingAccepted: false,
@@ -377,8 +394,8 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     switch (sectionIndex) {
       case 0: // IdentificationContact - 5 sub-steps
         return 5;
-      case 1: // FinancialAnalysis
-        return 1;
+      case 1: // FinancialAnalysis - 2 sub-steps (Financial Info + Investment Plan)
+        return 2;
       case 2: // BusinessEconomicProfile
         // Conditional substeps based on applicant type
         if (formData.applicantType === 'negocio_propio') {
@@ -438,6 +455,18 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   const handleSubNext = useCallback(() => {
     console.log('🔄 handleSubNext called:', { currentStep, subStep, isLastSubStep });
     
+    // Validation for Investment Plan (step 1, sub-step 1)
+    if (currentStep === 1 && subStep === 1) {
+      if (!formData.investmentPlanItems || formData.investmentPlanItems.length === 0) {
+        toast({
+          title: "Plan de Inversión Requerido",
+          description: "Debe agregar al menos un ítem a su plan de inversión para continuar.",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+    
     if (isLastSubStep) {
       // Move to next main step
       if (!isLastStep) {
@@ -450,7 +479,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
       console.log('➡️ Moving to next sub-step:', subStep + 1);
       setSubStep(prev => prev + 1);
     }
-  }, [currentStep, subStep, isLastSubStep, isLastStep]);
+  }, [currentStep, subStep, isLastSubStep, isLastStep, formData.investmentPlanItems, toast]);
 
   const handleSubPrevious = useCallback(() => {
     if (isFirstSubStep) {
