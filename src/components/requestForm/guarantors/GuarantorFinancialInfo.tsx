@@ -14,11 +14,11 @@ interface GuarantorFinancialInfoProps {
 }
 
 const GuarantorFinancialInfo: React.FC<GuarantorFinancialInfoProps> = ({ guarantorIndex }) => {
-  const { guarantors, updateGuarantor } = useFormContext();
-  const guarantor = guarantors[guarantorIndex];
+  const { references, updateReference } = useFormContext();
+  const reference = references[guarantorIndex];
 
   const handleInputChange = (field: string, value: string | number | boolean) => {
-    updateGuarantor(guarantorIndex, field, value);
+    updateReference(guarantorIndex, field, value);
     
     // Check if financial info is completed
     const updatedGuarantor = { ...guarantor, [field]: value };
@@ -29,7 +29,7 @@ const GuarantorFinancialInfo: React.FC<GuarantorFinancialInfoProps> = ({ guarant
     );
     
     if (isCompleted !== guarantor.financialInfoCompleted) {
-      updateGuarantor(guarantorIndex, 'financialInfoCompleted', isCompleted);
+      updateReference(guarantorIndex, 'financialInfoCompleted', isCompleted);
     }
   };
 

@@ -11,6 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { professions } from '@/data/professions';
+import { occupations } from '@/data/occupations';
 
 interface BirthDemographicsFormProps {
   formData: any;
@@ -106,14 +108,14 @@ const BirthDemographicsForm: React.FC<BirthDemographicsFormProps> = ({ formData,
             <SelectTrigger>
               <SelectValue placeholder="Seleccionar etnia" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="maya">Maya</SelectItem>
-              <SelectItem value="ladino">Ladino</SelectItem>
-              <SelectItem value="garifuna">Garífuna</SelectItem>
-              <SelectItem value="xinca">Xinca</SelectItem>
-              <SelectItem value="otro">Otro</SelectItem>
-              <SelectItem value="prefiero_no_responder">Prefiero no responder</SelectItem>
-            </SelectContent>
+               <SelectContent>
+                 <SelectItem value="maya">Maya</SelectItem>
+                 <SelectItem value="ladino">Ladino</SelectItem>
+                 <SelectItem value="garifuna">Garífuna</SelectItem>
+                 <SelectItem value="xinca">Xinca</SelectItem>
+                 <SelectItem value="otro">Otro</SelectItem>
+                 <SelectItem value="prefiero_no_responder">Prefiero no responder</SelectItem>
+               </SelectContent>
           </Select>
         </div>
 
@@ -123,59 +125,50 @@ const BirthDemographicsForm: React.FC<BirthDemographicsFormProps> = ({ formData,
             <SelectTrigger>
               <SelectValue placeholder="Seleccionar nivel" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="sin_escolaridad">Sin escolaridad</SelectItem>
-              <SelectItem value="primaria_incompleta">Primaria incompleta</SelectItem>
-              <SelectItem value="primaria_completa">Primaria completa</SelectItem>
-              <SelectItem value="secundaria_incompleta">Secundaria incompleta</SelectItem>
-              <SelectItem value="secundaria_completa">Secundaria completa</SelectItem>
-              <SelectItem value="universitaria_incompleta">Universitaria incompleta</SelectItem>
-              <SelectItem value="universitaria_completa">Universitaria completa</SelectItem>
-              <SelectItem value="tecnica">Técnica</SelectItem>
-              <SelectItem value="prefiero_no_responder">Prefiero no responder</SelectItem>
-            </SelectContent>
+               <SelectContent>
+                 <SelectItem value="basico">Básico</SelectItem>
+                 <SelectItem value="diversificado">Diversificado</SelectItem>
+                 <SelectItem value="na">N/A</SelectItem>
+                 <SelectItem value="primaria">Primaria</SelectItem>
+                 <SelectItem value="superior">Superior</SelectItem>
+               </SelectContent>
           </Select>
         </div>
       </div>
 
       {/* Profesión y Ocupación */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="profession">Profesión *</Label>
-          <Select value={formData.profession || ''} onValueChange={(value) => updateFormData('profession', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Seleccionar profesión (Catálogo en desarrollo)" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="agricultor">Agricultor</SelectItem>
-              <SelectItem value="comerciante">Comerciante</SelectItem>
-              <SelectItem value="maestro">Maestro</SelectItem>
-              <SelectItem value="medico">Médico</SelectItem>
-              <SelectItem value="ingeniero">Ingeniero</SelectItem>
-              <SelectItem value="abogado">Abogado</SelectItem>
-              <SelectItem value="contador">Contador</SelectItem>
-              <SelectItem value="otro">Otro</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+         <div className="space-y-2">
+           <Label htmlFor="profession">Profesión *</Label>
+           <Select value={formData.profession || ''} onValueChange={(value) => updateFormData('profession', value)}>
+             <SelectTrigger>
+               <SelectValue placeholder="Seleccionar profesión" />
+             </SelectTrigger>
+             <SelectContent>
+               {professions.map((profession) => (
+                 <SelectItem key={profession.value} value={profession.value}>
+                   {profession.label}
+                 </SelectItem>
+               ))}
+             </SelectContent>
+           </Select>
+         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="occupation">Ocupación *</Label>
-          <Select value={formData.occupation || ''} onValueChange={(value) => updateFormData('occupation', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Seleccionar ocupación (Catálogo en desarrollo)" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="empleado">Empleado</SelectItem>
-              <SelectItem value="independiente">Independiente</SelectItem>
-              <SelectItem value="empresario">Empresario</SelectItem>
-              <SelectItem value="jubilado">Jubilado</SelectItem>
-              <SelectItem value="estudiante">Estudiante</SelectItem>
-              <SelectItem value="ama_casa">Ama de casa</SelectItem>
-              <SelectItem value="otro">Otro</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+         <div className="space-y-2">
+           <Label htmlFor="occupation">Ocupación *</Label>
+           <Select value={formData.occupation || ''} onValueChange={(value) => updateFormData('occupation', value)}>
+             <SelectTrigger>
+               <SelectValue placeholder="Seleccionar ocupación" />
+             </SelectTrigger>
+             <SelectContent>
+               {occupations.map((occupation) => (
+                 <SelectItem key={occupation.value} value={occupation.value}>
+                   {occupation.label}
+                 </SelectItem>
+               ))}
+             </SelectContent>
+           </Select>
+         </div>
       </div>
     </>
   );

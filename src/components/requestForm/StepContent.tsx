@@ -10,7 +10,7 @@ import ReviewSection from './ReviewSection';
 import FormTypeBanner from '../forms/FormTypeBanner';
 
 const StepContent: React.FC = () => {
-  const { activeStep, formData, updateFormData, isInGuarantorForm } = useFormContext();
+  const { activeStep, formData, updateFormData, isInReferenceForm } = useFormContext();
 
   const renderStepContent = () => {
     switch (activeStep) {

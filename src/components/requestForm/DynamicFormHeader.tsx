@@ -54,7 +54,7 @@ const DynamicFormHeader: React.FC = () => {
         <div className="w-full relative">
           <button 
             onClick={toggleExpanded} 
-            className="flex items-center gap-2 text-left w-full group hover:bg-soft-green-hover rounded-lg p-2 -m-2 transition-colors"
+            className="flex items-center gap-2 text-left w-full group hover:bg-primary/10 rounded-lg p-2 -m-2 transition-colors"
           >
             <div className="flex-1 min-w-0">
               <h1 className="text-xl md:text-2xl font-semibold text-foreground truncate transition-all duration-300">
@@ -82,20 +82,20 @@ const DynamicFormHeader: React.FC = () => {
                     key={step.id}
                     onClick={() => handleSectionSelect(index)}
                     className={`
-                      w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-soft-green-hover transition-colors
-                      ${isActive ? 'bg-accent/50' : ''}
+                      w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-primary/10 transition-colors
+                      ${isActive ? 'bg-primary/10' : ''}
                     `}
                   >
                     <div className={`
                       flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium flex-shrink-0
                       ${isActive ? 'bg-primary text-primary-foreground' : ''} 
-                      ${isCompleted && !isActive ? 'bg-green-600 text-white dark:bg-green-500' : ''}
+                      ${isCompleted && !isActive ? 'bg-primary/80 text-primary-foreground' : ''}
                       ${!isActive && !isCompleted ? 'bg-muted border' : ''}
                     `}>
                       {isCompleted && !isActive ? <CheckCircle size={14} /> : index + 1}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className={`font-medium text-sm truncate ${isActive ? 'text-primary' : ''} ${isCompleted && !isActive ? 'text-green-600 dark:text-green-400' : ''}`}>
+                      <div className={`font-medium text-sm truncate ${isActive ? 'text-primary' : ''} ${isCompleted && !isActive ? 'text-primary' : ''}`}>
                         {step.title}
                       </div>
                       <div className="text-xs text-muted-foreground">

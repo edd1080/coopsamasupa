@@ -96,20 +96,22 @@ const CreditInfoForm: React.FC<CreditInfoFormProps> = ({ formData, updateFormDat
 
         {/* Tercera fila - Información adicional */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="capitalAmortization">Amortización del Capital</Label>
-            <Select value={formData.capitalAmortization || ''} onValueChange={(value) => updateFormData('capitalAmortization', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccionar tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="frances">Francés</SelectItem>
-                <SelectItem value="aleman">Alemán</SelectItem>
-                <SelectItem value="americano">Americano</SelectItem>
-                <SelectItem value="cuotas_iguales">Cuotas Iguales</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+           <div className="space-y-2">
+             <Label htmlFor="capitalAmortization">Amortización del Capital</Label>
+             <Select value={formData.capitalAmortization || ''} onValueChange={(value) => updateFormData('capitalAmortization', value)}>
+               <SelectTrigger>
+                 <SelectValue placeholder="Seleccionar tipo" />
+               </SelectTrigger>
+               <SelectContent>
+                 <SelectItem value="mensual">Mensual</SelectItem>
+                 <SelectItem value="trimestral">Trimestral</SelectItem>
+                 <SelectItem value="semestral">Semestral</SelectItem>
+                 <SelectItem value="anual">Anual</SelectItem>
+                 <SelectItem value="al_vencimiento">Al vencimiento</SelectItem>
+                 <SelectItem value="personalizada">Personalizada</SelectItem>
+               </SelectContent>
+             </Select>
+           </div>
 
         </div>
 

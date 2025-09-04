@@ -39,17 +39,17 @@ interface FormContextType {
   getProgressPercentage: () => number;
   getSubStepsForSection: (sectionIndex: number) => number;
   
-  // Guarantors
-  guarantors: GuarantorData[];
-  currentGuarantorIndex: number;
-  setCurrentGuarantorIndex: (index: number) => void;
-  guarantorFormStep: number;
-  setGuarantorFormStep: (step: number) => void;
-  addGuarantor: () => void;
-  removeGuarantor: (index: number) => void;
-  updateGuarantor: (index: number, field: string, value: any) => void;
-  isInGuarantorForm: boolean;
-  setIsInGuarantorForm: (inForm: boolean) => void;
+  // References (formerly guarantors)
+  references: ReferenceData[];
+  currentReferenceIndex: number;
+  setCurrentReferenceIndex: (index: number) => void;
+  referenceFormStep: number;
+  setReferenceFormStep: (step: number) => void;
+  addReference: () => void;
+  removeReference: (index: number) => void;
+  updateReference: (index: number, field: string, value: any) => void;
+  isInReferenceForm: boolean;
+  setIsInReferenceForm: (inForm: boolean) => void;
   
   // Person name
   personName: string;
@@ -137,16 +137,16 @@ interface StepInfo {
   component?: string;
 }
 
-interface GuarantorData {
+interface ReferenceData {
   id: string;
+  referenceType: string;
   fullName: string;
-  cui: string;
-  email: string;
+  address: string;
+  relation: string;
   phone: string;
-  monthlyIncome: number;
+  rating: string;
+  comment: string;
   basicInfoCompleted: boolean;
-  financialInfoCompleted: boolean;
-  [key: string]: any;
 }
 
 interface RequestFormProviderProps {
@@ -296,14 +296,34 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   // Section status
   const [sectionStatus, setSectionStatus] = useState<Record<string, 'pending' | 'complete'>>({});
   
-  // Guarantors state
-  const [guarantors, setGuarantors] = useState<GuarantorData[]>([
-    { id: '1', fullName: '', cui: '', email: '', phone: '', monthlyIncome: 0, basicInfoCompleted: false, financialInfoCompleted: false },
-    { id: '2', fullName: '', cui: '', email: '', phone: '', monthlyIncome: 0, basicInfoCompleted: false, financialInfoCompleted: false }
+  // References state (formerly guarantors)
+  const [references, setReferences] = useState<ReferenceData[]>([
+    { 
+      id: '1', 
+      referenceType: '', 
+      fullName: '', 
+      address: '', 
+      relation: '', 
+      phone: '', 
+      rating: '', 
+      comment: '', 
+      basicInfoCompleted: false 
+    },
+    { 
+      id: '2', 
+      referenceType: '', 
+      fullName: '', 
+      address: '', 
+      relation: '', 
+      phone: '', 
+      rating: '', 
+      comment: '', 
+      basicInfoCompleted: false 
+    }
   ]);
-  const [currentGuarantorIndex, setCurrentGuarantorIndex] = useState(0);
-  const [guarantorFormStep, setGuarantorFormStep] = useState(0);
-  const [isInGuarantorForm, setIsInGuarantorForm] = useState(false);
+  const [currentReferenceIndex, setCurrentReferenceIndex] = useState(0);
+  const [referenceFormStep, setReferenceFormStep] = useState(0);
+  const [isInReferenceForm, setIsInReferenceForm] = useState(false);
   
   // Exit dialog state
   const [showExitDialog, setShowExitDialog] = useState(false);
@@ -324,30 +344,31 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     setSectionStatus(prev => ({ ...prev, [sectionId]: status }));
   }, []);
 
-  // Guarantor functions
-  const addGuarantor = useCallback(() => {
-    const newGuarantor: GuarantorData = {
-      id: `${guarantors.length + 1}`,
+  // Reference functions (formerly guarantor functions)
+  const addReference = useCallback(() => {
+    const newReference: ReferenceData = {
+      id: `${references.length + 1}`,
+      referenceType: '',
       fullName: '',
-      cui: '',
-      email: '',
+      address: '',
+      relation: '',
       phone: '',
-      monthlyIncome: 0,
-      basicInfoCompleted: false,
-      financialInfoCompleted: false
+      rating: '',
+      comment: '',
+      basicInfoCompleted: false
     };
-    setGuarantors(prev => [...prev, newGuarantor]);
-  }, [guarantors.length]);
+    setReferences(prev => [...prev, newReference]);
+  }, [references.length]);
 
-  const removeGuarantor = useCallback((index: number) => {
-    if (guarantors.length > 2) {
-      setGuarantors(prev => prev.filter((_, i) => i !== index));
+  const removeReference = useCallback((index: number) => {
+    if (references.length > 2) {
+      setReferences(prev => prev.filter((_, i) => i !== index));
     }
-  }, [guarantors.length]);
+  }, [references.length]);
 
-  const updateGuarantor = useCallback((index: number, field: string, value: any) => {
-    setGuarantors(prev => prev.map((guarantor, i) => 
-      i === index ? { ...guarantor, [field]: value } : guarantor
+  const updateReference = useCallback((index: number, field: string, value: any) => {
+    setReferences(prev => prev.map((reference, i) => 
+      i === index ? { ...reference, [field]: value } : reference
     ));
   }, []);
 
@@ -364,7 +385,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
           return 4; // 4 substeps for business owners
         }
         return 1; // 1 substep for employees
-      case 3: // GuarantorsSection
+      case 3: // ReferencesSection (formerly GuarantorsSection)
         return 1;
       case 4: // DocumentsSection
         return 1;
@@ -571,16 +592,16 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     getSubStepsForSection,
     
     // Guarantors
-    guarantors,
-    currentGuarantorIndex,
-    setCurrentGuarantorIndex,
-    guarantorFormStep,
-    setGuarantorFormStep,
-    addGuarantor,
-    removeGuarantor,
-    updateGuarantor,
-    isInGuarantorForm,
-    setIsInGuarantorForm,
+    references,
+    currentReferenceIndex,
+    setCurrentReferenceIndex,
+    referenceFormStep,
+    setReferenceFormStep,
+    addReference,
+    removeReference,
+    updateReference,
+    isInReferenceForm,
+    setIsInReferenceForm,
     
     // Person name
     personName,

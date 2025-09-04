@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Users, Plus, Check, Clock, Edit, Trash2 } from 'lucide-react';
 import { useFormContext } from './RequestFormProvider';
-import GuarantorBasicInfo from './guarantors/GuarantorBasicInfo';
+import ReferenceBasicInfo from './guarantors/GuarantorBasicInfo';
 
 interface GuarantorsSectionProps {
   formData: Record<string, any>;
@@ -17,34 +17,34 @@ const GuarantorsSection: React.FC<GuarantorsSectionProps> = ({
   updateFormData
 }) => {
   const { 
-    guarantors, 
-    currentGuarantorIndex, 
-    setCurrentGuarantorIndex,
-    guarantorFormStep,
-    setGuarantorFormStep,
-    addGuarantor,
-    removeGuarantor,
-    isInGuarantorForm,
-    setIsInGuarantorForm
+    references, 
+    currentReferenceIndex, 
+    setCurrentReferenceIndex,
+    referenceFormStep,
+    setReferenceFormStep,
+    addReference,
+    removeReference,
+    isInReferenceForm,
+    setIsInReferenceForm
   } = useFormContext();
 
-  const handleEditGuarantor = (index: number) => {
-    setCurrentGuarantorIndex(index);
-    setGuarantorFormStep(0);
-    setIsInGuarantorForm(true);
+  const handleEditReference = (index: number) => {
+    setCurrentReferenceIndex(index);
+    setReferenceFormStep(0);
+    setIsInReferenceForm(true);
   };
 
   const handleBackToList = () => {
-    setIsInGuarantorForm(false);
-    setGuarantorFormStep(0);
+    setIsInReferenceForm(false);
+    setReferenceFormStep(0);
   };
 
-  const handleCompleteGuarantor = () => {
+  const handleCompleteReference = () => {
     handleBackToList();
   };
 
-  const getGuarantorStatus = (guarantor: any) => {
-    if (guarantor.basicInfoCompleted) {
+  const getReferenceStatus = (reference: any) => {
+    if (reference.basicInfoCompleted) {
       return 'complete';
     }
     return 'pending';
@@ -53,29 +53,29 @@ const GuarantorsSection: React.FC<GuarantorsSectionProps> = ({
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'complete':
-        return <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"><Check className="h-3 w-3 mr-1" />Completo</Badge>;
+        return <Badge className="bg-primary/10 text-primary border-primary/20"><Check className="h-3 w-3 mr-1" />Completo</Badge>;
       default:
         return <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" />Pendiente</Badge>;
     }
   };
 
-  const currentGuarantor = guarantors[currentGuarantorIndex];
+  const currentReference = references[currentReferenceIndex];
 
-  if (isInGuarantorForm) {
+  if (isInReferenceForm) {
     return (
       <div className="space-y-6">
         {/* Form Header with improved contrast */}
-        <div className="bg-green-600 text-white p-4 rounded-lg">
-          <h2 className="text-xl font-semibold text-white">
-            Información Básica - Referencia {currentGuarantorIndex + 1}
+        <div className="bg-primary text-primary-foreground p-4 rounded-lg">
+          <h2 className="text-xl font-semibold">
+            Información Básica - Referencia {currentReferenceIndex + 1}
           </h2>
-          <p className="text-green-100">
-            Complete la información personal de la referencia
+          <p className="text-primary-foreground/80">
+            Complete la información de la referencia
           </p>
         </div>
 
         {/* Form Content */}
-        <GuarantorBasicInfo guarantorIndex={currentGuarantorIndex} />
+        <ReferenceBasicInfo referenceIndex={currentReferenceIndex} />
 
         {/* Navigation Buttons */}
         <div className="flex justify-between pt-6">
@@ -87,8 +87,8 @@ const GuarantorsSection: React.FC<GuarantorsSectionProps> = ({
           </Button>
           
           <Button 
-            onClick={handleCompleteGuarantor}
-            className="bg-green-600 hover:bg-green-700 text-white"
+            onClick={handleCompleteReference}
+            className="bg-primary hover:bg-primary/90"
           >
             Completar Referencia
           </Button>
@@ -106,21 +106,21 @@ const GuarantorsSection: React.FC<GuarantorsSectionProps> = ({
         </p>
       </div>
 
-      {/* Guarantors List */}
+      {/* References List */}
       <div className="space-y-4">
-        {guarantors.map((guarantor, index) => {
-          const status = getGuarantorStatus(guarantor);
+        {references.map((reference, index) => {
+          const status = getReferenceStatus(reference);
           
           return (
-            <Card key={guarantor.id} className="relative">
+            <Card key={reference.id} className="relative">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5 text-primary" />
                     Referencia {index + 1}
-                    {guarantor.fullName && (
+                    {reference.fullName && (
                       <span className="text-base font-normal text-muted-foreground">
-                        - {guarantor.fullName}
+                        - {reference.fullName}
                       </span>
                     )}
                   </CardTitle>
@@ -129,7 +129,7 @@ const GuarantorsSection: React.FC<GuarantorsSectionProps> = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => removeGuarantor(index)}
+                      onClick={() => removeReference(index)}
                       className="text-red-600 hover:text-red-800"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -139,19 +139,19 @@ const GuarantorsSection: React.FC<GuarantorsSectionProps> = ({
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {guarantor.fullName ? (
+                  {reference.fullName ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                       <div>
-                        <span className="font-medium">DPI:</span> {guarantor.cui || 'No proporcionado'}
+                        <span className="font-medium">Tipo:</span> {reference.referenceType || 'No proporcionado'}
                       </div>
                       <div>
-                        <span className="font-medium">Email:</span> {guarantor.email || 'No proporcionado'}
+                        <span className="font-medium">Teléfono:</span> {reference.phone || 'No proporcionado'}
                       </div>
                       <div>
-                        <span className="font-medium">Teléfono:</span> {guarantor.phone || 'No proporcionado'}
+                        <span className="font-medium">Relación:</span> {reference.relation || 'No proporcionado'}
                       </div>
                       <div>
-                        <span className="font-medium">Profesión:</span> {guarantor.profession || 'No proporcionado'}
+                        <span className="font-medium">Calificación:</span> {reference.rating || 'No proporcionado'}
                       </div>
                     </div>
                   ) : (
@@ -162,7 +162,7 @@ const GuarantorsSection: React.FC<GuarantorsSectionProps> = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleEditGuarantor(index)}
+                      onClick={() => handleEditReference(index)}
                     >
                       <Edit className="h-4 w-4 mr-1" />
                       Editar Información
@@ -182,7 +182,7 @@ const GuarantorsSection: React.FC<GuarantorsSectionProps> = ({
           <p className="text-muted-foreground mb-4">
             Agregar nueva referencia
           </p>
-          <Button onClick={addGuarantor} variant="outline">
+          <Button onClick={addReference} variant="outline">
             <Plus className="h-4 w-4 mr-2" />
             Agregar Referencia
           </Button>
@@ -196,11 +196,11 @@ const GuarantorsSection: React.FC<GuarantorsSectionProps> = ({
             <div>
               <h4 className="font-medium">Estado de Referencias</h4>
               <p className="text-sm text-muted-foreground">
-                {guarantors.filter(g => getGuarantorStatus(g) === 'complete').length} de {guarantors.length} referencias completadas
+                {references.filter(r => getReferenceStatus(r) === 'complete').length} de {references.length} referencias completadas
               </p>
             </div>
             <div className="text-right">
-              <p className="text-sm text-muted-foreground">Actuales: {guarantors.length}</p>
+              <p className="text-sm text-muted-foreground">Actuales: {references.length}</p>
             </div>
           </div>
         </CardContent>

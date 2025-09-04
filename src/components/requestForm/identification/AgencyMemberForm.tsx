@@ -23,13 +23,27 @@ const AgencyMemberForm: React.FC<AgencyMemberFormProps> = ({ formData, updateFor
           <SelectTrigger>
             <SelectValue placeholder="Seleccionar agencia" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="central">Agencia Central</SelectItem>
-            <SelectItem value="zona1">Zona 1</SelectItem>
-            <SelectItem value="zona10">Zona 10</SelectItem>
-            <SelectItem value="mixco">Mixco</SelectItem>
-            <SelectItem value="villa_nueva">Villa Nueva</SelectItem>
-          </SelectContent>
+           <SelectContent>
+             <SelectItem value="agencia_central">Agencia Central</SelectItem>
+             <SelectItem value="agencia_santa_maria">Agencia Santa Maria</SelectItem>
+             <SelectItem value="agencia_guastatoya">Agencia Guastatoya</SelectItem>
+             <SelectItem value="agencia_asuncion_mita">Agencia Asunción Mita</SelectItem>
+             <SelectItem value="agencia_zacapa">Agencia Zacapa</SelectItem>
+             <SelectItem value="agencia_chiquimula">Agencia Chiquimula</SelectItem>
+             <SelectItem value="agencia_jalapa">Agencia Jalapa</SelectItem>
+             <SelectItem value="agencia_mataquescuintla">Agencia Mataquescuintla</SelectItem>
+             <SelectItem value="agencia_monjas">Agencia Monjas</SelectItem>
+             <SelectItem value="agencia_jutiapa">Agencia Jutiapa</SelectItem>
+             <SelectItem value="agencia_nueva_santa_rosa">Agencia Nueva Santa Rosa</SelectItem>
+             <SelectItem value="agencia_puerto_barrios">Agencia Puerto Barrios</SelectItem>
+             <SelectItem value="agencia_el_progreso">Agencia El Progreso</SelectItem>
+             <SelectItem value="agencia_teculutan">Agencia Teculután</SelectItem>
+             <SelectItem value="agencia_rio_dulce">Agencia Río Dulce</SelectItem>
+             <SelectItem value="agencia_gualan">Agencia Gualán</SelectItem>
+             <SelectItem value="agencia_san_jose_acatempa">Agencia San José Acatempa</SelectItem>
+             <SelectItem value="agencia_moyuta">Agencia Moyuta</SelectItem>
+             <SelectItem value="agencia_entre_rios">Agencia Entre Ríos</SelectItem>
+           </SelectContent>
         </Select>
       </div>
 
@@ -39,10 +53,12 @@ const AgencyMemberForm: React.FC<AgencyMemberFormProps> = ({ formData, updateFor
           <SelectTrigger>
             <SelectValue placeholder="Seleccionar tipo" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="socio_activo">Socio activo</SelectItem>
-            <SelectItem value="no_socio">No socio</SelectItem>
-          </SelectContent>
+           <SelectContent>
+             <SelectItem value="A">A</SelectItem>
+             <SelectItem value="B">B</SelectItem>
+             <SelectItem value="C">C</SelectItem>
+             <SelectItem value="D">D</SelectItem>
+           </SelectContent>
         </Select>
       </div>
     </div>
