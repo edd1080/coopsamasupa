@@ -40,9 +40,8 @@ const AgencyMemberForm: React.FC<AgencyMemberFormProps> = ({ formData, updateFor
             <SelectValue placeholder="Seleccionar tipo" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="nuevo">Nuevo</SelectItem>
-            <SelectItem value="activo">Activo</SelectItem>
-            <SelectItem value="reingreso">Reingreso</SelectItem>
+            <SelectItem value="socio_activo">Socio activo</SelectItem>
+            <SelectItem value="no_socio">No socio</SelectItem>
           </SelectContent>
         </Select>
       </div>

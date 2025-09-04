@@ -49,7 +49,7 @@ const StepNavigation: React.FC<StepNavigationProps> = ({
                 ${isActive ? 'bg-primary/10 text-primary shadow-sm' : ''}
                 ${isCompleted && !isActive ? 'text-primary' : ''}
                 ${isPast && !isActive && !isCompleted ? 'text-primary/70' : ''}
-                ${!isClickable ? 'opacity-40' : 'hover:bg-accent'}
+                ${!isClickable ? 'opacity-40' : 'hover:bg-primary/10 hover:text-primary focus-visible:ring-primary'}
               `}
             >
               <div className={`

@@ -75,41 +75,23 @@ const CreditInfoForm: React.FC<CreditInfoFormProps> = ({ formData, updateFormDat
           </div>
         </div>
 
-        {/* Segunda fila - Formas de Pago */}
+        {/* Segunda fila - Forma de Pago Combinada */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="capitalPayment">Forma Pago Capital *</Label>
-            <Select value={formData.capitalPayment || ''} onValueChange={(value) => updateFormData('capitalPayment', value)}>
+            <Label htmlFor="paymentPlan">Forma de pago de capital e interés *</Label>
+            <Select value={formData.paymentPlan || ''} onValueChange={(value) => updateFormData('paymentPlan', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar forma de pago" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="mensual">Mensual</SelectItem>
-                <SelectItem value="bimestral">Bimestral</SelectItem>
-                <SelectItem value="trimestral">Trimestral</SelectItem>
-                <SelectItem value="semestral">Semestral</SelectItem>
-                <SelectItem value="anual">Anual</SelectItem>
-                <SelectItem value="al_vencimiento">Al Vencimiento</SelectItem>
+                <SelectItem value="pago_mensual_fijo">Pago mensual fijo</SelectItem>
+                <SelectItem value="interes_sobre_saldo">Interés sobre saldo</SelectItem>
+                <SelectItem value="cuota_nivelada">Cuota nivelada</SelectItem>
+                <SelectItem value="cuota_fija">Cuota fija</SelectItem>
               </SelectContent>
             </Select>
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="interestPayment">Forma Pago Interés *</Label>
-            <Select value={formData.interestPayment || ''} onValueChange={(value) => updateFormData('interestPayment', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccionar forma de pago" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="mensual">Mensual</SelectItem>
-                <SelectItem value="bimestral">Bimestral</SelectItem>
-                <SelectItem value="trimestral">Trimestral</SelectItem>
-                <SelectItem value="semestral">Semestral</SelectItem>
-                <SelectItem value="anual">Anual</SelectItem>
-                <SelectItem value="al_vencimiento">Al Vencimiento</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <div></div>
         </div>
 
         {/* Tercera fila - Información adicional */}
@@ -129,19 +111,6 @@ const CreditInfoForm: React.FC<CreditInfoFormProps> = ({ formData, updateFormDat
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="memberType">Tipo de Socio</Label>
-            <Select value={formData.memberType || ''} onValueChange={(value) => updateFormData('memberType', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccionar tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="nuevo">Nuevo</SelectItem>
-                <SelectItem value="recurrente">Recurrente</SelectItem>
-                <SelectItem value="preferencial">Preferencial</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </div>
 
         {/* Cuarta fila - Tasa y más información */}

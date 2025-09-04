@@ -39,7 +39,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
     dpi: 'DPI (13 dígitos)',
     dpiExtendedIn: 'DPI Extendido en',
     cua: 'CUA - T24',
-    cif: 'CIF',
+    
     nit: 'NIT',
     // Contacto
     mobilePhone: 'Teléfono Móvil',
@@ -61,7 +61,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
       'dpi',
       'dpiExtendedIn',
       'cua',
-      'cif',
+      
       'nit',
       // Contacto - campos que aparecen en ContactHousingForm
       'mobilePhone',
@@ -254,7 +254,10 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
               <span className="font-medium">Destino:</span> {formData.creditPurpose || 'No especificado'}
             </div>
             <div>
-              <span className="font-medium">Forma Pago Capital:</span> {formData.capitalPayment || 'No especificada'}
+              <span className="font-medium">Forma de Pago:</span> {formData.paymentPlan || 'No especificada'}
+            </div>
+            <div>
+              <span className="font-medium">Tipo de Socio:</span> {formData.memberType || 'No especificado'}
             </div>
           </div>
         </div>

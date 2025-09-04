@@ -31,7 +31,7 @@ export const useCreateTestApplication = () => {
           dpi: '1234567890123',
           dpiExtendedIn: 'Guatemala',
           cua: 'AP12345',
-          cif: '654321',
+          
           nit: '12345678',
           mobilePhone: '50123456',
           email: 'andrea.prueba@test.com',
@@ -43,8 +43,7 @@ export const useCreateTestApplication = () => {
           creditPurpose: 'Capital de Trabajo',
           requestedAmount: '25000',
           termMonths: '24',
-          capitalPayment: 'Mensual',
-          interestPayment: 'Mensual',
+          paymentPlan: 'pago_mensual_fijo',
           agency: 'Zona 1',
           memberType: 'Activo',
           age: '28',

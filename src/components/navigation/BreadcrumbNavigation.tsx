@@ -26,7 +26,7 @@ const BreadcrumbNavigation = () => {
       'identification': 'Identificación y Contacto',
       'finances': 'Finanzas y Patrimonio',
       'business': 'Negocio y Perfil Económico',
-      'guarantors': 'Garantías, Fiadores y Referencias',
+      'guarantors': 'Referencias Personales',
       'documents': 'Documentos y Cierre',
       'review': 'Revisión Final'
     };

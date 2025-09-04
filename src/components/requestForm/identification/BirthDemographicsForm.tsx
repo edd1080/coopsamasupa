@@ -108,11 +108,11 @@ const BirthDemographicsForm: React.FC<BirthDemographicsFormProps> = ({ formData,
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="maya">Maya</SelectItem>
+              <SelectItem value="ladino">Ladino</SelectItem>
               <SelectItem value="garifuna">Garífuna</SelectItem>
               <SelectItem value="xinca">Xinca</SelectItem>
-              <SelectItem value="mestizo">Mestizo</SelectItem>
-              <SelectItem value="ladino">Ladino</SelectItem>
               <SelectItem value="otro">Otro</SelectItem>
+              <SelectItem value="prefiero_no_responder">Prefiero no responder</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -124,12 +124,15 @@ const BirthDemographicsForm: React.FC<BirthDemographicsFormProps> = ({ formData,
               <SelectValue placeholder="Seleccionar nivel" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="primary">Primaria</SelectItem>
-              <SelectItem value="secondary">Secundaria</SelectItem>
-              <SelectItem value="highschool">Bachillerato</SelectItem>
-              <SelectItem value="technical">Técnico</SelectItem>
-              <SelectItem value="university">Universidad</SelectItem>
-              <SelectItem value="postgraduate">Postgrado</SelectItem>
+              <SelectItem value="sin_escolaridad">Sin escolaridad</SelectItem>
+              <SelectItem value="primaria_incompleta">Primaria incompleta</SelectItem>
+              <SelectItem value="primaria_completa">Primaria completa</SelectItem>
+              <SelectItem value="secundaria_incompleta">Secundaria incompleta</SelectItem>
+              <SelectItem value="secundaria_completa">Secundaria completa</SelectItem>
+              <SelectItem value="universitaria_incompleta">Universitaria incompleta</SelectItem>
+              <SelectItem value="universitaria_completa">Universitaria completa</SelectItem>
+              <SelectItem value="tecnica">Técnica</SelectItem>
+              <SelectItem value="prefiero_no_responder">Prefiero no responder</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -141,16 +144,16 @@ const BirthDemographicsForm: React.FC<BirthDemographicsFormProps> = ({ formData,
           <Label htmlFor="profession">Profesión *</Label>
           <Select value={formData.profession || ''} onValueChange={(value) => updateFormData('profession', value)}>
             <SelectTrigger>
-              <SelectValue placeholder="Seleccionar profesión" />
+              <SelectValue placeholder="Seleccionar profesión (Catálogo en desarrollo)" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="agricultor">Agricultor</SelectItem>
+              <SelectItem value="comerciante">Comerciante</SelectItem>
+              <SelectItem value="maestro">Maestro</SelectItem>
               <SelectItem value="medico">Médico</SelectItem>
               <SelectItem value="ingeniero">Ingeniero</SelectItem>
               <SelectItem value="abogado">Abogado</SelectItem>
               <SelectItem value="contador">Contador</SelectItem>
-              <SelectItem value="maestro">Maestro</SelectItem>
-              <SelectItem value="comerciante">Comerciante</SelectItem>
-              <SelectItem value="agricultor">Agricultor</SelectItem>
               <SelectItem value="otro">Otro</SelectItem>
             </SelectContent>
           </Select>
@@ -160,7 +163,7 @@ const BirthDemographicsForm: React.FC<BirthDemographicsFormProps> = ({ formData,
           <Label htmlFor="occupation">Ocupación *</Label>
           <Select value={formData.occupation || ''} onValueChange={(value) => updateFormData('occupation', value)}>
             <SelectTrigger>
-              <SelectValue placeholder="Seleccionar ocupación" />
+              <SelectValue placeholder="Seleccionar ocupación (Catálogo en desarrollo)" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="empleado">Empleado</SelectItem>

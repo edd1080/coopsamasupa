@@ -74,7 +74,7 @@ interface FormData {
   nit: string;
   dpiExtendedIn: string;
   cua: string;
-  cif: string;
+  
   
   // Contact and housing
   mobilePhone: string;
@@ -185,7 +185,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     nit: '',
     dpiExtendedIn: '',
     cua: '',
-    cif: '',
+    
     
     // Birth Demographics and Disability Information
     birthDate: null,
@@ -226,6 +226,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     termMonths: '',
     capitalPayment: '',
     interestPayment: '',
+    paymentPlan: '',
     capitalAmortization: '',
     memberType: '',
     interestRate: '',

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import AgencyMemberForm from './AgencyMemberForm';
 
 interface BasicDataFormProps {
   formData: any;
@@ -185,6 +185,11 @@ const BasicDataForm: React.FC<BasicDataFormProps> = ({ formData, updateFormData 
           <div></div>
         </div>
 
+        {/* Include Agency and Member Type */}
+        <div className="space-y-6">
+          <AgencyMemberForm formData={formData} updateFormData={updateFormData} />
+        </div>
+
         {/* Hidden fields - kept in code but not displayed */}
         <div style={{ display: 'none' }}>
           <Input 
@@ -192,13 +197,6 @@ const BasicDataForm: React.FC<BasicDataFormProps> = ({ formData, updateFormData 
             onChange={(e) => {
               const value = e.target.value.replace(/\D/g, '');
               updateFormData('cua', value);
-            }}
-          />
-          <Input 
-            value={formData.cif || ''} 
-            onChange={(e) => {
-              const value = e.target.value.replace(/\D/g, '');
-              updateFormData('cif', value);
             }}
           />
         </div>

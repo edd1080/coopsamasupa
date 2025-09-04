@@ -8,12 +8,12 @@ export const fieldNavigationMap = {
   'dpi': { section: 'identification', step: 0, field: 'dpi' },
   'nit': { section: 'identification', step: 0, field: 'nit' },
   'cua': { section: 'identification', step: 0, field: 'cua' },
-  'cif': { section: 'identification', step: 0, field: 'cif' },
+  
   'dpiExtendedIn': { section: 'identification', step: 0, field: 'dpiExtendedIn' },
   'mobilePhone': { section: 'identification', step: 1, field: 'mobilePhone' },
   'email': { section: 'identification', step: 1, field: 'email' },
   'address': { section: 'identification', step: 1, field: 'address' },
-  'agency': { section: 'identification', step: 2, field: 'agency' },
+  'agency': { section: 'identification', step: 0, field: 'agency' },
   
   // Financial section fields
   'ingresoPrincipal': { section: 'finances', step: 0, field: 'ingresoPrincipal' },

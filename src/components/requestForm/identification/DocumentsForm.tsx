@@ -120,13 +120,6 @@ const DocumentsForm: React.FC<DocumentsFormProps> = ({ formData, updateFormData 
             updateFormData('cua', value);
           }}
         />
-        <Input 
-          value={formData.cif || ''} 
-          onChange={(e) => {
-            const value = e.target.value.replace(/\D/g, '');
-            updateFormData('cif', value);
-          }}
-        />
       </div>
     </>
   );
