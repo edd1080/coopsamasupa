@@ -120,60 +120,7 @@ const Index = () => {
         </div>
 
         {/* Weekly Progress Chart */}
-        <Card className="mb-6">
-          <CardHeader className="flex flex-row items-center space-y-0 pb-2">
-            
-            <div className="flex flex-col">
-              <CardTitle className="text-lg">Progreso Semanal</CardTitle>
-              <p className="text-sm text-muted-foreground">Solicitudes procesadas</p>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {weeklyLoading ? <div className="h-48 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2"></div>
-                  <p className="text-sm text-muted-foreground">Cargando datos...</p>
-                </div>
-              </div> : <ChartContainer config={{
-            solicitudes: {
-              label: "Solicitudes",
-              color: "#0B63F6"
-            }
-          }} className="h-48">
-                <BarChart data={weeklyData} margin={{
-              top: 20,
-              right: 20,
-              left: 20,
-              bottom: 40
-            }} barCategoryGap="30%">
-                  <XAxis dataKey="day" tick={props => {
-                const {
-                  x,
-                  y,
-                  payload,
-                  index
-                } = props;
-                const data = weeklyData?.[index];
-                return <g>
-                          <text x={x} y={y + 10} textAnchor="middle" className="fill-foreground text-sm font-medium">
-                            {payload.value}
-                          </text>
-                          <text x={x} y={y + 25} textAnchor="middle" className="fill-muted-foreground text-xs">
-                            {data?.solicitudes || 0}
-                          </text>
-                        </g>;
-              }} axisLine={false} tickLine={false} interval={0} />
-                  <Bar dataKey="solicitudes" barSize={20} radius={[8, 8, 0, 0]}>
-                    {weeklyData?.map((entry, index) => {
-                  const maxValue = Math.max(...(weeklyData?.map(d => d.solicitudes) || [0]));
-                  const isMaxValue = entry.solicitudes === maxValue && maxValue > 0;
-                  return <Cell key={`cell-${index}`} fill={isMaxValue ? "#22C55E" : "#0B63F6"} />;
-                })}
-                  </Bar>
-                </BarChart>
-              </ChartContainer>}
-          </CardContent>
-        </Card>
+        
         
         <div className="mb-6">
           <div className="cursor-pointer" onClick={handleNewApplication}>
