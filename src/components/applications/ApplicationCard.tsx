@@ -9,7 +9,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Calendar, FileText, Edit, Trash2, MoreVertical, CheckCircle, AlertCircle, BarChart3, Banknote, FileSignature, UserCheck, FileImage, Users, X, Clock, Eye } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { formatApplicationId } from '@/utils/applicationIdGenerator';
-
 interface Application {
   id: string;
   clientName: string;
@@ -21,14 +20,12 @@ interface Application {
   stage: string;
   isDraft?: boolean;
 }
-
 interface ApplicationCardProps {
   application: Application;
   onEdit: (id: string, clientName: string, e?: React.MouseEvent) => void;
   onCancel: (id: string, clientName: string, e?: React.MouseEvent) => void;
   onDelete: (id: string, clientName: string, e?: React.MouseEvent) => void;
 }
-
 const ApplicationCard: React.FC<ApplicationCardProps> = ({
   application,
   onEdit,
@@ -36,12 +33,12 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
   onDelete
 }) => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   const handleViewApplication = (id: string) => {
     // Para ambos (borradores y aplicaciones completas), ir a la página de detalles
     navigate(`/applications/${id}`);
-    
     const itemType = application.status === 'draft' ? 'borrador' : 'solicitud';
     toast({
       title: `Abriendo ${itemType}`,
@@ -49,10 +46,9 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
       duration: 3000
     });
   };
-
   const handleEditApplication = (id: string, clientName: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    
+
     // Tanto borradores como aplicaciones completas van al formulario para edición
     navigate(`/request-form/${id}`);
     toast({
@@ -61,10 +57,9 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
       duration: 3000
     });
   };
-
   const handleContinueApplication = (id: string, clientName: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    
+
     // Ir directamente al formulario para continuar
     navigate(`/request-form/${id}`);
     toast({
@@ -73,17 +68,15 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
       duration: 3000
     });
   };
-
   const getStatusBadge = (status: string, isDraft?: boolean) => {
     // Para borradores, mostrar como "Activo" pero con indicador visual sutil
     if (status === 'draft') {
       return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 flex items-center gap-1 text-sm px-3 py-1">
           <BarChart3 className="h-4 w-4" />
           <span>Activo</span>
-          <span className="text-xs opacity-70">(Borrador)</span>
+          
         </Badge>;
     }
-    
     switch (status) {
       case 'pending':
         return <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 flex items-center gap-1 text-sm px-3 py-1">
@@ -114,7 +107,6 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
         return null;
     }
   };
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('es-GT', {
@@ -123,7 +115,6 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
       year: 'numeric'
     }).format(date);
   };
-
   const getStageIcon = (stage: string) => {
     switch (stage) {
       case 'Información Financiera':
@@ -140,11 +131,8 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
         return null;
     }
   };
-
   const isDraft = application.status === 'draft';
-
-  return (
-    <ContextMenu>
+  return <ContextMenu>
       <ContextMenuTrigger>
         <Card className="card-hover cursor-pointer group relative" onClick={() => handleViewApplication(application.id)}>
           <CardContent className="p-4">
@@ -172,23 +160,17 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
                         <Eye className="mr-2 h-4 w-4" />
                         <span>Ver detalles</span>
                       </DropdownMenuItem>
-                      {isDraft ? (
-                        <DropdownMenuItem onClick={e => handleContinueApplication(application.id, application.clientName, e)}>
+                      {isDraft ? <DropdownMenuItem onClick={e => handleContinueApplication(application.id, application.clientName, e)}>
                           <Edit className="mr-2 h-4 w-4" />
                           <span>Continuar</span>
-                        </DropdownMenuItem>
-                      ) : (
-                        <DropdownMenuItem onClick={e => handleEditApplication(application.id, application.clientName, e)}>
+                        </DropdownMenuItem> : <DropdownMenuItem onClick={e => handleEditApplication(application.id, application.clientName, e)}>
                           <Edit className="mr-2 h-4 w-4" />
                           <span>Editar</span>
-                        </DropdownMenuItem>
-                      )}
-                      {application.status !== 'cancelled' && application.status !== 'approved' && (
-                        <DropdownMenuItem onClick={e => onCancel(application.id, application.clientName, e)}>
+                        </DropdownMenuItem>}
+                      {application.status !== 'cancelled' && application.status !== 'approved' && <DropdownMenuItem onClick={e => onCancel(application.id, application.clientName, e)}>
                           <X className="mr-2 h-4 w-4" />
                           <span>Cancelar solicitud</span>
-                        </DropdownMenuItem>
-                      )}
+                        </DropdownMenuItem>}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={e => onDelete(application.id, application.clientName, e)}>
                         <Trash2 className="mr-2 h-4 w-4" />
@@ -226,31 +208,23 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
           <Eye className="mr-2 h-4 w-4" />
           <span>Ver detalles</span>
         </ContextMenuItem>
-        {isDraft ? (
-          <ContextMenuItem onClick={e => handleContinueApplication(application.id, application.clientName, e)}>
+        {isDraft ? <ContextMenuItem onClick={e => handleContinueApplication(application.id, application.clientName, e)}>
             <Edit className="mr-2 h-4 w-4" />
             <span>Continuar</span>
-          </ContextMenuItem>
-        ) : (
-          <ContextMenuItem onClick={e => onEdit(application.id, application.clientName, e)}>
+          </ContextMenuItem> : <ContextMenuItem onClick={e => onEdit(application.id, application.clientName, e)}>
             <Edit className="mr-2 h-4 w-4" />
             <span>Editar</span>
-          </ContextMenuItem>
-        )}
-        {application.status !== 'cancelled' && application.status !== 'approved' && (
-          <ContextMenuItem onClick={e => onCancel(application.id, application.clientName, e)}>
+          </ContextMenuItem>}
+        {application.status !== 'cancelled' && application.status !== 'approved' && <ContextMenuItem onClick={e => onCancel(application.id, application.clientName, e)}>
             <X className="mr-2 h-4 w-4" />
             <span>Cancelar solicitud</span>
-          </ContextMenuItem>
-        )}
+          </ContextMenuItem>}
         <ContextMenuSeparator />
         <ContextMenuItem className="text-destructive focus:text-destructive" onClick={e => onDelete(application.id, application.clientName, e)}>
           <Trash2 className="mr-2 h-4 w-4" />
           <span>Eliminar</span>
         </ContextMenuItem>
       </ContextMenuContent>
-    </ContextMenu>
-  );
+    </ContextMenu>;
 };
-
 export default ApplicationCard;
