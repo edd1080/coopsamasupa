@@ -47,7 +47,7 @@ const StepNavigation: React.FC<StepNavigationProps> = ({
               className={`
                 flex items-center gap-2 py-2 px-3 min-w-fit rounded-lg transition-all duration-200
                 ${isActive ? 'bg-primary/10 text-primary shadow-sm' : ''}
-                ${isCompleted && !isActive ? 'text-green-600 dark:text-green-400' : ''}
+                ${isCompleted && !isActive ? 'text-primary' : ''}
                 ${isPast && !isActive && !isCompleted ? 'text-primary/70' : ''}
                 ${!isClickable ? 'opacity-40' : 'hover:bg-accent'}
               `}
@@ -55,7 +55,7 @@ const StepNavigation: React.FC<StepNavigationProps> = ({
               <div className={`
                 flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium
                 ${isActive ? 'bg-primary text-primary-foreground' : ''} 
-                ${isCompleted && !isActive ? 'bg-green-600 text-white dark:bg-green-500' : ''}
+                ${isCompleted && !isActive ? 'bg-primary/80 text-primary-foreground' : ''}
                 ${!isActive && !isCompleted ? 'bg-muted border' : ''}
               `}>
                 {isCompleted ? <CheckCircle size={14} /> : index + 1}
