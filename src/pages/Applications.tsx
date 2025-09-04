@@ -136,19 +136,7 @@ const Applications = () => {
         <ApplicationsHeader />
         
         {/* Debug info and refresh button */}
-        <div className="mb-4 p-3 bg-gray-50 rounded-lg border py-[12px] my-[16px]">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600">
-              <span>Usuario: {user?.id?.slice(0, 8)}... | </span>
-              <span>Solicitudes: {applications?.length || 0} | </span>
-              <span>Cargando: {isLoading ? 'Sí' : 'No'}</span>
-            </div>
-            <Button onClick={handleRefresh} variant="outline" size="sm" disabled={isLoading} className="flex items-center gap-2">
-              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-              Actualizar
-            </Button>
-          </div>
-        </div>
+        
         
         <ApplicationsList applications={applications || []} isLoading={isLoading} onEdit={editApplication} onCancel={handleCancelApplication} onDelete={handleDeleteApplication} />
       </main>
