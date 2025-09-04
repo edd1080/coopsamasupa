@@ -124,7 +124,7 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
           </div>
         </div>
 
-        {/* Género y Estado Civil */}
+        {/* Género */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="gender">Género *</Label>
@@ -139,26 +139,7 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
               </SelectContent>
             </Select>
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="civilStatus">Estado Civil *</Label>
-            <Select 
-              value={formData.civilStatus || ''} 
-              onValueChange={(value) => updateFormData('civilStatus', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccionar estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="casado">Casado</SelectItem>
-                <SelectItem value="divorciado">Divorciado</SelectItem>
-                <SelectItem value="nd">N/D</SelectItem>
-                <SelectItem value="soltero">Soltero</SelectItem>
-                <SelectItem value="unido">Unido</SelectItem>
-                <SelectItem value="viudo">Viudo</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <div></div>
         </div>
 
         {/* Información del Cónyuge - aparece cuando se selecciona casado */}
@@ -215,7 +196,7 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
           </div>
         </div>
 
-        {/* DPI Extendido en */}
+        {/* DPI Extendido en y Estado Civil */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="dpiExtendedIn">DPI Extendido en *</Label>
@@ -232,7 +213,26 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
               </SelectContent>
             </Select>
           </div>
-          <div></div>
+
+          <div className="space-y-2">
+            <Label htmlFor="civilStatus">Estado Civil *</Label>
+            <Select 
+              value={formData.civilStatus || ''} 
+              onValueChange={(value) => updateFormData('civilStatus', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="casado">Casado(a)</SelectItem>
+                <SelectItem value="divorciado">Divorciado(a)</SelectItem>
+                <SelectItem value="nd">N/D</SelectItem>
+                <SelectItem value="soltero">Soltero(a)</SelectItem>
+                <SelectItem value="unido">Unido(a)</SelectItem>
+                <SelectItem value="viudo">Viudo(a)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
     </div>

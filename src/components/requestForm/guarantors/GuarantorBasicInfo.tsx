@@ -36,9 +36,9 @@ const GuarantorBasicInfo: React.FC<GuarantorBasicInfoProps> = ({ guarantorIndex 
   return (
     <div className="space-y-6">
       <div className="border-b pb-4">
-        <h3 className="text-lg font-semibold">Información Básica del Fiador {guarantorIndex + 1}</h3>
+        <h3 className="text-lg font-semibold">Información Básica de la Referencia {guarantorIndex + 1}</h3>
         <p className="text-muted-foreground">
-          Complete la información personal y de contacto del fiador
+          Complete la información personal y de contacto de la referencia
         </p>
       </div>
 
@@ -57,7 +57,7 @@ const GuarantorBasicInfo: React.FC<GuarantorBasicInfoProps> = ({ guarantorIndex 
                 id={`fullName-${guarantorIndex}`}
                 value={guarantor.fullName}
                 onChange={(e) => handleInputChange('fullName', e.target.value)}
-                placeholder="Nombre completo del fiador"
+                placeholder="Nombre completo de la referencia"
                 className="w-full"
               />
             </div>

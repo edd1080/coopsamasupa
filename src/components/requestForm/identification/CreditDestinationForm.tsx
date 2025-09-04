@@ -81,43 +81,24 @@ const CreditDestinationForm: React.FC<CreditDestinationFormProps> = ({ formData,
           </div>
         </div>
 
-        {/* Segunda fila - Destino Grupo y Crédito */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="destinationGroup">Destino Grupo</Label>
-            <Select value={formData.destinationGroup || ''} onValueChange={(value) => updateFormData('destinationGroup', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccionar grupo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="agricultura">Agricultura</SelectItem>
-                <SelectItem value="ganaderia">Ganadería</SelectItem>
-                <SelectItem value="comercio">Comercio</SelectItem>
-                <SelectItem value="industria">Industria</SelectItem>
-                <SelectItem value="servicios">Servicios</SelectItem>
-                <SelectItem value="construccion">Construcción</SelectItem>
-                <SelectItem value="transporte">Transporte</SelectItem>
-                <SelectItem value="otros">Otros</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="creditDestination">Destino Crédito</Label>
-            <Select value={formData.creditDestination || ''} onValueChange={(value) => updateFormData('creditDestination', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccionar destino" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="capital_trabajo">Capital de Trabajo</SelectItem>
-                <SelectItem value="activo_fijo">Activo Fijo</SelectItem>
-                <SelectItem value="expansion">Expansión</SelectItem>
-                <SelectItem value="mejoras">Mejoras</SelectItem>
-                <SelectItem value="innovacion">Innovación</SelectItem>
-                <SelectItem value="emergencia">Emergencia</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        {/* Segunda fila - Destino Grupo */}
+        <div className="space-y-2">
+          <Label htmlFor="destinationGroup">Destino Grupo</Label>
+          <Select value={formData.destinationGroup || ''} onValueChange={(value) => {
+            updateFormData('destinationGroup', value);
+            // Reset credit destination when group changes
+            updateFormData('creditDestination', '');
+          }}>
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccionar grupo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="grupo_consumo">Grupo Consumo</SelectItem>
+              <SelectItem value="grupo_microcredito">Grupo MicroCredito</SelectItem>
+              <SelectItem value="grupo_productivo">Grupo Productivo</SelectItem>
+              <SelectItem value="grupo_vivienda">Grupo Vivienda</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Tercera fila - Categoría del destino */}
@@ -135,6 +116,46 @@ const CreditDestinationForm: React.FC<CreditDestinationFormProps> = ({ formData,
               <SelectItem value="educacion">Educación</SelectItem>
               <SelectItem value="salud">Salud</SelectItem>
               <SelectItem value="otros">Otros</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Cuarta fila - Destino Crédito (condicional) */}
+        <div className="space-y-2">
+          <Label htmlFor="creditDestination">Destino Crédito</Label>
+          <Select 
+            value={formData.creditDestination || ''} 
+            onValueChange={(value) => updateFormData('creditDestination', value)}
+            disabled={!formData.destinationGroup}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccionar destino" />
+            </SelectTrigger>
+            <SelectContent>
+              {formData.destinationGroup === 'grupo_consumo' && (
+                <>
+                  <SelectItem value="consumo">Consumo</SelectItem>
+                  <SelectItem value="novacion">Novación</SelectItem>
+                  <SelectItem value="reestructura">Reestructura</SelectItem>
+                  <SelectItem value="tarjeta_credito">Tarjeta de Crédito</SelectItem>
+                </>
+              )}
+              {(formData.destinationGroup === 'grupo_microcredito' || formData.destinationGroup === 'grupo_productivo') && (
+                <>
+                  <SelectItem value="agricultura">Agricultura</SelectItem>
+                  <SelectItem value="agroindustria">Agroindustria</SelectItem>
+                  <SelectItem value="comercio">Comercio</SelectItem>
+                  <SelectItem value="industria">Industria</SelectItem>
+                  <SelectItem value="pecuario_avicola">Pecuario/Avícola</SelectItem>
+                  <SelectItem value="reestructura">Reestructura</SelectItem>
+                  <SelectItem value="servicios">Servicios</SelectItem>
+                </>
+              )}
+              {formData.destinationGroup === 'grupo_vivienda' && (
+                <>
+                  <SelectItem value="vivienda">Vivienda</SelectItem>
+                </>
+              )}
             </SelectContent>
           </Select>
         </div>

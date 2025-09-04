@@ -28,9 +28,9 @@ export const steps = [
   },
   { 
     id: 'guarantors', 
-    title: 'Garantías, Fiadores y Referencias', 
+    title: 'Referencias Personales', 
     icon: React.createElement(Users, { size: 18 }),
-    description: 'Fiadores y referencias',
+    description: 'Referencias personales',
     component: 'GuarantorsSection'
   },
   { 

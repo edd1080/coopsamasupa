@@ -56,13 +56,14 @@ const ContactHousingForm: React.FC<ContactHousingFormProps> = ({ formData, updat
 
   const getStabilityBadge = (stability: string) => {
     switch (stability) {
-      case 'more5years':
-      case '5years':
+      case 'mayor_3':
         return <Badge variant="default" className="bg-green-100 text-green-800 ml-2">Excelente</Badge>;
-      case '2years':
+      case '2_3':
         return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 ml-2">Buena</Badge>;
-      case '1year':
+      case '1_2':
         return <Badge variant="outline" className="bg-orange-100 text-orange-800 ml-2">Regular</Badge>;
+      case 'menor_1':
+        return <Badge variant="outline" className="bg-red-100 text-red-800 ml-2">Bajo</Badge>;
       default:
         return null;
     }
@@ -234,11 +235,10 @@ const ContactHousingForm: React.FC<ContactHousingFormProps> = ({ formData, updat
                 <SelectValue placeholder="Tipo de vivienda" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="own">Propia</SelectItem>
-                <SelectItem value="rent">Alquilada</SelectItem>
-                <SelectItem value="family">Familiar</SelectItem>
-                <SelectItem value="mortgage">Hipotecada</SelectItem>
-                <SelectItem value="other">Otra</SelectItem>
+                <SelectItem value="alquilada">Alquilada</SelectItem>
+                <SelectItem value="familiar">Familiar</SelectItem>
+                <SelectItem value="pagando">Pagando</SelectItem>
+                <SelectItem value="propia">Propia</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -254,11 +254,10 @@ const ContactHousingForm: React.FC<ContactHousingFormProps> = ({ formData, updat
                   <SelectValue placeholder="Tiempo en la dirección actual" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1year">1 año</SelectItem>
-                  <SelectItem value="2years">2 años</SelectItem>
-                  <SelectItem value="3years">3 años</SelectItem>
-                  <SelectItem value="5years">5 años</SelectItem>
-                  <SelectItem value="more5years">Más de 5 años</SelectItem>
+                  <SelectItem value="menor_1">Menor a 1 año</SelectItem>
+                  <SelectItem value="1_2">1 a 2 años</SelectItem>
+                  <SelectItem value="2_3">2 a 3 años</SelectItem>
+                  <SelectItem value="mayor_3">Mayor a 3 años</SelectItem>
                 </SelectContent>
               </Select>
               {formData.residenceStability && getStabilityBadge(formData.residenceStability)}

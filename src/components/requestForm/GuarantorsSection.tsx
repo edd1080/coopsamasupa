@@ -67,10 +67,10 @@ const GuarantorsSection: React.FC<GuarantorsSectionProps> = ({
         {/* Form Header with improved contrast */}
         <div className="bg-green-600 text-white p-4 rounded-lg">
           <h2 className="text-xl font-semibold text-white">
-            Información Básica - Fiador {currentGuarantorIndex + 1}
+            Información Básica - Referencia {currentGuarantorIndex + 1}
           </h2>
           <p className="text-green-100">
-            Complete la información personal del fiador
+            Complete la información personal de la referencia
           </p>
         </div>
 
@@ -90,7 +90,7 @@ const GuarantorsSection: React.FC<GuarantorsSectionProps> = ({
             onClick={handleCompleteGuarantor}
             className="bg-green-600 hover:bg-green-700 text-white"
           >
-            Completar Fiador
+            Completar Referencia
           </Button>
         </div>
       </div>
@@ -100,9 +100,9 @@ const GuarantorsSection: React.FC<GuarantorsSectionProps> = ({
   return (
     <div className="space-y-6">
       <div className="border-b pb-4">
-        <h2 className="text-xl font-semibold">Garantías, Fiadores y Referencias</h2>
+        <h2 className="text-xl font-semibold">Referencias Personales</h2>
         <p className="text-muted-foreground">
-          Se requieren mínimo 2 fiadores para la solicitud de crédito
+          Agregue las referencias personales del solicitante
         </p>
       </div>
 
@@ -117,7 +117,7 @@ const GuarantorsSection: React.FC<GuarantorsSectionProps> = ({
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5 text-primary" />
-                    Fiador {index + 1}
+                    Referencia {index + 1}
                     {guarantor.fullName && (
                       <span className="text-base font-normal text-muted-foreground">
                         - {guarantor.fullName}
@@ -126,16 +126,14 @@ const GuarantorsSection: React.FC<GuarantorsSectionProps> = ({
                   </CardTitle>
                   <div className="flex items-center gap-2">
                     {getStatusBadge(status)}
-                    {guarantors.length > 2 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeGuarantor(index)}
-                        className="text-red-600 hover:text-red-800"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeGuarantor(index)}
+                      className="text-red-600 hover:text-red-800"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               </CardHeader>
@@ -182,11 +180,11 @@ const GuarantorsSection: React.FC<GuarantorsSectionProps> = ({
         <CardContent className="flex flex-col items-center justify-center py-8">
           <Plus className="h-8 w-8 text-muted-foreground mb-2" />
           <p className="text-muted-foreground mb-4">
-            {guarantors.length === 2 ? 'Agregar fiador adicional (opcional)' : 'Agregar nuevo fiador'}
+            Agregar nueva referencia
           </p>
           <Button onClick={addGuarantor} variant="outline">
             <Plus className="h-4 w-4 mr-2" />
-            Agregar Fiador
+            Agregar Referencia
           </Button>
         </CardContent>
       </Card>
@@ -196,13 +194,12 @@ const GuarantorsSection: React.FC<GuarantorsSectionProps> = ({
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="font-medium">Estado de Fiadores</h4>
+              <h4 className="font-medium">Estado de Referencias</h4>
               <p className="text-sm text-muted-foreground">
-                {guarantors.filter(g => getGuarantorStatus(g) === 'complete').length} de {guarantors.length} fiadores completados
+                {guarantors.filter(g => getGuarantorStatus(g) === 'complete').length} de {guarantors.length} referencias completadas
               </p>
             </div>
             <div className="text-right">
-              <p className="text-sm text-muted-foreground">Requeridos: 2 mínimo</p>
               <p className="text-sm text-muted-foreground">Actuales: {guarantors.length}</p>
             </div>
           </div>
