@@ -131,7 +131,7 @@ const Index = () => {
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden'
             }}>
-                <FileSpreadsheet className="h-5 w-5 text-primary flex-shrink-0" />
+                
                 Nueva Solicitud
               </h3>
               <p className="text-muted-foreground mb-4 whitespace-normal break-words">Crear una nueva solicitud de crédito</p>
