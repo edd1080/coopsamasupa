@@ -17,16 +17,16 @@
     --popover: 0 0% 100%; /* Blanco puro */
     --popover-foreground: 219 39% 11%; /* Gris oscuro basado en el azul */
 
-    /* Primary: Azul principal #19418A */
-    --primary: 219 69% 32%;
+    /* Primary: Azul principal #2280FF */
+    --primary: 216 100% 57%;
     --primary-foreground: 0 0% 100%;
 
     /* Secondary: Gris claro más definido */
     --secondary: 210 16% 90%;
     --secondary-foreground: 219 39% 11%;
 
-    /* Accent: Verde principal #35CE55 */
-    --accent: 112 60% 51%;
+    /* Accent: Verde principal #60D39C */
+    --accent: 152 57% 60%;
     --accent-foreground: 0 0% 100%;
 
     --muted: 210 16% 93%; /* Gris claro */
@@ -37,10 +37,10 @@
 
     --border: 210 20% 88%;
     --input: 210 20% 88%;
-    --ring: 219 69% 32%; /* Mismo que primary */
+    --ring: 216 100% 57%; /* Mismo que primary */
 
     /* Success, Warning, Error */
-    --success: 112 60% 51%; /* Verde accent para success */
+    --success: 152 57% 60%; /* Verde accent para success */
     --warning: 45 93% 47%; /* Amarillo vibrante */
     --error: 0 72% 51%; /* Rojo vibrante */
 
@@ -69,8 +69,8 @@
     --secondary: 219 30% 18%;
     --secondary-foreground: 210 18% 87%;
 
-    /* Accent: Verde #35CE55 para dark mode */
-    --accent: 112 60% 51%;
+    /* Accent: Verde #60D39C para dark mode */
+    --accent: 152 57% 60%;
     --accent-foreground: 219 39% 11%;
 
     --muted: 219 30% 18%; /* Gris medio basado en azul */
@@ -84,7 +84,7 @@
     --ring: 217 91% 60%; /* Mismo que primary */
 
     /* Success, Warning, Error para dark mode */
-    --success: 112 60% 51%; /* Verde accent */
+    --success: 152 57% 60%; /* Verde accent */
     --warning: 45 93% 47%; /* Amarillo vibrante */
     --error: 0 72% 51%; /* Rojo vibrante */
 

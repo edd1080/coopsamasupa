@@ -102,6 +102,7 @@ interface FormData {
   ingresoPrincipal: string;
   ingresoSecundario: string;
   comentarioIngreso: string;
+  incomeSources: Array<{ id: string; type: string; description?: string; amount: string }>;
   alimentacion: string;
   vestuario: string;
   serviciosBasicos: string;
@@ -268,6 +269,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     ingresoPrincipal: '',
     ingresoSecundario: '',
     comentarioIngreso: '',
+    incomeSources: [],
     alimentacion: '',
     vestuario: '',
     serviciosBasicos: '',

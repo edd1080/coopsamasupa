@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Calculator, TrendingUp, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
+import { Calculator, TrendingUp, CheckCircle, AlertCircle, XCircle, Plus, Edit, Trash2 } from 'lucide-react';
 import { formatCurrency, normalizeDecimalInput } from '@/utils/formatters';
 import CurrencyInput from '@/components/ui/currency-input';
 import { 
@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface FinancialAnalysisProps {
   formData: any;
@@ -36,12 +37,66 @@ const expenseCategories = [
 ];
 
 const FinancialAnalysis: React.FC<FinancialAnalysisProps> = ({ formData, updateFormData }) => {
+  const [currentIncomeSource, setCurrentIncomeSource] = React.useState({
+    type: '',
+    description: '',
+    amount: ''
+  });
+  const [editingIndex, setEditingIndex] = React.useState<number | null>(null);
+
   const handleCurrencyChange = (field: string, value: string) => {
     updateFormData(field, value);
   };
 
-  // Calculate totals
-  const totalIncome = (parseFloat(formData.ingresoPrincipal || '0') + parseFloat(formData.ingresoSecundario || '0'));
+  const addOrUpdateIncomeSource = () => {
+    if (!currentIncomeSource.type || !currentIncomeSource.amount) return;
+
+    const incomeSources = formData.incomeSources || [];
+    
+    if (editingIndex !== null) {
+      // Update existing
+      const updated = [...incomeSources];
+      updated[editingIndex] = { ...currentIncomeSource, id: updated[editingIndex].id };
+      updateFormData('incomeSources', updated);
+    } else {
+      // Add new
+      const newSource = {
+        ...currentIncomeSource,
+        id: Date.now().toString()
+      };
+      updateFormData('incomeSources', [...incomeSources, newSource]);
+    }
+
+    // Reset form
+    setCurrentIncomeSource({ type: '', description: '', amount: '' });
+    setEditingIndex(null);
+  };
+
+  const editIncomeSource = (index: number) => {
+    const source = formData.incomeSources[index];
+    setCurrentIncomeSource({
+      type: source.type,
+      description: source.description || '',
+      amount: source.amount
+    });
+    setEditingIndex(index);
+  };
+
+  const deleteIncomeSource = (index: number) => {
+    const incomeSources = formData.incomeSources || [];
+    const updated = incomeSources.filter((_, i) => i !== index);
+    updateFormData('incomeSources', updated);
+  };
+
+  // Calculate totals including additional income sources
+  const additionalIncome = (formData.incomeSources || []).reduce((sum, source) => 
+    sum + parseFloat(source.amount || '0'), 0
+  );
+  const totalIncome = (
+    parseFloat(formData.ingresoPrincipal || '0') + 
+    parseFloat(formData.ingresoSecundario || '0') + 
+    additionalIncome
+  );
   const totalExpenses = expenseCategories.reduce((sum, category) => {
     return sum + parseFloat(formData[category.key] || '0');
   }, 0);
@@ -117,6 +172,110 @@ const FinancialAnalysis: React.FC<FinancialAnalysisProps> = ({ formData, updateF
               value={formData.comentarioIngreso || ''}
               onChange={(e) => updateFormData('comentarioIngreso', e.target.value)}
             />
+          </div>
+
+          {/* Additional Income Sources */}
+          <div className="space-y-4 pt-4 border-t">
+            <h4 className="font-medium text-sm">Otras fuentes de ingreso</h4>
+            
+            {/* Add/Edit Form */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 p-4 bg-muted/50 rounded-lg">
+              <div className="space-y-1">
+                <Label className="text-xs">Tipo</Label>
+                <Select 
+                  value={currentIncomeSource.type} 
+                  onValueChange={(value) => setCurrentIncomeSource(prev => ({ ...prev, type: value }))}
+                >
+                  <SelectTrigger className="h-8">
+                    <SelectValue placeholder="Tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="remesas">Remesas</SelectItem>
+                    <SelectItem value="alquiler">Alquiler</SelectItem>
+                    <SelectItem value="pension">Pensión</SelectItem>
+                    <SelectItem value="dividendos">Dividendos</SelectItem>
+                    <SelectItem value="otros">Otros</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Descripción</Label>
+                <Input
+                  className="h-8"
+                  placeholder="Descripción"
+                  value={currentIncomeSource.description}
+                  onChange={(e) => setCurrentIncomeSource(prev => ({ ...prev, description: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Monto</Label>
+                <CurrencyInput
+                  className="h-8"
+                  value={currentIncomeSource.amount}
+                  onValueChange={(value) => setCurrentIncomeSource(prev => ({ ...prev, amount: value }))}
+                  placeholder="0.00"
+                />
+              </div>
+              <div className="flex items-end">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={addOrUpdateIncomeSource}
+                  disabled={!currentIncomeSource.type || !currentIncomeSource.amount}
+                  className="h-8"
+                >
+                  {editingIndex !== null ? <Edit className="h-3 w-3 mr-1" /> : <Plus className="h-3 w-3 mr-1" />}
+                  {editingIndex !== null ? 'Guardar' : 'Agregar'}
+                </Button>
+              </div>
+            </div>
+
+            {/* Income Sources Table */}
+            {formData.incomeSources && formData.incomeSources.length > 0 && (
+              <div className="border rounded-lg">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs">Tipo</TableHead>
+                      <TableHead className="text-xs">Descripción</TableHead>
+                      <TableHead className="text-xs">Monto</TableHead>
+                      <TableHead className="text-xs w-20">Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {formData.incomeSources.map((source, index) => (
+                      <TableRow key={source.id}>
+                        <TableCell className="text-xs">{source.type}</TableCell>
+                        <TableCell className="text-xs">{source.description || '-'}</TableCell>
+                        <TableCell className="text-xs">Q{formatCurrency(parseFloat(source.amount))}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => editIncomeSource(index)}
+                              className="h-6 w-6 p-0"
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteIncomeSource(index)}
+                              className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
