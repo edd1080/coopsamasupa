@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import { cva, type VariantProps } from 'class-variance-authority';
 
 const subformHeaderVariants = cva(
-  "p-4 rounded-lg mb-4 shadow-md",
+  "p-2 rounded-lg mb-2 shadow-sm",
   {
     variants: {
       variant: {
@@ -33,14 +33,14 @@ const SubformHeader: React.FC<SubformHeaderProps> = ({
 }) => {
   return (
     <div className={cn(subformHeaderVariants({ variant }), className)}>
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-2">
         {icon && (
-          <div className="flex-shrink-0 p-1.5 bg-white/20 rounded-md">
+          <div className="flex-shrink-0 p-1 bg-white/20 rounded-sm">
             {icon}
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <h2 className="text-lg font-semibold leading-tight mb-1">
+          <h2 className="text-base font-semibold leading-tight mb-0.5">
             {title}
           </h2>
           {subtitle && (
