@@ -154,18 +154,18 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
         >
           <TabsList 
             ref={tabsListRef}
-            className="w-full overflow-x-auto hide-scrollbar bg-transparent p-0"
+            className="w-full overflow-x-auto hide-scrollbar bg-transparent p-1 gap-2"
           >
-            <TabsTrigger value="0" className="flex-shrink-0 px-4 py-2">
+            <TabsTrigger value="0" className="flex-shrink-0 px-4 py-2 rounded-full">
               Info general
             </TabsTrigger>
-            <TabsTrigger value="1" className="flex-shrink-0 px-4 py-2">
+            <TabsTrigger value="1" className="flex-shrink-0 px-4 py-2 rounded-full">
               Productos
             </TabsTrigger>
-            <TabsTrigger value="2" className="flex-shrink-0 px-4 py-2">
+            <TabsTrigger value="2" className="flex-shrink-0 px-4 py-2 rounded-full">
               Gastos administrativos
             </TabsTrigger>
-            <TabsTrigger value="3" className="flex-shrink-0 px-4 py-2">
+            <TabsTrigger value="3" className="flex-shrink-0 px-4 py-2 rounded-full">
               Análisis del negocio
             </TabsTrigger>
           </TabsList>
@@ -178,11 +178,6 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
     if (!applicantType || applicantType === 'asalariado') {
       return (
         <div className="space-y-4">
-          <SubformHeader
-            icon={<Store className="h-5 w-5" />}
-            title="Tipo de Solicitante"
-            subtitle="Seleccione el tipo de solicitante para continuar con el formulario"
-          />
           <Label className="text-base font-medium">Tipo de Solicitante *</Label>
           <RadioGroup 
             value={applicantType} 
@@ -206,12 +201,6 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
       if (internalSubStep === 0) {
         return (
           <div className="space-y-6">
-            <SubformHeader
-              icon={<Store className="h-5 w-5" />}
-              title="Información General del Negocio"
-              subtitle="Complete los datos básicos de su negocio y ventas mensuales"
-            />
-
             <div className="space-y-4">
               <Label className="text-base font-medium">Tipo de Solicitante *</Label>
               <RadioGroup 
@@ -321,12 +310,6 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
       if (internalSubStep === 1) {
         return (
           <div className="space-y-6">
-            <SubformHeader
-              icon={<Package className="h-5 w-5" />}
-              title="Productos y Servicios"
-              subtitle="Agregue sus productos principales y configure la estacionalidad para cada uno"
-            />
-
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <h4 className="font-medium">Productos/Servicios</h4>
@@ -684,33 +667,20 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
 
   return (
     <div className="space-y-6 pb-6">
-      {renderTabsHeader()}
-      {renderSubStepContent()}
+      {/* Main header for the entire section - always shown first */}
+      <SubformHeader
+        icon={<Store className="h-5 w-5" />}
+        title="Negocio y Perfil Económico"
+        subtitle={applicantType === 'negocio_propio' 
+          ? "Complete toda la información relacionada con su negocio" 
+          : "Seleccione el tipo de solicitante para continuar"}
+      />
       
-      {/* Navigation for business sub-steps */}
-      {applicantType === 'negocio_propio' && (
-        <div className="flex justify-between items-center pt-6">
-          <Button 
-            variant="outline" 
-            onClick={() => setInternalSubStep(Math.max(0, internalSubStep - 1))}
-            disabled={internalSubStep === 0}
-          >
-            Anterior
-          </Button>
-          
-          <span className="text-sm text-muted-foreground">
-            Paso {internalSubStep + 1} de 4
-          </span>
-          
-          <Button 
-            variant="success"
-            onClick={() => setInternalSubStep(Math.min(3, internalSubStep + 1))}
-            disabled={internalSubStep === 3}
-          >
-            Siguiente
-          </Button>
-        </div>
-      )}
+      {/* Tabs only shown for business type */}
+      {renderTabsHeader()}
+      
+      {/* Content */}
+      {renderSubStepContent()}
     </div>
   );
 };
