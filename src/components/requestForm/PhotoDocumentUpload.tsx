@@ -7,6 +7,7 @@ import { AlertCircle, Camera, CheckCircle, FileText, Image, Loader2, UploadCloud
 import { useToast } from '@/hooks/use-toast';
 import { useDocumentManager, guatemalanDocuments } from '@/hooks/useDocumentManager';
 import InteractiveDocumentCard from '@/components/documents/InteractiveDocumentCard';
+import SubformHeader from '@/components/forms/SubformHeader';
 
 interface PhotoDocumentUploadProps {
   formData: any;
@@ -134,10 +135,12 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h3 className="font-semibold text-xl mb-2 text-left">Documentos Requeridos</h3>
-        <p className="text-muted-foreground text-left">Sube los siguientes documentos requeridos para procesar la solicitud de crédito.</p>
-      </div>
+      <SubformHeader
+        icon={<FileText className="w-5 h-5" />}
+        title="Documentos Requeridos"
+        subtitle="Sube los siguientes documentos requeridos para procesar la solicitud de crédito."
+        variant="applicant"
+      />
       
       {/* Document Grid */}
       {documentRows.map((row, rowIndex) => (

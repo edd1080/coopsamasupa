@@ -2,6 +2,8 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { CreditCard } from 'lucide-react';
+import SubformHeader from '@/components/forms/SubformHeader';
 import { 
   Select,
   SelectContent,
@@ -18,12 +20,12 @@ interface CreditInfoFormProps {
 const CreditInfoForm: React.FC<CreditInfoFormProps> = ({ formData, updateFormData }) => {
   return (
     <div className="space-y-6">
-      <div>
-        <h3 className="font-semibold text-lg">Información del Crédito Solicitado</h3>
-        <p className="text-muted-foreground text-sm">
-          Complete los datos del crédito que desea solicitar.
-        </p>
-      </div>
+      <SubformHeader
+        icon={<CreditCard className="w-5 h-5" />}
+        title="Información del Crédito Solicitado"
+        subtitle="Complete los datos del crédito que desea solicitar."
+        variant="applicant"
+      />
       
       <div className="space-y-6">
         {/* Primera fila - Destino, Monto, Plazo */}

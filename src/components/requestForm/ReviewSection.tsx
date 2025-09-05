@@ -6,6 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { CheckCircle, AlertCircle, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useFormContext } from './RequestFormProvider';
+import SubformHeader from '@/components/forms/SubformHeader';
 
 interface ReviewSectionProps {
   formData: any;
@@ -133,12 +134,12 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
   return (
     <Card className="border-0 shadow-none">
       <CardContent className="p-0 space-y-6">
-        <div>
-          <h3 className="font-semibold text-lg">Revisión Final</h3>
-          <p className="text-muted-foreground text-sm">
-            Revise toda la información antes de enviar la solicitud.
-          </p>
-        </div>
+        <SubformHeader
+          icon={<CheckCircle className="w-5 h-5" />}
+          title="Revisión Final"
+          subtitle="Revise toda la información antes de enviar la solicitud."
+          variant="applicant"
+        />
 
         {/* Estado de Completitud */}
         <div className="border rounded-md p-4 space-y-3">

@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Trash2, Edit, Plus, Calculator, DollarSign } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
 import { useToast } from '@/hooks/use-toast';
+import SubformHeader from '@/components/forms/SubformHeader';
 
 interface InvestmentPlanItem {
   id: string;
@@ -182,15 +183,12 @@ const InvestmentPlan: React.FC<InvestmentPlanProps> = ({ formData, updateFormDat
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-2">
-        <Calculator className="h-5 w-5 text-primary" />
-        <h2 className="text-xl font-semibold">Plan de Inversión</h2>
-      </div>
-      
-      <p className="text-muted-foreground">
-        Detalle cómo será utilizado el dinero solicitado, desglosado en ítems individuales.
-      </p>
+      <SubformHeader
+        icon={<Calculator className="w-5 h-5" />}
+        title="Plan de Inversión"
+        subtitle="Detalle cómo será utilizado el dinero solicitado, desglosado en ítems individuales."
+        variant="applicant"
+      />
 
       {/* Read-only applicant data */}
       <Card>

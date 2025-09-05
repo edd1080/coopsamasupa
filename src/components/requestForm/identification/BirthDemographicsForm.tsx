@@ -3,7 +3,9 @@ import React, { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { DatePicker } from '@/components/ui/date-picker';
+import { Calendar } from 'lucide-react';
 import { normalizeIntegerInput } from '@/utils/formatters';
+import SubformHeader from '@/components/forms/SubformHeader';
 import { 
   Select,
   SelectContent,
@@ -55,7 +57,14 @@ const BirthDemographicsForm: React.FC<BirthDemographicsFormProps> = ({ formData,
   };
 
   return (
-    <>
+    <div className="space-y-6">
+      <SubformHeader
+        icon={<Calendar className="w-5 h-5" />}
+        title="Datos Demográficos y Nacimiento"
+        subtitle="Complete la información demográfica y de nacimiento del solicitante."
+        variant="applicant"
+      />
+      
       {/* Fecha Nacimiento y Edad */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
@@ -168,10 +177,10 @@ const BirthDemographicsForm: React.FC<BirthDemographicsFormProps> = ({ formData,
                ))}
              </SelectContent>
            </Select>
-         </div>
-      </div>
-    </>
-  );
-};
+          </div>
+       </div>
+     </div>
+   );
+ };
 
 export default BirthDemographicsForm;

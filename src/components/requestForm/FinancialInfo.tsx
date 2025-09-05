@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PlusCircle, MinusCircle, Upload, DollarSign, Calendar, Store, Package, TrendingUp, Calculator, PieChart } from 'lucide-react';
 import { normalizeDecimalInput } from '@/utils/formatters';
+import SubformHeader from '@/components/forms/SubformHeader';
 
 // Import the new components
 import FinancialAnalysis from './FinancialAnalysis';
@@ -121,6 +122,13 @@ const FinancialInfo: React.FC<FinancialInfoProps> = ({ formData, updateFormData 
 
   return (
     <div className="space-y-6">
+      <SubformHeader
+        icon={<DollarSign className="w-5 h-5" />}
+        title="Información Financiera"
+        subtitle="Complete la información económica y financiera del solicitante."
+        variant="applicant"
+      />
+      
       {/* Screen Navigation - Now showing only visible screens */}
       <div className="flex overflow-x-auto pb-2 -mx-1" style={hideScrollbarStyle}>
         {visibleScreens.map((screen) => (

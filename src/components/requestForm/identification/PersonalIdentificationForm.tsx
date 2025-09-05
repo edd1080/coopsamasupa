@@ -10,7 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { User } from 'lucide-react';
 import SpouseInfoForm from './SpouseInfoForm';
+import SubformHeader from '@/components/forms/SubformHeader';
 
 interface PersonalIdentificationFormProps {
   formData: any;
@@ -58,12 +60,12 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h3 className="font-semibold text-lg">Datos Básicos</h3>
-        <p className="text-muted-foreground text-sm">
-          Complete la información personal básica del solicitante.
-        </p>
-      </div>
+      <SubformHeader
+        icon={<User className="w-5 h-5" />}
+        title="Datos Básicos"
+        subtitle="Complete la información personal básica del solicitante."
+        variant="applicant"
+      />
       
       <div className="space-y-6">
         {/* Nombres - 4 campos separados */}

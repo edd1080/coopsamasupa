@@ -68,6 +68,7 @@ const ReferencesSection: React.FC<ReferencesSectionProps> = ({
           icon={<User className="h-5 w-5" />}
           title={`Información Básica - Referencia ${currentReferenceIndex + 1}`}
           subtitle="Complete la información de la referencia personal"
+          variant="reference"
         />
 
         <ReferenceBasicInfo referenceIndex={currentReferenceIndex} />
@@ -97,6 +98,7 @@ const ReferencesSection: React.FC<ReferencesSectionProps> = ({
         icon={<Users className="h-5 w-5" />}
         title="Referencias Personales"
         subtitle="Agregue y gestione las referencias personales del solicitante"
+        variant="reference"
       />
 
       <div className="space-y-4">
