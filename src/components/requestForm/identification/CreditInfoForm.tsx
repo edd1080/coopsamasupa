@@ -52,12 +52,11 @@ const CreditInfoForm: React.FC<CreditInfoFormProps> = ({ formData, updateFormDat
             <Label htmlFor="requestedAmount">Monto Solicitado Q *</Label>
             <Input 
               id="requestedAmount"
-              type="number"
+              type="text"
+              inputMode="decimal"
               value={formData.requestedAmount || ''} 
               onChange={(e) => updateFormData('requestedAmount', e.target.value)}
               placeholder="0.00"
-              min="0"
-              step="0.01"
             />
           </div>
 
@@ -65,12 +64,11 @@ const CreditInfoForm: React.FC<CreditInfoFormProps> = ({ formData, updateFormDat
             <Label htmlFor="termMonths">Plazo (meses) *</Label>
             <Input 
               id="termMonths"
-              type="number"
+              type="text"
+              inputMode="numeric"
               value={formData.termMonths || ''} 
               onChange={(e) => updateFormData('termMonths', e.target.value)}
               placeholder="12"
-              min="1"
-              max="120"
             />
           </div>
         </div>
@@ -121,13 +119,11 @@ const CreditInfoForm: React.FC<CreditInfoFormProps> = ({ formData, updateFormDat
             <Label htmlFor="interestRate">Tasa de Interés (%)</Label>
             <Input 
               id="interestRate"
-              type="number"
+              type="text"
+              inputMode="decimal"
               value={formData.interestRate || ''} 
               onChange={(e) => updateFormData('interestRate', e.target.value)}
               placeholder="0.00"
-              min="0"
-              max="100"
-              step="0.01"
             />
           </div>
 

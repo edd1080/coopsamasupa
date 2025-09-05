@@ -397,8 +397,9 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
       case 1: // FinancialAnalysis - 2 sub-steps (Financial Info + Investment Plan)
         return 2;
       case 2: // BusinessEconomicProfile
-        // Conditional substeps based on applicant type
-        if (formData.applicantType === 'negocio_propio') {
+        // Dynamically calculate substeps based on current applicant type
+        const currentApplicantType = formData.applicantType;
+        if (currentApplicantType === 'negocio_propio') {
           return 4; // 4 substeps for business owners
         }
         return 1; // 1 substep for employees
@@ -455,14 +456,21 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   const handleSubNext = useCallback(() => {
     console.log('🔄 handleSubNext called:', { currentStep, subStep, isLastSubStep });
     
-    // Validation for Investment Plan (step 1, sub-step 1)
-    if (currentStep === 1 && subStep === 1) {
-      if (!formData.investmentPlanItems || formData.investmentPlanItems.length === 0) {
-        toast({
-          title: "Plan de Inversión Requerido",
-          description: "Debe agregar al menos un ítem a su plan de inversión para continuar.",
-          variant: "destructive"
-        });
+    // Reset scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Check if we're at the last substep of BusinessEconomicProfile
+    if (currentStep === 2) {
+      const maxSubSteps = getSubStepsForSection(currentStep);
+      const actualIsLastSubStep = subStep >= maxSubSteps - 1;
+      
+      if (actualIsLastSubStep) {
+        // Move to next main step
+        if (!isLastStep) {
+          console.log('➡️ Moving to next step from BusinessEconomicProfile:', currentStep + 1);
+          setCurrentStep(prev => prev + 1);
+          setSubStep(0);
+        }
         return;
       }
     }
@@ -479,9 +487,12 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
       console.log('➡️ Moving to next sub-step:', subStep + 1);
       setSubStep(prev => prev + 1);
     }
-  }, [currentStep, subStep, isLastSubStep, isLastStep, formData.investmentPlanItems, toast]);
+  }, [currentStep, subStep, isLastSubStep, isLastStep, getSubStepsForSection, toast]);
 
   const handleSubPrevious = useCallback(() => {
+    // Reset scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
     if (isFirstSubStep) {
       if (currentStep > 0) {
         const prevStep = currentStep - 1;
@@ -495,6 +506,8 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   }, [isFirstSubStep, currentStep, getSubStepsForSection]);
 
   const goToStep = useCallback((step: number, subStepIndex: number = 0) => {
+    // Reset scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     setCurrentStep(step);
     setSubStep(subStepIndex);
   }, []);

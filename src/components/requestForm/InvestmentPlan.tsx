@@ -236,6 +236,7 @@ const InvestmentPlan: React.FC<InvestmentPlanProps> = ({ formData, updateFormDat
               <Input
                 id="quantity"
                 type="text"
+                inputMode="decimal"
                 placeholder="Ej: 100"
                 value={currentItem.quantity}
                 onChange={(e) => handleInputChange('quantity', e.target.value)}
@@ -273,6 +274,7 @@ const InvestmentPlan: React.FC<InvestmentPlanProps> = ({ formData, updateFormDat
                   id="unitPrice"
                   className="pl-7"
                   type="text"
+                  inputMode="decimal"
                   placeholder="0.00"
                   value={currentItem.unitPrice}
                   onChange={(e) => handleInputChange('unitPrice', e.target.value)}
@@ -301,7 +303,7 @@ const InvestmentPlan: React.FC<InvestmentPlanProps> = ({ formData, updateFormDat
               className="flex items-center gap-2"
             >
               <Plus className="h-4 w-4" />
-              {editingIndex !== null ? 'Actualizar Plan' : 'Agregar Plan'}
+              {editingIndex !== null ? 'Actualizar al plan' : 'Agregar al plan'}
             </Button>
             {editingIndex !== null && (
               <Button 

@@ -94,6 +94,8 @@ const ContactHousingForm: React.FC<ContactHousingFormProps> = ({ formData, updat
             <Label htmlFor="mobilePhone">Teléfono Móvil *</Label>
             <Input 
               id="mobilePhone"
+              type="tel"
+              inputMode="tel"
               value={formData.mobilePhone || ''} 
               onChange={(e) => handlePhoneChange('mobilePhone', e.target.value)}
               placeholder="0000 0000"
@@ -109,6 +111,8 @@ const ContactHousingForm: React.FC<ContactHousingFormProps> = ({ formData, updat
             <Label htmlFor="homePhone">Teléfono de Casa</Label>
             <Input 
               id="homePhone"
+              type="tel"
+              inputMode="tel"
               value={formData.homePhone || ''} 
               onChange={(e) => handlePhoneChange('homePhone', e.target.value)}
               placeholder="0000 0000"

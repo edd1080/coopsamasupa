@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { DatePicker } from '@/components/ui/date-picker';
 
 interface SpouseInfoFormProps {
   formData: any;
@@ -99,6 +100,8 @@ const SpouseInfoForm: React.FC<SpouseInfoFormProps> = ({ formData, updateFormDat
           <Label htmlFor="spouseMobilePhone">Teléfono Móvil Cónyuge</Label>
           <Input 
             id="spouseMobilePhone"
+            type="tel"
+            inputMode="tel"
             value={formData.spouseMobilePhone || ''} 
             onChange={(e) => updateFormData('spouseMobilePhone', e.target.value)}
             placeholder="0000 0000"
@@ -107,11 +110,10 @@ const SpouseInfoForm: React.FC<SpouseInfoFormProps> = ({ formData, updateFormDat
         </div>
         <div className="space-y-2">
           <Label htmlFor="spouseBirthDate">Fecha de Nacimiento Cónyuge</Label>
-          <Input 
-            id="spouseBirthDate"
-            type="date"
-            value={formData.spouseBirthDate || ''} 
-            onChange={(e) => updateFormData('spouseBirthDate', e.target.value)}
+          <DatePicker
+            date={formData.spouseBirthDate ? new Date(formData.spouseBirthDate) : undefined}
+            onSelect={(date) => updateFormData('spouseBirthDate', date ? date.toISOString().split('T')[0] : '')}
+            placeholder="Seleccionar fecha de nacimiento"
           />
         </div>
       </div>

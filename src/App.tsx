@@ -12,6 +12,7 @@ import React, { useState } from "react";
 // PWA Components
 import SplashScreen from "@/components/pwa/SplashScreen";
 import UpdatePrompt from "@/components/pwa/UpdatePrompt";
+import InstallPrompt from "@/components/pwa/InstallPrompt";
 import { usePWA } from "@/hooks/usePWA";
 
 // Create a client
@@ -52,6 +53,9 @@ const App = () => {
             onUpdate={handleUpdate}
             onDismiss={handleDismissUpdate}
           />
+          
+          {/* PWA Install Prompt */}
+          <InstallPrompt />
           
           {/* Main App Content */}
           {!isLoading && (
