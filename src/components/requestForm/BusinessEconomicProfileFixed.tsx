@@ -175,7 +175,7 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
   };
 
   const renderSubStepContent = () => {
-    if (applicantType === 'asalariado') {
+    if (!applicantType || applicantType === 'asalariado') {
       return (
         <div className="space-y-4">
           <SubformHeader

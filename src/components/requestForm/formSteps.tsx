@@ -24,7 +24,7 @@ export const steps = [
     title: 'Negocio y Perfil Económico', 
     icon: React.createElement(MapPin, { size: 18 }),
     description: 'Perfil económico',
-    component: 'BusinessEconomicProfile'
+    component: 'BusinessEconomicProfileFixed'
   },
   { 
     id: 'guarantors', 
