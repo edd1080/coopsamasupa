@@ -158,6 +158,39 @@ const FinancialInfo: React.FC<FinancialInfoProps> = ({ formData, updateFormData 
         <PatrimonialStatement formData={formData} updateFormData={updateFormData} />
       )}
       
+      {/* Navigation buttons */}
+      <div className="flex justify-between items-center pt-4">
+        <Button 
+          variant="outline" 
+          onClick={() => {
+            const currentIndex = visibleScreens.findIndex(screen => screen.id === activeScreen);
+            if (currentIndex > 0) {
+              setActiveScreen(visibleScreens[currentIndex - 1].id);
+            }
+          }}
+          disabled={visibleScreens.findIndex(screen => screen.id === activeScreen) === 0}
+        >
+          Anterior
+        </Button>
+        
+        <span className="text-sm text-muted-foreground">
+          Paso {visibleScreens.findIndex(screen => screen.id === activeScreen) + 1} de {visibleScreens.length}
+        </span>
+        
+        <Button 
+          variant="success"
+          onClick={() => {
+            const currentIndex = visibleScreens.findIndex(screen => screen.id === activeScreen);
+            if (currentIndex < visibleScreens.length - 1) {
+              setActiveScreen(visibleScreens[currentIndex + 1].id);
+            }
+          }}
+          disabled={visibleScreens.findIndex(screen => screen.id === activeScreen) === visibleScreens.length - 1}
+        >
+          Siguiente
+        </Button>
+      </div>
+      
       {/* Business Information Screen */}
       {activeScreen === 'business-info' && (
         <div className="space-y-5">

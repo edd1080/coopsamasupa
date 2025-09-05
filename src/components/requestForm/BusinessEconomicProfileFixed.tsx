@@ -482,8 +482,201 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
         );
       }
 
-      // Add other substeps here...
-      return <div>Other substeps content...</div>;
+      if (internalSubStep === 2) {
+        return (
+          <div className="space-y-6">
+            <SubformHeader
+              icon={<TrendingUp className="h-5 w-5" />}
+              title="Gastos Administrativos Mensuales"
+              subtitle="Complete los gastos administrativos mensuales de su negocio"
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="bonificaciones">Bonificaciones Q</Label>
+                <CurrencyInput
+                  id="bonificaciones"
+                  value={formData.bonificaciones || ''}
+                  onValueChange={(value) => updateFormData('bonificaciones', value)}
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="sueldos">Sueldos Q</Label>
+                <CurrencyInput
+                  id="sueldos"
+                  value={formData.sueldos || ''}
+                  onValueChange={(value) => updateFormData('sueldos', value)}
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="alquiler">Alquiler Q</Label>
+                <CurrencyInput
+                  id="alquiler"
+                  value={formData.alquiler || ''}
+                  onValueChange={(value) => updateFormData('alquiler', value)}
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="servicios">Servicios Q</Label>
+                <CurrencyInput
+                  id="servicios"
+                  value={formData.servicios || ''}
+                  onValueChange={(value) => updateFormData('servicios', value)}
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="transporte">Transporte Q</Label>
+                <CurrencyInput
+                  id="transporte"
+                  value={formData.transporte || ''}
+                  onValueChange={(value) => updateFormData('transporte', value)}
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="otrosGastos">Otros Gastos Q</Label>
+                <CurrencyInput
+                  id="otrosGastos"
+                  value={formData.otrosGastos || ''}
+                  onValueChange={(value) => updateFormData('otrosGastos', value)}
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+
+            <div className="pt-4 border-t">
+              <div className="space-y-2">
+                <Label className="text-base font-medium">Total Gastos Administrativos</Label>
+                <div className="text-2xl font-bold text-primary">
+                  Q {(
+                    parseFloat(formData.bonificaciones || '0') +
+                    parseFloat(formData.sueldos || '0') +
+                    parseFloat(formData.alquiler || '0') +
+                    parseFloat(formData.servicios || '0') +
+                    parseFloat(formData.transporte || '0') +
+                    parseFloat(formData.otrosGastos || '0')
+                  ).toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      if (internalSubStep === 3) {
+        return (
+          <div className="space-y-6">
+            <SubformHeader
+              icon={<TrendingUp className="h-5 w-5" />}
+              title="Análisis del Negocio"
+              subtitle="Evaluación integral del negocio para determinar viabilidad crediticia"
+            />
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="riesgoIngresos" className="flex items-center gap-2">
+                  Riesgo de Ingresos
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Evalúe los factores que podrían afectar los ingresos del negocio</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </Label>
+                <Textarea 
+                  id="riesgoIngresos"
+                  value={formData.riesgoIngresos || ''} 
+                  onChange={(e) => updateFormData('riesgoIngresos', e.target.value)}
+                  placeholder="Describa los principales riesgos que podrían afectar los ingresos"
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="oportunidades" className="flex items-center gap-2">
+                  Oportunidades
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Identifique oportunidades de crecimiento para el negocio</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </Label>
+                <Textarea 
+                  id="oportunidades"
+                  value={formData.oportunidades || ''} 
+                  onChange={(e) => updateFormData('oportunidades', e.target.value)}
+                  placeholder="Describa las oportunidades de crecimiento identificadas"
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="mitigacionRiesgos" className="flex items-center gap-2">
+                  Mitigación de Riesgos
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Describa las estrategias para mitigar los riesgos identificados</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </Label>
+                <Textarea 
+                  id="mitigacionRiesgos"
+                  value={formData.mitigacionRiesgos || ''} 
+                  onChange={(e) => updateFormData('mitigacionRiesgos', e.target.value)}
+                  placeholder="Estrategias propuestas para reducir riesgos"
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="evaluacionMercado" className="flex items-center gap-2">
+                  Evaluación del Mercado
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Analice las condiciones actuales del mercado objetivo</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </Label>
+                <Textarea 
+                  id="evaluacionMercado"
+                  value={formData.evaluacionMercado || ''} 
+                  onChange={(e) => updateFormData('evaluacionMercado', e.target.value)}
+                  placeholder="Análisis del mercado objetivo y competencia"
+                  rows={3}
+                />
+              </div>
+            </div>
+          </div>
+        );
+      }
     }
 
     return null;
@@ -493,6 +686,31 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
     <div className="space-y-6 pb-6">
       {renderTabsHeader()}
       {renderSubStepContent()}
+      
+      {/* Navigation for business sub-steps */}
+      {applicantType === 'negocio_propio' && (
+        <div className="flex justify-between items-center pt-6">
+          <Button 
+            variant="outline" 
+            onClick={() => setInternalSubStep(Math.max(0, internalSubStep - 1))}
+            disabled={internalSubStep === 0}
+          >
+            Anterior
+          </Button>
+          
+          <span className="text-sm text-muted-foreground">
+            Paso {internalSubStep + 1} de 4
+          </span>
+          
+          <Button 
+            variant="success"
+            onClick={() => setInternalSubStep(Math.min(3, internalSubStep + 1))}
+            disabled={internalSubStep === 3}
+          >
+            Siguiente
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
