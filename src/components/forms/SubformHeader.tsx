@@ -33,25 +33,25 @@ const SubformHeader: React.FC<SubformHeaderProps> = ({
 }) => {
   return (
     <div className={cn(subformHeaderVariants({ variant }), className)}>
-      <div className="flex items-start gap-2">
-        {icon && (
-          <div className="flex-shrink-0 p-1 bg-white/20 rounded-sm">
-            {icon}
-          </div>
-        )}
+      <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
-          <h2 className="text-base font-semibold leading-tight mb-0.5">
+          <h3 className="text-sm font-semibold leading-tight mb-0.5">
             {title}
-          </h2>
+          </h3>
           {subtitle && (
             <p className={cn(
-              "text-sm leading-relaxed",
+              "text-xs leading-relaxed",
               variant === "applicant" ? "text-primary-foreground/90" : "text-accent-foreground/90"
             )}>
               {subtitle}
             </p>
           )}
         </div>
+        {icon && (
+          <div className="flex-shrink-0 p-1 bg-white/20 rounded-sm ml-2">
+            {icon}
+          </div>
+        )}
       </div>
     </div>
   );
