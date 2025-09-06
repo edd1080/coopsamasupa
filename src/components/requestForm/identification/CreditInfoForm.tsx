@@ -78,16 +78,14 @@ const CreditInfoForm: React.FC<CreditInfoFormProps> = ({ formData, updateFormDat
         {/* Segunda fila - Forma de Pago Combinada */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="paymentPlan">Forma de pago de capital e interés *</Label>
+            <Label htmlFor="paymentPlan">Forma de pago de capital *</Label>
             <Select value={formData.paymentPlan || ''} onValueChange={(value) => updateFormData('paymentPlan', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar forma de pago" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pago_mensual_fijo">Pago mensual fijo</SelectItem>
-                <SelectItem value="interes_sobre_saldo">Interés sobre saldo</SelectItem>
-                <SelectItem value="cuota_nivelada">Cuota nivelada</SelectItem>
-                <SelectItem value="cuota_fija">Cuota fija</SelectItem>
+                <SelectItem value="nivelado">Nivelado</SelectItem>
+                <SelectItem value="decreciente">Decreciente</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -103,12 +101,13 @@ const CreditInfoForm: React.FC<CreditInfoFormProps> = ({ formData, updateFormDat
                  <SelectValue placeholder="Seleccionar tipo" />
                </SelectTrigger>
                <SelectContent>
-                 <SelectItem value="mensual">Mensual</SelectItem>
-                 <SelectItem value="trimestral">Trimestral</SelectItem>
-                 <SelectItem value="semestral">Semestral</SelectItem>
-                 <SelectItem value="anual">Anual</SelectItem>
+                 <SelectItem value="mensual/1">Mensual/1</SelectItem>
+                 <SelectItem value="bimensual/2">Bimensual/2</SelectItem>
+                 <SelectItem value="trimestral/3">Trimestral/3</SelectItem>
+                 <SelectItem value="semestral/6">Semestral/6</SelectItem>
+                 <SelectItem value="anual/12">Anual/12</SelectItem>
                  <SelectItem value="al_vencimiento">Al vencimiento</SelectItem>
-                 <SelectItem value="personalizada">Personalizada</SelectItem>
+                 <SelectItem value="fondo_revolvente/1">Fondo Revolvente/1</SelectItem>
                </SelectContent>
              </Select>
            </div>
@@ -136,8 +135,13 @@ const CreditInfoForm: React.FC<CreditInfoFormProps> = ({ formData, updateFormDat
                 <SelectValue placeholder="Seleccionar tipo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="vencida">Vencida</SelectItem>
-                <SelectItem value="anticipada">Anticipada</SelectItem>
+                <SelectItem value="mensual/1">Mensual/1</SelectItem>
+                <SelectItem value="bimensual/2">Bimensual/2</SelectItem>
+                <SelectItem value="trimestral/3">Trimestral/3</SelectItem>
+                <SelectItem value="semestral/6">Semestral/6</SelectItem>
+                <SelectItem value="anual/12">Anual/12</SelectItem>
+                <SelectItem value="al_vencimiento">Al vencimiento</SelectItem>
+                <SelectItem value="fondo_revolvente/1">Fondo Revolvente/1</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -171,21 +175,6 @@ const CreditInfoForm: React.FC<CreditInfoFormProps> = ({ formData, updateFormDat
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="fundsOrigin">Origen de los Fondos</Label>
-            <Select value={formData.fundsOrigin || ''} onValueChange={(value) => updateFormData('fundsOrigin', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccionar origen" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="recursos_propios">Recursos Propios</SelectItem>
-                <SelectItem value="prestamo_bancario">Préstamo Bancario</SelectItem>
-                <SelectItem value="prestamo_familiar">Préstamo Familiar</SelectItem>
-                <SelectItem value="prestamo_terceros">Préstamo de Terceros</SelectItem>
-                <SelectItem value="otros">Otros</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </div>
 
         {/* Observaciones de Carácter */}

@@ -68,6 +68,48 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
       />
       
       <div className="space-y-6">
+        {/* Tipo de socio y Agencia - Primeras dos preguntas */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="memberType">Tipo de Socio *</Label>
+            <Select value={formData.memberType || ''} onValueChange={(value) => updateFormData('memberType', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar tipo de socio" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="A">A</SelectItem>
+                <SelectItem value="B">B</SelectItem>
+                <SelectItem value="C">C</SelectItem>
+                <SelectItem value="D">D</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="agencyType">Tipo de Agencia *</Label>
+            <Select value={formData.agencyType || ''} onValueChange={(value) => updateFormData('agencyType', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar agencia" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Central">Central</SelectItem>
+                <SelectItem value="San Cristobal">San Cristobal</SelectItem>
+                <SelectItem value="Purulha">Purulha</SelectItem>
+                <SelectItem value="Chisec">Chisec</SelectItem>
+                <SelectItem value="Playa Grande">Playa Grande</SelectItem>
+                <SelectItem value="San Pedro Carcha">San Pedro Carcha</SelectItem>
+                <SelectItem value="Tactic Asuncion">Tactic Asuncion</SelectItem>
+                <SelectItem value="Sayaxche">Sayaxche</SelectItem>
+                <SelectItem value="Santa Cruz">Santa Cruz</SelectItem>
+                <SelectItem value="Chicaman">Chicaman</SelectItem>
+                <SelectItem value="La Libertad">La Libertad</SelectItem>
+                <SelectItem value="CC Gran Carcha">CC Gran Carcha</SelectItem>
+                <SelectItem value="Raxruha">Raxruha</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
         {/* Nombres - 4 campos separados */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
