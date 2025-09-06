@@ -394,22 +394,24 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   // Get sub-steps for each section
   const getSubStepsForSection = useCallback((sectionIndex: number): number => {
     switch (sectionIndex) {
-      case 0: // IdentificationContact - 5 sub-steps
-        return 5;
-      case 1: // FinancialAnalysis - 2 sub-steps (Financial Info + Investment Plan)
-        return 2;
-      case 2: // BusinessEconomicProfile
+      case 0: // IdentificationContact
+        return 3; // PersonalId, Birth/Disability, Contact (credit info moved to separate step)
+      case 1: // Credit Information
+        return 2; // CreditInfo, CreditDestination
+      case 2: // FinancialInfo  
+        return 2; // Financial Analysis, Patrimonial Statement
+      case 3: // BusinessEconomicProfile
         // Dynamically calculate substeps based on current applicant type
         const currentApplicantType = formData.applicantType;
         if (currentApplicantType === 'negocio_propio') {
           return 4; // 4 substeps for business owners
         }
         return 1; // 1 substep for employees
-      case 3: // ReferencesSection (formerly GuarantorsSection)
+      case 4: // ReferencesSection (formerly GuarantorsSection)
         return 1;
-      case 4: // DocumentsSection
+      case 5: // DocumentsSection
         return 1;
-      case 5: // ReviewSection
+      case 6: // ReviewSection
         return 1;
       default:
         return 1;
@@ -462,7 +464,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     window.scrollTo({ top: 0, behavior: 'smooth' });
     
     // Check if we're at the last substep of BusinessEconomicProfile
-    if (currentStep === 2) {
+    if (currentStep === 3) {
       const maxSubSteps = getSubStepsForSection(currentStep);
       const actualIsLastSubStep = subStep >= maxSubSteps - 1;
       

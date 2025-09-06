@@ -78,7 +78,7 @@ const CreditInfoForm: React.FC<CreditInfoFormProps> = ({ formData, updateFormDat
         {/* Segunda fila - Forma de Pago Combinada */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="paymentPlan">Forma de pago de capital *</Label>
+            <Label htmlFor="paymentPlan">Forma de pago de capital</Label>
             <Select value={formData.paymentPlan || ''} onValueChange={(value) => updateFormData('paymentPlan', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar forma de pago" />

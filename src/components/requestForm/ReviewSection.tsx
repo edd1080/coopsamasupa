@@ -120,15 +120,13 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
   const completion = getCompletionStatus();
 
   const handleSendApplication = () => {
-    if (completion.isComplete) {
-      // Marcar términos como aceptados antes del envío
-      updateFormData('termsAccepted', true);
-      updateFormData('dataProcessingAccepted', true);
-      updateFormData('creditCheckAccepted', true);
-      
-      // Llamar a la función de envío del contexto
-      handleSubmit();
-    }
+    // Marcar términos como aceptados antes del envío
+    updateFormData('termsAccepted', true);
+    updateFormData('dataProcessingAccepted', true);
+    updateFormData('creditCheckAccepted', true);
+    
+    // Llamar a la función de envío del contexto
+    handleSubmit();
   };
 
   return (
@@ -165,12 +163,12 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
           
           {/* Lista de campos faltantes */}
           {completion.missingFields.length > 0 && (
-            <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-sm font-medium text-red-800 mb-2">Campos requeridos faltantes:</p>
-              <ul className="text-sm text-red-700 space-y-1">
+            <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <p className="text-sm font-medium text-blue-800 mb-2">Campos sugeridos para completar:</p>
+              <ul className="text-sm text-blue-700 space-y-1">
                 {completion.missingFields.map((field, index) => (
                   <li key={index} className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
                     {field}
                   </li>
                 ))}
@@ -179,28 +177,26 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
           )}
         </div>
 
-        {/* Botón de Enviar Solicitud - solo aparece cuando está 100% completo */}
-        {completion.isComplete && (
-          <div className="border rounded-md p-4 bg-green-50 border-green-200">
-            <div className="flex flex-col items-center gap-4">
-              <div className="flex items-center gap-2 text-green-700">
-                <CheckCircle className="h-6 w-6" />
-                <span className="font-medium text-lg">¡Solicitud Lista para Enviar!</span>
-              </div>
-              <p className="text-sm text-green-600 text-center">
-                Todos los campos requeridos han sido completados. Puede proceder a enviar la solicitud.
-              </p>
-              <Button 
-                onClick={handleSendApplication}
-                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2"
-                size="lg"
-              >
-                <Send className="h-4 w-4 mr-2" />
-                Enviar Solicitud
-              </Button>
+        {/* Botón de Enviar Solicitud - siempre disponible */}
+        <div className="border rounded-md p-4 bg-blue-50 border-blue-200">
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex items-center gap-2 text-blue-700">
+              <CheckCircle className="h-6 w-6" />
+              <span className="font-medium text-lg">Enviar Solicitud</span>
             </div>
+            <p className="text-sm text-blue-600 text-center">
+              Puede enviar la solicitud en cualquier momento. Los campos faltantes se pueden completar posteriormente.
+            </p>
+            <Button 
+              onClick={handleSendApplication}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
+              size="lg"
+            >
+              <Send className="h-4 w-4 mr-2" />
+              Enviar Solicitud
+            </Button>
           </div>
-        )}
+        </div>
 
         {/* Información Personal */}
         <div className="space-y-4">
@@ -374,15 +370,6 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
           </>
         )}
 
-        {/* Mensaje de Estado - solo aparece cuando NO está completo */}
-        {!completion.isComplete && (
-          <div className="border rounded-md p-4 bg-muted/20">
-            <div className="flex items-center gap-2 text-red-700">
-              <AlertCircle className="h-5 w-5" />
-              <span className="font-medium">Faltan campos requeridos por completar</span>
-            </div>
-          </div>
-        )}
       </CardContent>
     </Card>
   );

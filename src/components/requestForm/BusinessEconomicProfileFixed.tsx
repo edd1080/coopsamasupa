@@ -178,7 +178,7 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
     if (!applicantType || applicantType === 'asalariado') {
       return (
         <div className="space-y-4">
-          <Label className="text-base font-medium">Tipo de Solicitante *</Label>
+          <Label className="text-base font-medium">Tipo de Solicitante</Label>
           <RadioGroup 
             value={applicantType} 
             onValueChange={setApplicantType}
@@ -202,7 +202,7 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
         return (
           <div className="space-y-6">
             <div className="space-y-4">
-              <Label className="text-base font-medium">Tipo de Solicitante *</Label>
+              <Label className="text-base font-medium">Tipo de Solicitante</Label>
               <RadioGroup 
                 value={applicantType} 
                 onValueChange={setApplicantType}

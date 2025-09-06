@@ -49,7 +49,7 @@ const FormActionBar: React.FC<FormActionBarProps> = ({
 
           {/* Right: Next/Submit button */}
           <div className="flex-1 flex justify-end">
-            {isLastStep && isLastSubStep ? <Button onClick={handleSubmit} disabled={!formData.termsAccepted || !formData.dataProcessingAccepted || !formData.creditCheckAccepted}>
+            {isLastStep && isLastSubStep ? <Button onClick={handleSubmit}>
                 <Check className="mr-2 h-4 w-4" />
                 Enviar solicitud
               </Button> : showNext ? <Button onClick={handleSubNext}>

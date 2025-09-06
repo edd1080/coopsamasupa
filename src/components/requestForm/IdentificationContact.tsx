@@ -29,10 +29,6 @@ const IdentificationContact: React.FC<IdentificationContactProps> = ({ formData,
         );
       case 2:
         return <ContactHousingForm formData={formData} updateFormData={updateFormData} />;
-      case 3:
-        return <CreditInfoForm formData={formData} updateFormData={updateFormData} />;
-      case 4:
-        return <CreditDestinationForm formData={formData} updateFormData={updateFormData} />;
       default:
         return <PersonalIdentificationForm formData={formData} updateFormData={updateFormData} />;
     }

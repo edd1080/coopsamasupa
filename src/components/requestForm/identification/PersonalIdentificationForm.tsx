@@ -71,7 +71,7 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
         {/* Tipo de socio y Agencia - Primeras dos preguntas */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="memberType">Tipo de Socio *</Label>
+            <Label htmlFor="memberType">Tipo de Socio</Label>
             <Select value={formData.memberType || ''} onValueChange={(value) => updateFormData('memberType', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar tipo de socio" />
@@ -86,7 +86,7 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="agencyType">Tipo de Agencia *</Label>
+            <Label htmlFor="agencyType">Tipo de Agencia</Label>
             <Select value={formData.agencyType || ''} onValueChange={(value) => updateFormData('agencyType', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar agencia" />

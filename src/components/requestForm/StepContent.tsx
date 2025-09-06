@@ -8,6 +8,9 @@ import ImprovedReferencesSection from './ImprovedReferencesSection';
 import PhotoDocumentUpload from './PhotoDocumentUpload';
 import ReviewSection from './ReviewSection';
 import FormTypeBanner from '../forms/FormTypeBanner';
+import CreditInfoForm from './identification/CreditInfoForm';
+import CreditDestinationForm from './identification/CreditDestinationForm';
+import ReferencesSection from './ReferencesSection';
 
 const StepContent: React.FC = () => {
   const { activeStep, subStep, formData, updateFormData, isInReferenceForm } = useFormContext();
@@ -17,27 +20,33 @@ const StepContent: React.FC = () => {
       case 0:
         return <IdentificationContact formData={formData} updateFormData={updateFormData} />;
       case 1:
-        if (subStep === 0) {
-          return <FinancialInfo formData={formData} updateFormData={updateFormData} />;
-        } else if (subStep === 1) {
-          return <InvestmentPlan formData={formData} updateFormData={updateFormData} />;
-        }
-        return <FinancialInfo formData={formData} updateFormData={updateFormData} />;
+        // New credit information step
+        return subStep === 0 ? (
+          <CreditInfoForm formData={formData} updateFormData={updateFormData} />
+        ) : (
+          <CreditDestinationForm formData={formData} updateFormData={updateFormData} />
+        );
       case 2:
-        return <BusinessEconomicProfileFixed formData={formData} updateFormData={updateFormData} />;
+        return <FinancialInfo formData={formData} updateFormData={updateFormData} />;
       case 3:
-        return <ImprovedReferencesSection formData={formData} updateFormData={updateFormData} />;
+        return <BusinessEconomicProfileFixed formData={formData} updateFormData={updateFormData} />;
       case 4:
-        return <PhotoDocumentUpload formData={formData} updateFormData={updateFormData} />;
+        return isInReferenceForm ? (
+          <ImprovedReferencesSection formData={formData} updateFormData={updateFormData} />
+        ) : (
+          <ReferencesSection formData={formData} updateFormData={updateFormData} />
+        );
       case 5:
+        return <PhotoDocumentUpload formData={formData} updateFormData={updateFormData} />;
+      case 6:
         return <ReviewSection formData={formData} updateFormData={updateFormData} />;
       default:
-        return null;
+        return <IdentificationContact formData={formData} updateFormData={updateFormData} />;
     }
   };
 
   const getFormType = () => {
-    if (activeStep === 3 && isInReferenceForm) {
+    if (activeStep === 4 && isInReferenceForm) {
       return 'reference';
     }
     return 'applicant';
@@ -45,7 +54,7 @@ const StepContent: React.FC = () => {
 
   return (
     <div className="mb-24">
-      {activeStep === 3 && isInReferenceForm && (
+      {activeStep === 4 && isInReferenceForm && (
         <div className="mb-6">
           <FormTypeBanner type={getFormType()} />
         </div>

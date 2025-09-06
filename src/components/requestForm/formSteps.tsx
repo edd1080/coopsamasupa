@@ -13,6 +13,13 @@ export const steps = [
     component: 'IdentificationContact'
   },
   { 
+    id: 'credit', 
+    title: 'Información del Crédito', 
+    icon: React.createElement(DollarSign, { size: 18 }),
+    description: 'Información del crédito',
+    component: 'CreditInfo'
+  },
+  { 
     id: 'finances', 
     title: 'Finanzas y Patrimonio', 
     icon: React.createElement(DollarSign, { size: 18 }),
