@@ -96,7 +96,7 @@ export const NewGuarantorSheet: React.FC<NewGuarantorSheetProps> = ({
         
         <div className="space-y-4 mt-6">
           <div>
-            <Label htmlFor="nombre">Nombre Completo *</Label>
+            <Label htmlFor="nombre">Nombre Completo</Label>
             <Input
               id="nombre"
               value={formData.nombre}
@@ -106,7 +106,7 @@ export const NewGuarantorSheet: React.FC<NewGuarantorSheetProps> = ({
           </div>
 
           <div>
-            <Label htmlFor="dpi">DPI *</Label>
+            <Label htmlFor="dpi">DPI</Label>
             <Input
               id="dpi"
               value={formData.dpi}
@@ -116,7 +116,7 @@ export const NewGuarantorSheet: React.FC<NewGuarantorSheetProps> = ({
           </div>
 
           <div>
-            <Label htmlFor="telefono">Teléfono *</Label>
+            <Label htmlFor="telefono">Teléfono</Label>
             <Input
               id="telefono"
               value={formData.telefono}
@@ -126,7 +126,7 @@ export const NewGuarantorSheet: React.FC<NewGuarantorSheetProps> = ({
           </div>
 
           <div>
-            <Label htmlFor="parentesco">Parentesco *</Label>
+            <Label htmlFor="parentesco">Parentesco</Label>
             <Select value={formData.parentesco} onValueChange={(value) => handleInputChange('parentesco', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Seleccione parentesco" />

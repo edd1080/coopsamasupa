@@ -35,7 +35,7 @@ const DisabilityForm: React.FC<DisabilityFormProps> = ({ formData, updateFormDat
 
       {hasDisability && (
         <div className="space-y-2">
-          <Label htmlFor="disabilityDescription">Descripción incapacidad *</Label>
+          <Label htmlFor="disabilityDescription">Descripción incapacidad</Label>
           <Input 
             id="disabilityDescription"
             value={formData.disabilityDescription || ''} 

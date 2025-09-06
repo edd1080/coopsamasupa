@@ -31,7 +31,7 @@ const CreditInfoForm: React.FC<CreditInfoFormProps> = ({ formData, updateFormDat
         {/* Primera fila - Destino, Monto, Plazo */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="creditPurpose">Destino del Crédito *</Label>
+            <Label htmlFor="creditPurpose">Destino del Crédito</Label>
             <Select value={formData.creditPurpose || ''} onValueChange={(value) => updateFormData('creditPurpose', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar destino" />
@@ -51,7 +51,7 @@ const CreditInfoForm: React.FC<CreditInfoFormProps> = ({ formData, updateFormDat
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="requestedAmount">Monto Solicitado Q *</Label>
+            <Label htmlFor="requestedAmount">Monto Solicitado Q</Label>
             <Input 
               id="requestedAmount"
               type="text"
@@ -63,7 +63,7 @@ const CreditInfoForm: React.FC<CreditInfoFormProps> = ({ formData, updateFormDat
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="termMonths">Plazo (meses) *</Label>
+            <Label htmlFor="termMonths">Plazo (meses)</Label>
             <Input 
               id="termMonths"
               type="text"

@@ -129,7 +129,7 @@ const FinancialAnalysis: React.FC<FinancialAnalysisProps> = ({ formData, updateF
         <CardContent className="space-y-4">
           {/* Nueva pregunta: Fuente de Ingresos Principal */}
           <div className="space-y-2">
-            <Label htmlFor="incomeSource">Fuente de Ingresos Principal *</Label>
+            <Label htmlFor="incomeSource">Fuente de Ingresos Principal</Label>
             <Select value={formData.incomeSource || ''} onValueChange={(value) => updateFormData('incomeSource', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar fuente principal de ingresos" />

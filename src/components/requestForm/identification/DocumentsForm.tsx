@@ -58,7 +58,7 @@ const DocumentsForm: React.FC<DocumentsFormProps> = ({ formData, updateFormData 
       {/* DPI y NIT */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="dpi">DPI (13 dígitos) *</Label>
+          <Label htmlFor="dpi">DPI (13 dígitos)</Label>
           <Input 
             id="dpi"
             value={formData.dpi || ''} 
@@ -73,7 +73,7 @@ const DocumentsForm: React.FC<DocumentsFormProps> = ({ formData, updateFormData 
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="nit">NIT (mínimo 8 dígitos) *</Label>
+          <Label htmlFor="nit">NIT (mínimo 8 dígitos)</Label>
           <Input 
             id="nit"
             value={formData.nit || ''} 
@@ -94,7 +94,7 @@ const DocumentsForm: React.FC<DocumentsFormProps> = ({ formData, updateFormData 
       {/* DPI Extendido en */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="dpiExtendedIn">DPI Extendido en *</Label>
+          <Label htmlFor="dpiExtendedIn">DPI Extendido en</Label>
           <Select value={formData.dpiExtendedIn || ''} onValueChange={(value) => updateFormData('dpiExtendedIn', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Seleccionar departamento" />

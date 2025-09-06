@@ -66,7 +66,7 @@ const BasicDataForm: React.FC<BasicDataFormProps> = ({ formData, updateFormData 
         {/* Nombres */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="firstName">Primer Nombre *</Label>
+            <Label htmlFor="firstName">Primer Nombre</Label>
             <Input 
               id="firstName"
               value={formData.firstName || ''} 
@@ -99,7 +99,7 @@ const BasicDataForm: React.FC<BasicDataFormProps> = ({ formData, updateFormData 
         {/* Apellidos */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="firstLastName">Primer Apellido *</Label>
+            <Label htmlFor="firstLastName">Primer Apellido</Label>
             <Input 
               id="firstLastName"
               value={formData.firstLastName || ''} 
@@ -109,7 +109,7 @@ const BasicDataForm: React.FC<BasicDataFormProps> = ({ formData, updateFormData 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="secondLastName">Segundo Apellido *</Label>
+            <Label htmlFor="secondLastName">Segundo Apellido</Label>
             <Input 
               id="secondLastName"
               value={formData.secondLastName || ''} 
@@ -132,7 +132,7 @@ const BasicDataForm: React.FC<BasicDataFormProps> = ({ formData, updateFormData 
         {/* DPI y NIT - MOVED FROM DocumentsForm */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="dpi">DPI (13 dígitos) *</Label>
+            <Label htmlFor="dpi">DPI (13 dígitos)</Label>
             <Input 
               id="dpi"
               value={formData.dpi || ''} 
@@ -147,7 +147,7 @@ const BasicDataForm: React.FC<BasicDataFormProps> = ({ formData, updateFormData 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="nit">NIT (mínimo 8 dígitos) *</Label>
+            <Label htmlFor="nit">NIT (mínimo 8 dígitos)</Label>
             <Input 
               id="nit"
               value={formData.nit || ''} 
@@ -168,7 +168,7 @@ const BasicDataForm: React.FC<BasicDataFormProps> = ({ formData, updateFormData 
         {/* DPI Extendido en - MOVED FROM DocumentsForm */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="dpiExtendedIn">DPI Extendido en *</Label>
+            <Label htmlFor="dpiExtendedIn">DPI Extendido en</Label>
             <Select value={formData.dpiExtendedIn || ''} onValueChange={(value) => updateFormData('dpiExtendedIn', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar departamento" />

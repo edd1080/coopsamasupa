@@ -176,7 +176,7 @@ const PrequalificationModal: React.FC<PrequalificationModalProps> = ({ open, onO
           {!showResult ? (
             <div className="space-y-4 p-1">
               <div className="space-y-2">
-                <Label htmlFor="nombre_completo">Nombre completo *</Label>
+                <Label htmlFor="nombre_completo">Nombre completo</Label>
                 <Input
                   id="nombre_completo"
                   value={formData.nombre_completo}
@@ -189,7 +189,7 @@ const PrequalificationModal: React.FC<PrequalificationModalProps> = ({ open, onO
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="dpi">DPI *</Label>
+                <Label htmlFor="dpi">DPI</Label>
                 <Input
                   id="dpi"
                   value={formatDPI(formData.dpi)}
@@ -203,7 +203,7 @@ const PrequalificationModal: React.FC<PrequalificationModalProps> = ({ open, onO
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="telefono">Teléfono *</Label>
+                <Label htmlFor="telefono">Teléfono</Label>
                 <Input
                   id="telefono"
                   value={formData.telefono}
@@ -217,7 +217,7 @@ const PrequalificationModal: React.FC<PrequalificationModalProps> = ({ open, onO
               </div>
 
               <div className="space-y-2">
-                <Label>Actividad económica *</Label>
+                <Label>Actividad económica</Label>
                 <Select
                   value={formData.actividad_economica}
                   onValueChange={(value) => handleInputChange('actividad_economica', value)}
@@ -239,7 +239,7 @@ const PrequalificationModal: React.FC<PrequalificationModalProps> = ({ open, onO
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="ingreso_mensual">Ingreso mensual aproximado *</Label>
+                <Label htmlFor="ingreso_mensual">Ingreso mensual aproximado</Label>
                 <Input
                   id="ingreso_mensual"
                   type="number"
@@ -253,7 +253,7 @@ const PrequalificationModal: React.FC<PrequalificationModalProps> = ({ open, onO
               </div>
 
               <div className="space-y-2">
-                <Label>Destino del crédito *</Label>
+                <Label>Destino del crédito</Label>
                 <Select
                   value={formData.destino_credito}
                   onValueChange={(value) => handleInputChange('destino_credito', value)}
@@ -275,7 +275,7 @@ const PrequalificationModal: React.FC<PrequalificationModalProps> = ({ open, onO
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="monto_solicitado">Monto solicitado *</Label>
+                <Label htmlFor="monto_solicitado">Monto solicitado</Label>
                 <Input
                   id="monto_solicitado"
                   type="number"
@@ -289,7 +289,7 @@ const PrequalificationModal: React.FC<PrequalificationModalProps> = ({ open, onO
               </div>
 
               <div className="space-y-2">
-                <Label>Historial con la cooperativa *</Label>
+                <Label>Historial con la cooperativa</Label>
                 <Select
                   value={formData.historial}
                   onValueChange={(value) => handleInputChange('historial', value)}

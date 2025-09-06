@@ -18,7 +18,7 @@ const AgencyMemberForm: React.FC<AgencyMemberFormProps> = ({ formData, updateFor
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div className="space-y-2">
-        <Label htmlFor="agency">Agencia *</Label>
+        <Label htmlFor="agency">Agencia</Label>
         <Select value={formData.agency || ''} onValueChange={(value) => updateFormData('agency', value)}>
           <SelectTrigger>
             <SelectValue placeholder="Seleccionar agencia" />
@@ -48,7 +48,7 @@ const AgencyMemberForm: React.FC<AgencyMemberFormProps> = ({ formData, updateFor
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="memberType">Tipo Socio *</Label>
+        <Label htmlFor="memberType">Tipo Socio</Label>
         <Select value={formData.memberType || ''} onValueChange={(value) => updateFormData('memberType', value)}>
           <SelectTrigger>
             <SelectValue placeholder="Seleccionar tipo" />

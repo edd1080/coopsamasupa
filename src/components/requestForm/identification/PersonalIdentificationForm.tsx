@@ -113,7 +113,7 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
         {/* Nombres - 4 campos separados */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="firstName">Primer Nombre *</Label>
+            <Label htmlFor="firstName">Primer Nombre</Label>
             <Input 
               id="firstName"
               value={formData.firstName || ''} 
@@ -142,7 +142,7 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
         {/* Apellidos - 2 campos separados */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="firstLastName">Primer Apellido *</Label>
+            <Label htmlFor="firstLastName">Primer Apellido</Label>
             <Input 
               id="firstLastName"
               value={formData.firstLastName || ''} 
@@ -171,7 +171,7 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
         {/* Género */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="gender">Género *</Label>
+            <Label htmlFor="gender">Género</Label>
             <Select value={formData.gender || ''} onValueChange={(value) => updateFormData('gender', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar género" />
@@ -194,7 +194,7 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
         {/* DPI, CUA y NIT */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="dpi">DPI (13 dígitos) *</Label>
+            <Label htmlFor="dpi">DPI (13 dígitos)</Label>
             <Input 
               id="dpi"
               value={formData.dpi || ''} 
@@ -243,7 +243,7 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
         {/* DPI Extendido en y Estado Civil */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="dpiExtendedIn">DPI Extendido en *</Label>
+            <Label htmlFor="dpiExtendedIn">DPI Extendido en</Label>
             <Select value={formData.dpiExtendedIn || ''} onValueChange={(value) => updateFormData('dpiExtendedIn', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar departamento" />
@@ -259,7 +259,7 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="civilStatus">Estado Civil *</Label>
+            <Label htmlFor="civilStatus">Estado Civil</Label>
             <Select 
               value={formData.civilStatus || ''} 
               onValueChange={(value) => updateFormData('civilStatus', value)}

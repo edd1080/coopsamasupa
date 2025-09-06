@@ -68,7 +68,7 @@ const BirthDemographicsForm: React.FC<BirthDemographicsFormProps> = ({ formData,
       {/* Fecha Nacimiento y Edad */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label>Fecha Nacimiento *</Label>
+          <Label>Fecha Nacimiento</Label>
           <DatePicker
             date={getValidDate(formData.birthDate)}
             onSelect={handleDateSelect}
@@ -77,7 +77,7 @@ const BirthDemographicsForm: React.FC<BirthDemographicsFormProps> = ({ formData,
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="age">Edad *</Label>
+          <Label htmlFor="age">Edad</Label>
           <Input 
             id="age"
             type="number"
@@ -95,7 +95,7 @@ const BirthDemographicsForm: React.FC<BirthDemographicsFormProps> = ({ formData,
       {/* Dependientes */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="dependents">Dependientes *</Label>
+          <Label htmlFor="dependents">Dependientes</Label>
           <Input 
             id="dependents"
             type="text"
@@ -129,7 +129,7 @@ const BirthDemographicsForm: React.FC<BirthDemographicsFormProps> = ({ formData,
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="educationLevel">Nivel Educativo *</Label>
+          <Label htmlFor="educationLevel">Nivel Educativo</Label>
           <Select value={formData.educationLevel || ''} onValueChange={(value) => updateFormData('educationLevel', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Seleccionar nivel" />
@@ -148,7 +148,7 @@ const BirthDemographicsForm: React.FC<BirthDemographicsFormProps> = ({ formData,
       {/* Profesión y Ocupación */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
          <div className="space-y-2">
-           <Label htmlFor="profession">Profesión *</Label>
+           <Label htmlFor="profession">Profesión</Label>
            <Select value={formData.profession || ''} onValueChange={(value) => updateFormData('profession', value)}>
              <SelectTrigger>
                <SelectValue placeholder="Seleccionar profesión" />
@@ -164,7 +164,7 @@ const BirthDemographicsForm: React.FC<BirthDemographicsFormProps> = ({ formData,
          </div>
 
          <div className="space-y-2">
-           <Label htmlFor="occupation">Ocupación *</Label>
+           <Label htmlFor="occupation">Ocupación</Label>
            <Select value={formData.occupation || ''} onValueChange={(value) => updateFormData('occupation', value)}>
              <SelectTrigger>
                <SelectValue placeholder="Seleccionar ocupación" />

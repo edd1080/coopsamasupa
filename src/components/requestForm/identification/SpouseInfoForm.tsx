@@ -24,7 +24,7 @@ const SpouseInfoForm: React.FC<SpouseInfoFormProps> = ({ formData, updateFormDat
       {/* Nombres del Cónyuge */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="spouseFirstName">Primer Nombre Cónyuge *</Label>
+          <Label htmlFor="spouseFirstName">Primer Nombre Cónyuge</Label>
           <Input 
             id="spouseFirstName"
             value={formData.spouseFirstName || ''} 
@@ -46,7 +46,7 @@ const SpouseInfoForm: React.FC<SpouseInfoFormProps> = ({ formData, updateFormDat
       {/* Apellidos del Cónyuge */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="spouseFirstLastName">Primer Apellido Cónyuge *</Label>
+          <Label htmlFor="spouseFirstLastName">Primer Apellido Cónyuge</Label>
           <Input 
             id="spouseFirstLastName"
             value={formData.spouseFirstLastName || ''} 

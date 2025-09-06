@@ -93,7 +93,7 @@ const ContactHousingForm: React.FC<ContactHousingFormProps> = ({ formData, updat
         {/* Teléfonos y Email */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="mobilePhone">Teléfono Móvil *</Label>
+            <Label htmlFor="mobilePhone">Teléfono Móvil</Label>
             <Input 
               id="mobilePhone"
               type="tel"
@@ -141,7 +141,7 @@ const ContactHousingForm: React.FC<ContactHousingFormProps> = ({ formData, updat
         {/* Dirección */}
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="address">Dirección *</Label>
+            <Label htmlFor="address">Dirección</Label>
             <Textarea 
               id="address"
               value={formData.address || ''} 
@@ -173,7 +173,7 @@ const ContactHousingForm: React.FC<ContactHousingFormProps> = ({ formData, updat
         {/* Departamento y Municipio */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="residenceDepartment">Departamento de Residencia *</Label>
+            <Label htmlFor="residenceDepartment">Departamento de Residencia</Label>
             <Select 
               value={formData.residenceDepartment || ''} 
               onValueChange={(value) => {
@@ -212,7 +212,7 @@ const ContactHousingForm: React.FC<ContactHousingFormProps> = ({ formData, updat
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="residenceMunicipality">Municipio de Residencia *</Label>
+            <Label htmlFor="residenceMunicipality">Municipio de Residencia</Label>
             <Select 
               value={formData.residenceMunicipality || ''} 
               onValueChange={(value) => updateFormData('residenceMunicipality', value)}
@@ -235,7 +235,7 @@ const ContactHousingForm: React.FC<ContactHousingFormProps> = ({ formData, updat
         {/* Vivienda y Estabilidad */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="housingType">Vivienda *</Label>
+            <Label htmlFor="housingType">Vivienda</Label>
             <Select value={formData.housingType || ''} onValueChange={(value) => updateFormData('housingType', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Tipo de vivienda" />
@@ -250,7 +250,7 @@ const ContactHousingForm: React.FC<ContactHousingFormProps> = ({ formData, updat
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="residenceStability">Estabilidad Domiciliar *</Label>
+            <Label htmlFor="residenceStability">Estabilidad Domiciliar</Label>
             <div className="flex items-center">
               <Select 
                 value={formData.residenceStability || ''} 

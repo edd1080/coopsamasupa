@@ -24,7 +24,7 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ formData, updateFor
       {/* Nombres y Apellidos */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="firstName">Nombres *</Label>
+          <Label htmlFor="firstName">Nombres</Label>
           <Input 
             id="firstName"
             value={formData.firstName || ''} 
@@ -53,7 +53,7 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ formData, updateFor
       {/* Género */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="gender">Género *</Label>
+          <Label htmlFor="gender">Género</Label>
           <Select value={formData.gender || ''} onValueChange={(value) => updateFormData('gender', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Seleccionar género" />
@@ -66,7 +66,7 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ formData, updateFor
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="civilStatus">Estado Civil *</Label>
+          <Label htmlFor="civilStatus">Estado Civil</Label>
           <Select 
             value={formData.civilStatus || ''} 
             onValueChange={(value) => updateFormData('civilStatus', value)}
