@@ -2,8 +2,6 @@ import React from 'react';
 import { useFormContext } from './RequestFormProvider';
 import IdentificationContact from './IdentificationContact';
 import FinancialInfo from './FinancialInfo';
-import InvestmentPlan from './InvestmentPlan';
-import BusinessEconomicProfileFixed from './BusinessEconomicProfileFixed';
 import ImprovedReferencesSection from './ImprovedReferencesSection';
 import PhotoDocumentUpload from './PhotoDocumentUpload';
 import ReviewSection from './ReviewSection';
@@ -20,7 +18,7 @@ const StepContent: React.FC = () => {
       case 0:
         return <IdentificationContact formData={formData} updateFormData={updateFormData} />;
       case 1:
-        // New credit information step
+        // Credit information step
         return subStep === 0 ? (
           <CreditInfoForm formData={formData} updateFormData={updateFormData} />
         ) : (
@@ -29,16 +27,14 @@ const StepContent: React.FC = () => {
       case 2:
         return <FinancialInfo formData={formData} updateFormData={updateFormData} />;
       case 3:
-        return <BusinessEconomicProfileFixed formData={formData} updateFormData={updateFormData} />;
-      case 4:
         return isInReferenceForm ? (
           <ImprovedReferencesSection formData={formData} updateFormData={updateFormData} />
         ) : (
           <ReferencesSection formData={formData} updateFormData={updateFormData} />
         );
-      case 5:
+      case 4:
         return <PhotoDocumentUpload formData={formData} updateFormData={updateFormData} />;
-      case 6:
+      case 5:
         return <ReviewSection formData={formData} updateFormData={updateFormData} />;
       default:
         return <IdentificationContact formData={formData} updateFormData={updateFormData} />;
@@ -46,7 +42,7 @@ const StepContent: React.FC = () => {
   };
 
   const getFormType = () => {
-    if (activeStep === 4 && isInReferenceForm) {
+    if (activeStep === 3 && isInReferenceForm) {
       return 'reference';
     }
     return 'applicant';
@@ -54,7 +50,7 @@ const StepContent: React.FC = () => {
 
   return (
     <div className="mb-24">
-      {activeStep === 4 && isInReferenceForm && (
+      {activeStep === 3 && isInReferenceForm && (
         <div className="mb-6">
           <FormTypeBanner type={getFormType()} />
         </div>

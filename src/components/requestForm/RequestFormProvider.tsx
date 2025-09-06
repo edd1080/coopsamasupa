@@ -62,14 +62,6 @@ interface FormContextType {
   handleShowExitDialog: () => void;
 }
 
-interface InvestmentPlanItem {
-  id: string;
-  quantity: string;
-  unit: string;
-  description: string;
-  unitPrice: string;
-  total: string;
-}
 
 interface FormData {
   // Basic identification
@@ -128,9 +120,6 @@ interface FormData {
   prestamosLargoPlazo: string;
   montoSolicitado: string;
   
-  // Investment plan
-  investmentPlanItems: InvestmentPlanItem[];
-  investmentPlanTotal: string;
   
   // Consent fields
   termsAccepted: boolean;
@@ -295,9 +284,6 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     prestamosLargoPlazo: '',
     montoSolicitado: '',
     
-    // Investment plan
-    investmentPlanItems: [],
-    investmentPlanTotal: '',
     
     // Consent fields
     termsAccepted: false,
@@ -395,28 +381,21 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   const getSubStepsForSection = useCallback((sectionIndex: number): number => {
     switch (sectionIndex) {
       case 0: // IdentificationContact
-        return 3; // PersonalId, Birth/Disability, Contact (credit info moved to separate step)
+        return 3; // PersonalId, Birth/Disability, Contact
       case 1: // Credit Information
         return 2; // CreditInfo, CreditDestination
       case 2: // FinancialInfo  
         return 2; // Financial Analysis, Patrimonial Statement
-      case 3: // BusinessEconomicProfile
-        // Dynamically calculate substeps based on current applicant type
-        const currentApplicantType = formData.applicantType;
-        if (currentApplicantType === 'negocio_propio') {
-          return 4; // 4 substeps for business owners
-        }
-        return 1; // 1 substep for employees
-      case 4: // ReferencesSection (formerly GuarantorsSection)
+      case 3: // ReferencesSection (formerly GuarantorsSection)
         return 1;
-      case 5: // DocumentsSection
+      case 4: // DocumentsSection
         return 1;
-      case 6: // ReviewSection
+      case 5: // ReviewSection
         return 1;
       default:
         return 1;
     }
-  }, [formData.applicantType]);
+  }, []);
 
   // Navigation helpers
   const isFirstStep = currentStep === 0 && subStep === 0;
@@ -463,21 +442,6 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     // Reset scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
     
-    // Check if we're at the last substep of BusinessEconomicProfile
-    if (currentStep === 3) {
-      const maxSubSteps = getSubStepsForSection(currentStep);
-      const actualIsLastSubStep = subStep >= maxSubSteps - 1;
-      
-      if (actualIsLastSubStep) {
-        // Move to next main step
-        if (!isLastStep) {
-          console.log('➡️ Moving to next step from BusinessEconomicProfile:', currentStep + 1);
-          setCurrentStep(prev => prev + 1);
-          setSubStep(0);
-        }
-        return;
-      }
-    }
     
     if (isLastSubStep) {
       // Move to next main step
