@@ -92,10 +92,10 @@ const ApplicationDetails = () => {
     }
     return [
       { id: 'identification', name: 'Identificación y Contacto', icon: User },
-      { id: 'finances', name: 'Finanzas y Patrimonio', icon: DollarSign },
-      { id: 'business', name: 'Negocio y Perfil Económico', icon: Briefcase },
-      { id: 'guarantors', name: 'Garantías, Fiadores y Referencias', icon: Users },
-      { id: 'documents', name: 'Documentos y Cierre', icon: FileSignature },
+      { id: 'credit', name: 'Información del Crédito', icon: DollarSign },
+      { id: 'finances', name: 'Finanzas y Patrimonio', icon: BarChart3 },
+      { id: 'guarantors', name: 'Referencias Personales', icon: Users },
+      { id: 'documents', name: 'Documentos', icon: FileSignature },
       { id: 'review', name: 'Revisión Final', icon: CheckCircle }
     ];
   };
@@ -118,16 +118,30 @@ const ApplicationDetails = () => {
   };
 
   const navigateToFormSection = (sectionId: string) => {
-    toast({
-      title: "Navegando a sección",
-      description: `Abriendo ${sectionId}...`,
-    });
-    navigate(`/request-form/${id}`, { 
-      state: { 
-        sectionId,
-        applicationId: id 
-      } 
-    });
+    // Map section IDs to step indices
+    const sectionToStepMap: { [key: string]: number } = {
+      'identification': 0,
+      'credit': 1,
+      'finances': 2,
+      'guarantors': 3,
+      'documents': 4,
+      'review': 5
+    };
+    
+    const stepIndex = sectionToStepMap[sectionId];
+    if (stepIndex !== undefined) {
+      toast({
+        title: "Navegando a sección",
+        description: `Abriendo ${sectionId}...`,
+      });
+      navigate(`/request-form/${id}`, { 
+        state: { 
+          sectionId,
+          stepIndex,
+          applicationId: id 
+        } 
+      });
+    }
   };
 
   const handleAddGuarantor = async (guarantorData: any) => {

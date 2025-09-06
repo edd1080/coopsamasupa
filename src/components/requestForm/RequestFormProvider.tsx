@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { generateApplicationId } from '@/utils/applicationIdGenerator';
 import { useToast } from '@/hooks/use-toast';
 import { useSaveDraft } from '@/hooks/useDraftActions';
@@ -174,6 +175,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   onNavigateAfterExit 
 }) => {
   const { toast } = useToast();
+  const location = useLocation();
   
   // Initialize form data with application ID
   const [formData, setFormData] = useState<FormData>(() => ({
@@ -336,6 +338,17 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
 
   // Add save draft mutation
   const saveDraftMutation = useSaveDraft();
+
+  // Handle navigation from ApplicationDetails
+  useEffect(() => {
+    if (location.state?.stepIndex !== undefined) {
+      const stepIndex = location.state.stepIndex;
+      if (stepIndex >= 0 && stepIndex < steps.length) {
+        setCurrentStep(stepIndex);
+        setSubStep(0); // Reset to first substep
+      }
+    }
+  }, [location.state, steps.length]);
 
   // Update form data function
   const updateFormData = useCallback((field: string, value: any) => {
