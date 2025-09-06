@@ -94,7 +94,7 @@ const ApplicationDetails = () => {
       { id: 'identification', name: 'Identificación y Contacto', icon: User },
       { id: 'credit', name: 'Información del Crédito', icon: DollarSign },
       { id: 'finances', name: 'Finanzas y Patrimonio', icon: BarChart3 },
-      { id: 'guarantors', name: 'Referencias Personales', icon: Users },
+      { id: 'references', name: 'Referencias Personales', icon: Users },
       { id: 'documents', name: 'Documentos', icon: FileSignature },
       { id: 'review', name: 'Revisión Final', icon: CheckCircle }
     ];
@@ -107,14 +107,14 @@ const ApplicationDetails = () => {
       applicationData.last_step : 
       ('progress_step' in applicationData) ? applicationData.progress_step : 0;
     const documents = formData.documents || {};
-    const guarantors = formData.guarantors || [];
+    const references = formData.references || [];
 
     const allSectionsComplete = progress >= 6;
     const requiredDocsComplete = ['dpiFrontal', 'dpiTrasero', 'fotoSolicitante']
       .every(docKey => documents[docKey]?.status === 'complete');
-    const hasGuarantors = guarantors.length > 0;
+    const hasReferences = references.length > 0;
 
-    return allSectionsComplete && requiredDocsComplete && hasGuarantors;
+    return allSectionsComplete && requiredDocsComplete && hasReferences;
   };
 
   const navigateToFormSection = (sectionId: string) => {
@@ -238,7 +238,7 @@ const ApplicationDetails = () => {
   }
 
   const formData = getFormData(applicationData);
-  const guarantors = formData.guarantors || [];
+  const references = formData.references || [];
   const documents = formData.documents || {};
   const progress = (applicationData.isDraft && 'last_step' in applicationData) ? 
     applicationData.last_step : 
@@ -367,42 +367,39 @@ const ApplicationDetails = () => {
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center">
                   <Users className="h-5 w-5 mr-2" />
-                  Fiadores
+                  Referencias Personales
                 </CardTitle>
                 <Badge 
-                  variant={guarantors.length >= 2 ? "default" : "destructive"}
-                  className={guarantors.length >= 2 ? "bg-green-100 text-green-800" : ""}
+                  variant={references.length >= 2 ? "default" : "destructive"}
+                  className={references.length >= 2 ? "bg-green-100 text-green-800" : ""}
                 >
-                  {guarantors.length} de 2 mínimo
+                  {references.length} de 2 mínimo
                 </Badge>
               </div>
             </CardHeader>
             <CardContent>
-              {guarantors.length === 0 ? (
+              {references.length === 0 ? (
                 <div className="text-center py-8">
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
                     <Users className="h-8 w-8 text-muted-foreground" />
                   </div>
-                  <h3 className="font-medium mb-2">No hay fiadores agregados</h3>
+                  <h3 className="font-medium mb-2">No hay referencias agregadas</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Agregue al menos un fiador para continuar con la solicitud
+                    Agregue al menos dos referencias para continuar con la solicitud
                   </p>
-                  <NewGuarantorSheet
-                    trigger={
-                      <Button className="bg-[#E18E33] hover:bg-[#E18E33]/90 text-white border-0">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Agregar Primer Fiador
-                      </Button>
-                    }
-                    onCreateGuarantor={handleAddGuarantor}
-                    onDiscard={() => {}}
-                  />
+                  <Button 
+                    onClick={() => navigate(`/request/${id}?step=4`)}
+                    className="bg-[#E18E33] hover:bg-[#E18E33]/90 text-white border-0"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Agregar Referencias
+                  </Button>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {guarantors.map((guarantor: any, index: number) => (
+                  {references.map((reference: any, index: number) => (
                     <div
-                      key={guarantor.id || index}
+                      key={reference.id || index}
                       className="p-4 rounded-xl border bg-gradient-to-r from-primary/5 to-accent/5 hover:shadow-md transition-shadow"
                     >
                       <div className="flex items-center justify-between">
@@ -411,22 +408,20 @@ const ApplicationDetails = () => {
                             <UserCheck className="h-5 w-5" />
                           </div>
                           <div>
-                            <h4 className="font-medium">{guarantor.nombre}</h4>
+                            <h4 className="font-medium">{reference.fullName}</h4>
                             <p className="text-sm text-muted-foreground">
-                              {guarantor.parentesco} • {guarantor.dpi}
+                              {reference.referenceType} • {reference.phone}
                             </p>
                           </div>
                         </div>
                         <div className="text-right flex items-center gap-3">
                           <div>
-                            <p className="text-sm font-medium">Q {Number(guarantor.salario || 0).toLocaleString()}</p>
-                            <p className="text-xs text-muted-foreground">{guarantor.progress || 0}% completo</p>
+                            <p className="text-sm font-medium">{reference.relation || 'N/A'}</p>
+                            <p className="text-xs text-muted-foreground">{reference.rating || 'Sin calificar'}</p>
                           </div>
-                          <CircularProgress 
-                            progress={guarantor.progress || 0} 
-                            size={40}
-                            strokeWidth={3}
-                          />
+                          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                            <UserCheck className="h-5 w-5 text-green-600" />
+                          </div>
                         </div>
                       </div>
                     </div>
