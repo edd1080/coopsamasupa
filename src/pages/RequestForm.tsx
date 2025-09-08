@@ -12,6 +12,7 @@ import RequestFormProvider, { useFormContext } from '@/components/requestForm/Re
 import StepContent from '@/components/requestForm/StepContent';
 import ExitDialog from '@/components/requestForm/ExitDialog';
 import FormActionBar from '@/components/requestForm/FormActionBar';
+import ApplicationSuccessScreen from '@/components/requestForm/ApplicationSuccessScreen';
 import { steps } from '@/components/requestForm/formSteps';
 
 const RequestFormContent = () => {
@@ -22,10 +23,22 @@ const RequestFormContent = () => {
     handleExit,
     hasUnsavedChanges,
     formData,
-    handleShowExitDialog
+    handleShowExitDialog,
+    showSuccessScreen
   } = useFormContext();
+  
+  const navigate = useNavigate();
 
   console.log('🎯 RequestFormContent rendering');
+
+  if (showSuccessScreen) {
+    return (
+      <ApplicationSuccessScreen
+        applicationId={formData.applicationId}
+        onGoToApplications={() => navigate('/applications')}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">

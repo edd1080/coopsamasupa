@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { CreditCard } from 'lucide-react';
 import { guatemalaDepartments, departmentsMunicipalities } from '@/data/guatemalaLocations';
+import SubformHeader from '@/components/forms/SubformHeader';
 import { 
   Select,
   SelectContent,
@@ -28,12 +30,12 @@ const CreditDestinationForm: React.FC<CreditDestinationFormProps> = ({ formData,
 
   return (
     <div className="space-y-6">
-      <div>
-        <h3 className="font-semibold text-lg">Destino del Crédito</h3>
-        <p className="text-muted-foreground text-sm">
-          Complete la información sobre el destino específico del crédito.
-        </p>
-      </div>
+      <SubformHeader
+        icon={<CreditCard className="w-5 h-5" />}
+        title="Destino del Crédito"
+        subtitle="Complete la información sobre el destino específico del crédito."
+        variant="applicant"
+      />
       
       <div className="space-y-6">
 

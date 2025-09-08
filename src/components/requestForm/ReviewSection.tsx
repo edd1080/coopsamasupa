@@ -53,67 +53,24 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
   };
 
   const getCompletionStatus = () => {
-    // Campos absolutamente requeridos basados en la estructura real del formulario
-    const requiredFields = [
-      // Identificación básica - campos que aparecen en BasicDataForm
-      'firstName',
-      'gender', 
-      'civilStatus',
-      'dpi',
-      'dpiExtendedIn',
-      'cua',
-      
-      'nit',
-      // Contacto - campos que aparecen en ContactHousingForm
-      'mobilePhone',
-      'email',
-      'address',
-      // Información del crédito - campos que aparecen en CreditInfoForm
-      'creditPurpose',
-      'requestedAmount',
-      'termMonths'
-    ];
+    // Ya no hay campos requeridos - todos son opcionales
+    const allFields = Object.keys(formData).filter(key => 
+      formData[key] && 
+      formData[key] !== '' && 
+      formData[key] !== null && 
+      formData[key] !== undefined
+    );
     
-    const completedFields = requiredFields.filter(field => {
-      const value = formData[field];
-      // Para campos numéricos, verificar que sean mayor a 0
-      if (field === 'requestedAmount' || field === 'termMonths') {
-        return value && parseFloat(value) > 0;
-      }
-      // Para DPI, verificar que tenga exactamente 13 dígitos
-      if (field === 'dpi') {
-        return value && value.length === 13 && /^\d{13}$/.test(value);
-      }
-      // Para NIT, verificar que tenga al menos 8 dígitos
-      if (field === 'nit') {
-        return value && value.length >= 8 && /^\d+$/.test(value);
-      }
-      // Para otros campos, verificar que no estén vacíos
-      return value && value.trim && value.trim().length > 0;
-    });
+    // Estimar total basado en las secciones principales del formulario
+    const estimatedTotalFields = 50;
     
-    const missingFields = requiredFields.filter(field => {
-      const value = formData[field];
-      if (field === 'requestedAmount' || field === 'termMonths') {
-        return !value || parseFloat(value) <= 0;
-      }
-      if (field === 'dpi') {
-        return !value || value.length !== 13 || !/^\d{13}$/.test(value);
-      }
-      if (field === 'nit') {
-        return !value || value.length < 8 || !/^\d+$/.test(value);
-      }
-      return !value || !value.trim || value.trim().length === 0;
-    });
-    
-    const completionPercentage = (completedFields.length / requiredFields.length) * 100;
+    const completionPercentage = Math.min((allFields.length / estimatedTotalFields) * 100, 100);
     
     return {
       percentage: Math.round(completionPercentage),
-      completed: completedFields.length,
-      total: requiredFields.length,
-      missingFields: missingFields.map(field => fieldLabels[field] || field),
-      isComplete: completionPercentage === 100
+      completed: allFields.length,
+      total: estimatedTotalFields,
+      isComplete: false // Siempre permitir envío
     };
   };
 
@@ -144,37 +101,18 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
           <div className="flex items-center justify-between">
             <h4 className="font-medium">Estado de Completitud</h4>
             <Badge 
-              variant={completion.isComplete ? "default" : "secondary"}
-              className={completion.isComplete ? "" : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"}
+              variant="secondary"
+              className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
             >
               {completion.percentage}% Completo
             </Badge>
           </div>
           <div className="flex items-center gap-2">
-            {completion.isComplete ? (
-              <CheckCircle className="h-5 w-5 text-green-500" />
-            ) : (
-              <AlertCircle className="h-5 w-5 text-red-500" />
-            )}
+            <CheckCircle className="h-5 w-5 text-blue-500" />
             <span className="text-sm">
-              {completion.completed} de {completion.total} campos requeridos completados
+              {completion.completed} campos completados
             </span>
           </div>
-          
-          {/* Lista de campos faltantes */}
-          {completion.missingFields.length > 0 && (
-            <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-              <p className="text-sm font-medium text-blue-800 mb-2">Campos sugeridos para completar:</p>
-              <ul className="text-sm text-blue-700 space-y-1">
-                {completion.missingFields.map((field, index) => (
-                  <li key={index} className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
-                    {field}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
         </div>
 
         {/* Botón de Enviar Solicitud - siempre disponible */}
@@ -200,7 +138,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
 
         {/* Información Personal */}
         <div className="space-y-4">
-          <h4 className="font-medium">1. Identificación y Contacto</h4>
+          <h4 className="font-medium">Identificación y Contacto</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
               <span className="font-medium">Agencia:</span> {formData.agency || 'No especificada'}
@@ -265,7 +203,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
         {(formData.cashSales || formData.creditSales) && (
           <>
             <div className="space-y-4">
-              <h4 className="font-medium">2. Información Financiera</h4>
+              <h4 className="font-medium">Información Financiera</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="font-medium">Ventas Contado:</span> {formatCurrency(formData.cashSales)}
@@ -286,7 +224,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
         {formData.businessName && (
           <>
             <div className="space-y-4">
-              <h4 className="font-medium">3. Negocio y Perfil Económico</h4>
+              <h4 className="font-medium">Negocio y Perfil Económico</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="font-medium">Nombre Negocio:</span> {formData.businessName}
@@ -327,7 +265,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
         {formData.guarantors && formData.guarantors.length > 0 && (
           <>
             <div className="space-y-4">
-              <h4 className="font-medium">4. Fiadores y Referencias</h4>
+              <h4 className="font-medium">Fiadores y Referencias</h4>
               <div className="space-y-2">
                 {formData.guarantors.map((guarantor: any, index: number) => (
                   <div key={guarantor.id} className="text-sm">
@@ -343,7 +281,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
         {/* Documentos */}
         {formData.documents && (
           <div className="space-y-4">
-            <h4 className="font-medium">5. Documentos</h4>
+            <h4 className="font-medium">Documentos</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
               {Object.entries(formData.documents).map(([key, doc]: [string, any]) => (
                 <div key={key} className="flex items-center gap-2">

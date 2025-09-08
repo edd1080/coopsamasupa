@@ -61,6 +61,7 @@ interface FormContextType {
   handleExit: (shouldSave?: boolean) => Promise<void> | void;
   hasUnsavedChanges: boolean;
   handleShowExitDialog: () => void;
+  showSuccessScreen: boolean;
 }
 
 
@@ -335,6 +336,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   // Exit dialog state
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showSuccessScreen, setShowSuccessScreen] = useState(false);
 
   // Add save draft mutation
   const saveDraftMutation = useSaveDraft();
@@ -509,12 +511,24 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     setHasUnsavedChanges(false);
   }, [formData, currentStep, subStep, saveDraftMutation]);
 
-  const handleSubmit = useCallback(() => {
-    console.log('📋 Form submitted:', formData);
-    toast({
-      title: "Solicitud Enviada",
-      description: "Su solicitud de crédito ha sido enviada exitosamente.",
-    });
+  const handleSubmit = useCallback(async () => {
+    console.log('📤 Submitting form with data:', formData);
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      setShowSuccessScreen(true);
+      
+    } catch (error) {
+      console.error('❌ Error submitting form:', error);
+      toast({
+        title: "Error al enviar",
+        description: "Hubo un problema al enviar la solicitud. Intente de nuevo.",
+        variant: "destructive",
+        duration: 5000,
+      });
+    }
   }, [formData, toast]);
 
   // Updated exit handling with save functionality and proper navigation
@@ -635,6 +649,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     handleExit,
     hasUnsavedChanges,
     handleShowExitDialog,
+    showSuccessScreen,
   };
 
   return (

@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useDocumentManager, guatemalanDocuments } from '@/hooks/useDocumentManager';
 import InteractiveDocumentCard from '@/components/documents/InteractiveDocumentCard';
 import SubformHeader from '@/components/forms/SubformHeader';
+import NativeCameraCapture from './NativeCameraCapture';
 
 interface PhotoDocumentUploadProps {
   formData: any;
@@ -26,6 +27,7 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
   const [showPreview, setShowPreview] = useState<any>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isCameraReady, setIsCameraReady] = useState(false);
+  const [showNativeCamera, setShowNativeCamera] = useState<string | null>(null);
 
   const {
     documents,
@@ -48,6 +50,13 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
   }, [documents]);
 
   const startCamera = async (documentId: string) => {
+    // Check if running in native app (Capacitor)
+    if (typeof window !== 'undefined' && (window as any).Capacitor) {
+      setShowNativeCamera(documentId);
+      return;
+    }
+    
+    // Fallback to web camera for browser
     try {
       setActiveCameraId(documentId);
       setIsCameraReady(false);
@@ -172,7 +181,31 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
         }}
       />
       
-      {/* Real Camera dialog */}
+      {/* Native Camera Dialog */}
+      <Dialog open={showNativeCamera !== null} onOpenChange={(open) => !open && setShowNativeCamera(null)}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Capturar Documento</DialogTitle>
+          </DialogHeader>
+          
+          {showNativeCamera && (
+            <NativeCameraCapture
+              documentTitle={documents.find(d => d.id === showNativeCamera)?.title || ''}
+              onPhotoCapture={(file) => {
+                uploadDocument(showNativeCamera, file);
+                setShowNativeCamera(null);
+              }}
+              onFileUpload={() => {
+                handleFileUpload(showNativeCamera);
+                setShowNativeCamera(null);
+              }}
+              onCancel={() => setShowNativeCamera(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Web Camera dialog */}
       <Dialog open={activeCameraId !== null} onOpenChange={(open) => !open && stopCamera()}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
