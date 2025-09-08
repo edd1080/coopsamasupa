@@ -7,7 +7,7 @@ const subformHeaderVariants = cva(
   {
     variants: {
       variant: {
-        applicant: "bg-gradient-to-r from-primary to-primary/90 text-primary-foreground",
+        applicant: "bg-gradient-to-r from-accent to-accent/90 text-accent-foreground",
         reference: "bg-gradient-to-r from-accent to-accent/90 text-accent-foreground"
       }
     },
@@ -39,10 +39,7 @@ const SubformHeader: React.FC<SubformHeaderProps> = ({
             {title}
           </h3>
           {subtitle && (
-            <p className={cn(
-              "text-xs leading-relaxed",
-              variant === "applicant" ? "text-primary-foreground/90" : "text-accent-foreground/90"
-            )}>
+            <p className="text-xs leading-relaxed text-accent-foreground/90">
               {subtitle}
             </p>
           )}
