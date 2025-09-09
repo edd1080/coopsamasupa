@@ -31,6 +31,29 @@ export default defineConfig(({ mode }) => ({
                 maxAgeSeconds: 60 * 60 * 24 * 365 // <== 365 days
               }
             }
+          },
+          {
+            urlPattern: /^https:\/\/hwfjpqcdiottcqyxqhyd\.supabase\.co\/rest\/v1\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'supabase-rest',
+              networkTimeoutSeconds: 5,
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 // 24 hours
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/hwfjpqcdiottcqyxqhyd\.supabase\.co\/storage\/v1\/object\/.*/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'supabase-storage',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
+              }
+            }
           }
         ]
       },

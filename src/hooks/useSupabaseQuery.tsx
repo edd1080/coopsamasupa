@@ -161,6 +161,39 @@ export const useCreatePrequalification = () => {
       // Sanitize input data before storing
       const sanitizedData = sanitizeObjectData(data);
       
+      // Check if offline - enqueue if no connection
+      if (!navigator.onLine) {
+        const { offlineQueue } = await import('@/utils/offlineQueue');
+        await offlineQueue.enqueue({
+          type: 'createPrequalification',
+          payload: {
+            agent_id: user.id,
+            client_name: sanitizedData.nombre_completo,
+            client_dpi: sanitizedData.dpi,
+            client_phone: sanitizedData.telefono,
+            economic_activity: sanitizedData.actividad_economica,
+            monthly_income: sanitizedData.ingreso_mensual,
+            credit_purpose: sanitizedData.destino_credito,
+            requested_amount: sanitizedData.monto_solicitado,
+            credit_history: sanitizedData.historial,
+            evaluation_result: sanitizedData.result,
+            evaluation_status: sanitizedData.result.status,
+            can_proceed: sanitizedData.result.canProceed,
+            requires_additional_data: sanitizedData.result.requiresAdditionalData,
+            evaluation_reason: sanitizedData.result.reason
+          }
+        });
+        
+        // Return optimistic result for offline
+        return {
+          id: `offline-${Date.now()}`,
+          agent_id: user.id,
+          client_name: sanitizedData.nombre_completo,
+          created_at: new Date().toISOString(),
+          ...sanitizedData
+        };
+      }
+      
       const { data: result, error } = await supabase
         .from('prequalifications')
         .insert({
@@ -209,6 +242,26 @@ export const useCreateApplication = () => {
       
       // Sanitize input data before storing
       const sanitizedData = sanitizeObjectData(data);
+      
+      // Check if offline - enqueue if no connection
+      if (!navigator.onLine) {
+        const { offlineQueue } = await import('@/utils/offlineQueue');
+        await offlineQueue.enqueue({
+          type: 'createApplication',
+          payload: {
+            ...sanitizedData,
+            agent_id: user.id
+          }
+        });
+        
+        // Return optimistic result for offline
+        return {
+          id: `offline-${Date.now()}`,
+          agent_id: user.id,
+          created_at: new Date().toISOString(),
+          ...sanitizedData
+        };
+      }
       
       const { data: result, error } = await supabase
         .from('applications')

@@ -78,27 +78,85 @@ export const useDocumentManager = (initialDocuments?: DocumentItem[]) => {
     ));
   }, []);
 
-  const uploadDocument = useCallback(async (documentId: string, file: File) => {
+  const uploadDocument = useCallback(async (documentId: string, file: File, applicationId?: string) => {
     setLoadingDocument(documentId);
     
     try {
-      // Crear thumbnail URL
+      // Crear thumbnail URL local
       const thumbnailUrl = URL.createObjectURL(file);
       
-      // Simular proceso de subida
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      updateDocument(documentId, {
-        file,
-        status: 'success',
-        thumbnailUrl
-      });
-      
-      toast({
-        title: "Documento subido",
-        description: "El documento se ha cargado correctamente.",
-        duration: 3000,
-      });
+      if (navigator.onLine) {
+        // Online: Upload to Supabase Storage
+        const { supabase } = await import('@/integrations/supabase/client');
+        const { useAuth } = await import('@/hooks/useAuth');
+        
+        // Generate unique file path
+        const timestamp = Date.now();
+        const extension = file.name.split('.').pop() || 'jpg';
+        const fileName = `${documentId}-${timestamp}.${extension}`;
+        const filePath = applicationId 
+          ? `${applicationId}/${fileName}`
+          : `documents/${fileName}`;
+        
+        const { data, error } = await supabase.storage
+          .from('documents')
+          .upload(filePath, file, { upsert: true });
+          
+        if (error) throw error;
+        
+        // Get public URL for thumbnail
+        const { data: { publicUrl } } = supabase.storage
+          .from('documents')
+          .getPublicUrl(filePath);
+        
+        updateDocument(documentId, {
+          file,
+          status: 'success',
+          thumbnailUrl: publicUrl
+        });
+        
+        toast({
+          title: "Documento subido",
+          description: "El documento se ha cargado correctamente.",
+          duration: 3000,
+        });
+      } else {
+        // Offline: Store in localforage and queue for sync
+        const localforage = (await import('localforage')).default;
+        const { offlineQueue } = await import('@/utils/offlineQueue');
+        
+        const blobKey = `document-blob-${documentId}-${Date.now()}`;
+        await localforage.setItem(blobKey, file);
+        
+        const timestamp = Date.now();
+        const extension = file.name.split('.').pop() || 'jpg';
+        const fileName = `${documentId}-${timestamp}.${extension}`;
+        const filePath = applicationId 
+          ? `${applicationId}/${fileName}`
+          : `documents/${fileName}`;
+        
+        await offlineQueue.enqueue({
+          type: 'uploadDocument',
+          payload: {
+            path: filePath,
+            blobKey,
+            documentId,
+            applicationId
+          }
+        });
+        
+        updateDocument(documentId, {
+          file,
+          status: 'success',
+          thumbnailUrl // Use local blob URL for preview
+        });
+        
+        toast({
+          title: "Documento guardado",
+          description: "Se subirá automáticamente al reconectar.",
+          duration: 3000,
+        });
+      }
       
       return true;
     } catch (error) {

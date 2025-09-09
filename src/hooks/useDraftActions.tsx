@@ -56,6 +56,33 @@ export const useSaveDraft = () => {
       const sanitizedFormData = sanitizeObjectData(formData);
       const sanitizedChangedData = changedData ? sanitizeObjectData(changedData) : null;
       
+      // Check if offline - enqueue if no connection
+      if (!navigator.onLine) {
+        const { offlineQueue } = await import('@/utils/offlineQueue');
+        await offlineQueue.enqueue({
+          type: 'updateDraft',
+          payload: {
+            id: sanitizedFormData.applicationId || generateApplicationId(),
+            agent_id: user.id,
+            client_name: sanitizedFormData?.fullName || 'Sin nombre',
+            draft_data: isIncremental && sanitizedChangedData ? sanitizedChangedData : sanitizedFormData,
+            last_step: currentStep,
+            last_sub_step: currentSubStep || 0
+          }
+        });
+        
+        // Return optimistic result for offline
+        return {
+          id: sanitizedFormData.applicationId || generateApplicationId(),
+          agent_id: user.id,
+          updated_at: new Date().toISOString(),
+          client_name: sanitizedFormData?.fullName || 'Sin nombre',
+          draft_data: isIncremental && sanitizedChangedData ? sanitizedChangedData : sanitizedFormData,
+          last_step: currentStep,
+          last_sub_step: currentSubStep || 0
+        };
+      }
+      
       // Use existing applicationId or generate new one only if it doesn't exist
       if (!sanitizedFormData.applicationId) {
         sanitizedFormData.applicationId = generateApplicationId();
