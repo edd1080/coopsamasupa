@@ -85,7 +85,7 @@ const InteractiveDocumentCard: React.FC<InteractiveDocumentCardProps> = ({
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-medium text-sm">{document.title}</h3>
+            <h3 className="font-semibold text-base">{document.title}</h3>
             {document.required && (
               <Badge variant="destructive" className="text-xs">
                 Requerido

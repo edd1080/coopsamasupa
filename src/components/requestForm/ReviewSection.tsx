@@ -138,37 +138,46 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
 
         {/* Información Personal */}
         <div className="space-y-4">
-          <h4 className="font-medium">Identificación y Contacto</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="font-medium">Agencia:</span> {formData.agency || 'No especificada'}
+          <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Identificación y Contacto</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Agencia</dt>
+              <dd className="text-sm font-medium text-gray-900">{formData.agency || 'No especificada'}</dd>
             </div>
-            <div>
-              <span className="font-medium">Fecha Solicitud:</span> {formatDate(formData.applicationDate)}
+            <div className="space-y-1">
+              <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Fecha Solicitud</dt>
+              <dd className="text-sm font-medium text-gray-900">{formatDate(formData.applicationDate)}</dd>
             </div>
-            <div>
-              <span className="font-medium">DPI:</span> {formData.dpi || 'No especificado'}
+            <div className="space-y-1">
+              <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">DPI</dt>
+              <dd className="text-sm font-medium text-gray-900">{formData.dpi || 'No especificado'}</dd>
             </div>
-            <div>
-              <span className="font-medium">Nombre:</span> {formData.firstName || 'No especificado'} {formData.lastName || ''}
+            <div className="space-y-1">
+              <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Nombre Completo</dt>
+              <dd className="text-sm font-medium text-gray-900">{formData.firstName || 'No especificado'} {formData.lastName || ''}</dd>
             </div>
-            <div>
-              <span className="font-medium">Estado Civil:</span> {formData.civilStatus || 'No especificado'}
+            <div className="space-y-1">
+              <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Estado Civil</dt>
+              <dd className="text-sm font-medium text-gray-900">{formData.civilStatus || 'No especificado'}</dd>
             </div>
-            <div>
-              <span className="font-medium">Teléfono:</span> {formData.mobilePhone || 'No especificado'}
+            <div className="space-y-1">
+              <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Teléfono</dt>
+              <dd className="text-sm font-medium text-gray-900">{formData.mobilePhone || 'No especificado'}</dd>
             </div>
-            <div>
-              <span className="font-medium">Email:</span> {formData.email || 'No especificado'}
+            <div className="space-y-1">
+              <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Email</dt>
+              <dd className="text-sm font-medium text-gray-900">{formData.email || 'No especificado'}</dd>
             </div>
-            <div>
-              <span className="font-medium">Tipo Vivienda:</span> {formData.housingType || 'No especificado'}
+            <div className="space-y-1">
+              <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Tipo Vivienda</dt>
+              <dd className="text-sm font-medium text-gray-900">{formData.housingType || 'No especificado'}</dd>
             </div>
           </div>
           
           {formData.address && (
-            <div className="text-sm">
-              <span className="font-medium">Dirección:</span> {formData.address}
+            <div className="space-y-1">
+              <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Dirección</dt>
+              <dd className="text-sm font-medium text-gray-900">{formData.address}</dd>
             </div>
           )}
         </div>
@@ -177,22 +186,27 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
 
         {/* Información del Crédito */}
         <div className="space-y-4">
-          <h4 className="font-medium">Información del Crédito</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="font-medium">Monto Solicitado:</span> {formatCurrency(formData.requestedAmount)}
+          <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Información del Crédito</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Monto Solicitado</dt>
+              <dd className="text-base font-semibold text-green-600">{formatCurrency(formData.requestedAmount)}</dd>
             </div>
-            <div>
-              <span className="font-medium">Plazo:</span> {formData.termMonths || 0} meses
+            <div className="space-y-1">
+              <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Plazo</dt>
+              <dd className="text-sm font-medium text-gray-900">{formData.termMonths || 0} meses</dd>
             </div>
-            <div>
-              <span className="font-medium">Destino:</span> {formData.creditPurpose || 'No especificado'}
+            <div className="space-y-1">
+              <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Destino</dt>
+              <dd className="text-sm font-medium text-gray-900">{formData.creditPurpose || 'No especificado'}</dd>
             </div>
-            <div>
-              <span className="font-medium">Forma de Pago:</span> {formData.paymentPlan || 'No especificada'}
+            <div className="space-y-1">
+              <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Forma de Pago</dt>
+              <dd className="text-sm font-medium text-gray-900">{formData.paymentPlan || 'No especificada'}</dd>
             </div>
-            <div>
-              <span className="font-medium">Tipo de Socio:</span> {formData.memberType || 'No especificado'}
+            <div className="space-y-1">
+              <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Tipo de Socio</dt>
+              <dd className="text-sm font-medium text-gray-900">{formData.memberType || 'No especificado'}</dd>
             </div>
           </div>
         </div>
@@ -203,16 +217,19 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
         {(formData.cashSales || formData.creditSales) && (
           <>
             <div className="space-y-4">
-              <h4 className="font-medium">Información Financiera</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium">Ventas Contado:</span> {formatCurrency(formData.cashSales)}
+              <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Información Financiera</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-1">
+                  <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Ventas Contado</dt>
+                  <dd className="text-sm font-medium text-gray-900">{formatCurrency(formData.cashSales)}</dd>
                 </div>
-                <div>
-                  <span className="font-medium">Ventas Crédito:</span> {formatCurrency(formData.creditSales)}
+                <div className="space-y-1">
+                  <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Ventas Crédito</dt>
+                  <dd className="text-sm font-medium text-gray-900">{formatCurrency(formData.creditSales)}</dd>
                 </div>
-                <div>
-                  <span className="font-medium">Total Ventas:</span> {formatCurrency((parseFloat(formData.cashSales || 0) + parseFloat(formData.creditSales || 0)))}
+                <div className="space-y-1">
+                  <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Ventas</dt>
+                  <dd className="text-base font-semibold text-blue-600">{formatCurrency((parseFloat(formData.cashSales || 0) + parseFloat(formData.creditSales || 0)))}</dd>
                 </div>
               </div>
             </div>
@@ -224,7 +241,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
         {formData.businessName && (
           <>
             <div className="space-y-4">
-              <h4 className="font-medium">Negocio y Perfil Económico</h4>
+              <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Negocio y Perfil Económico</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="font-medium">Nombre Negocio:</span> {formData.businessName}
@@ -265,7 +282,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
         {formData.guarantors && formData.guarantors.length > 0 && (
           <>
             <div className="space-y-4">
-              <h4 className="font-medium">Fiadores y Referencias</h4>
+              <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Fiadores y Referencias</h3>
               <div className="space-y-2">
                 {formData.guarantors.map((guarantor: any, index: number) => (
                   <div key={guarantor.id} className="text-sm">
@@ -281,7 +298,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
         {/* Documentos */}
         {formData.documents && (
           <div className="space-y-4">
-            <h4 className="font-medium">Documentos</h4>
+            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Documentos</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
               {Object.entries(formData.documents).map(([key, doc]: [string, any]) => (
                 <div key={key} className="flex items-center gap-2">
@@ -302,7 +319,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
           <>
             <Separator />
             <div className="space-y-2">
-              <h4 className="font-medium">Observaciones</h4>
+              <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Observaciones</h3>
               <p className="text-sm text-muted-foreground">{formData.characterObservations}</p>
             </div>
           </>

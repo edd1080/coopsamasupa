@@ -291,9 +291,9 @@ const ApplicationDetails = () => {
           </Card>
 
           {/* Credit Summary Card */}
-          <Card className="mb-6 border-primary/20 bg-primary/5">
+          <Card className="mb-6">
             <CardHeader>
-              <CardTitle>Resumen de Solicitud de Crédito</CardTitle>
+              <CardTitle>Solicitud de Crédito</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -88,7 +88,7 @@ const ReferencesSection: React.FC<ReferencesSectionProps> = ({
           
           <Button 
             onClick={handleCompleteReference}
-            className="bg-primary hover:bg-primary/90"
+            className="bg-green-600 hover:bg-green-700 text-white"
           >
             Completar Referencia
           </Button>
@@ -106,13 +106,29 @@ const ReferencesSection: React.FC<ReferencesSectionProps> = ({
         </p>
       </div>
 
+      {/* Add Reference Card (shown first when no references) */}
+      {references.length === 0 && (
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-8">
+            <Plus className="h-8 w-8 text-muted-foreground mb-2" />
+            <p className="text-muted-foreground mb-4">
+              Agregar nueva referencia
+            </p>
+            <Button onClick={addReference} className="bg-green-600 hover:bg-green-700 text-white">
+              <Plus className="h-4 w-4 mr-2" />
+              Agregar Referencia
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {/* References List */}
       <div className="space-y-4">
         {references.map((reference, index) => {
           const status = getReferenceStatus(reference);
           
           return (
-            <Card key={reference.id} className="relative">
+            <Card key={reference.id} className="relative bg-green-50 border-green-200">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
@@ -124,17 +140,16 @@ const ReferencesSection: React.FC<ReferencesSectionProps> = ({
                       </span>
                     )}
                   </CardTitle>
-                  <div className="flex items-center gap-2">
-                    {getStatusBadge(status)}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeReference(index)}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                   <div className="flex items-center gap-2">
+                     <Button
+                       variant="ghost"
+                       size="sm"
+                       onClick={() => removeReference(index)}
+                       className="text-red-600 hover:text-red-800"
+                     >
+                       <Trash2 className="h-4 w-4" />
+                     </Button>
+                   </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -175,36 +190,21 @@ const ReferencesSection: React.FC<ReferencesSectionProps> = ({
         })}
       </div>
 
-      {/* Add Guarantor Button */}
-      <Card className="border-dashed">
-        <CardContent className="flex flex-col items-center justify-center py-8">
-          <Plus className="h-8 w-8 text-muted-foreground mb-2" />
-          <p className="text-muted-foreground mb-4">
-            Agregar nueva referencia
-          </p>
-          <Button onClick={addReference} variant="outline">
-            <Plus className="h-4 w-4 mr-2" />
-            Agregar Referencia
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Status Summary */}
-      <Card className="bg-blue-50 dark:bg-blue-950">
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-medium">Estado de Referencias</h4>
-              <p className="text-sm text-muted-foreground">
-                {references.filter(r => getReferenceStatus(r) === 'complete').length} de {references.length} referencias completadas
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-muted-foreground">Actuales: {references.length}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Add Reference Button (shown when there are existing references) */}
+      {references.length > 0 && (
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-8">
+            <Plus className="h-8 w-8 text-muted-foreground mb-2" />
+            <p className="text-muted-foreground mb-4">
+              Agregar nueva referencia
+            </p>
+            <Button onClick={addReference} className="bg-green-600 hover:bg-green-700 text-white">
+              <Plus className="h-4 w-4 mr-2" />
+              Agregar Referencia
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

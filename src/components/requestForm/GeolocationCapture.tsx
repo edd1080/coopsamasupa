@@ -111,7 +111,7 @@ const GeolocationCapture: React.FC<GeolocationCaptureProps> = ({
             <Button
               onClick={captureLocation}
               disabled={isCapturing}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+              className="w-full bg-green-600 hover:bg-green-700 text-white"
             >
               {isCapturing ? (
                 <>
@@ -157,7 +157,7 @@ const GeolocationCapture: React.FC<GeolocationCaptureProps> = ({
                 onClick={captureLocation}
                 disabled={isCapturing}
                 size="sm"
-                className="h-7 px-3 text-xs bg-primary hover:bg-primary/90 text-primary-foreground"
+                className="h-7 px-3 text-xs bg-green-600 hover:bg-green-700 text-white"
               >
                 <RotateCcw className="h-3 w-3 mr-1" />
                 Recapturar

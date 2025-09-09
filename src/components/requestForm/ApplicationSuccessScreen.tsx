@@ -73,7 +73,6 @@ const ApplicationSuccessScreen: React.FC<ApplicationSuccessScreenProps> = ({
             className="w-full bg-blue-600 hover:bg-blue-700 text-white"
             size="lg"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
             Volver a Solicitudes
           </Button>
         </CardContent>
