@@ -1,49 +1,15 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { Button } from '@/components/ui/button';
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Separator } from "@/components/ui/separator"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import {
-  ArrowLeft,
-  Edit,
-  Send,
-  DollarSign,
-  Users,
-  Building2,
-  BarChart3,
-  MapPin,
-  FileCheck,
-  User,
-  Briefcase,
-  FileSignature,
-  CheckCircle,
-  Clock,
-  Camera,
-  Plus,
-  PartyPopper,
-  ChevronRight,
-  UserCheck
-} from 'lucide-react';
-
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ArrowLeft, Edit, Send, DollarSign, Users, Building2, BarChart3, MapPin, FileCheck, User, Briefcase, FileSignature, CheckCircle, Clock, Camera, Plus, PartyPopper, ChevronRight, UserCheck } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import BottomNavigation from '@/components/layout/BottomNavigation';
 import BreadcrumbNavigation from '@/components/navigation/BreadcrumbNavigation';
@@ -52,16 +18,24 @@ import { NewGuarantorSheet } from '@/components/requestForm/guarantors/NewGuaran
 import { useApplicationData } from '@/hooks/useApplicationData';
 import { getFirstNameAndLastName } from '@/lib/nameUtils';
 import { useToast } from '@/hooks/use-toast';
-
 const ApplicationDetails = () => {
-  const { id } = useParams<{ id: string }>();
+  const {
+    id
+  } = useParams<{
+    id: string;
+  }>();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const { data: applicationData, isLoading, error } = useApplicationData(id || '');
+  const {
+    data: applicationData,
+    isLoading,
+    error
+  } = useApplicationData(id || '');
 
   // Helper functions to safely access and format data
   const getFormData = (data: any) => {
@@ -78,48 +52,76 @@ const ApplicationDetails = () => {
     }
     return {};
   };
-
   const getFormSections = (type: string) => {
     if (type === 'oficial') {
-      return [
-        { id: 'credit-details', name: 'Detalles del Credito e Info Personal', icon: DollarSign },
-        { id: 'character', name: 'Análisis de Carácter', icon: Users },
-        { id: 'business-financial', name: 'Info del Negocio', icon: Building2 },
-        { id: 'financial-info', name: 'Info Financiera', icon: BarChart3 },
-        { id: 'documents', name: 'Documentos e Imágenes', icon: MapPin },
-        { id: 'signature', name: 'Cláusula y Firma', icon: FileCheck }
-      ];
+      return [{
+        id: 'credit-details',
+        name: 'Detalles del Credito e Info Personal',
+        icon: DollarSign
+      }, {
+        id: 'character',
+        name: 'Análisis de Carácter',
+        icon: Users
+      }, {
+        id: 'business-financial',
+        name: 'Info del Negocio',
+        icon: Building2
+      }, {
+        id: 'financial-info',
+        name: 'Info Financiera',
+        icon: BarChart3
+      }, {
+        id: 'documents',
+        name: 'Documentos e Imágenes',
+        icon: MapPin
+      }, {
+        id: 'signature',
+        name: 'Cláusula y Firma',
+        icon: FileCheck
+      }];
     }
-    return [
-      { id: 'identification', name: 'Identificación y Contacto', icon: User },
-      { id: 'credit', name: 'Información del Crédito', icon: DollarSign },
-      { id: 'finances', name: 'Finanzas y Patrimonio', icon: BarChart3 },
-      { id: 'references', name: 'Referencias Personales', icon: Users },
-      { id: 'documents', name: 'Documentos', icon: FileSignature },
-      { id: 'review', name: 'Revisión Final', icon: CheckCircle }
-    ];
+    return [{
+      id: 'identification',
+      name: 'Identificación y Contacto',
+      icon: User
+    }, {
+      id: 'credit',
+      name: 'Información del Crédito',
+      icon: DollarSign
+    }, {
+      id: 'finances',
+      name: 'Finanzas y Patrimonio',
+      icon: BarChart3
+    }, {
+      id: 'references',
+      name: 'Referencias Personales',
+      icon: Users
+    }, {
+      id: 'documents',
+      name: 'Documentos',
+      icon: FileSignature
+    }, {
+      id: 'review',
+      name: 'Revisión Final',
+      icon: CheckCircle
+    }];
   };
-
   const isApplicationReadyToSubmit = () => {
     if (!applicationData) return false;
     const formData = getFormData(applicationData);
-    const progress = (applicationData.isDraft && 'last_step' in applicationData) ? 
-      applicationData.last_step : 
-      ('progress_step' in applicationData) ? applicationData.progress_step : 0;
+    const progress = applicationData.isDraft && 'last_step' in applicationData ? applicationData.last_step : 'progress_step' in applicationData ? applicationData.progress_step : 0;
     const documents = formData.documents || {};
     const references = formData.references || [];
-
     const allSectionsComplete = progress >= 6;
-    const requiredDocsComplete = ['dpiFrontal', 'dpiTrasero', 'fotoSolicitante']
-      .every(docKey => documents[docKey]?.status === 'complete');
+    const requiredDocsComplete = ['dpiFrontal', 'dpiTrasero', 'fotoSolicitante'].every(docKey => documents[docKey]?.status === 'complete');
     const hasReferences = references.length > 0;
-
     return allSectionsComplete && requiredDocsComplete && hasReferences;
   };
-
   const navigateToFormSection = (sectionId: string) => {
     // Map section IDs to step indices
-    const sectionToStepMap: { [key: string]: number } = {
+    const sectionToStepMap: {
+      [key: string]: number;
+    } = {
       'identification': 0,
       'credit': 1,
       'finances': 2,
@@ -127,23 +129,21 @@ const ApplicationDetails = () => {
       'documents': 4,
       'review': 5
     };
-    
     const stepIndex = sectionToStepMap[sectionId];
     if (stepIndex !== undefined) {
       toast({
         title: "Navegando a sección",
-        description: `Abriendo ${sectionId}...`,
+        description: `Abriendo ${sectionId}...`
       });
-      navigate(`/request-form/${id}`, { 
-        state: { 
+      navigate(`/request-form/${id}`, {
+        state: {
           sectionId,
           stepIndex,
-          applicationId: id 
-        } 
+          applicationId: id
+        }
       });
     }
   };
-
   const handleAddGuarantor = async (guarantorData: any) => {
     const newGuarantor = {
       id: Date.now().toString(),
@@ -156,14 +156,12 @@ const ApplicationDetails = () => {
     // Update the draft data
     const currentFormData = getFormData(applicationData);
     const updatedGuarantors = [...(currentFormData.guarantors || []), newGuarantor];
-    
     toast({
       title: "Fiador agregado",
       description: `${guarantorData.nombre} ha sido agregado exitosamente.`,
       variant: "success"
     });
   };
-
   const handleSubmitApplication = () => {
     if (!isApplicationReadyToSubmit()) {
       toast({
@@ -175,31 +173,22 @@ const ApplicationDetails = () => {
     }
     setShowConfirmDialog(true);
   };
-
   const confirmSubmission = async () => {
     setIsSubmitting(true);
     setShowConfirmDialog(false);
-    
+
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000));
-    
     setIsSubmitting(false);
     setShowSuccessDialog(true);
   };
-
   const handleSuccessClose = () => {
     setShowSuccessDialog(false);
     navigate('/applications');
   };
-
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header 
-          personName=""
-          applicationId=""
-          onExitFormClick={() => navigate('/applications')}
-        />
+    return <div className="min-h-screen flex flex-col">
+        <Header personName="" applicationId="" onExitFormClick={() => navigate('/applications')} />
         <main className="flex-1 container mx-auto px-4 py-8">
           <div className="flex justify-center items-center h-64">
             <div className="text-center">
@@ -209,18 +198,11 @@ const ApplicationDetails = () => {
           </div>
         </main>
         <BottomNavigation />
-      </div>
-    );
+      </div>;
   }
-
   if (error || !applicationData) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header 
-          personName=""
-          applicationId=""
-          onExitFormClick={() => navigate('/applications')}
-        />
+    return <div className="min-h-screen flex flex-col">
+        <Header personName="" applicationId="" onExitFormClick={() => navigate('/applications')} />
         <main className="flex-1 container mx-auto px-4 py-8">
           <div className="text-center">
             <h2 className="text-xl font-semibold mb-4">Solicitud no encontrada</h2>
@@ -233,31 +215,17 @@ const ApplicationDetails = () => {
           </div>
         </main>
         <BottomNavigation />
-      </div>
-    );
+      </div>;
   }
-
   const formData = getFormData(applicationData);
   const references = formData.references || [];
   const documents = formData.documents || {};
-  const progress = (applicationData.isDraft && 'last_step' in applicationData) ? 
-    applicationData.last_step : 
-    ('progress_step' in applicationData) ? applicationData.progress_step : 0;
-  const progressPercentage = Math.round((progress / 6) * 100);
+  const progress = applicationData.isDraft && 'last_step' in applicationData ? applicationData.last_step : 'progress_step' in applicationData ? applicationData.progress_step : 0;
+  const progressPercentage = Math.round(progress / 6 * 100);
   const sections = getFormSections('legacy');
-  
-  const personName = applicationData.client_name || 
-    `${formData.firstName || ''} ${formData.lastName || ''}`.trim() || 
-    'Sin nombre';
-
-  return (
-    <div className="min-h-screen flex flex-col">
-      <Header 
-        personName={getFirstNameAndLastName(personName)}
-        applicationId={applicationData.id || ''}
-        applicationStatus={('status' in applicationData) ? applicationData.status : 'draft'}
-        onExitFormClick={() => navigate('/applications')}
-      />
+  const personName = applicationData.client_name || `${formData.firstName || ''} ${formData.lastName || ''}`.trim() || 'Sin nombre';
+  return <div className="min-h-screen flex flex-col">
+      <Header personName={getFirstNameAndLastName(personName)} applicationId={applicationData.id || ''} applicationStatus={'status' in applicationData ? applicationData.status : 'draft'} onExitFormClick={() => navigate('/applications')} />
       
       <main className="flex-1 container mx-auto px-4 py-0 pb-20 max-w-5xl">
         {/* Breadcrumb Navigation */}
@@ -280,12 +248,7 @@ const ApplicationDetails = () => {
               <Edit className="h-4 w-4 mr-2" />
               Editar
             </Button>
-            <Button 
-              size="md"
-              onClick={handleSubmitApplication}
-              disabled={!isApplicationReadyToSubmit()}
-              className={!isApplicationReadyToSubmit() ? 'opacity-50 cursor-not-allowed' : ''}
-            >
+            <Button size="md" onClick={handleSubmitApplication} disabled={!isApplicationReadyToSubmit()} className={!isApplicationReadyToSubmit() ? 'opacity-50 cursor-not-allowed' : ''}>
               <Send className="h-4 w-4 mr-2" />
               Enviar Solicitud
             </Button>
@@ -309,27 +272,20 @@ const ApplicationDetails = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-                {sections.map((section) => {
-                  const Icon = section.icon;
-                  return (
-                    <Button
-                      key={section.id}
-                      variant="outline"
-                      className="h-auto py-2 flex flex-col items-center text-xs gap-1 flex-1 min-h-[5rem] sm:min-h-[4.5rem] whitespace-normal break-words overflow-hidden"
-                      onClick={() => navigateToFormSection(section.id)}
-                    >
+                {sections.map(section => {
+                const Icon = section.icon;
+                return <Button key={section.id} variant="outline" className="h-auto py-2 flex flex-col items-center text-xs gap-1 flex-1 min-h-[5rem] sm:min-h-[4.5rem] whitespace-normal break-words overflow-hidden" onClick={() => navigateToFormSection(section.id)}>
                       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                         <Icon className="h-4 w-4" />
                       </div>
                       <span className="text-center leading-tight line-clamp-2" style={{
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden'
-                      }}>{section.name}</span>
-                    </Button>
-                  );
-                })}
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden'
+                  }}>{section.name}</span>
+                    </Button>;
+              })}
               </div>
             </CardContent>
           </Card>
@@ -369,17 +325,11 @@ const ApplicationDetails = () => {
                   <Users className="h-5 w-5 mr-2" />
                   Referencias Personales
                 </CardTitle>
-                <Badge 
-                  variant={references.length >= 2 ? "default" : "destructive"}
-                  className={references.length >= 2 ? "bg-green-100 text-green-800" : ""}
-                >
-                  {references.length} de 2 mínimo
-                </Badge>
+                
               </div>
             </CardHeader>
             <CardContent>
-              {references.length === 0 ? (
-                <div className="text-center py-8">
+              {references.length === 0 ? <div className="text-center py-8">
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
                     <Users className="h-8 w-8 text-muted-foreground" />
                   </div>
@@ -387,21 +337,12 @@ const ApplicationDetails = () => {
                   <p className="text-sm text-muted-foreground mb-4">
                     Agregue al menos dos referencias para continuar con la solicitud
                   </p>
-                  <Button 
-                    onClick={() => navigate(`/request/${id}?step=4`)}
-                    className="bg-[#E18E33] hover:bg-[#E18E33]/90 text-white border-0"
-                  >
+                  <Button onClick={() => navigate(`/request/${id}?step=4`)} className="bg-[#E18E33] hover:bg-[#E18E33]/90 text-white border-0">
                     <Plus className="h-4 w-4 mr-2" />
                     Agregar Referencias
                   </Button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {references.map((reference: any, index: number) => (
-                    <div
-                      key={reference.id || index}
-                      className="p-4 rounded-xl border bg-gradient-to-r from-primary/5 to-accent/5 hover:shadow-md transition-shadow"
-                    >
+                </div> : <div className="space-y-4">
+                  {references.map((reference: any, index: number) => <div key={reference.id || index} className="p-4 rounded-xl border bg-gradient-to-r from-primary/5 to-accent/5 hover:shadow-md transition-shadow">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -424,20 +365,12 @@ const ApplicationDetails = () => {
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                  <NewGuarantorSheet
-                    trigger={
-                      <Button className="w-full bg-[#E18E33] hover:bg-[#E18E33]/90 text-white border-0">
+                    </div>)}
+                  <NewGuarantorSheet trigger={<Button className="w-full bg-[#E18E33] hover:bg-[#E18E33]/90 text-white border-0">
                         <Plus className="h-4 w-4 mr-2" />
                         Agregar Otro Fiador
-                      </Button>
-                    }
-                    onCreateGuarantor={handleAddGuarantor}
-                    onDiscard={() => {}}
-                  />
-                </div>
-              )}
+                      </Button>} onCreateGuarantor={handleAddGuarantor} onDiscard={() => {}} />
+                </div>}
             </CardContent>
           </Card>
         </div>
@@ -466,24 +399,18 @@ const ApplicationDetails = () => {
                       <dt className="text-xs text-muted-foreground font-semibold">Nombre</dt>
                       <dd className="text-sm font-medium">{personName}</dd>
                     </div>
-                    {formData.dpi && (
-                      <div>
+                    {formData.dpi && <div>
                         <dt className="text-xs text-muted-foreground font-semibold">CUI</dt>
                         <dd className="text-sm font-medium">{formData.dpi}</dd>
-                      </div>
-                    )}
-                    {formData.nit && (
-                      <div>
+                      </div>}
+                    {formData.nit && <div>
                         <dt className="text-xs text-muted-foreground font-semibold">NIT</dt>
                         <dd className="text-sm font-medium">{formData.nit}</dd>
-                      </div>
-                    )}
-                    {formData.mobilePhone && (
-                      <div>
+                      </div>}
+                    {formData.mobilePhone && <div>
                         <dt className="text-xs text-muted-foreground font-semibold">Teléfono</dt>
                         <dd className="text-sm font-medium">{formData.mobilePhone}</dd>
-                      </div>
-                    )}
+                      </div>}
                   </dl>
                 </CardContent>
               </Card>
@@ -542,10 +469,7 @@ const ApplicationDetails = () => {
             </div>
 
             {/* Document Status Card */}
-            <Card 
-              className="cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => navigateToFormSection('documents')}
-            >
+            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigateToFormSection('documents')}>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between text-base">
                   <span className="flex items-center">
@@ -558,37 +482,26 @@ const ApplicationDetails = () => {
               <CardContent>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                   {Object.entries({
-                    dpiFrontal: 'DPI Frontal',
-                    dpiTrasero: 'DPI Trasero',
-                    fotoSolicitante: 'Foto Solicitante',
-                    recibosServicios: 'Recibos Servicios',
-                    firmaCanvas: 'Firma Digital'
-                  }).map(([key, label]) => {
-                    const doc = documents[key];
-                    const isComplete = doc?.status === 'complete';
-                    return (
-                      <Card key={key} className={`p-3 border ${isComplete ? 'border-green-200 bg-green-50' : 'border-amber-200 bg-amber-50'}`}>
+                  dpiFrontal: 'DPI Frontal',
+                  dpiTrasero: 'DPI Trasero',
+                  fotoSolicitante: 'Foto Solicitante',
+                  recibosServicios: 'Recibos Servicios',
+                  firmaCanvas: 'Firma Digital'
+                }).map(([key, label]) => {
+                  const doc = documents[key];
+                  const isComplete = doc?.status === 'complete';
+                  return <Card key={key} className={`p-3 border ${isComplete ? 'border-green-200 bg-green-50' : 'border-amber-200 bg-amber-50'}`}>
                         <div className="text-center">
-                          <div className={`w-8 h-8 rounded-full mx-auto mb-2 flex items-center justify-center ${
-                            isComplete ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'
-                          }`}>
-                            {isComplete ? (
-                              <CheckCircle className="h-4 w-4" />
-                            ) : (
-                              <Clock className="h-4 w-4" />
-                            )}
+                          <div className={`w-8 h-8 rounded-full mx-auto mb-2 flex items-center justify-center ${isComplete ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
+                            {isComplete ? <CheckCircle className="h-4 w-4" /> : <Clock className="h-4 w-4" />}
                           </div>
                           <p className="text-xs font-medium mb-1">{label}</p>
-                          <Badge 
-                            variant={isComplete ? "default" : "secondary"}
-                            className={`text-xs ${isComplete ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"}`}
-                          >
+                          <Badge variant={isComplete ? "default" : "secondary"} className={`text-xs ${isComplete ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"}`}>
                             {isComplete ? 'Completo' : 'Pendiente'}
                           </Badge>
                         </div>
-                      </Card>
-                    );
-                  })}
+                      </Card>;
+                })}
                 </div>
               </CardContent>
             </Card>
@@ -672,8 +585,7 @@ const ApplicationDetails = () => {
                   </div>
                 </div>
 
-                {formData.conyuge && (
-                  <>
+                {formData.conyuge && <>
                     <Separator className="my-6" />
                     <h4 className="font-medium mb-4">Información del Cónyuge</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -694,8 +606,7 @@ const ApplicationDetails = () => {
                         <p className="font-medium">{formData.conyuge.trabajo || 'Por ingresar'}</p>
                       </div>
                     </div>
-                  </>
-                )}
+                  </>}
               </CardContent>
             </Card>
 
@@ -910,46 +821,30 @@ const ApplicationDetails = () => {
           <TabsContent value="documentos" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {Object.entries({
-                dpiFrontal: 'DPI Frontal',
-                dpiTrasero: 'DPI Trasero',
-                fotoSolicitante: 'Foto Solicitante',
-                recibosServicios: 'Recibos Servicios',
-                firmaCanvas: 'Firma Digital'
-              }).map(([key, label]) => {
-                const doc = documents[key];
-                const isComplete = doc?.status === 'complete';
-                return (
-                  <Card 
-                    key={key} 
-                    className={`border-2 ${isComplete ? 'border-green-200' : 'border-amber-200'}`}
-                  >
+              dpiFrontal: 'DPI Frontal',
+              dpiTrasero: 'DPI Trasero',
+              fotoSolicitante: 'Foto Solicitante',
+              recibosServicios: 'Recibos Servicios',
+              firmaCanvas: 'Firma Digital'
+            }).map(([key, label]) => {
+              const doc = documents[key];
+              const isComplete = doc?.status === 'complete';
+              return <Card key={key} className={`border-2 ${isComplete ? 'border-green-200' : 'border-amber-200'}`}>
                     <CardContent className="p-4">
                       <div className="aspect-square mb-3">
-                        {isComplete && doc.url ? (
-                          <img 
-                            src={doc.url} 
-                            alt={label}
-                            className="w-full h-full object-cover rounded-md"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-muted rounded-md flex items-center justify-center">
+                        {isComplete && doc.url ? <img src={doc.url} alt={label} className="w-full h-full object-cover rounded-md" /> : <div className="w-full h-full bg-muted rounded-md flex items-center justify-center">
                             <Camera className="h-8 w-8 text-muted-foreground" />
-                          </div>
-                        )}
+                          </div>}
                       </div>
                       <div className="text-center">
                         <h4 className="font-medium text-sm mb-2">{label}</h4>
-                        <Badge 
-                          variant={isComplete ? "default" : "secondary"}
-                          className={isComplete ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"}
-                        >
+                        <Badge variant={isComplete ? "default" : "secondary"} className={isComplete ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"}>
                           {isComplete ? 'Completo' : 'Pendiente'}
                         </Badge>
                       </div>
                     </CardContent>
-                  </Card>
-                );
-              })}
+                  </Card>;
+            })}
             </div>
           </TabsContent>
         </Tabs>
@@ -996,8 +891,6 @@ const ApplicationDetails = () => {
       </Dialog>
       
       <BottomNavigation />
-    </div>
-  );
+    </div>;
 };
-
 export default ApplicationDetails;
