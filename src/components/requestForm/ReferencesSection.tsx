@@ -128,7 +128,7 @@ const ReferencesSection: React.FC<ReferencesSectionProps> = ({
           const status = getReferenceStatus(reference);
           
           return (
-            <Card key={reference.id} className="relative bg-green-50 border-green-200">
+            <Card key={reference.id} className="relative">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">

@@ -305,30 +305,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   const [sectionStatus, setSectionStatus] = useState<Record<string, 'pending' | 'complete'>>({});
   
   // References state (formerly guarantors)
-  const [references, setReferences] = useState<ReferenceData[]>([
-    { 
-      id: '1', 
-      referenceType: '', 
-      fullName: '', 
-      address: '', 
-      relation: '', 
-      phone: '', 
-      rating: '', 
-      comment: '', 
-      basicInfoCompleted: false 
-    },
-    { 
-      id: '2', 
-      referenceType: '', 
-      fullName: '', 
-      address: '', 
-      relation: '', 
-      phone: '', 
-      rating: '', 
-      comment: '', 
-      basicInfoCompleted: false 
-    }
-  ]);
+  const [references, setReferences] = useState<ReferenceData[]>([]);
   const [currentReferenceIndex, setCurrentReferenceIndex] = useState(0);
   const [referenceFormStep, setReferenceFormStep] = useState(0);
   const [isInReferenceForm, setIsInReferenceForm] = useState(false);
@@ -381,10 +358,8 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   }, [references.length]);
 
   const removeReference = useCallback((index: number) => {
-    if (references.length > 2) {
-      setReferences(prev => prev.filter((_, i) => i !== index));
-    }
-  }, [references.length]);
+    setReferences(prev => prev.filter((_, i) => i !== index));
+  }, []);
 
   const updateReference = useCallback((index: number, field: string, value: any) => {
     setReferences(prev => prev.map((reference, i) => 
