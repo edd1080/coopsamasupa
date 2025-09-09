@@ -302,34 +302,22 @@ export const useApplicationValidation = () => {
                     (formData?.identification?.firstName && formData?.identification?.lastName ? `${formData.identification.firstName} ${formData.identification.lastName}` : '') ||
                     formData?.firstName;
     
-    // Validación más estricta del nombre
+    // Validación más relajada del nombre - solo requiere mínimo 2 caracteres
     if (!fullName || fullName.trim().length < 2) {
       missingFields.push('Nombre completo (mínimo 2 caracteres)');
     }
     
-    // Validar que el nombre contenga al menos nombre y apellido
-    const nameParts = fullName?.trim().split(' ').filter(part => part.length > 0) || [];
-    if (nameParts.length < 2) {
-      missingFields.push('Apellidos (se requiere nombre y apellido completos)');
-    }
-    
-    // Validar DPI (Documento Personal de Identificación)
+    // Validar DPI (Documento Personal de Identificación) - solo formato, no espacios
     const dpi = formData?.dpi || formData?.identification?.dpi || formData?.personalInfo?.dpi;
-    if (!dpi || dpi.trim().length < 13) {
+    const cleanDpi = dpi ? dpi.replace(/[\s-]/g, '') : '';
+    if (!cleanDpi || cleanDpi.length !== 13 || !/^\d{13}$/.test(cleanDpi)) {
       missingFields.push('DPI (Documento Personal de Identificación)');
-    }
-    
-    // Validar teléfono móvil
-    const mobilePhone = formData?.mobilePhone || formData?.identification?.mobilePhone || formData?.personalInfo?.mobilePhone;
-    if (!mobilePhone || mobilePhone.trim().length < 8) {
-      missingFields.push('Teléfono móvil');
     }
     
     console.log('✅ Validation result:', { 
       fullName, 
-      nameParts,
       dpi,
-      mobilePhone,
+      cleanDpi,
       isValid: missingFields.length === 0, 
       missingFields 
     });
