@@ -91,7 +91,11 @@ const RequestForm = () => {
   };
   
   return (
-    <RequestFormProvider steps={steps} onNavigateAfterExit={handleNavigateToApplications}>
+    <RequestFormProvider 
+      steps={steps} 
+      onNavigateAfterExit={handleNavigateToApplications}
+      onRedirectSubmittedApplication={(id) => navigate(`/applications/${id}`)}
+    >
       <RequestFormContent />
     </RequestFormProvider>
   );

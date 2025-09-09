@@ -83,6 +83,11 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
             <BarChart3 className="h-4 w-4" />
             <span>Activo</span>
           </Badge>;
+      case 'submitted':
+        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1 text-sm px-3 py-1">
+            <CheckCircle className="h-4 w-4" />
+            <span>Enviada</span>
+          </Badge>;
       case 'reviewing':
         return <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-200 flex items-center gap-1 text-sm px-3 py-1">
             <Clock className="h-4 w-4" />
@@ -163,7 +168,7 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
                       {isDraft ? <DropdownMenuItem onClick={e => handleContinueApplication(application.id, application.clientName, e)}>
                           <Edit className="mr-2 h-4 w-4" />
                           <span>Continuar</span>
-                        </DropdownMenuItem> : <DropdownMenuItem onClick={e => handleEditApplication(application.id, application.clientName, e)}>
+                        </DropdownMenuItem> : application.status !== 'submitted' && <DropdownMenuItem onClick={e => handleEditApplication(application.id, application.clientName, e)}>
                           <Edit className="mr-2 h-4 w-4" />
                           <span>Editar</span>
                         </DropdownMenuItem>}
@@ -211,7 +216,7 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
         {isDraft ? <ContextMenuItem onClick={e => handleContinueApplication(application.id, application.clientName, e)}>
             <Edit className="mr-2 h-4 w-4" />
             <span>Continuar</span>
-          </ContextMenuItem> : <ContextMenuItem onClick={e => onEdit(application.id, application.clientName, e)}>
+          </ContextMenuItem> : application.status !== 'submitted' && <ContextMenuItem onClick={e => onEdit(application.id, application.clientName, e)}>
             <Edit className="mr-2 h-4 w-4" />
             <span>Editar</span>
           </ContextMenuItem>}

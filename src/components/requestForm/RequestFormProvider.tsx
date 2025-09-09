@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { generateApplicationId } from '@/utils/applicationIdGenerator';
 import { useToast } from '@/hooks/use-toast';
 import { useSaveDraft } from '@/hooks/useDraftActions';
 import { useFinalizeApplication } from '@/hooks/useFinalizeApplication';
+import { useApplicationData } from '@/hooks/useApplicationData';
 
 interface FormContextType {
   // Form state
@@ -159,6 +160,7 @@ interface RequestFormProviderProps {
   children: React.ReactNode;
   steps: StepInfo[];
   onNavigateAfterExit?: () => void;
+  onRedirectSubmittedApplication?: (id: string) => void;
 }
 
 const FormContext = createContext<FormContextType | undefined>(undefined);
@@ -174,10 +176,23 @@ export const useFormContext = (): FormContextType => {
 const RequestFormProvider: React.FC<RequestFormProviderProps> = ({ 
   children, 
   steps, 
-  onNavigateAfterExit 
+  onNavigateAfterExit,
+  onRedirectSubmittedApplication 
 }) => {
   const { toast } = useToast();
   const location = useLocation();
+  const { id: applicationId } = useParams<{ id: string }>();
+  
+  // Check if application is submitted
+  const { data: applicationData } = useApplicationData(applicationId || '');
+  
+  // Redirect if application is submitted (not a draft)
+  useEffect(() => {
+    if (applicationData && !applicationData.isDraft && onRedirectSubmittedApplication) {
+      console.log('🔄 Application is submitted, redirecting to read-only view');
+      onRedirectSubmittedApplication(applicationData.id);
+    }
+  }, [applicationData, onRedirectSubmittedApplication]);
   
   // Initialize form data with application ID
   const [formData, setFormData] = useState<FormData>(() => ({

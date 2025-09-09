@@ -244,14 +244,27 @@ const ApplicationDetails = () => {
           
           {/* Buttons below name */}
           <div className="flex items-center gap-2 mb-4">
-            <Button variant="outline" size="md" onClick={() => navigate(`/request-form/${id}`)}>
-              <Edit className="h-4 w-4 mr-2" />
-              Editar
-            </Button>
-            <Button size="md" onClick={handleSubmitApplication} disabled={!isApplicationReadyToSubmit()} className={!isApplicationReadyToSubmit() ? 'opacity-50 cursor-not-allowed' : ''}>
-              <Send className="h-4 w-4 mr-2" />
-              Enviar Solicitud
-            </Button>
+            {applicationData.isDraft && (
+              <>
+                <Button variant="outline" size="md" onClick={() => navigate(`/request-form/${id}`)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Editar
+                </Button>
+                <Button size="md" onClick={handleSubmitApplication} disabled={!isApplicationReadyToSubmit()} className={!isApplicationReadyToSubmit() ? 'opacity-50 cursor-not-allowed' : ''}>
+                  <Send className="h-4 w-4 mr-2" />
+                  Enviar Solicitud
+                </Button>
+              </>
+            )}
+            {!applicationData.isDraft && (
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1 text-sm px-3 py-1">
+                  <CheckCircle className="h-4 w-4" />
+                  <span>Solicitud Enviada</span>
+                </Badge>
+                <span className="text-sm text-muted-foreground">Esta solicitud ya fue enviada y está en modo de solo lectura</span>
+              </div>
+            )}
           </div>
 
           {/* Progress Summary */}
