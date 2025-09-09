@@ -77,9 +77,6 @@ const App = () => {
           <Toaster />
           <Sonner />
           
-          {/* Offline Banner */}
-          <OfflineBanner />
-          
           {/* PWA Splash Screen */}
           <SplashScreen isVisible={isLoading} />
           
@@ -96,6 +93,8 @@ const App = () => {
           {/* Main App Content */}
           {!isLoading && (
             <AuthProvider>
+              {/* Offline Banner - needs auth context */}
+              <OfflineBanner />
               <BrowserRouter>
                 <AuthRouter />
               </BrowserRouter>
