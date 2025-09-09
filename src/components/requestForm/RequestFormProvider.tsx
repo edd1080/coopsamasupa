@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { generateApplicationId } from '@/utils/applicationIdGenerator';
 import { useToast } from '@/hooks/use-toast';
 import { useSaveDraft } from '@/hooks/useDraftActions';
+import { useFinalizeApplication } from '@/hooks/useFinalizeApplication';
 
 interface FormContextType {
   // Form state
@@ -317,6 +318,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
 
   // Add save draft mutation
   const saveDraftMutation = useSaveDraft();
+  const finalizeApplicationMutation = useFinalizeApplication();
 
   // Handle navigation from ApplicationDetails
   useEffect(() => {
@@ -486,25 +488,18 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     setHasUnsavedChanges(false);
   }, [formData, currentStep, subStep, saveDraftMutation]);
 
-  const handleSubmit = useCallback(async () => {
+  const handleSubmit = useCallback(() => {
     console.log('📤 Submitting form with data:', formData);
     
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setShowSuccessScreen(true);
-      
-    } catch (error) {
-      console.error('❌ Error submitting form:', error);
-      toast({
-        title: "Error al enviar",
-        description: "Hubo un problema al enviar la solicitud. Intente de nuevo.",
-        variant: "destructive",
-        duration: 5000,
-      });
-    }
-  }, [formData, toast]);
+    finalizeApplicationMutation.mutate(formData, {
+      onSuccess: () => {
+        setShowSuccessScreen(true);
+      },
+      onError: (error) => {
+        console.error('❌ Error submitting form:', error);
+      }
+    });
+  }, [formData, finalizeApplicationMutation]);
 
   // Updated exit handling with save functionality and proper navigation
   const handleExit = useCallback(async (shouldSave: boolean = false) => {

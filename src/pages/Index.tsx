@@ -35,15 +35,16 @@ const Index = () => {
     }
 
     // Fallback al primer nombre si no hay nombre completo
-    if (profile?.first_name) {
-      return `¡Hola, ${profile.first_name}!`;
+    if (profile?.full_name) {
+      const firstName = profile.full_name.split(' ')[0];
+      return `¡Hola, ${firstName}!`;
     }
     return '¡Hola!';
   };
   const getUserInfo = () => {
     if (profileLoading) return 'Cargando información...';
     const role = profile?.role || 'Asesor de créditos';
-    const agency = profile?.agency || 'Agencia Central';
+    const agency = profile?.agency_id || 'Agencia Central';
     return `${role} | ${agency}`;
   };
   const handleNewApplication = () => {

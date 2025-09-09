@@ -41,13 +41,19 @@ export const useNetworkSync = () => {
 
         switch (task.type) {
           case 'createApplication':
+            // Payload is already properly formatted from useFinalizeApplication
             const { data: appData, error: appError } = await supabase
               .from('applications')
-              .insert({
-                ...sanitizeObjectData(task.payload),
-                agent_id: user.id
-              });
+              .insert(sanitizeObjectData(task.payload));
             success = !appError;
+            break;
+
+          case 'deleteDraft':
+            const { error: deleteDraftError } = await supabase
+              .from('application_drafts')
+              .delete()
+              .eq('id', task.payload.id);
+            success = !deleteDraftError;
             break;
 
           case 'createPrequalification':

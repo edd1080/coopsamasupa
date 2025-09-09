@@ -71,7 +71,7 @@ const Settings = () => {
             <div className="flex-1">
               <h2 className="text-xl font-semibold">{userProfile?.full_name || 'Usuario'}</h2>
               <p className="text-muted-foreground">{userProfile?.role || 'Miembro'}</p>
-              <p className="text-sm text-muted-foreground">{userProfile?.agency || 'Coopsama'}</p>
+              <p className="text-sm text-muted-foreground">{userProfile?.agency_id || 'Coopsama'}</p>
             </div>
           </div>
         </div>

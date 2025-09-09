@@ -2,7 +2,7 @@ import localforage from 'localforage';
 
 export interface OfflineTask {
   id: string;
-  type: 'createApplication' | 'createPrequalification' | 'uploadDocument' | 'updateDraft';
+  type: 'createApplication' | 'createPrequalification' | 'uploadDocument' | 'updateDraft' | 'deleteDraft';
   payload: any;
   timestamp: number;
   retries: number;
