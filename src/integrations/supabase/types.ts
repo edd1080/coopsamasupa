@@ -14,7 +14,171 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      application_drafts: {
+        Row: {
+          agent_id: string
+          client_name: string | null
+          created_at: string
+          draft_data: Json | null
+          id: string
+          last_step: number | null
+          last_sub_step: number | null
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          client_name?: string | null
+          created_at?: string
+          draft_data?: Json | null
+          id?: string
+          last_step?: number | null
+          last_sub_step?: number | null
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          client_name?: string | null
+          created_at?: string
+          draft_data?: Json | null
+          id?: string
+          last_step?: number | null
+          last_sub_step?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      applications: {
+        Row: {
+          agent_id: string
+          amount_requested: number | null
+          client_name: string
+          created_at: string
+          current_stage: string | null
+          draft_data: Json | null
+          id: string
+          product: string | null
+          progress_step: number | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          amount_requested?: number | null
+          client_name: string
+          created_at?: string
+          current_stage?: string | null
+          draft_data?: Json | null
+          id?: string
+          product?: string | null
+          progress_step?: number | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          amount_requested?: number | null
+          client_name?: string
+          created_at?: string
+          current_stage?: string | null
+          draft_data?: Json | null
+          id?: string
+          product?: string | null
+          progress_step?: number | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      prequalifications: {
+        Row: {
+          agent_id: string
+          can_proceed: boolean | null
+          client_dpi: string | null
+          client_name: string
+          client_phone: string | null
+          created_at: string
+          credit_history: string | null
+          credit_purpose: string | null
+          economic_activity: string | null
+          evaluation_reason: string | null
+          evaluation_result: Json | null
+          evaluation_status: string | null
+          id: string
+          monthly_income: number | null
+          requested_amount: number | null
+          requires_additional_data: boolean | null
+        }
+        Insert: {
+          agent_id: string
+          can_proceed?: boolean | null
+          client_dpi?: string | null
+          client_name: string
+          client_phone?: string | null
+          created_at?: string
+          credit_history?: string | null
+          credit_purpose?: string | null
+          economic_activity?: string | null
+          evaluation_reason?: string | null
+          evaluation_result?: Json | null
+          evaluation_status?: string | null
+          id?: string
+          monthly_income?: number | null
+          requested_amount?: number | null
+          requires_additional_data?: boolean | null
+        }
+        Update: {
+          agent_id?: string
+          can_proceed?: boolean | null
+          client_dpi?: string | null
+          client_name?: string
+          client_phone?: string | null
+          created_at?: string
+          credit_history?: string | null
+          credit_purpose?: string | null
+          economic_activity?: string | null
+          evaluation_reason?: string | null
+          evaluation_result?: Json | null
+          evaluation_status?: string | null
+          id?: string
+          monthly_income?: number | null
+          requested_amount?: number | null
+          requires_additional_data?: boolean | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          agency_id: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          phone: string | null
+          role: string | null
+          updated_at: string
+        }
+        Insert: {
+          agency_id?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agency_id?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          role?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
