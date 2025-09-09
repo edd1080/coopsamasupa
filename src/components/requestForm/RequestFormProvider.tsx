@@ -335,6 +335,31 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   const saveDraftMutation = useSaveDraft();
   const finalizeApplicationMutation = useFinalizeApplication();
 
+  // Load existing data when editing
+  useEffect(() => {
+    if (applicationData && applicationData.isDraft && applicationData.draft_data) {
+      console.log('📥 Loading existing draft data:', applicationData.draft_data);
+      const draftData = applicationData.draft_data as any;
+      
+      // Merge draft data with current form data
+      setFormData(prev => ({
+        ...prev,
+        ...draftData,
+        // Ensure applicationId is preserved
+        applicationId: draftData.applicationId || prev.applicationId
+      }));
+      
+      // Set current step from draft (using any to access the draft properties)
+      const draftInfo = applicationData as any;
+      if (draftInfo.last_step !== undefined) {
+        setCurrentStep(draftInfo.last_step);
+      }
+      if (draftInfo.last_sub_step !== undefined) {
+        setSubStep(draftInfo.last_sub_step);
+      }
+    }
+  }, [applicationData]);
+
   // Handle navigation from ApplicationDetails
   useEffect(() => {
     if (location.state?.stepIndex !== undefined) {

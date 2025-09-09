@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { formatApplicationId } from '@/utils/applicationIdGenerator';
 interface Application {
   id: string;
+  applicationId?: string;
   clientName: string;
   product: string;
   amount: string;
@@ -149,7 +150,7 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
                     <Calendar className="h-3 w-3" />
                     <span>{formatDate(application.date)}</span>
                     <FileText className="h-3 w-3 ml-2" />
-                    <span>{formatApplicationId(application.id)}</span>
+                    <span>{application.applicationId || formatApplicationId(application.id)}</span>
                   </div>
                 </div>
                 

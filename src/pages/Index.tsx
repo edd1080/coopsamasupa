@@ -34,11 +34,6 @@ const Index = () => {
       return `¡Hola, ${profile.full_name}!`;
     }
 
-    // Fallback al primer nombre si no hay nombre completo
-    if (profile?.full_name) {
-      const firstName = profile.full_name.split(' ')[0];
-      return `¡Hola, ${firstName}!`;
-    }
     return '¡Hola!';
   };
   const getUserInfo = () => {

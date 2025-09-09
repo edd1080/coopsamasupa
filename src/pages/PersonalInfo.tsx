@@ -93,16 +93,6 @@ const PersonalInfo = () => {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="phone">Teléfono</Label>
-              <Input
-                id="phone"
-                value={getProfileValue('phone')}
-                readOnly
-                className="bg-muted"
-              />
-            </div>
-            
-            <div className="space-y-2">
               <Label htmlFor="position">Puesto</Label>
               <Input
                 id="position"
@@ -117,16 +107,6 @@ const PersonalInfo = () => {
               <Input
                 id="branch"
                 value={getProfileValue('agency')}
-                readOnly
-                className="bg-muted"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="employeeId">ID de Empleado</Label>
-              <Input
-                id="employeeId"
-                value={getProfileValue('employee_id')}
                 readOnly
                 className="bg-muted"
               />

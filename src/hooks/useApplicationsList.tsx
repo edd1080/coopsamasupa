@@ -6,6 +6,7 @@ import { sanitizeConsoleOutput } from '@/utils/securityUtils';
 
 interface Application {
   id: string;
+  applicationId?: string;
   clientName: string;
   product: string;
   amount: string;
@@ -71,26 +72,44 @@ export const useApplicationsList = () => {
       
       // Transform data to match Application interface
       const transformedApplications: Application[] = [
-        ...(applications || []).map(app => ({
-          id: app.id,
-          clientName: app.client_name,
-          product: app.product,
-          amount: app.amount_requested?.toString() || '0',
-          status: app.status,
-          date: new Date(app.created_at).toLocaleDateString(),
-          progress: app.progress_step || 0,
-          stage: app.current_stage || 'En proceso'
-        })),
-        ...(drafts || []).map(draft => ({
-          id: draft.id,
-          clientName: draft.client_name || 'Sin nombre',
-          product: 'Borrador',
-          amount: '0',
-          status: 'draft',
-          date: new Date(draft.updated_at).toLocaleDateString(),
-          progress: draft.last_step || 0,
-          stage: 'Borrador'
-        }))
+        ...(applications || []).map(app => {
+          // Extract applicationId from draft_data if available
+          const applicationId = app.draft_data && typeof app.draft_data === 'object' && 
+            (app.draft_data as any).applicationId ? 
+            (app.draft_data as any).applicationId : 
+            app.id;
+            
+          return {
+            id: app.id,
+            applicationId: applicationId,
+            clientName: app.client_name,
+            product: app.product || 'Crédito Personal',
+            amount: app.amount_requested?.toString() || '0',
+            status: app.status,
+            date: new Date(app.created_at).toLocaleDateString(),
+            progress: app.progress_step || 0,
+            stage: app.current_stage || 'En proceso'
+          };
+        }),
+        ...(drafts || []).map(draft => {
+          // Extract applicationId from draft_data
+          const applicationId = draft.draft_data && typeof draft.draft_data === 'object' && 
+            (draft.draft_data as any).applicationId ? 
+            (draft.draft_data as any).applicationId : 
+            draft.id;
+            
+          return {
+            id: draft.id,
+            applicationId: applicationId,
+            clientName: draft.client_name || 'Sin nombre',
+            product: 'Borrador',
+            amount: '0',
+            status: 'draft',
+            date: new Date(draft.updated_at).toLocaleDateString(),
+            progress: draft.last_step || 0,
+            stage: 'Borrador'
+          };
+        })
       ];
       
       console.log('✅ Final transformed applications list:', transformedApplications.length);

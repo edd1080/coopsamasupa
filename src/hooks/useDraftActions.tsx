@@ -83,7 +83,7 @@ export const useSaveDraft = () => {
         };
       }
       
-      // Use existing applicationId or generate new one only if it doesn't exist
+      // Generate or use existing application display ID (SCO_######)
       if (!sanitizedFormData.applicationId) {
         sanitizedFormData.applicationId = generateApplicationId();
         console.log('🆔 Generated new application ID:', sanitizedFormData.applicationId);
@@ -111,33 +111,41 @@ export const useSaveDraft = () => {
       
       // Para guardado incremental, primero obtener datos existentes
       let finalDraftData = isIncremental && sanitizedChangedData ? sanitizedChangedData : sanitizedFormData;
+      let draftId: string;
       
       if (isIncremental && sanitizedChangedData) {
-        // Buscar borrador existente para combinar datos - usando el applicationId como filtro
-        const { data: existingDraft } = await supabase
+        // First try to find existing draft by the display applicationId in draft_data
+        const { data: existingDrafts } = await supabase
           .from('application_drafts')
-          .select('draft_data')
-          .eq('id', sanitizedFormData.applicationId)
-          .eq('agent_id', user.id)
-          .maybeSingle();
+          .select('id, draft_data')
+          .eq('agent_id', user.id);
+        
+        const existingDraft = existingDrafts?.find(draft => 
+          draft.draft_data && 
+          typeof draft.draft_data === 'object' && 
+          (draft.draft_data as any).applicationId === sanitizedFormData.applicationId
+        );
         
         if (existingDraft && existingDraft.draft_data && typeof existingDraft.draft_data === 'object') {
-          // Combinar datos existentes con cambios
+          // Use existing UUID and combine data
+          draftId = existingDraft.id;
           finalDraftData = {
             ...(existingDraft.draft_data as Record<string, any>),
             ...sanitizedChangedData,
-            applicationId: sanitizedFormData.applicationId // Asegurar que el ID se mantenga
+            applicationId: sanitizedFormData.applicationId // Ensure the display ID is maintained
           };
-          console.log('🔄 Combined existing draft with changes');
+          console.log('🔄 Combined existing draft with changes, using UUID:', draftId);
         } else {
-          // Si no hay borrador existente, usar datos completos
+          // Generate new UUID for new draft
+          draftId = crypto.randomUUID();
           finalDraftData = sanitizedFormData;
-          console.log('📝 No existing draft found, using full data');
+          console.log('📝 No existing draft found, creating new with UUID:', draftId);
         }
+      } else {
+        // For new drafts or full saves, generate new UUID
+        draftId = crypto.randomUUID();
+        console.log('🆔 Generated new UUID for draft:', draftId);
       }
-      
-      // Use the application ID directly as the draft ID
-      const draftId = sanitizedFormData.applicationId;
       
       const draftPayload = {
         id: draftId,
@@ -305,9 +313,23 @@ export const useApplicationValidation = () => {
       missingFields.push('Apellidos (se requiere nombre y apellido completos)');
     }
     
+    // Validar DPI (Documento Personal de Identificación)
+    const dpi = formData?.dpi || formData?.identification?.dpi || formData?.personalInfo?.dpi;
+    if (!dpi || dpi.trim().length < 13) {
+      missingFields.push('DPI (Documento Personal de Identificación)');
+    }
+    
+    // Validar teléfono móvil
+    const mobilePhone = formData?.mobilePhone || formData?.identification?.mobilePhone || formData?.personalInfo?.mobilePhone;
+    if (!mobilePhone || mobilePhone.trim().length < 8) {
+      missingFields.push('Teléfono móvil');
+    }
+    
     console.log('✅ Validation result:', { 
       fullName, 
-      nameParts, 
+      nameParts,
+      dpi,
+      mobilePhone,
       isValid: missingFields.length === 0, 
       missingFields 
     });
