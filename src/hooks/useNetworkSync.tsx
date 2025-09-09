@@ -12,7 +12,16 @@ export const useNetworkSync = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { user } = useAuth();
+  
+  // Safely get auth context - may not be available during app initialization
+  let user = null;
+  try {
+    const auth = useAuth();
+    user = auth.user;
+  } catch (error) {
+    // Auth context not available yet - this is fine during app startup
+    console.log('Auth context not available yet');
+  }
 
   const processOfflineQueue = async () => {
     if (!navigator.onLine || !user?.id || isSyncing) return;
