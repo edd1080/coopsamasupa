@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, FileSpreadsheet } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 
 const ApplicationsHeader: React.FC = () => {
   const navigate = useNavigate();
@@ -12,7 +12,7 @@ const ApplicationsHeader: React.FC = () => {
     <>
       <div>
         <h1 className="text-title mb-1">Tus solicitudes asignadas</h1>
-        <p className="text-muted-foreground">Gestiona y administra en tiempo real</p>
+        <p className="text-muted-foreground mb-4">Gestiona y administra en tiempo real</p>
       </div>
       
       <div className="flex flex-col gap-4">
@@ -22,7 +22,7 @@ const ApplicationsHeader: React.FC = () => {
         </div>
         
         <Button className="w-full" onClick={() => navigate('/applications/new')}>
-          <FileSpreadsheet className="mr-2 h-4 w-4" />
+          <Plus className="mr-2 h-4 w-4" />
           Nueva Solicitud
         </Button>
       </div>
