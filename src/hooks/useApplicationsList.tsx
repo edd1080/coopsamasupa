@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { sanitizeConsoleOutput } from '@/utils/securityUtils';
+import { getFirstNameAndLastName } from '@/lib/nameUtils';
 
 interface Application {
   id: string;
@@ -82,7 +83,7 @@ export const useApplicationsList = () => {
           return {
             id: app.id,
             applicationId: applicationId,
-            clientName: app.client_name,
+            clientName: getFirstNameAndLastName(app.client_name),
             product: app.product || 'Crédito Personal',
             amount: app.amount_requested?.toString() || '0',
             status: app.status,
@@ -97,17 +98,30 @@ export const useApplicationsList = () => {
             (draft.draft_data as any).applicationId ? 
             (draft.draft_data as any).applicationId : 
             draft.id;
+
+          // Map step number to stage name for drafts
+          const getStageFromStep = (step: number): string => {
+            switch(step) {
+              case 1: return 'Identificación y Contacto';
+              case 2: return 'Información Laboral';
+              case 3: return 'Información Financiera';
+              case 4: return 'Referencias Personales';
+              case 5: return 'Documentos e Imágenes';
+              case 6: return 'Revisión Final';
+              default: return 'Identificación y Contacto';
+            }
+          };
             
           return {
             id: draft.id,
             applicationId: applicationId,
-            clientName: draft.client_name || 'Sin nombre',
-            product: 'Borrador',
-            amount: '0',
+            clientName: getFirstNameAndLastName(draft.client_name || 'Sin nombre'),
+            product: '', // Empty for drafts to hide in UI
+            amount: '', // Empty for drafts to hide in UI
             status: 'draft',
             date: new Date(draft.updated_at).toLocaleDateString(),
             progress: draft.last_step || 0,
-            stage: 'Borrador'
+            stage: getStageFromStep(draft.last_step || 1)
           };
         })
       ];

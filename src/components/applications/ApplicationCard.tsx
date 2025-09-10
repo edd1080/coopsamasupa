@@ -72,42 +72,34 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
   const getStatusBadge = (status: string, isDraft?: boolean) => {
     // Para borradores, mostrar como "Activo" pero con indicador visual sutil
     if (status === 'draft') {
-      return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 flex items-center gap-1 text-sm px-3 py-1">
-          <BarChart3 className="h-4 w-4" />
-          <span>Activo</span>
-          
+      return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs px-2 py-0.5">
+          Activo
         </Badge>;
     }
     switch (status) {
       case 'pending':
-        return <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 flex items-center gap-1 text-sm px-3 py-1">
-            <BarChart3 className="h-4 w-4" />
-            <span>Activo</span>
+        return <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-xs px-2 py-0.5">
+            Activo
           </Badge>;
       case 'submitted':
-        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1 text-sm px-3 py-1">
-            <CheckCircle className="h-4 w-4" />
-            <span>Enviada</span>
+        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs px-2 py-0.5">
+            Enviada
           </Badge>;
       case 'reviewing':
-        return <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-200 flex items-center gap-1 text-sm px-3 py-1">
-            <Clock className="h-4 w-4" />
-            <span>Verificación</span>
+        return <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-200 text-xs px-2 py-0.5">
+            Verificación
           </Badge>;
       case 'approved':
-        return <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1 text-sm px-3 py-1">
-            <CheckCircle className="h-4 w-4" />
-            <span>Aprobado</span>
+        return <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 text-xs px-2 py-0.5">
+            Aprobado
           </Badge>;
       case 'rejected':
-        return <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200 flex items-center gap-1 text-sm px-3 py-1">
-            <AlertCircle className="h-4 w-4" />
-            <span>Rechazado</span>
+        return <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200 text-xs px-2 py-0.5">
+            Rechazado
           </Badge>;
       case 'cancelled':
-        return <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-200 flex items-center gap-1 text-sm px-3 py-1">
-            <X className="h-4 w-4" />
-            <span>Cancelado</span>
+        return <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-200 text-xs px-2 py-0.5">
+            Cancelado
           </Badge>;
       default:
         return null;
@@ -151,6 +143,9 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
                     <span>{formatDate(application.date)}</span>
                     <FileText className="h-3 w-3 ml-2" />
                     <span>{application.applicationId || formatApplicationId(application.id)}</span>
+                    {getStatusBadge(application.status, isDraft) && (
+                      <span className="ml-2">{getStatusBadge(application.status, isDraft)}</span>
+                    )}
                   </div>
                 </div>
                 
@@ -184,8 +179,6 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  
-                  {getStatusBadge(application.status, isDraft)}
                 </div>
               </div>
               
@@ -201,10 +194,12 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
                 <Progress value={application.progress / 6 * 100} className="h-1.5" />
               </div>
               
-              <div className="flex justify-between items-center mt-2 text-sm">
-                <div className="font-medium">{application.product}</div>
-                <div className="text-primary">{application.amount}</div>
-              </div>
+              {!isDraft && application.product && application.amount && (
+                <div className="flex justify-between items-center mt-2 text-sm">
+                  <div className="font-medium">{application.product}</div>
+                  <div className="text-primary">{application.amount}</div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
