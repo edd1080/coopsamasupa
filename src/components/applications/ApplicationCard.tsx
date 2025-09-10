@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Calendar, FileText, Edit, Trash2, MoreVertical, CheckCircle, AlertCircle, BarChart3, Banknote, FileSignature, UserCheck, FileImage, Users, X, Clock, Eye } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { formatApplicationId } from '@/utils/applicationIdGenerator';
+import { getFirstNameAndLastName } from '@/lib/nameUtils';
 interface Application {
   id: string;
   applicationId?: string;
@@ -136,20 +137,18 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
           <CardContent className="p-4">
             <div className="flex flex-col">
               <div className="flex items-start justify-between mb-2">
-                <div>
-                  <h3 className="text-section-title font-semibold">{application.clientName}</h3>
-                  <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                <div className="flex-1 pr-4">
+                  <h3 className="text-section-title font-semibold">{getFirstNameAndLastName(application.clientName)}</h3>
+                  <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground whitespace-nowrap">
                     <Calendar className="h-3 w-3" />
                     <span>{formatDate(application.date)}</span>
                     <FileText className="h-3 w-3 ml-2" />
-                    <span>{application.applicationId || formatApplicationId(application.id)}</span>
-                    {getStatusBadge(application.status, isDraft) && (
-                      <span className="ml-2">{getStatusBadge(application.status, isDraft)}</span>
-                    )}
+                    <span className="truncate">{application.applicationId || formatApplicationId(application.id)}</span>
                   </div>
                 </div>
                 
                 <div className="flex flex-col items-end gap-2">
+                  {getStatusBadge(application.status, isDraft)}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8 ml-auto transition-opacity" onClick={e => e.stopPropagation()}>
