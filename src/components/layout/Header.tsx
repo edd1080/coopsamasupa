@@ -92,14 +92,16 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, applicationS
       case 'reviewing': return 'En Revisión';
       case 'pending': return 'Pendiente';
       case 'rejected': return 'Rechazada';
-      case 'draft': return 'Borrador';
+      case 'draft': return 'Activa';
       default: return 'Sin Estado';
     }
   };
 
   return (
     <header className="bg-background border-b border-border/40 sticky top-0 z-40 w-full backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center justify-between px-4">
+      <div className={`container flex items-center justify-between px-4 ${
+        isFormPage || isApplicationDetails ? 'h-16 py-3' : 'h-14'
+      }`}>
         {/* Left side - Back button + Title */}
         <div className="flex items-center gap-2">
           {!isMainPage && (

@@ -354,6 +354,13 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
       const draftInfo = applicationData as any;
       if (draftInfo.last_step !== undefined) {
         setCurrentStep(draftInfo.last_step);
+        
+        // Mark all previous sections as complete
+        for (let i = 0; i < draftInfo.last_step; i++) {
+          if (steps[i]) {
+            setSectionStatus(prev => ({ ...prev, [steps[i].id]: 'complete' }));
+          }
+        }
       }
       if (draftInfo.last_sub_step !== undefined) {
         setSubStep(draftInfo.last_sub_step);
@@ -475,6 +482,10 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     // Reset scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
     
+    // Mark section as complete when finishing last sub-step
+    if (isLastSubStep) {
+      updateSectionStatus(steps[currentStep].id, 'complete');
+    }
     
     if (isLastSubStep) {
       // Move to next main step
@@ -488,7 +499,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
       console.log('➡️ Moving to next sub-step:', subStep + 1);
       setSubStep(prev => prev + 1);
     }
-  }, [currentStep, subStep, isLastSubStep, isLastStep, getSubStepsForSection, toast]);
+  }, [currentStep, subStep, isLastSubStep, isLastStep, steps, updateSectionStatus]);
 
   const handleSubPrevious = useCallback(() => {
     // Reset scroll to top
@@ -532,6 +543,11 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   const handleSubmit = useCallback(() => {
     console.log('📤 Submitting form with data:', formData);
     
+    // Mark all sections as complete when submitting
+    steps.forEach(step => {
+      updateSectionStatus(step.id, 'complete');
+    });
+    
     finalizeApplicationMutation.mutate(formData, {
       onSuccess: () => {
         setShowSuccessScreen(true);
@@ -540,7 +556,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
         console.error('❌ Error submitting form:', error);
       }
     });
-  }, [formData, finalizeApplicationMutation]);
+  }, [formData, finalizeApplicationMutation, steps, updateSectionStatus]);
 
   // Updated exit handling with save functionality and proper navigation
   const handleExit = useCallback(async (shouldSave: boolean = false) => {

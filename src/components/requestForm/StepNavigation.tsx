@@ -45,13 +45,20 @@ const StepNavigation: React.FC<StepNavigationProps> = ({
               onClick={() => isClickable && onChangeStep(index)}
               disabled={!isClickable}
               className={`
-                flex items-center gap-2 py-2 px-3 min-w-fit rounded-lg transition-all duration-200
+                relative flex items-center gap-2 py-2 px-3 min-w-fit rounded-lg transition-all duration-200
                 ${isActive ? 'bg-primary/10 text-primary shadow-sm' : ''}
-                ${isCompleted && !isActive ? 'text-primary' : ''}
+                ${isCompleted && !isActive ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : ''}
                 ${isPast && !isActive && !isCompleted ? 'text-primary/70' : ''}
                 ${!isClickable ? 'opacity-40' : 'hover:bg-primary/10 hover:text-primary focus-visible:ring-primary'}
               `}
             >
+              {/* Check icon for completed sections */}
+              {isCompleted && !isActive && (
+                <CheckCircle 
+                  size={12} 
+                  className="absolute -top-1 -right-1 bg-white rounded-full text-emerald-600" 
+                />
+              )}
               <div className={`
                 flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium
                 ${isActive ? 'bg-primary text-primary-foreground' : ''} 
