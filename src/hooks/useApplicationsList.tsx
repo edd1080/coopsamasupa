@@ -79,11 +79,24 @@ export const useApplicationsList = () => {
             (app.draft_data as any).applicationId ? 
             (app.draft_data as any).applicationId : 
             app.id;
+
+          // Construct full name from draft_data if available, otherwise use client_name
+          let fullName = app.client_name;
+          if (app.draft_data && typeof app.draft_data === 'object') {
+            const draftData = app.draft_data as any;
+            if (draftData.firstName && draftData.lastName) {
+              fullName = `${draftData.firstName} ${draftData.lastName}`;
+            } else if (draftData.firstLastName) {
+              fullName = `${draftData.firstName || ''} ${draftData.firstLastName}`.trim();
+            } else if (draftData.fullName) {
+              fullName = draftData.fullName;
+            }
+          }
             
           return {
             id: app.id,
             applicationId: applicationId,
-            clientName: getFirstNameAndLastName(app.client_name),
+            clientName: getFirstNameAndLastName(fullName),
             product: app.product || 'Crédito Personal',
             amount: app.amount_requested?.toString() || '0',
             status: app.status,
@@ -98,6 +111,19 @@ export const useApplicationsList = () => {
             (draft.draft_data as any).applicationId ? 
             (draft.draft_data as any).applicationId : 
             draft.id;
+
+          // Construct full name from draft_data if available, otherwise use client_name
+          let fullName = draft.client_name || 'Sin nombre';
+          if (draft.draft_data && typeof draft.draft_data === 'object') {
+            const draftData = draft.draft_data as any;
+            if (draftData.firstName && draftData.lastName) {
+              fullName = `${draftData.firstName} ${draftData.lastName}`;
+            } else if (draftData.firstName && draftData.firstLastName) {
+              fullName = `${draftData.firstName} ${draftData.firstLastName}`;
+            } else if (draftData.fullName) {
+              fullName = draftData.fullName;
+            }
+          }
 
           // Map step number to stage name for drafts
           const getStageFromStep = (step: number): string => {
@@ -115,7 +141,7 @@ export const useApplicationsList = () => {
           return {
             id: draft.id,
             applicationId: applicationId,
-            clientName: getFirstNameAndLastName(draft.client_name || 'Sin nombre'),
+            clientName: getFirstNameAndLastName(fullName),
             product: '', // Empty for drafts to hide in UI
             amount: '', // Empty for drafts to hide in UI
             status: 'draft',
