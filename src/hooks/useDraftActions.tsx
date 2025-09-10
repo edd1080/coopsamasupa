@@ -109,42 +109,43 @@ export const useSaveDraft = () => {
       
       console.log('👤 Extracted and validated client name:', sanitizeConsoleOutput({ clientName }));
       
-      // Para guardado incremental, primero obtener datos existentes
-      let finalDraftData = isIncremental && sanitizedChangedData ? sanitizedChangedData : sanitizedFormData;
+      // Check for existing draft by applicationId BEFORE creating new ones
+      let finalDraftData = sanitizedFormData;
       let draftId: string;
       
-      if (isIncremental && sanitizedChangedData) {
-        // First try to find existing draft by the display applicationId in draft_data
-        const { data: existingDrafts } = await supabase
-          .from('application_drafts')
-          .select('id, draft_data')
-          .eq('agent_id', user.id);
+      // Always check for existing draft by the display applicationId in draft_data
+      const { data: existingDrafts } = await supabase
+        .from('application_drafts')
+        .select('id, draft_data')
+        .eq('agent_id', user.id);
+      
+      const existingDraft = existingDrafts?.find(draft => 
+        draft.draft_data && 
+        typeof draft.draft_data === 'object' && 
+        (draft.draft_data as any).applicationId === sanitizedFormData.applicationId
+      );
+      
+      if (existingDraft) {
+        // Reuse existing draft ID to update instead of creating new
+        draftId = existingDraft.id;
         
-        const existingDraft = existingDrafts?.find(draft => 
-          draft.draft_data && 
-          typeof draft.draft_data === 'object' && 
-          (draft.draft_data as any).applicationId === sanitizedFormData.applicationId
-        );
-        
-        if (existingDraft && existingDraft.draft_data && typeof existingDraft.draft_data === 'object') {
-          // Use existing UUID and combine data
-          draftId = existingDraft.id;
+        if (isIncremental && sanitizedChangedData && existingDraft.draft_data && typeof existingDraft.draft_data === 'object') {
+          // For incremental saves, merge with existing data
           finalDraftData = {
             ...(existingDraft.draft_data as Record<string, any>),
             ...sanitizedChangedData,
             applicationId: sanitizedFormData.applicationId // Ensure the display ID is maintained
           };
-          console.log('🔄 Combined existing draft with changes, using UUID:', draftId);
+          console.log('🔄 Incremental update of existing draft with UUID:', draftId);
         } else {
-          // Generate new UUID for new draft
-          draftId = crypto.randomUUID();
+          // For full saves, use the new data but keep the same ID
           finalDraftData = sanitizedFormData;
-          console.log('📝 No existing draft found, creating new with UUID:', draftId);
+          console.log('🔄 Full update of existing draft with UUID:', draftId);
         }
       } else {
-        // For new drafts or full saves, generate new UUID
+        // Generate new UUID only if no existing draft found
         draftId = crypto.randomUUID();
-        console.log('🆔 Generated new UUID for draft:', draftId);
+        console.log('📝 Creating new draft with UUID:', draftId);
       }
       
       const draftPayload = {

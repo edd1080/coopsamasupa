@@ -64,6 +64,7 @@ interface FormContextType {
   hasUnsavedChanges: boolean;
   handleShowExitDialog: () => void;
   showSuccessScreen: boolean;
+  isSavingDraft: boolean;
 }
 
 
@@ -660,6 +661,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     hasUnsavedChanges,
     handleShowExitDialog,
     showSuccessScreen,
+    isSavingDraft: saveDraftMutation.isPending,
   };
 
   return (

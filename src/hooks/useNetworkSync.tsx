@@ -67,30 +67,46 @@ export const useNetworkSync = () => {
             break;
 
           case 'updateDraft':
+            // Check for existing draft to avoid duplication during sync
+            const { data: existingDrafts } = await supabase
+              .from('application_drafts')
+              .select('id, draft_data')
+              .eq('agent_id', user.id);
+            
+            const applicationId = task.payload.draft_data?.applicationId || task.payload.id;
+            const existingDraft = existingDrafts?.find(draft => 
+              draft.draft_data && 
+              typeof draft.draft_data === 'object' && 
+              (draft.draft_data as any).applicationId === applicationId
+            );
+            
+            const draftPayload = {
+              ...sanitizeObjectData(task.payload),
+              agent_id: user.id,
+              id: existingDraft ? existingDraft.id : task.payload.id // Reuse existing ID if found
+            };
+            
             const { data: draftData, error: draftError } = await supabase
               .from('application_drafts')
-              .upsert({
-                ...sanitizeObjectData(task.payload),
-                agent_id: user.id
-              });
+              .upsert(draftPayload);
             success = !draftError;
             break;
 
           case 'uploadDocument':
             // Handle document upload from offline queue
-            const { payload } = task;
-            if (payload.blobKey) {
+            const { payload: uploadPayload } = task;
+            if (uploadPayload.blobKey) {
               // Retrieve blob from localforage and upload
-              const blob = await localforage.getItem(payload.blobKey);
+              const blob = await localforage.getItem(uploadPayload.blobKey);
               if (blob && blob instanceof Blob) {
                 const { data: uploadData, error: uploadError } = await supabase.storage
                   .from('documents')
-                  .upload(payload.path, blob, { upsert: true });
+                  .upload(uploadPayload.path, blob, { upsert: true });
                 success = !uploadError;
                 
                 if (success) {
                   // Clean up blob from localforage
-                  await localforage.removeItem(payload.blobKey);
+                  await localforage.removeItem(uploadPayload.blobKey);
                 }
               }
             }

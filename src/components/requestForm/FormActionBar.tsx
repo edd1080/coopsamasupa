@@ -21,7 +21,8 @@ const FormActionBar: React.FC<FormActionBarProps> = ({
     handleSaveDraft,
     handleSubNext,
     handleSubPrevious,
-    handleSubmit
+    handleSubmit,
+    isSavingDraft
   } = useFormContext();
 
   // Check if we're at the very first step
@@ -42,8 +43,17 @@ const FormActionBar: React.FC<FormActionBarProps> = ({
           
           {/* Center: Save draft button (icon only) */}
           <div className="flex-1 flex justify-center px-0 mx-0">
-            <Button variant="outline" onClick={handleSaveDraft} size="icon">
-              <Save className="h-4 w-4" />
+            <Button 
+              variant="outline" 
+              onClick={handleSaveDraft} 
+              size="icon"
+              disabled={isSavingDraft}
+            >
+              {isSavingDraft ? (
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              ) : (
+                <Save className="h-4 w-4" />
+              )}
             </Button>
           </div>
 
