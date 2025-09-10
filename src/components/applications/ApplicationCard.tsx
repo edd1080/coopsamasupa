@@ -41,34 +41,18 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
   const handleViewApplication = (id: string) => {
     // Para ambos (borradores y aplicaciones completas), ir a la página de detalles
     navigate(`/applications/${id}`);
-    const itemType = application.status === 'draft' ? 'borrador' : 'solicitud';
-    toast({
-      title: `Abriendo ${itemType}`,
-      description: `Mostrando detalles de ${application.clientName}`,
-      duration: 3000
-    });
   };
   const handleEditApplication = (id: string, clientName: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
 
     // Tanto borradores como aplicaciones completas van al formulario para edición
     navigate(`/request-form/${id}`);
-    toast({
-      title: "Edición iniciada",
-      description: `Editando solicitud de ${clientName}`,
-      duration: 3000
-    });
   };
   const handleContinueApplication = (id: string, clientName: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
 
     // Ir directamente al formulario para continuar
     navigate(`/request-form/${id}`);
-    toast({
-      title: "Continuando borrador",
-      description: `Continuando solicitud de ${clientName}`,
-      duration: 3000
-    });
   };
   const getStatusBadge = (status: string, isDraft?: boolean) => {
     // Para borradores, mostrar como "Activo" pero con indicador visual sutil

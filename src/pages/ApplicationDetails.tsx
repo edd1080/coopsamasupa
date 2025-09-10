@@ -131,10 +131,6 @@ const ApplicationDetails = () => {
     };
     const stepIndex = sectionToStepMap[sectionId];
     if (stepIndex !== undefined) {
-      toast({
-        title: "Navegando a sección",
-        description: `Abriendo ${sectionId}...`
-      });
       navigate(`/request-form/${id}`, {
         state: {
           sectionId,
@@ -284,21 +280,30 @@ const ApplicationDetails = () => {
               <CardTitle>Acceso Rápido</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-                {sections.map(section => {
-                const Icon = section.icon;
-                return <Button key={section.id} variant="outline" className="h-auto py-2 flex flex-col items-center text-xs gap-1 flex-1 min-h-[5rem] sm:min-h-[4.5rem] whitespace-normal break-words overflow-hidden" onClick={() => navigateToFormSection(section.id)}>
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Icon className="h-4 w-4" />
-                      </div>
-                      <span className="text-center leading-tight line-clamp-2" style={{
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden'
-                  }}>{section.name}</span>
-                    </Button>;
-              })}
+               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+                 {sections.map((section, index) => {
+                 const Icon = section.icon;
+                 const isCompleted = progress > index;
+                 return <Button key={section.id} variant="outline" className={`relative h-auto py-2 flex flex-col items-center text-xs gap-1 flex-1 min-h-[5rem] sm:min-h-[4.5rem] whitespace-normal break-words overflow-hidden ${
+                   isCompleted ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : ''
+                 }`} onClick={() => navigateToFormSection(section.id)}>
+                       {isCompleted && (
+                         <CheckCircle 
+                           size={12} 
+                           className="absolute -top-1 -right-1 bg-white rounded-full text-emerald-600" 
+                         />
+                       )}
+                       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                         <Icon className="h-4 w-4" />
+                       </div>
+                       <span className="text-center leading-tight line-clamp-2" style={{
+                     display: '-webkit-box',
+                     WebkitLineClamp: 2,
+                     WebkitBoxOrient: 'vertical',
+                     overflow: 'hidden'
+                   }}>{section.name}</span>
+                     </Button>;
+               })}
               </div>
             </CardContent>
           </Card>
@@ -350,7 +355,7 @@ const ApplicationDetails = () => {
                   <p className="text-sm text-muted-foreground mb-4">
                     Agregue al menos dos referencias para continuar con la solicitud
                   </p>
-                  <Button onClick={() => navigate(`/request/${id}?step=4`)} className="bg-[#E18E33] hover:bg-[#E18E33]/90 text-white border-0">
+                  <Button onClick={() => navigate(`/request/${id}?step=4`)} className="bg-green-600 hover:bg-green-700 text-white border-0">
                     <Plus className="h-4 w-4 mr-2" />
                     Agregar Referencias
                   </Button>
@@ -379,7 +384,7 @@ const ApplicationDetails = () => {
                         </div>
                       </div>
                     </div>)}
-                  <NewGuarantorSheet trigger={<Button className="w-full bg-[#E18E33] hover:bg-[#E18E33]/90 text-white border-0">
+                  <NewGuarantorSheet trigger={<Button className="w-full bg-green-600 hover:bg-green-700 text-white border-0">
                         <Plus className="h-4 w-4 mr-2" />
                         Agregar Otro Fiador
                       </Button>} onCreateGuarantor={handleAddGuarantor} onDiscard={() => {}} />
@@ -408,10 +413,10 @@ const ApplicationDetails = () => {
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <dl className="space-y-1">
-                    <div>
-                      <dt className="text-xs text-muted-foreground font-semibold">Nombre</dt>
-                      <dd className="text-sm font-medium">{personName}</dd>
-                    </div>
+                     <div>
+                       <dt className="text-xs text-muted-foreground font-semibold">Nombre</dt>
+                       <dd className="text-sm font-medium">{`${formData.firstName || ''} ${formData.secondName || ''} ${formData.firstLastName || ''} ${formData.secondLastName || ''}`.trim() || personName}</dd>
+                     </div>
                     {formData.dpi && <div>
                         <dt className="text-xs text-muted-foreground font-semibold">CUI</dt>
                         <dd className="text-sm font-medium">{formData.dpi}</dd>
