@@ -63,9 +63,11 @@ serve(async (req) => {
 
     // Build Coopsama payload
     const coopsamaPayload = {
-      processId: applicationId,
-      user: profile.full_name || user.email || 'unknown',
-      data: officialData
+      data: officialData,
+      metadata: {
+        processId: applicationId,
+        user: profile.full_name || user.email || 'unknown'
+      }
     };
 
     console.log('📤 Sending to Coopsama microservice...');
