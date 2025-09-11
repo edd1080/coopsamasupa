@@ -98,6 +98,27 @@ export const useFinalizeApplication = () => {
       }
 
       console.log('✅ Application finalized successfully');
+
+      // Call Coopsama integration (non-blocking)
+      try {
+        console.log('🔄 Sending to Coopsama microservice...');
+        const coopsamaResult = await supabase.functions.invoke('coopsama-integration', {
+          body: { 
+            applicationId: formData.applicationId, 
+            officialData: officialPayload 
+          }
+        });
+        
+        if (coopsamaResult.error) {
+          console.warn('⚠️ Coopsama integration warning:', coopsamaResult.error);
+        } else {
+          console.log('✅ Coopsama integration completed');
+        }
+      } catch (coopsamaError) {
+        console.warn('⚠️ Coopsama integration failed (non-critical):', coopsamaError);
+        // Don't fail the main operation if Coopsama fails
+      }
+
       return result;
     },
     onSuccess: () => {

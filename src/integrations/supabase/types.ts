@@ -52,6 +52,11 @@ export type Database = {
           agent_id: string
           amount_requested: number | null
           client_name: string
+          coopsama_external_reference_id: string | null
+          coopsama_operation_id: string | null
+          coopsama_sync_error: string | null
+          coopsama_sync_status: string | null
+          coopsama_synced_at: string | null
           created_at: string
           current_stage: string | null
           draft_data: Json | null
@@ -65,6 +70,11 @@ export type Database = {
           agent_id: string
           amount_requested?: number | null
           client_name: string
+          coopsama_external_reference_id?: string | null
+          coopsama_operation_id?: string | null
+          coopsama_sync_error?: string | null
+          coopsama_sync_status?: string | null
+          coopsama_synced_at?: string | null
           created_at?: string
           current_stage?: string | null
           draft_data?: Json | null
@@ -78,6 +88,11 @@ export type Database = {
           agent_id?: string
           amount_requested?: number | null
           client_name?: string
+          coopsama_external_reference_id?: string | null
+          coopsama_operation_id?: string | null
+          coopsama_sync_error?: string | null
+          coopsama_sync_status?: string | null
+          coopsama_synced_at?: string | null
           created_at?: string
           current_stage?: string | null
           draft_data?: Json | null
@@ -155,6 +170,7 @@ export type Database = {
           id: string
           phone: string | null
           role: string | null
+          tenant: Database["public"]["Enums"]["app_tenant"]
           updated_at: string
         }
         Insert: {
@@ -165,6 +181,7 @@ export type Database = {
           id: string
           phone?: string | null
           role?: string | null
+          tenant?: Database["public"]["Enums"]["app_tenant"]
           updated_at?: string
         }
         Update: {
@@ -175,6 +192,7 @@ export type Database = {
           id?: string
           phone?: string | null
           role?: string | null
+          tenant?: Database["public"]["Enums"]["app_tenant"]
           updated_at?: string
         }
         Relationships: []
@@ -187,7 +205,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      app_tenant: "coopsama" | "cosmos" | "cch" | "ptc"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -314,6 +332,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_tenant: ["coopsama", "cosmos", "cch", "ptc"],
+    },
   },
 } as const
