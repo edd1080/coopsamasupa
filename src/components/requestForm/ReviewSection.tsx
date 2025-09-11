@@ -1,12 +1,14 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { CheckCircle, AlertCircle, Send } from 'lucide-react';
+import { CheckCircle, AlertCircle, Send, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useFormContext } from './RequestFormProvider';
 import SubformHeader from '@/components/forms/SubformHeader';
+import { toOfficial, validateCoverage } from '@/utils/fieldMapper';
+import { toast } from '@/hooks/use-toast';
 
 interface ReviewSectionProps {
   formData: any;
@@ -15,6 +17,7 @@ interface ReviewSectionProps {
 
 const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData }) => {
   const { handleSubmit } = useFormContext();
+  const [validationResult, setValidationResult] = useState<any>(null);
 
   const formatCurrency = (amount: number | string) => {
     const num = typeof amount === 'string' ? parseFloat(amount) : amount;
@@ -76,6 +79,35 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
 
   const completion = getCompletionStatus();
 
+  const handleValidateMapping = () => {
+    try {
+      const officialPayload = toOfficial(formData);
+      const validation = validateCoverage(officialPayload);
+      setValidationResult(validation);
+      
+      if (validation.isValid) {
+        toast({
+          title: "Validación exitosa",
+          description: "El mapeo de campos está completo y correcto.",
+          variant: "success"
+        });
+      } else {
+        toast({
+          title: "Problemas encontrados",
+          description: `${validation.issues.length} problemas críticos encontrados.`,
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error validating mapping:', error);
+      toast({
+        title: "Error de validación",
+        description: "No se pudo validar el mapeo de campos.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleSendApplication = () => {
     // Marcar términos como aceptados antes del envío
     updateFormData('termsAccepted', true);
@@ -112,6 +144,100 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
             <span className="text-sm">
               {completion.completed} campos completados
             </span>
+          </div>
+        </div>
+
+        {/* Validación de mapeo */}
+        <div className="border rounded-md p-4 bg-gray-50 border-gray-200">
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex items-center gap-2 text-gray-700">
+              <Search className="h-6 w-6" />
+              <span className="font-medium text-lg">Validar Mapeo</span>
+            </div>
+            <p className="text-sm text-gray-600 text-center">
+              Validar que todos los campos estén correctamente mapeados al formato oficial.
+            </p>
+            <Button 
+              onClick={handleValidateMapping}
+              variant="outline"
+              className="px-6 py-2"
+              size="lg"
+            >
+              <Search className="h-4 w-4 mr-2" />
+              Validar Mapeo
+            </Button>
+            
+            {validationResult && (
+              <div className="w-full mt-4 p-3 border rounded bg-white">
+                <div className="flex items-center gap-2 mb-2">
+                  {validationResult.isValid ? (
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                  ) : (
+                    <AlertCircle className="h-5 w-5 text-red-500" />
+                  )}
+                  <span className="font-medium">
+                    {validationResult.isValid ? 'Validación exitosa' : 'Problemas encontrados'}
+                  </span>
+                </div>
+                
+                {validationResult.issues.length > 0 && (
+                  <div className="mb-2">
+                    <p className="text-sm font-medium text-red-600">Problemas críticos:</p>
+                    <ul className="text-sm text-red-600 list-disc list-inside">
+                      {validationResult.issues.map((issue: string, index: number) => (
+                        <li key={index}>{issue}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                {validationResult.warnings.length > 0 && (
+                  <div className="mb-2">
+                    <p className="text-sm font-medium text-yellow-600">Advertencias:</p>
+                    <ul className="text-sm text-yellow-600 list-disc list-inside">
+                      {validationResult.warnings.map((warning: string, index: number) => (
+                        <li key={index}>{warning}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="flex items-center gap-1">
+                    {validationResult.completeness.personalData ? (
+                      <CheckCircle className="h-3 w-3 text-green-500" />
+                    ) : (
+                      <AlertCircle className="h-3 w-3 text-red-500" />
+                    )}
+                    <span>Datos personales</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {validationResult.completeness.contactData ? (
+                      <CheckCircle className="h-3 w-3 text-green-500" />
+                    ) : (
+                      <AlertCircle className="h-3 w-3 text-red-500" />
+                    )}
+                    <span>Datos contacto</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {validationResult.completeness.creditData ? (
+                      <CheckCircle className="h-3 w-3 text-green-500" />
+                    ) : (
+                      <AlertCircle className="h-3 w-3 text-red-500" />
+                    )}
+                    <span>Datos crédito</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {validationResult.completeness.financialData ? (
+                      <CheckCircle className="h-3 w-3 text-green-500" />
+                    ) : (
+                      <AlertCircle className="h-3 w-3 text-red-500" />
+                    )}
+                    <span>Datos financieros</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

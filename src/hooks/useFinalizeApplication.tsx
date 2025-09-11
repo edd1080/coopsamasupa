@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { sanitizeObjectData } from '@/utils/inputValidation';
+import { toOfficial } from '@/utils/fieldMapper';
 
 // Build application payload with proper column mapping
 const buildApplicationPayload = (formData: any, userId: string) => {
@@ -30,6 +31,7 @@ const buildApplicationPayload = (formData: any, userId: string) => {
     current_stage: 'Revisión Final',
     progress_step: 5,
     draft_data: formData, // Store complete form data as JSON
+    official_data: null as any, // Will be set later
   };
 };
 
@@ -43,8 +45,14 @@ export const useFinalizeApplication = () => {
 
       console.log('📤 Finalizing application for user:', user.id);
 
-      // Build the application payload
+      // Convert to official format first
+      const officialPayload = toOfficial(formData);
+      
+      // Build the application payload with official data
       const applicationPayload = buildApplicationPayload(formData, user.id);
+      
+      // Add the official formatted data to the payload
+      applicationPayload.official_data = officialPayload;
       
       // Sanitize the payload
       const sanitizedPayload = sanitizeObjectData(applicationPayload);

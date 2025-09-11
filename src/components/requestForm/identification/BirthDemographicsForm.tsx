@@ -117,14 +117,11 @@ const BirthDemographicsForm: React.FC<BirthDemographicsFormProps> = ({ formData,
             <SelectTrigger>
               <SelectValue placeholder="Seleccionar etnia" />
             </SelectTrigger>
-               <SelectContent>
-                 <SelectItem value="maya">Maya</SelectItem>
-                 <SelectItem value="ladino">Ladino</SelectItem>
-                 <SelectItem value="garifuna">Garífuna</SelectItem>
-                 <SelectItem value="xinca">Xinca</SelectItem>
-                 <SelectItem value="otro">Otro</SelectItem>
-                 <SelectItem value="prefiero_no_responder">Prefiero no responder</SelectItem>
-               </SelectContent>
+                <SelectContent>
+                  <SelectItem value="maya">Maya</SelectItem>
+                  <SelectItem value="mestizo">Mestizo</SelectItem>
+                  <SelectItem value="ladino">Ladino</SelectItem>
+                </SelectContent>
           </Select>
         </div>
 

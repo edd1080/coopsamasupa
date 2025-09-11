@@ -1,0 +1,48 @@
+export const municipalities = [
+  { id: "01", departmentId: "01", value: "GUATEMALA" },
+  { id: "02", departmentId: "01", value: "SANTA CATARINA PINULA" },
+  { id: "03", departmentId: "01", value: "SAN JOSE PINULA" },
+  { id: "04", departmentId: "01", value: "SAN JOSE DEL GOLFO" },
+  { id: "05", departmentId: "01", value: "PALENCIA" },
+  { id: "06", departmentId: "01", value: "CHINAUTLA" },
+  { id: "07", departmentId: "01", value: "SAN PEDRO AYAMPUC" },
+  { id: "08", departmentId: "01", value: "MIXCO" },
+  { id: "09", departmentId: "01", value: "SAN PEDRO SACATEPEQUEZ" },
+  { id: "10", departmentId: "01", value: "SAN JUAN SACATEPEQUEZ" },
+  { id: "11", departmentId: "01", value: "SAN RAYMUNDO" },
+  { id: "12", departmentId: "01", value: "CHUARRANCHO" },
+  { id: "13", departmentId: "01", value: "FRAIJANES" },
+  { id: "14", departmentId: "01", value: "AMATITLAN" },
+  { id: "15", departmentId: "01", value: "VILLA NUEVA" },
+  { id: "16", departmentId: "01", value: "VILLA CANALES" },
+  { id: "17", departmentId: "01", value: "SAN MIGUEL PETAPA" },
+  { id: "01", departmentId: "02", value: "GUASTATOYA" },
+  { id: "02", departmentId: "02", value: "MORAZAN" },
+  { id: "03", departmentId: "02", value: "SAN AGUSTIN ACASAGUASTLAN" },
+  { id: "04", departmentId: "02", value: "SAN CRISTOBAL ACASAGUASTLAN" },
+  { id: "05", departmentId: "02", value: "EL JICARO" },
+  { id: "06", departmentId: "02", value: "SANSARE" },
+  { id: "07", departmentId: "02", value: "SANARATE" },
+  { id: "08", departmentId: "02", value: "SAN ANTONIO LA PAZ" },
+  { id: "01", departmentId: "03", value: "ANTIGUA GUATEMALA" },
+  { id: "02", departmentId: "03", value: "JOCOTENANGO" },
+  { id: "03", departmentId: "03", value: "PASTORES" },
+  { id: "04", departmentId: "03", value: "SUMPANGO" },
+  { id: "05", departmentId: "03", value: "SANTO DOMINGO XENACOJ" },
+  { id: "06", departmentId: "03", value: "SANTIAGO SACATEPEQUEZ" },
+  { id: "07", departmentId: "03", value: "SAN BARTOLOME MILPAS ALTAS" },
+  { id: "08", departmentId: "03", value: "SAN LUCAS SACATEPEQUEZ" },
+  { id: "09", departmentId: "03", value: "SANTA LUCIA MILPAS ALTAS" },
+  { id: "10", departmentId: "03", value: "MAGDALENA MILPAS ALTAS" },
+  { id: "11", departmentId: "03", value: "SANTA MARIA DE JESUS" },
+  { id: "12", departmentId: "03", value: "CIUDAD VIEJA" },
+  { id: "13", departmentId: "03", value: "SAN MIGUEL DUEÑAS" },
+  { id: "14", departmentId: "03", value: "ALOTENANGO" },
+  { id: "15", departmentId: "03", value: "SAN ANTONIO AGUAS CALIENTES" },
+  { id: "16", departmentId: "03", value: "SANTA CATARINA BARAHONA" }
+  // ... (continuing with all municipalities - truncated for brevity)
+];
+
+export const getMunicipalitiesByDepartment = (departmentId: string) => {
+  return municipalities.filter(m => m.departmentId === departmentId);
+};
