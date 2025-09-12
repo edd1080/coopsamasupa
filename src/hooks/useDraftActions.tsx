@@ -6,12 +6,14 @@ import { useToast } from "@/hooks/use-toast";
 import { sanitizeObjectData, validateTextInput } from '@/utils/inputValidation';
 import { sanitizeConsoleOutput, formRateLimit } from '@/utils/securityUtils';
 import { generateApplicationId } from '@/utils/applicationIdGenerator';
+import { useOfflineStorage } from '@/hooks/useOfflineStorage';
 
 // Hook para guardar borrador con soporte incremental y validación mejorada
 export const useSaveDraft = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { saveOfflineData, isOffline } = useOfflineStorage();
   
   return useMutation({
     mutationFn: async ({ 
@@ -56,42 +58,12 @@ export const useSaveDraft = () => {
       const sanitizedFormData = sanitizeObjectData(formData);
       const sanitizedChangedData = changedData ? sanitizeObjectData(changedData) : null;
       
-      // Check if offline - enqueue if no connection
-      if (!navigator.onLine) {
-        const { offlineQueue } = await import('@/utils/offlineQueue');
-        await offlineQueue.enqueue({
-          type: 'updateDraft',
-          payload: {
-            id: sanitizedFormData.applicationId || generateApplicationId(),
-            agent_id: user.id,
-            client_name: sanitizedFormData?.fullName || 'Sin nombre',
-            draft_data: isIncremental && sanitizedChangedData ? sanitizedChangedData : sanitizedFormData,
-            last_step: currentStep,
-            last_sub_step: currentSubStep || 0
-          }
-        });
-        
-        // Return optimistic result for offline
-        return {
-          id: sanitizedFormData.applicationId || generateApplicationId(),
-          agent_id: user.id,
-          updated_at: new Date().toISOString(),
-          client_name: sanitizedFormData?.fullName || 'Sin nombre',
-          draft_data: isIncremental && sanitizedChangedData ? sanitizedChangedData : sanitizedFormData,
-          last_step: currentStep,
-          last_sub_step: currentSubStep || 0
-        };
-      }
-      
       // Generate or use existing application display ID (SCO_######)
       if (!sanitizedFormData.applicationId) {
         sanitizedFormData.applicationId = generateApplicationId();
         console.log('🆔 Generated new application ID:', sanitizedFormData.applicationId);
-      } else {
-        console.log('🆔 Using existing application ID:', sanitizedFormData.applicationId);
       }
-      
-      // Construir el nombre del cliente desde diferentes fuentes posibles
+
       const clientName = sanitizedFormData?.fullName ||
                         sanitizedFormData?.identification?.fullName || 
                         sanitizedFormData?.personalInfo?.fullName || 
@@ -100,6 +72,36 @@ export const useSaveDraft = () => {
                         (sanitizedFormData?.identification?.firstName && sanitizedFormData?.identification?.lastName ? `${sanitizedFormData.identification.firstName} ${sanitizedFormData.identification.lastName}` : '') ||
                         sanitizedFormData?.firstName || 
                         'Sin nombre';
+
+      // Save offline immediately for instant feedback
+      const offlineKey = `draft_${sanitizedFormData.applicationId}`;
+      const offlineData = {
+        id: sanitizedFormData.applicationId,
+        agent_id: user.id,
+        client_name: clientName,
+        draft_data: isIncremental && sanitizedChangedData ? sanitizedChangedData : sanitizedFormData,
+        last_step: currentStep,
+        last_sub_step: currentSubStep || 0,
+        updated_at: new Date().toISOString()
+      };
+
+      await saveOfflineData(offlineKey, offlineData);
+
+      // Check if offline - enqueue if no connection
+      if (isOffline) {
+        const { offlineQueue } = await import('@/utils/offlineQueue');
+        await offlineQueue.enqueue({
+          type: 'updateDraft',
+          payload: offlineData
+        });
+        
+        // Return optimistic result for offline
+        return offlineData;
+      }
+      
+      console.log('🆔 Using existing application ID:', sanitizedFormData.applicationId);
+      
+      // Client name already extracted above
       
       // Validate client name
       const nameValidation = validateTextInput(clientName, 'Nombre del cliente', 2, 100);
@@ -241,9 +243,8 @@ export const useSaveDraft = () => {
       
       toast({
         title: `${saveType.charAt(0).toUpperCase() + saveType.slice(1)}`,
-        description: `Tu solicitud ha sido guardada (ID: ${data.id})`,
-        variant: "default",
-        className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
+        description: `Tu solicitud ha sido guardada${!navigator.onLine ? ' offline' : ''}`,
+        variant: "success",
         duration: variables.isIncremental ? 2000 : 3000,
       });
     },

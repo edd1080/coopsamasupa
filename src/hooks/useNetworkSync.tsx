@@ -139,8 +139,9 @@ export const useNetworkSync = () => {
 
     if (successCount > 0) {
       toast({
-        title: "Sincronización completada",
-        description: `${successCount} elementos sincronizados correctamente.`,
+        title: "Sincronización exitosa",
+        description: `${successCount} ${successCount === 1 ? 'cambio sincronizado' : 'cambios sincronizados'} correctamente`,
+        variant: "success",
         duration: 4000
       });
     }
@@ -148,9 +149,9 @@ export const useNetworkSync = () => {
     if (failureCount > 0) {
       toast({
         title: "Error de sincronización",
-        description: `${failureCount} elementos no pudieron sincronizarse.`,
+        description: `${failureCount} ${failureCount === 1 ? 'elemento' : 'elementos'} no se ${failureCount === 1 ? 'pudo sincronizar' : 'pudieron sincronizar'}. Se reintentará automáticamente.`,
         variant: "destructive",
-        duration: 5000
+        duration: 6000
       });
     }
 

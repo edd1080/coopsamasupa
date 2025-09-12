@@ -9,8 +9,10 @@ const BottomNavigation = () => {
     return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
 
-  // Hide bottom navigation on request form page
-  if (location.pathname === '/request-form') {
+  // Hide bottom navigation on request form page and application details
+  if (location.pathname === '/request-form' || 
+      location.pathname.startsWith('/applications/') ||
+      location.pathname.startsWith('/prospects/')) {
     return null;
   }
 

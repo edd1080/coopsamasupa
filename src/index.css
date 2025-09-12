@@ -5,6 +5,62 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Prevent pull-to-refresh and overscroll */
+html {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
+  height: 100%;
+  height: 100dvh; /* Dynamic viewport height for mobile */
+}
+
+body {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
+  /* Prevent pull-to-refresh on mobile */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  /* Edge-to-edge on mobile */
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  height: 100dvh;
+  /* Support Android edge-to-edge */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+#root {
+  height: 100%;
+  height: 100dvh;
+  width: 100vw;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Prevent overscroll bounce on all scrollable elements */
+* {
+  overscroll-behavior: none;
+}
+
+/* Additional pull-to-refresh prevention */
+.no-pull-refresh {
+  overscroll-behavior-y: contain;
+  touch-action: pan-x pan-y;
+}
+
+/* Safe area utilities for Android/iOS */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
 @layer base {
   :root {
     /* Light theme - Nueva paleta con azul primario y verde accent */
