@@ -4,19 +4,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const {
-    toast
-  } = useToast();
-  const {
-    signIn
-  } = useAuth();
+  
+  const { toast } = useToast();
+  const { signIn } = useAuth();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!email || !password) {
       toast({
         title: "Error de validación",
@@ -25,6 +25,7 @@ const LoginForm = () => {
       });
       return;
     }
+
     try {
       setIsLoading(true);
       await signIn(email, password);
@@ -40,7 +41,9 @@ const LoginForm = () => {
       setIsLoading(false);
     }
   };
-  return <div className="space-y-6">
+
+  return (
+    <div className="space-y-6">
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-bold text-foreground">
           Iniciar sesión
@@ -56,7 +59,16 @@ const LoginForm = () => {
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
               <User className="h-4 w-4 text-muted-foreground" />
             </div>
-            <Input id="email" type="email" placeholder="Correo electrónico" value={email} onChange={e => setEmail(e.target.value)} className="pl-10" autoComplete="email" disabled={isLoading} />
+            <Input 
+              id="email" 
+              type="email" 
+              placeholder="Correo electrónico" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              className="pl-10" 
+              autoComplete="email" 
+              disabled={isLoading} 
+            />
           </div>
         </div>
         
@@ -65,9 +77,27 @@ const LoginForm = () => {
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
               <Lock className="h-4 w-4 text-muted-foreground" />
             </div>
-            <Input id="password" type={showPassword ? "text" : "password"} placeholder="Contraseña" value={password} onChange={e => setPassword(e.target.value)} className="pl-10 pr-10" autoComplete="current-password" disabled={isLoading} />
-            <button type="button" className="absolute inset-y-0 right-0 flex items-center pr-3" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>
-              {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+            <Input 
+              id="password" 
+              type={showPassword ? "text" : "password"} 
+              placeholder="Contraseña" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              className="pl-10 pr-10" 
+              autoComplete="current-password" 
+              disabled={isLoading} 
+            />
+            <button 
+              type="button" 
+              className="absolute inset-y-0 right-0 flex items-center pr-3" 
+              onClick={() => setShowPassword(!showPassword)} 
+              tabIndex={-1}
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4 text-muted-foreground" />
+              ) : (
+                <Eye className="h-4 w-4 text-muted-foreground" />
+              )}
             </button>
           </div>
         </div>
@@ -76,6 +106,8 @@ const LoginForm = () => {
           {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
         </Button>
       </form>
-    </div>;
+    </div>
+  );
 };
+
 export default LoginForm;
