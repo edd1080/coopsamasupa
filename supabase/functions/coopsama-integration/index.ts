@@ -6,9 +6,71 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const COOPSAMA_MICROSERVICE_URL = Deno.env.get('COOPSAMA_MICROSERVICE_URL') || 'http://192.168.206.48:32100/micro-coopsama/coopsama/operation';
+const COOPSAMA_MICROSERVICE_URL = 'https://services.bowpi.com/v1/micro-coopsama/coopsama/operation';
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+// Tenant credentials mapping
+interface TenantCredentials {
+  userId: string;
+  userToken: string;
+}
+
+function getTenantCredentials(tenant: string): TenantCredentials | null {
+  switch (tenant) {
+    case 'coopsama':
+      const coopsamaUserId = Deno.env.get('COOPSAMA_USER_ID');
+      const coopsamaUserToken = Deno.env.get('COOPSAMA_USER_TOKEN');
+      if (!coopsamaUserId || !coopsamaUserToken) {
+        console.error('Missing Coopsama credentials in environment variables');
+        return null;
+      }
+      return {
+        userId: coopsamaUserId,
+        userToken: coopsamaUserToken
+      };
+    
+    case 'cosmos':
+      const cosmosUserId = Deno.env.get('COSMOS_USER_ID');
+      const cosmosUserToken = Deno.env.get('COSMOS_USER_TOKEN');
+      if (!cosmosUserId || !cosmosUserToken) {
+        console.error('Missing Cosmos credentials in environment variables');
+        return null;
+      }
+      return {
+        userId: cosmosUserId,
+        userToken: cosmosUserToken
+      };
+    
+    case 'cch':
+      const cchUserId = Deno.env.get('CCH_USER_ID');
+      const cchUserToken = Deno.env.get('CCH_USER_TOKEN');
+      if (!cchUserId || !cchUserToken) {
+        console.error('Missing CCH credentials in environment variables');
+        return null;
+      }
+      return {
+        userId: cchUserId,
+        userToken: cchUserToken
+      };
+    
+    case 'ptc':
+      const ptcUserId = Deno.env.get('PTC_USER_ID');
+      const ptcUserToken = Deno.env.get('PTC_USER_TOKEN');
+      if (!ptcUserId || !ptcUserToken) {
+        console.error('Missing PTC credentials in environment variables');
+        return null;
+      }
+      return {
+        userId: ptcUserId,
+        userToken: ptcUserToken
+      };
+    
+    default:
+      console.error(`Unknown tenant: ${tenant}`);
+      return null;
+  }
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -52,6 +114,12 @@ serve(async (req) => {
 
     console.log('🏢 User tenant:', profile.tenant);
 
+    // Get tenant credentials from environment variables
+    const tenantCredentials = getTenantCredentials(profile.tenant);
+    if (!tenantCredentials) {
+      throw new Error(`No credentials configured for tenant: ${profile.tenant}`);
+    }
+
     // Get request payload
     const { applicationId, officialData } = await req.json();
     
@@ -70,14 +138,15 @@ serve(async (req) => {
       }
     };
 
-    console.log('📤 Sending to Coopsama microservice...');
+    console.log('📤 Sending to Coopsama microservice with credentials for tenant:', profile.tenant);
 
-    // Send to Coopsama microservice
+    // Send to Coopsama microservice with tenant-specific credentials
     const coopsamaResponse = await fetch(COOPSAMA_MICROSERVICE_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Tenant': profile.tenant, // Include tenant in header
+        'x-user-id': tenantCredentials.userId,
+        'x-user-token': tenantCredentials.userToken,
       },
       body: JSON.stringify(coopsamaPayload)
     });
