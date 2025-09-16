@@ -61,6 +61,7 @@ export type Database = {
           current_stage: string | null
           draft_data: Json | null
           id: string
+          official_data: Json | null
           product: string | null
           progress_step: number | null
           status: string | null
@@ -79,6 +80,7 @@ export type Database = {
           current_stage?: string | null
           draft_data?: Json | null
           id?: string
+          official_data?: Json | null
           product?: string | null
           progress_step?: number | null
           status?: string | null
@@ -97,6 +99,7 @@ export type Database = {
           current_stage?: string | null
           draft_data?: Json | null
           id?: string
+          official_data?: Json | null
           product?: string | null
           progress_step?: number | null
           status?: string | null
