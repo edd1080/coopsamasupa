@@ -129,6 +129,9 @@ serve(async (req) => {
 
     console.log('📋 Processing application:', applicationId);
 
+    // Log the official data payload for debugging
+    console.log('🔍 Official Data Payload:', JSON.stringify(officialData, null, 2));
+
     // Build Coopsama payload
     const coopsamaPayload = {
       data: officialData,
@@ -139,6 +142,7 @@ serve(async (req) => {
     };
 
     console.log('📤 Sending to Coopsama microservice with credentials for tenant:', profile.tenant);
+    console.log('📦 Full Coopsama Payload:', JSON.stringify(coopsamaPayload, null, 2));
 
     // Send to Coopsama microservice with tenant-specific credentials
     const coopsamaResponse = await fetch(COOPSAMA_MICROSERVICE_URL, {
@@ -154,6 +158,13 @@ serve(async (req) => {
     // Validate HTTP status first
     if (coopsamaResponse.status !== 200) {
       console.error('❌ Unexpected HTTP status from Coopsama:', coopsamaResponse.status);
+      // Try to get response text for more details
+      try {
+        const errorText = await coopsamaResponse.text();
+        console.error('❌ Error response body:', errorText);
+      } catch (e) {
+        console.error('❌ Could not read error response body');
+      }
       throw new Error(`Microservice returned HTTP ${coopsamaResponse.status}`);
     }
 

@@ -475,7 +475,7 @@ export const toOfficial = (formData: any): OfficialPayload => {
     process: {
       profile: {
         processControl: {
-          processId: formData.applicationId || '',
+          processId: formData.id || formData.applicationId || '',
           cuaT24: formData.cua || undefined,
           cif: undefined // Ignored as confirmed
         },

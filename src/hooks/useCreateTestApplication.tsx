@@ -21,7 +21,7 @@ export const useCreateTestApplication = () => {
         agent_id: user.id,
         client_name: 'Andrea Prueba',
         draft_data: {
-          applicationId: 'ANDREA-PRUEBA-2024',
+          // Identificación personal
           fullName: 'Andrea Prueba',
           firstName: 'Andrea',
           lastName: 'Prueba',
@@ -30,24 +30,87 @@ export const useCreateTestApplication = () => {
           dpi: '1234567890123',
           dpiExtendedIn: 'Guatemala',
           cua: 'AP12345',
+          birthDate: '1995-06-15',
+          age: 28,
           
+          // Contacto
           nit: '12345678',
           mobilePhone: '50123456',
           email: 'andrea.prueba@test.com',
           address: '5ta Avenida 12-34 Zona 10, Ciudad de Guatemala',
           department: 'Guatemala',
           municipality: 'Guatemala',
+          residenceDepartment: 'Guatemala',
+          residenceMunicipality: 'Guatemala',
+          
+          // Vivienda
           housingType: 'Propia',
           housingStability: 'Más de 5 años',
+          residentialStability: 'Más de 5 años',
+          
+          // Educación y profesión
+          educationLevel: 'Universitario',
+          profession: 'Empresaria',
+          occupation: 'Comercio',
+          economicActivity: 'Comercio',
+          
+          // Crédito
           creditPurpose: 'Capital de Trabajo',
           requestedAmount: '25000',
           termMonths: '24',
-          paymentPlan: 'pago_mensual_fijo',
+          paymentPlan: 'nivelada',
+          destinationGroup: 'Grupo Comercial',
+          creditDestination: 'Capital de Trabajo',
+          
+          // Ubicación (coordenadas de Guatemala)
+          coordinates: {
+            latitude: 14.6349,
+            longitude: -90.5069,
+            accuracy: 10
+          },
+          
+          // Ingresos
+          income: [{
+            source: 'Comercial',
+            amount: 8000,
+            isMain: true,
+            observations: 'Venta de productos textiles'
+          }],
+          
+          // Gastos (campos individuales como espera el fieldMapper)
+          food: '1500',
+          utilities: '800',
+          transport: '500',
+          housing: '0', // Casa propia
+          education: '300',
+          other: '400',
+          
+          // Estados financieros
+          cashAndBanks: '5000',
+          merchandise: '15000',
+          realEstate: '150000',
+          accountsPayable: '8000',
+          
+          // Referencias
+          references: [{
+            fullName: 'María González López',
+            relationship: 'Amiga',
+            phone: '50987654',
+            address: '10ma Calle 5-67 Zona 9, Guatemala',
+            rating: 'Excelente'
+          }, {
+            fullName: 'Juan Carlos Morales',
+            relationship: 'Proveedor',
+            phone: '50456789',
+            address: '15 Avenida 3-45 Zona 12, Guatemala',
+            rating: 'Bueno'
+          }],
+          
+          // Agencia y membresía
           agency: 'Zona 1',
           memberType: 'Activo',
-          age: '28',
-          profession: 'Empresaria',
-          economicActivity: 'Comercio',
+          
+          // Fechas y estado
           applicationDate: new Date().toISOString(),
           termsAccepted: false,
           dataProcessingAccepted: false,
