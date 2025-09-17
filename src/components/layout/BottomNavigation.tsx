@@ -11,6 +11,7 @@ const BottomNavigation = () => {
 
   // Hide bottom navigation on request form page and application details
   if (location.pathname === '/request-form' || 
+      location.pathname.startsWith('/request-form/') ||
       location.pathname.startsWith('/applications/') ||
       location.pathname.startsWith('/prospects/')) {
     return null;
