@@ -169,11 +169,11 @@ const PersonalInfo = () => {
               {!isEditing && hasEmptyEditableFields() && (
                 <Button 
                   onClick={() => setIsEditing(true)}
-                  size="sm"
+                  size="md"
                   className="flex items-center gap-2"
                 >
                   <Edit2 className="h-4 w-4" />
-                  Completar información
+                  Editar datos
                 </Button>
               )}
             </CardTitle>
