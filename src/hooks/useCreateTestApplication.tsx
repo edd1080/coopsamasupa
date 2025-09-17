@@ -18,7 +18,6 @@ export const useCreateTestApplication = () => {
       console.log('🧪 Creating test application "Andrea Prueba"');
       
       const testApplicationData = {
-        id: 'ANDREA-PRUEBA-2024',
         agent_id: user.id,
         client_name: 'Andrea Prueba',
         draft_data: {
@@ -63,7 +62,7 @@ export const useCreateTestApplication = () => {
       const { data: existing } = await supabase
         .from('application_drafts')
         .select('id')
-        .eq('id', 'ANDREA-PRUEBA-2024')
+        .eq('client_name', 'Andrea Prueba')
         .eq('agent_id', user.id)
         .maybeSingle();
         
