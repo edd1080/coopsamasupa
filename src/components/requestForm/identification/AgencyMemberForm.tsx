@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { agencies } from '@/data/catalogs/agencies';
 
 interface AgencyMemberFormProps {
   formData: any;
@@ -24,26 +25,12 @@ const AgencyMemberForm: React.FC<AgencyMemberFormProps> = ({ formData, updateFor
             <SelectValue placeholder="Seleccionar agencia" />
           </SelectTrigger>
            <SelectContent>
-             <SelectItem value="agencia_central">Agencia Central</SelectItem>
-             <SelectItem value="agencia_santa_maria">Agencia Santa Maria</SelectItem>
-             <SelectItem value="agencia_guastatoya">Agencia Guastatoya</SelectItem>
-             <SelectItem value="agencia_asuncion_mita">Agencia Asunción Mita</SelectItem>
-             <SelectItem value="agencia_zacapa">Agencia Zacapa</SelectItem>
-             <SelectItem value="agencia_chiquimula">Agencia Chiquimula</SelectItem>
-             <SelectItem value="agencia_jalapa">Agencia Jalapa</SelectItem>
-             <SelectItem value="agencia_mataquescuintla">Agencia Mataquescuintla</SelectItem>
-             <SelectItem value="agencia_monjas">Agencia Monjas</SelectItem>
-             <SelectItem value="agencia_jutiapa">Agencia Jutiapa</SelectItem>
-             <SelectItem value="agencia_nueva_santa_rosa">Agencia Nueva Santa Rosa</SelectItem>
-             <SelectItem value="agencia_puerto_barrios">Agencia Puerto Barrios</SelectItem>
-             <SelectItem value="agencia_el_progreso">Agencia El Progreso</SelectItem>
-             <SelectItem value="agencia_teculutan">Agencia Teculután</SelectItem>
-             <SelectItem value="agencia_rio_dulce">Agencia Río Dulce</SelectItem>
-             <SelectItem value="agencia_gualan">Agencia Gualán</SelectItem>
-             <SelectItem value="agencia_san_jose_acatempa">Agencia San José Acatempa</SelectItem>
-             <SelectItem value="agencia_moyuta">Agencia Moyuta</SelectItem>
-             <SelectItem value="agencia_entre_rios">Agencia Entre Ríos</SelectItem>
-           </SelectContent>
+              {agencies.map((agency) => (
+                <SelectItem key={agency.id} value={agency.name}>
+                  {agency.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
         </Select>
       </div>
 

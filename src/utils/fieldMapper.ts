@@ -26,6 +26,10 @@ interface OfficialPayload {
         cif?: string;
         agency?: { id: string; value: string };
         ownerCounty?: { id: string; value: string };
+        agentDPI?: string;
+        agentEmail?: string;
+        agentName?: string;
+        creationDateTime?: string;
       };
       personalDocument: {
         firstName: string;
@@ -85,6 +89,7 @@ interface OfficialPayload {
         principalProject?: { id: string; value: string };
         secondaryProject?: { id: string; value: string };
         paymentMethod: { id: string; value: string };
+        productType?: { id: string; value: string };
         fundsDestination: {
           investmentState?: { id: string; value: string };
           investmentCounty?: { id: string; value: string };
@@ -281,7 +286,7 @@ const splitFullName = (fullName: string) => {
   }
 };
 
-export const toOfficial = (formData: any): OfficialPayload => {
+export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
   // Map personal identification
   const personalDoc = {
     firstName: formData.firstName || '',
@@ -550,12 +555,19 @@ export const toOfficial = (formData: any): OfficialPayload => {
           processId: formData.id || formData.applicationId || '',
           cuaT24: formData.cua || undefined,
           cif: undefined, // Ignored as confirmed
-          agency: formData.agency ? { id: formData.agency, value: formData.agency } : undefined,
-          ownerCounty: mapToCatalog(municipalities, formData.residenceMunicipality) || { id: "01", value: "GUATEMALA" }
+          agency: { id: "1", value: "AGENCIA CENTRAL" }, // Will be updated from new catalog
+          ownerCounty: mapToCatalog(municipalities, formData.residenceMunicipality) || { id: "01", value: "GUATEMALA" },
+          agentDPI: agentData?.dpi,
+          agentEmail: agentData?.email,
+          agentName: agentData?.full_name,
+          creationDateTime: new Date().toISOString()
         },
         personalDocument: personalDoc,
         personData,
-        productDetail,
+        productDetail: {
+          ...productDetail,
+          productType: { id: "1", value: "CREDITO" }
+        },
         income,
         expense,
         financialStatus,

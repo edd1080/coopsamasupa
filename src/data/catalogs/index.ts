@@ -41,6 +41,8 @@ export { ethnicities } from './ethnicity';
 export { educationLevels } from './educationLevel';
 export { officialProfessions } from './professions';
 export { officialOccupations } from './occupations';
+export { agencies, findAgencyByName, getAgencyById } from './agencies';
+export { productTypes, mapCreditTypeToProductType, getProductTypeById } from './productTypes';
 export { 
   destinationGroups, 
   destinationsByGroup, 

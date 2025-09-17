@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Send, CheckCircle, AlertCircle, Clock, Code } from 'lucide-react';
+import { Send, CheckCircle, AlertCircle, Clock, Code, FlaskConical } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { toOfficial } from '@/utils/fieldMapper';
+import { toOfficial, validateCoverage } from '@/utils/fieldMapper';
 import FieldMappingAnalyzer from './FieldMappingAnalyzer';
 
 interface TestIntegrationButtonProps {
@@ -20,6 +20,7 @@ const TestIntegrationButton: React.FC<TestIntegrationButtonProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [showMapping, setShowMapping] = useState(false);
+  const [validationResult, setValidationResult] = useState<any>(null);
   const { toast } = useToast();
 
   const handleTestIntegration = async () => {
@@ -27,11 +28,22 @@ const TestIntegrationButton: React.FC<TestIntegrationButtonProps> = ({
     try {
       console.log('🔄 Testing Coopsama integration for application:', applicationId);
       
-      // Transform data to official format
-      const officialData = toOfficial(formData);
+      // Transform data to official format with agent data
+      const agentData = {
+        dpi: '1234567890123', // Placeholder - should come from user profile
+        email: 'agente@test.com',
+        full_name: 'Agente de Prueba'
+      };
+      
+      const officialData = toOfficial(formData, agentData);
+      
+      // Validate data coverage
+      const validation = validateCoverage(officialData);
+      setValidationResult(validation);
       
       console.log('📋 Original form data:', formData);
       console.log('🔄 Transformed official data:', officialData);
+      console.log('✅ Validation result:', validation);
       
       const response = await supabase.functions.invoke('coopsama-integration', {
         body: { 
@@ -53,8 +65,8 @@ const TestIntegrationButton: React.FC<TestIntegrationButtonProps> = ({
       } else {
         toast({
           title: "Integración ejecutada",
-          description: "Revisa los logs para ver los detalles",
-          variant: "default",
+          description: `Validación: ${validation.isValid ? 'Exitosa' : validation.issues.length + ' errores'}. Revisa los detalles.`,
+          variant: validation.isValid ? "default" : "warning",
         });
       }
     } catch (error: any) {
@@ -84,15 +96,19 @@ const TestIntegrationButton: React.FC<TestIntegrationButtonProps> = ({
     return "bg-green-500";
   };
 
-  const officialData = toOfficial(formData);
+  const officialData = toOfficial(formData, {
+    dpi: '1234567890123',
+    email: 'agente@test.com', 
+    full_name: 'Agente de Prueba'
+  });
 
   return (
     <div className="space-y-4">
       <Card className="border-orange-200 bg-orange-50 dark:bg-orange-950">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-orange-900 dark:text-orange-100">
-            <Code className="h-5 w-5" />
-            Test de Integración Coopsama
+            <FlaskConical className="h-5 w-5" />
+            Test de Integración Completa
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -166,8 +182,61 @@ const TestIntegrationButton: React.FC<TestIntegrationButtonProps> = ({
             </div>
           )}
 
+          {/* Validation Results */}
+          {validationResult && (
+            <div className="mt-4 p-3 rounded-lg bg-background border">
+              <h4 className="font-medium mb-2 flex items-center gap-2">
+                {validationResult.isValid ? (
+                  <>
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    Validación Exitosa
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle className="h-4 w-4 text-red-500" />
+                    Problemas de Validación
+                  </>
+                )}
+              </h4>
+              
+              {validationResult.issues?.length > 0 && (
+                <div className="bg-red-50 border border-red-200 rounded p-2 mb-2">
+                  <p className="text-sm font-medium text-red-800">Errores encontrados:</p>
+                  <ul className="text-sm text-red-700 list-disc list-inside">
+                    {validationResult.issues.map((issue: string, idx: number) => (
+                      <li key={idx}>{issue}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {validationResult.warnings?.length > 0 && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded p-2 mb-2">
+                  <p className="text-sm font-medium text-yellow-800">Advertencias:</p>
+                  <ul className="text-sm text-yellow-700 list-disc list-inside">
+                    {validationResult.warnings.map((warning: string, idx: number) => (
+                      <li key={idx}>{warning}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              <div className="flex flex-wrap gap-2 mt-2">
+                {Object.entries(validationResult.completeness || {}).map(([field, complete]: [string, any]) => (
+                  <Badge 
+                    key={field} 
+                    variant={complete ? "default" : "destructive"}
+                    className="text-xs"
+                  >
+                    {field}: {complete ? 'Completo' : 'Incompleto'}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
           <p className="text-sm text-orange-700 dark:text-orange-300">
-            Este botón envía los datos actuales al microservicio Coopsama para verificar la integración.
+            Este test completo incluye validación de datos, transformación con agente y envío al microservicio.
             Revisa los logs de la función Edge para detalles completos.
           </p>
         </CardContent>

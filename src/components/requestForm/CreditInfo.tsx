@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from "@/components/ui/slider";
+import { productTypes } from '@/data/catalogs/productTypes';
 
 interface CreditInfoProps {
   formData: any;
@@ -24,6 +25,25 @@ const CreditInfo: React.FC<CreditInfoProps> = ({ formData, updateFormData }) => 
         </p>
         
         <div className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="productType">Tipo de Producto</Label>
+            <Select
+              value={formData.productType || ''}
+              onValueChange={(value) => updateFormData('productType', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona el tipo de producto" />
+              </SelectTrigger>
+              <SelectContent>
+                {productTypes.map((type) => (
+                  <SelectItem key={type.id} value={type.name}>
+                    {type.name} - {type.description}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="creditType">Tipo de Crédito</Label>
             <Select

@@ -100,10 +100,10 @@ serve(async (req) => {
 
     console.log('👤 Authenticated user:', user.id);
 
-    // Get user profile to extract tenant
+    // Get user profile to extract tenant and agent data
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('tenant, full_name')
+      .select('tenant, full_name, email, phone, agency_id')
       .eq('id', user.id)
       .single();
 
@@ -128,6 +128,21 @@ serve(async (req) => {
     }
 
     console.log('📋 Processing application:', applicationId);
+
+    // Enrich official data with agent information
+    const agentData = {
+      dpi: profile.phone, // Using phone as DPI placeholder - should be updated with actual DPI field
+      email: user.email || profile.email,
+      full_name: profile.full_name
+    };
+
+    // Add agent data and creation timestamp to the payload
+    if (officialData.process && officialData.process.profile && officialData.process.profile.processControl) {
+      officialData.process.profile.processControl.agentDPI = agentData.dpi;
+      officialData.process.profile.processControl.agentEmail = agentData.email;
+      officialData.process.profile.processControl.agentName = agentData.full_name;
+      officialData.process.profile.processControl.creationDateTime = new Date().toISOString();
+    }
 
     // Log the official data payload for debugging
     console.log('🔍 Official Data Payload:', JSON.stringify(officialData, null, 2));

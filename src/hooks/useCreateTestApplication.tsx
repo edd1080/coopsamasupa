@@ -108,8 +108,9 @@ export const useCreateTestApplication = () => {
           }],
           
           // Agencia y membresía
-          agency: 'Zona 1',
-          memberType: 'Activo',
+          agency: 'Agencia Central',
+          memberType: 'A',
+          productType: 'Crédito Normal',
           
           // Fechas y estado
           applicationDate: new Date().toISOString(),
