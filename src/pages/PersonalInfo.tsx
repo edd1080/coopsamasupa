@@ -6,19 +6,35 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useAgentProfile } from '@/hooks/useSupabaseQuery';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/hooks/useAuth';
+import { getFirstNameAndLastName } from '@/lib/nameUtils';
 
 const PersonalInfo = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { data: agentProfile, isLoading, error } = useAgentProfile();
+  const { data: userProfile, isLoading, error } = useUserProfile();
 
   // Función para obtener el valor del perfil o un valor por defecto
   const getProfileValue = (field: string, defaultValue: string = 'No disponible') => {
     if (isLoading) return 'Cargando...';
-    if (error || !agentProfile) return defaultValue;
-    return agentProfile[field] || defaultValue;
+    if (error || !userProfile) return defaultValue;
+    return userProfile[field] || defaultValue;
+  };
+
+  // Función para obtener el primer nombre del full_name
+  const getFirstName = () => {
+    const fullName = getProfileValue('full_name', '');
+    if (fullName === 'Cargando...' || fullName === 'No disponible') return fullName;
+    return fullName.split(' ')[0] || 'No disponible';
+  };
+
+  // Función para obtener el apellido del full_name
+  const getLastName = () => {
+    const fullName = getProfileValue('full_name', '');
+    if (fullName === 'Cargando...' || fullName === 'No disponible') return fullName;
+    const parts = fullName.split(' ');
+    return parts.slice(1).join(' ') || 'No disponible';
   };
 
   // Función para obtener el email del usuario autenticado
@@ -65,7 +81,7 @@ const PersonalInfo = () => {
                 <Label htmlFor="firstName">Nombre</Label>
                 <Input
                   id="firstName"
-                  value={getProfileValue('first_name')}
+                  value={getFirstName()}
                   readOnly
                   className="bg-muted"
                 />
@@ -74,7 +90,7 @@ const PersonalInfo = () => {
                 <Label htmlFor="lastName">Apellido</Label>
                 <Input
                   id="lastName"
-                  value={getProfileValue('last_name')}
+                  value={getLastName()}
                   readOnly
                   className="bg-muted"
                 />
@@ -92,21 +108,32 @@ const PersonalInfo = () => {
               />
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="position">Puesto</Label>
-              <Input
-                id="position"
-                value={getProfileValue('role')}
-                readOnly
-                className="bg-muted"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="phone">Teléfono</Label>
+                <Input
+                  id="phone"
+                  value={getProfileValue('phone')}
+                  readOnly
+                  className="bg-muted"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="position">Puesto</Label>
+                <Input
+                  id="position"
+                  value={getProfileValue('role')}
+                  readOnly
+                  className="bg-muted"
+                />
+              </div>
             </div>
             
             <div className="space-y-2">
               <Label htmlFor="branch">Sucursal</Label>
               <Input
                 id="branch"
-                value={getProfileValue('agency')}
+                value={getProfileValue('agency_id')}
                 readOnly
                 className="bg-muted"
               />
