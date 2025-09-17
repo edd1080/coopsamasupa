@@ -25,8 +25,8 @@ export const useCreateTestApplication = () => {
           fullName: 'Andrea Prueba',
           firstName: 'Andrea',
           lastName: 'Prueba',
-          gender: 'Femenino',
-          civilStatus: 'Soltera',
+          gender: 'MUJER',
+          civilStatus: 'SOLTERO',
           dpi: '1234567890123',
           dpiExtendedIn: 'Guatemala',
           cua: 'AP12345',
@@ -44,13 +44,13 @@ export const useCreateTestApplication = () => {
           residenceMunicipality: 'Guatemala',
           
           // Vivienda
-          housingType: 'Propia',
-          housingStability: 'Más de 5 años',
-          residentialStability: 'Más de 5 años',
+          housingType: 'PROPIA',
+          housingStability: 'MAYOR A 3 AÑOS',
+          residentialStability: 'MAYOR A 3 AÑOS',
           
           // Educación y profesión
-          educationLevel: 'Universitario',
-          profession: 'Empresaria',
+          educationLevel: 'SUPERIOR',
+          profession: 'CIENCIAS ECONOMICAS Y EMPRESARIALES',
           occupation: 'Comercio',
           economicActivity: 'Comercio',
           

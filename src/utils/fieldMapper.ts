@@ -147,6 +147,53 @@ const mapToCatalog = <T extends { id: string; value: string }>(
   if (!appValue && !fallbackId) return undefined;
   
   if (appValue) {
+    // Handle specific gender mappings
+    if (catalog === genders) {
+      const genderMappings: { [key: string]: string } = {
+        'Femenino': 'MUJER',
+        'Masculino': 'HOMBRE',
+        'FEMENINO': 'MUJER',
+        'MASCULINO': 'HOMBRE'
+      };
+      const mappedValue = genderMappings[appValue] || appValue;
+      const match = findCatalogMatch(catalog, mappedValue);
+      if (match) return { id: match.id, value: match.value };
+    }
+    
+    // Handle civil status mappings
+    if (catalog === civilStatuses) {
+      const civilStatusMappings: { [key: string]: string } = {
+        'Soltera': 'SOLTERO',
+        'Soltero': 'SOLTERO',
+        'Casada': 'CASADO',
+        'Casado': 'CASADO',
+        'Unida': 'UNIDO',
+        'Unido': 'UNIDO',
+        'Divorciada': 'DIVORCIADO',
+        'Divorciado': 'DIVORCIADO',
+        'Viuda': 'VIUDO',
+        'Viudo': 'VIUDO'
+      };
+      const mappedValue = civilStatusMappings[appValue] || appValue;
+      const match = findCatalogMatch(catalog, mappedValue);
+      if (match) return { id: match.id, value: match.value };
+    }
+    
+    // Handle education level mappings
+    if (catalog === educationLevels) {
+      const educationMappings: { [key: string]: string } = {
+        'Universitario': 'SUPERIOR',
+        'Universidad': 'SUPERIOR',
+        'Bachillerato': 'DIVERSIFICADO',
+        'Básicos': 'BASICO',
+        'Primaria': 'PRIMARIA'
+      };
+      const mappedValue = educationMappings[appValue] || appValue;
+      const match = findCatalogMatch(catalog, mappedValue);
+      if (match) return { id: match.id, value: match.value };
+    }
+    
+    // Default catalog matching
     const match = findCatalogMatch(catalog, appValue);
     if (match) return { id: match.id, value: match.value };
   }

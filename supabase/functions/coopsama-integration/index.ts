@@ -138,6 +138,16 @@ serve(async (req) => {
       originalDestination: officialData?.process?.profile?.productDetail?.fundsDestination?.destination,
       originalCategory: officialData?.process?.profile?.productDetail?.fundsDestination?.destinationCategory
     });
+    
+    // Log key mappings for debugging
+    console.log('🔍 Key Field Mappings:', {
+      gender: officialData?.process?.profile?.personalDocument?.gender,
+      maritalStatus: officialData?.process?.profile?.personalDocument?.maritalStatus,
+      academicDegree: officialData?.process?.profile?.personData?.academicDegree,
+      academicTitle: officialData?.process?.profile?.personalDocument?.academicTitle,
+      occupation: officialData?.process?.profile?.personalDocument?.occupation,
+      housingStability: officialData?.process?.profile?.personalDocument?.housingStability
+    });
 
     // Build Coopsama payload
     const coopsamaPayload = {
