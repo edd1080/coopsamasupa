@@ -151,25 +151,52 @@ serve(async (req) => {
       body: JSON.stringify(coopsamaPayload)
     });
 
+    // Validate HTTP status first
+    if (coopsamaResponse.status !== 200) {
+      console.error('❌ Unexpected HTTP status from Coopsama:', coopsamaResponse.status);
+      throw new Error(`Microservice returned HTTP ${coopsamaResponse.status}`);
+    }
+
     const coopsamaResult = await coopsamaResponse.json();
     
-    console.log('📥 Coopsama response:', {
-      status: coopsamaResponse.status,
+    console.log('📥 Coopsama response details:', {
+      httpStatus: coopsamaResponse.status,
+      internalCode: coopsamaResult.code,
       success: coopsamaResult.success,
-      code: coopsamaResult.code
+      message: coopsamaResult.message,
+      hasData: !!coopsamaResult.data
     });
+
+    // Validate response structure
+    if (typeof coopsamaResult.code === 'undefined') {
+      console.error('❌ Invalid response structure - missing code field');
+      throw new Error('Invalid microservice response format');
+    }
+
+    // Determine success based on internal code (0 = success, 1 = communication error)
+    const isSuccess = coopsamaResult.code === 0;
+    const isCommunicationError = coopsamaResult.code === 1;
 
     // Update application with Coopsama response
     const updateData: any = {
-      coopsama_sync_status: coopsamaResult.success ? 'success' : 'error',
+      coopsama_sync_status: isSuccess ? 'success' : 'error',
       coopsama_synced_at: new Date().toISOString()
     };
 
-    if (coopsamaResult.success && coopsamaResult.data) {
-      updateData.coopsama_operation_id = coopsamaResult.data.processId;
+    if (isSuccess && coopsamaResult.data) {
+      // Map the correct field names according to specifications
+      updateData.coopsama_operation_id = coopsamaResult.data.operationId;
       updateData.coopsama_external_reference_id = coopsamaResult.data.externalReferenceId;
+      console.log('✅ Success - Mapped operation ID:', updateData.coopsama_operation_id);
     } else {
-      updateData.coopsama_sync_error = coopsamaResult.message || 'Unknown error';
+      // Handle different types of errors
+      if (isCommunicationError) {
+        updateData.coopsama_sync_error = `Communication error: ${coopsamaResult.message || 'Connection to Coopsama failed'}`;
+        console.error('🔌 Communication error with Coopsama:', coopsamaResult.message);
+      } else {
+        updateData.coopsama_sync_error = coopsamaResult.message || `Unknown error (code: ${coopsamaResult.code})`;
+        console.error('❌ Coopsama error:', coopsamaResult.message, 'Code:', coopsamaResult.code);
+      }
     }
 
     // Update application in Supabase
