@@ -22,7 +22,7 @@ const buildApplicationPayload = (formData: any, userId: string) => {
   const amount = Number(formData?.requestedAmount ?? formData?.montoSolicitado ?? 0) || 0;
 
   return {
-    id: formData.applicationId,
+    // Remove id to let PostgreSQL generate UUID automatically
     agent_id: userId,
     client_name: fullName,
     amount_requested: amount,
@@ -42,6 +42,17 @@ export const useFinalizeApplication = () => {
   return useMutation({
     mutationFn: async (formData: any) => {
       if (!user?.id) throw new Error('Usuario no autenticado');
+
+      // Extract full name with fallback logic (same as in buildApplicationPayload)
+      const fullName = 
+        formData?.fullName ||
+        formData?.identification?.fullName ||
+        formData?.personalInfo?.fullName ||
+        formData?.basicData?.fullName ||
+        (formData?.firstName && formData?.lastName ? `${formData.firstName} ${formData.lastName}` : '') ||
+        (formData?.identification?.firstName && formData?.identification?.lastName ? `${formData.identification.firstName} ${formData.identification.lastName}` : '') ||
+        formData?.firstName ||
+        'Sin nombre';
 
       console.log('📤 Finalizing application for user:', user.id);
 
@@ -68,7 +79,7 @@ export const useFinalizeApplication = () => {
         // Note: Draft deletion will be handled after sync
 
         return {
-          id: formData.applicationId,
+          id: `offline-${Date.now()}`, // Temporary ID for offline mode
           offline: true,
           ...sanitizedPayload
         };
@@ -86,11 +97,12 @@ export const useFinalizeApplication = () => {
         throw new Error(`Error al enviar la solicitud: ${error.message}`);
       }
 
-      // Delete the draft after successful application creation
+      // Delete the draft after successful application creation using the generated UUID
       const { error: deleteError } = await supabase
         .from('application_drafts')
         .delete()
-        .eq('id', formData.applicationId);
+        .eq('client_name', fullName)
+        .eq('agent_id', user.id);
 
       if (deleteError) {
         console.warn('⚠️ Warning: Could not delete draft:', deleteError);
@@ -104,7 +116,7 @@ export const useFinalizeApplication = () => {
         console.log('🔄 Sending to Coopsama microservice...');
         const coopsamaResult = await supabase.functions.invoke('coopsama-integration', {
           body: { 
-            applicationId: formData.applicationId, 
+            applicationId: result.id, // Use the generated UUID from the created application
             officialData: officialPayload 
           }
         });
