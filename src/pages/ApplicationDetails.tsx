@@ -14,6 +14,7 @@ import Header from '@/components/layout/Header';
 import BottomNavigation from '@/components/layout/BottomNavigation';
 import BreadcrumbNavigation from '@/components/navigation/BreadcrumbNavigation';
 import CircularProgress from '@/components/requestForm/CircularProgress';
+import TestIntegrationButton from '@/components/applications/TestIntegrationButton';
 import { NewGuarantorSheet } from '@/components/requestForm/guarantors/NewGuarantorSheet';
 import { useApplicationData } from '@/hooks/useApplicationData';
 import { getFirstNameAndLastName } from '@/lib/nameUtils';
@@ -334,6 +335,16 @@ const ApplicationDetails = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Test Integration Card */}
+          {applicationData.isDraft && progress >= 5 && (
+            <div className="mb-6">
+              <TestIntegrationButton 
+                applicationId={applicationData.id || ''} 
+                formData={formData} 
+              />
+            </div>
+          )}
 
           {/* Guarantors Card */}
           <Card className="mb-6">
