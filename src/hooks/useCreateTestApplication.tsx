@@ -59,8 +59,9 @@ export const useCreateTestApplication = () => {
           requestedAmount: '25000',
           termMonths: '24',
           paymentPlan: 'nivelada',
-          destinationGroup: 'Grupo Comercial',
-          creditDestination: 'Capital de Trabajo',
+          destinationGroup: 'Grupo MicroCredito',
+          creditDestination: 'COMERCIO',
+          destinationCategory: 'Capital de trabajo',
           
           // Ubicación (coordenadas de Guatemala)
           coordinates: {

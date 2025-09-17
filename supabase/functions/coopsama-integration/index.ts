@@ -131,6 +131,13 @@ serve(async (req) => {
 
     // Log the official data payload for debugging
     console.log('🔍 Official Data Payload:', JSON.stringify(officialData, null, 2));
+    
+    // Log destination mapping details for debugging
+    console.log('🎯 Destination Mapping Details:', {
+      originalDestinationGroup: officialData?.process?.profile?.productDetail?.fundsDestination?.group,
+      originalDestination: officialData?.process?.profile?.productDetail?.fundsDestination?.destination,
+      originalCategory: officialData?.process?.profile?.productDetail?.fundsDestination?.destinationCategory
+    });
 
     // Build Coopsama payload
     const coopsamaPayload = {
