@@ -632,7 +632,7 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="marketEvaluation">Evaluación del Mercado *</Label>
+                  <Label htmlFor="marketEvaluation">Evaluación del Mercado</Label>
                   <p className="text-xs text-muted-foreground">
                     Analice el mercado en el que opera: demanda, competencia, ubicación, potencial de crecimiento del sector.
                   </p>
@@ -659,7 +659,7 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
     // Default fallback
     return (
       <div className="space-y-4">
-        <Label className="text-base font-medium">Tipo de Solicitante *</Label>
+        <Label className="text-base font-medium">Tipo de Solicitante</Label>
         <RadioGroup 
           value={applicantType} 
           onValueChange={setApplicantType}

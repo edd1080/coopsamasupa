@@ -102,7 +102,7 @@ const CreditDestinationForm: React.FC<CreditDestinationFormProps> = ({ formData,
 
         {/* Categoría del destino (mandatory) */}
         <div className="space-y-2">
-          <Label htmlFor="destinationCategory">Categoría del destino *</Label>
+          <Label htmlFor="destinationCategory">Categoría del destino</Label>
           <Select 
             value={formData.destinationCategory || ''} 
             onValueChange={(value) => updateFormData('destinationCategory', value)}

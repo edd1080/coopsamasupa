@@ -138,9 +138,6 @@ const DocumentsSection: React.FC<DocumentsSectionProps> = ({ formData, updateFor
                 <div className="flex items-center gap-2">
                   <FileText className="h-5 w-5 text-primary" />
                   <span className="font-medium">{document.name}</span>
-                  {document.required && (
-                    <span className="text-xs bg-red-100 text-red-800 py-0.5 px-1.5 rounded">Requerido</span>
-                  )}
                 </div>
                 {getStatusIcon(document.status)}
               </div>

@@ -78,7 +78,7 @@ const Index = () => {
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500/10 mb-2">
                   <CheckCircle className="h-5 w-5 text-green-500" />
                 </div>
-                <p className="text-sm text-muted-foreground">Aprobadas</p>
+                <p className="text-sm text-muted-foreground">Enviadas</p>
                 <h2 className="text-2xl font-bold">
                   {metricsLoading ? '...' : metrics?.approved || 0}
                 </h2>

@@ -14,7 +14,7 @@ import Header from '@/components/layout/Header';
 import BottomNavigation from '@/components/layout/BottomNavigation';
 import BreadcrumbNavigation from '@/components/navigation/BreadcrumbNavigation';
 import CircularProgress from '@/components/requestForm/CircularProgress';
-import TestIntegrationButton from '@/components/applications/TestIntegrationButton';
+
 import { NewGuarantorSheet } from '@/components/requestForm/guarantors/NewGuarantorSheet';
 import { useApplicationData } from '@/hooks/useApplicationData';
 import { getFirstNameAndLastName } from '@/lib/nameUtils';
@@ -283,17 +283,16 @@ const ApplicationDetails = () => {
             <CardContent>
                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
                  {sections.map((section, index) => {
-                 const Icon = section.icon;
-                 const isCompleted = progress > index;
-                 return <Button key={section.id} variant="outline" className={`relative h-auto py-2 flex flex-col items-center text-xs gap-1 flex-1 min-h-[5rem] sm:min-h-[4.5rem] whitespace-normal break-words overflow-hidden ${
-                   isCompleted ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : ''
-                 }`} onClick={() => navigateToFormSection(section.id)}>
-                       {isCompleted && (
-                         <CheckCircle 
-                           size={12} 
-                           className="absolute -top-1 -right-1 bg-white rounded-full text-emerald-600" 
-                         />
-                       )}
+                  const Icon = section.icon;
+                  const isCompleted = progress > index;
+                  return <Button key={section.id} variant="outline" className={`relative h-auto py-2 flex flex-col items-center text-xs gap-1 flex-1 min-h-[5rem] sm:min-h-[4.5rem] whitespace-normal break-words overflow-hidden ${
+                    isCompleted ? 'bg-green-50 text-green-700 border-green-200' : ''
+                  }`} onClick={() => navigateToFormSection(section.id)}>
+                        {isCompleted && (
+                          <div className="absolute top-1 right-1 h-4 w-4 rounded-full bg-green-500 flex items-center justify-center">
+                            <CheckCircle size={10} className="text-white" />
+                          </div>
+                        )}
                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                          <Icon className="h-4 w-4" />
                        </div>
@@ -336,15 +335,6 @@ const ApplicationDetails = () => {
             </CardContent>
           </Card>
 
-          {/* Test Integration Card */}
-          {applicationData.isDraft && progress >= 5 && (
-            <div className="mb-6">
-              <TestIntegrationButton 
-                applicationId={applicationData.id || ''} 
-                formData={formData} 
-              />
-            </div>
-          )}
 
           {/* Guarantors Card */}
           <Card className="mb-6">

@@ -109,20 +109,12 @@ const Settings = () => {
                   <Bell className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="font-medium">Notificaciones push</p>
-                    <p className="text-sm text-muted-foreground">Recibe alertas en tu dispositivo</p>
+                    <p className="text-sm text-muted-foreground">Siempre activas</p>
                   </div>
                 </div>
-                <Switch checked={pushNotifications} onCheckedChange={setPushNotifications} />
-              </div>
-              <div className="flex items-center justify-between py-3 px-3 border-b border-border/50">
-                <div className="flex items-center gap-3">
-                  <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium">Alertas de sistema</p>
-                    <p className="text-sm text-muted-foreground">Cambios de estado en solicitudes</p>
-                  </div>
+                <div className="h-5 w-5 rounded-full bg-green-500 flex items-center justify-center">
+                  <div className="h-2 w-2 rounded-full bg-white"></div>
                 </div>
-                <Switch checked={systemAlerts} onCheckedChange={setSystemAlerts} />
               </div>
             </div>
           </div>
@@ -157,25 +149,6 @@ const Settings = () => {
             </div>
           </div>
 
-          {/* Ayuda y soporte Section */}
-          <div>
-            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-              
-              Ayuda y soporte
-            </h3>
-            <div className="space-y-1">
-              <div className="flex items-center justify-between py-3 px-3 cursor-pointer hover:bg-accent/50 rounded-md transition-colors border-b border-border/50" onClick={() => navigate('/settings/report-problem')}>
-                <div className="flex items-center gap-3">
-                  <HelpCircle className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium">Reportar problema</p>
-                    <p className="text-sm text-muted-foreground">Informa sobre errores o fallos</p>
-                  </div>
-                </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground" />
-              </div>
-            </div>
-          </div>
 
           {/* Logout Button */}
           <div className="pt-4">
