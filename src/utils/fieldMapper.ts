@@ -223,15 +223,40 @@ const mapProfession = (appValue: string): { id: string; value: string } | undefi
 const mapOccupation = (appValue: string): { id: string; value: string } | undefined => {
   if (!appValue) return undefined;
   
-  // Find in local occupations first  
-  const localOcc = occupations.find(o => o.value === appValue);
+  // Handle specific occupation mappings first
+  const occupationMappings: { [key: string]: string } = {
+    'Comercio': 'COMERCIANTE',
+    'comercio': 'COMERCIANTE',
+    'Comerciante': 'COMERCIANTE',
+    'Agricultura': 'AGRICULTOR',
+    'agricultura': 'AGRICULTOR',
+    'Ganadería': 'GANADERO',
+    'ganadería': 'GANADERO',
+    'Ninguna': 'NINGUNA',
+    'ninguna': 'NINGUNA',
+    'Sin ocupación': 'NINGUNA',
+    'No aplica': 'NINGUNA'
+  };
+  
+  const mappedValue = occupationMappings[appValue] || appValue;
+  
+  // Direct mapping with mapped value
+  let result = mapToCatalog(officialOccupations, mappedValue);
+  if (result) return result;
+  
+  // Find in local occupations
+  const localOcc = occupations.find(o => 
+    o.value === appValue || 
+    o.label.toLowerCase() === appValue.toLowerCase()
+  );
   if (localOcc) {
     // Map to official catalog
-    return mapToCatalog(officialOccupations, localOcc.label);
+    result = mapToCatalog(officialOccupations, localOcc.label);
+    if (result) return result;
   }
   
-  // Direct mapping attempt
-  return mapToCatalog(officialOccupations, appValue);
+  // Last resort: try uppercase version
+  return mapToCatalog(officialOccupations, appValue.toUpperCase());
 };
 
 const splitFullName = (fullName: string) => {

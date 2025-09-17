@@ -139,14 +139,54 @@ serve(async (req) => {
       originalCategory: officialData?.process?.profile?.productDetail?.fundsDestination?.destinationCategory
     });
     
-    // Log key mappings for debugging
-    console.log('🔍 Key Field Mappings:', {
-      gender: officialData?.process?.profile?.personalDocument?.gender,
-      maritalStatus: officialData?.process?.profile?.personalDocument?.maritalStatus,
-      academicDegree: officialData?.process?.profile?.personData?.academicDegree,
-      academicTitle: officialData?.process?.profile?.personalDocument?.academicTitle,
-      occupation: officialData?.process?.profile?.personalDocument?.occupation,
-      housingStability: officialData?.process?.profile?.personalDocument?.housingStability
+    // Log comprehensive field mappings for debugging
+    console.log('🔍 Detailed Field Mappings Analysis:', {
+      personalDocument: {
+        gender: {
+          mapped: officialData?.process?.profile?.personalDocument?.gender,
+          expected: 'Should be MUJER/HOMBRE with valid ID'
+        },
+        maritalStatus: {
+          mapped: officialData?.process?.profile?.personalDocument?.maritalStatus,
+          expected: 'Should be SOLTERO/CASADO/etc with valid ID'
+        },
+        occupation: {
+          mapped: officialData?.process?.profile?.personalDocument?.occupation,
+          expected: 'Should be COMERCIANTE, not NINGUNA for Comercio'
+        },
+        academicTitle: {
+          mapped: officialData?.process?.profile?.personalDocument?.academicTitle,
+          expected: 'Should match profession mapping'
+        },
+        housingStability: {
+          mapped: officialData?.process?.profile?.personalDocument?.housingStability,
+          expected: 'Should have valid stability period'
+        }
+      },
+      personData: {
+        academicDegree: {
+          mapped: officialData?.process?.profile?.personData?.academicDegree,
+          expected: 'Should be SUPERIOR for university level'
+        },
+        ethnicity: {
+          mapped: officialData?.process?.profile?.personData?.ethnicity,
+          expected: 'Should have valid ethnicity mapping'
+        }
+      },
+      productDetail: {
+        destination: {
+          mapped: officialData?.process?.profile?.productDetail?.fundsDestination,
+          expected: 'Should have group, destination and category'
+        }
+      },
+      income: {
+        sources: officialData?.process?.profile?.income?.map(inc => ({
+          source: inc.incomeSource,
+          amount: inc.monthlyIncome,
+          main: inc.mainIncomeSource
+        })),
+        expected: 'Should have proper income source mapping'
+      }
     });
 
     // Build Coopsama payload

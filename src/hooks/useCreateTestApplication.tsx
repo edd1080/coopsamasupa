@@ -51,7 +51,7 @@ export const useCreateTestApplication = () => {
           // Educación y profesión
           educationLevel: 'SUPERIOR',
           profession: 'CIENCIAS ECONOMICAS Y EMPRESARIALES',
-          occupation: 'Comercio',
+          occupation: 'Comercio', // Should map to COMERCIANTE
           economicActivity: 'Comercio',
           
           // Crédito
