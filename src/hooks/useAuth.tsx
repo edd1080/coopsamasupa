@@ -3,6 +3,7 @@ import { useState, useEffect, createContext, useContext, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { authRateLimit, sanitizeConsoleOutput } from '@/utils/securityUtils';
 
 interface AuthContextType {
   user: User | null;
@@ -77,14 +78,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    console.log('🔑 Attempting sign in for:', email);
+    console.log('🔑 Attempting sign in for:', sanitizeConsoleOutput(email));
+    
+    // Rate limiting check
+    if (!authRateLimit.isAllowed(email)) {
+      const remainingTime = Math.ceil(authRateLimit.getRemainingTime(email) / 60000);
+      throw new Error(`Demasiados intentos fallidos. Intenta de nuevo en ${remainingTime} minutos.`);
+    }
+    
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
-      console.error('❌ Sign in error:', error);
+      console.error('❌ Sign in error:', sanitizeConsoleOutput(error.message));
       throw new Error(error.message);
     }
 

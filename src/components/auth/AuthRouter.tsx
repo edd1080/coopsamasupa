@@ -2,6 +2,8 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useSecurityHeaders } from '@/hooks/useSecurityHeaders';
+import { useSecurityMonitoring } from '@/hooks/useSecurityMonitoring';
 import { Loader2 } from 'lucide-react';
 
 // Pages
@@ -19,6 +21,10 @@ import ReportProblem from "@/pages/ReportProblem";
 
 const AuthRouter = () => {
   const { user, loading } = useAuth();
+  
+  // Initialize security features
+  useSecurityHeaders();
+  useSecurityMonitoring();
 
   console.log('🔀 AuthRouter - Loading:', loading, 'User:', !!user);
 
