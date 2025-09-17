@@ -24,6 +24,8 @@ interface OfficialPayload {
         processId: string;
         cuaT24?: string;
         cif?: string;
+        agency?: { id: string; value: string };
+        ownerCounty?: { id: string; value: string };
       };
       personalDocument: {
         firstName: string;
@@ -47,7 +49,6 @@ interface OfficialPayload {
           fullAddress: string;
           otherIndications?: string;
           state: { id: string; value: string };
-          county: { id: string; value: string };
         };
         spouseFirstName?: string;
         spouseSecondName?: string;
@@ -317,8 +318,7 @@ export const toOfficial = (formData: any): OfficialPayload => {
     personalDocumentAddress: {
       fullAddress: formData.address || '',
       otherIndications: formData.addressReference || '',
-      state: mapToCatalog(departments, formData.residenceDepartment) || { id: "01", value: "GUATEMALA" },
-      county: mapToCatalog(municipalities, formData.residenceMunicipality) || { id: "01", value: "GUATEMALA" }
+      state: mapToCatalog(departments, formData.residenceDepartment) || { id: "01", value: "GUATEMALA" }
     },
     // Spouse data
     spouseFirstName: formData.spouseFirstName || '',
@@ -549,7 +549,9 @@ export const toOfficial = (formData: any): OfficialPayload => {
         processControl: {
           processId: formData.id || formData.applicationId || '',
           cuaT24: formData.cua || undefined,
-          cif: undefined // Ignored as confirmed
+          cif: undefined, // Ignored as confirmed
+          agency: formData.agency ? { id: formData.agency, value: formData.agency } : undefined,
+          ownerCounty: mapToCatalog(municipalities, formData.residenceMunicipality) || { id: "01", value: "GUATEMALA" }
         },
         personalDocument: personalDoc,
         personData,
