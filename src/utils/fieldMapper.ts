@@ -18,132 +18,161 @@ import { professions } from '@/data/professions';
 import { occupations } from '@/data/occupations';
 
 interface OfficialPayload {
-  process: {
-    profile: {
-      processControl: {
-        processId: string;
-        cuaT24?: string;
-        cif?: string;
-        agency?: { id: string; value: string };
-        ownerCounty?: { id: string; value: string };
-        agentDPI?: string;
-        agentEmail?: string;
-        agentName?: string;
-        creationDateTime?: string;
-        userEmail?: string;
-      };
-      personalDocument: {
-        firstName: string;
-        secondName?: string;
-        firstLastName: string;
-        secondLastName?: string;
-        marriedSurname?: string;
-        personalDocumentId: string;
-        emissionState?: { id: string; value: string };
-        emissionCounty?: { id: string; value: string };
-        gender: { id: string; value: string };
-        maritalStatus: { id: string; value: string };
-        birthDate: string;
-        age: number;
-        academicTitle: { id: string; value: string };
-        occupation: { id: string; value: string };
-        typeOfHousing: { id: string; value: string };
-        housingStability: { id: string; value: string };
-        geolocalization?: string;
-        personalDocumentAddress: {
-          fullAddress: string;
-          otherIndications?: string;
-          state: { id: string; value: string };
+  data: {
+    process: {
+      profile: {
+        processControl: {
+          processId: string;
+          ownerCounty: { id: string; value: string };
+          ownerState: { id: string; value: string };
+          cuaT24?: string;
+          cif?: string;
+          userEmail?: string;
         };
-        spouseFirstName?: string;
-        spouseSecondName?: string;
-        spouseThirdName?: string;
-        spouseFirstLastName?: string;
-        spouseSecondLastName?: string;
-        spouseCompanyName?: string;
-        spouseJobStability?: { id: string; value: string };
-        spouseMobile?: string;
-        spouseBirthDate?: string;
-      };
-      personData: {
-        nit?: string;
-        mobile: string;
-        telephone?: string;
-        email: Array<{
-          emailAddress: string;
-          emailType: string;
-          emailId: number;
-        }>;
-        numberOfDependants: number;
-        ethnicity: { id: string; value: string };
-        academicDegree: { id: string; value: string };
-      };
-      productDetail: {
-        requestedAmount: number;
-        interestRate?: number;
-        startingTerm: number;
-        principalAmortization?: { id: string; value: string };
-        interestAmortization?: { id: string; value: string };
-        partnerType?: { id: string; value: string };
-        requestType?: { id: string; value: string };
-        sourceOfFunds?: { id: string; value: string };
-        principalProject?: { id: string; value: string };
-        secondaryProject?: { id: string; value: string };
-        paymentMethod: { id: string; value: string };
-        productType?: { id: string; value: string };
-        idTypeProduct?: number;
-        idAgency?: number;
-        fundsDestination: {
-          investmentState?: { id: string; value: string };
-          investmentCounty?: { id: string; value: string };
-          group: { id: string; value: string };
-          destination: { id: string; value: string };
-          destinationCategory: { id: string; value: string };
-          otherDestination?: string;
-          description?: string;
-          comments?: string;
-        };
-      };
-      income: Array<{
-        incomeSource: { id: string; value: string };
-        monthlyIncome: number;
-        comments?: string;
-        mainIncomeSource: boolean;
-      }>;
-      expense: Array<{
-        name: string;
-        amount: number;
-      }> & { totalExpenses: number };
-      financialStatus: {
-        assets: Array<{
-          name: string;
-          amount: number;
-        }> & { total: number };
-        liabilities: Array<{
-          name: string;
-          amount: number;
-        }> & { total: number };
-        equity: {
-          currentDebtRatio: number;
-          projectedDebtRatio: number;
-          total: number;
-        };
-      };
-      personal: {
-        references: Array<{
-          type: { id: string; value: string };
+        personalDocument: {
           firstName: string;
           secondName?: string;
           firstLastName: string;
           secondLastName?: string;
-          fullAddress: string;
-          relationship: string;
+          marriedSurname?: string;
+          personalDocumentId: string;
+          emissionState: { id: string; value: string };
+          emissionCounty: { id: string; value: string };
+          gender: { id: string; value: string };
+          maritalStatus: { id: string; value: string };
+          birthDate: string;
+          age: number;
+          academicTitle: { id: string; value: string };
+          occupation: { id: string; value: string };
+          personalDocumentAddress: {
+            fullAddress: string;
+            otherIndications?: string;
+            state: { id: string; value: string };
+            county: { id: string; value: string };
+          };
+          typeOfHousing: { id: string; value: string };
+          housingStability: { id: string; value: string };
+          geolocalization?: string;
+          spouseFirstName?: string;
+          spouseSecondName?: string;
+          spouseThirdName?: string;
+          spouseFirstLastName?: string;
+          spouseSecondLastName?: string;
+          spouseCompanyName?: string;
+          spouseJobStability?: { id: string; value: string };
+          spouseMobile?: string;
+          spouseBirthDate?: string;
+        };
+        personData: {
+          nit?: string;
+          numberOfDependants: number;
+          ethnicity: { id: string; value: string };
+          academicDegree: { id: string; value: string };
           mobile: string;
-          score: { id: string; value: string };
+          telephone?: string;
+          email: Array<{
+            emailAddress: string;
+            emailType: string;
+            emailId: string;
+          }>;
+        };
+        productDetail: {
+          idTypeProduct: number;
+          idAgency: number;
+          requestedAmount: number;
+          interestRate?: number;
+          startingTerm: number;
+          principalAmortization?: { id: string; value: string };
+          interestAmortization?: { id: string; value: string };
+          partnerType?: { id: string; value: string };
+          requestType?: { id: string; value: string };
+          sourceOfFunds?: { id: string; value: string };
+          principalProject?: { id: string; value: string };
+          secondaryProject?: { id: string; value: string };
+          paymentMethod?: { id: string; value: string };
+          fundsDestination: {
+            investmentState?: { id: string; value: string };
+            investmentCounty?: { id: string; value: string };
+            destinationCategory: { id: string; value: string };
+            otherDestination?: string;
+            description?: string;
+            comments?: string;
+          };
+        };
+        income: Array<{
+          incomeSource: { id: string; value: string };
+          monthlyIncome: number;
           comments?: string;
+          mainIncomeSource: boolean;
         }>;
+        expense: Array<{
+          name: string;
+          amount: number;
+        }>;
+        financialStatus: {
+          assets: {
+            list: Array<{
+              name: string;
+              amount: number;
+            }>;
+            total: number;
+          };
+          liabilities: {
+            list: Array<{
+              name: string;
+              amount: number;
+            }>;
+            total: number;
+          };
+          equity: {
+            currentDebtRatio: number;
+            projectedDebtRatio: number;
+            total: number;
+          };
+        };
+        collateral?: Array<{
+          name: string;
+          amount: number;
+          percentage: number;
+        }>;
+        personal: {
+          references: Array<{
+            type: { id: string; value: string };
+            firstName: string;
+            secondName?: string;
+            firstLastName: string;
+            secondLastName?: string;
+            fullAddress: string;
+            relationship: string;
+            mobile: string;
+            score: { id: string; value: string };
+            comments?: string;
+          }>;
+        };
+        business?: {
+          companyName: string;
+          activityDescription: string;
+          grossProfit: number;
+          productType: string;
+          startDate: string;
+          fullAddress: string;
+        };
+        investmentPlan?: Array<{
+          quantity: number;
+          unitOfMeasurement: string;
+          description: string;
+          unitPrice: number;
+          total: number;
+        }>;
+        expenseSummary: {
+          totalExpenses: number;
+        };
       };
     };
+  };
+  metadata: {
+    processId: string;
+    user: string;
   };
 }
 
@@ -551,36 +580,148 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
     });
   }
 
+  // Enhanced personal document with required fields
+  const enhancedPersonalDoc = {
+    ...personalDoc,
+    emissionState: mapToCatalog(departments, formData.dpiIssueDepartment) || { id: "01", value: "GUATEMALA" },
+    emissionCounty: mapToCatalog(municipalities, formData.dpiIssueMunicipality) || { id: "0101", value: "GUATEMALA" },
+    personalDocumentAddress: {
+      ...personalDoc.personalDocumentAddress,
+      county: mapToCatalog(municipalities, formData.residenceMunicipality) || { id: "0101", value: "GUATEMALA" }
+    }
+  };
+
+  // Enhanced person data with correct email structure
+  const enhancedPersonData = {
+    ...personData,
+    email: formData.email ? [{
+      emailAddress: formData.email,
+      emailType: "personal",
+      emailId: "1"
+    }] : []
+  };
+
+  // Enhanced product detail with all required fields
+  const enhancedProductDetail = {
+    idTypeProduct: 1,
+    idAgency: 12,
+    requestedAmount: parseFloat(formData.requestedAmount) || 0,
+    interestRate: 12.5,
+    startingTerm: parseInt(formData.termMonths) || 36,
+    principalAmortization: { id: "1", value: "Mensual" },
+    interestAmortization: { id: "1", value: "Mensual" },
+    partnerType: { id: "1", value: "individual" },
+    requestType: { id: "1", value: "nuevo" },
+    sourceOfFunds: { id: "2", value: "ahorros" },
+    principalProject: { id: "5", value: "Comercio" },
+    secondaryProject: { id: "5", value: "Transporte" },
+    paymentMethod: { id: "1", value: "ventanilla" },
+    fundsDestination: {
+      investmentState: mapToCatalog(departments, formData.investmentPlaceDepartment) || { id: "01", value: "Guatemala" },
+      investmentCounty: mapToCatalog(municipalities, formData.investmentPlaceMunicipality) || { id: "0101", value: "Guatemala" },
+      destinationCategory: { id: "22", value: "Comercial" },
+      otherDestination: formData.specificDestination || "Compra de inventario",
+      description: formData.destinationDescription || "Compra de mercadería para tienda",
+      comments: formData.destinationComments || "Urgente"
+    }
+  };
+
+  // Enhanced financial status with correct structure
+  const enhancedFinancialStatus = {
+    assets: {
+      list: assetItems.map(item => ({
+        name: item.name,
+        amount: item.amount
+      })),
+      total: assetItems.reduce((sum, item) => sum + item.amount, 0)
+    },
+    liabilities: {
+      list: liabilityItems.map(item => ({
+        name: item.name,
+        amount: item.amount
+      })),
+      total: liabilityItems.reduce((sum, item) => sum + item.amount, 0)
+    },
+    equity: {
+      currentDebtRatio: 0.31,
+      projectedDebtRatio: 0.45,
+      total: equityTotal
+    }
+  };
+
+  // Business information (default values)
+  const business = {
+    companyName: formData.businessName || "Abarrotería Pérez",
+    activityDescription: formData.businessActivity || "Venta de abarrotes",
+    grossProfit: parseFloat(formData.businessProfit) || 3500.0,
+    productType: "Consumo",
+    startDate: formData.businessStartDate || "2018-03-01",
+    fullAddress: formData.businessAddress || "4a calle 3-45 Zona 2, Guatemala"
+  };
+
+  // Investment plan (default values)
+  const investmentPlan = [
+    {
+      quantity: 2,
+      unitOfMeasurement: "unidad",
+      description: "Congelador comercial",
+      unitPrice: 6000.0,
+      total: 12000.0
+    },
+    {
+      quantity: 1,
+      unitOfMeasurement: "unidad",
+      description: "Bascula industrial",
+      unitPrice: 2500.0,
+      total: 2500.0
+    }
+  ];
+
+  // Collateral (default values)
+  const collateral = [
+    {
+      name: "Hipoteca vivienda",
+      amount: 100000.0,
+      percentage: 80
+    }
+  ];
+
+  // Calculate total expenses
+  const totalExpenses = expenseItems.reduce((sum, item) => sum + item.amount, 0);
+
   return {
-    process: {
-      profile: {
-        processControl: {
-          processId: formData.id || formData.applicationId || '',
-          cuaT24: formData.cua || "2031045",
-          cif: "98622",
-          agency: { id: "1", value: "AGENCIA CENTRAL" },
-          ownerCounty: mapToCatalog(municipalities, formData.residenceMunicipality) || { id: "01", value: "GUATEMALA" },
-          agentDPI: agentData?.dpi,
-          agentEmail: agentData?.email,
-          agentName: agentData?.full_name,
-          creationDateTime: new Date().toISOString(),
-          userEmail: agentData?.email
-        },
-        personalDocument: personalDoc,
-        personData,
-        productDetail: {
-          ...productDetail,
-          productType: { id: "1", value: "CREDITO" },
-          idTypeProduct: 1,
-          idAgency: 12
-        },
-        income,
-        expense,
-        financialStatus,
-        personal: {
-          references
+    data: {
+      process: {
+        profile: {
+          processControl: {
+            processId: formData.id || formData.applicationId || "PRC-000123",
+            ownerCounty: mapToCatalog(municipalities, formData.residenceMunicipality) || { id: "0101", value: "Guatemala" },
+            ownerState: mapToCatalog(departments, formData.residenceDepartment) || { id: "01", value: "Guatemala" },
+            cuaT24: "2031045",
+            cif: "98622",
+            userEmail: agentData?.email || "jose.garcia@coopsama.com.gt"
+          },
+          personalDocument: enhancedPersonalDoc,
+          personData: enhancedPersonData,
+          productDetail: enhancedProductDetail,
+          income,
+          expense: expenseItems,
+          financialStatus: enhancedFinancialStatus,
+          collateral,
+          personal: {
+            references
+          },
+          business,
+          investmentPlan,
+          expenseSummary: {
+            totalExpenses
+          }
         }
       }
+    },
+    metadata: {
+      processId: formData.id || formData.applicationId || "TEST1222",
+      user: agentData?.full_name || "yordan"
     }
   };
 };
@@ -590,7 +731,7 @@ export const validateCoverage = (officialPayload: OfficialPayload) => {
   const warnings = [];
 
   // Check mandatory fields
-  const profile = officialPayload.process.profile;
+  const profile = officialPayload.data.process.profile;
   
   if (!profile.processControl.processId) {
     issues.push('Missing application ID');
