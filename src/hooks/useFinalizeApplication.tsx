@@ -58,15 +58,18 @@ export const useFinalizeApplication = () => {
 
       // Convert to official format first
       const officialPayload = toOfficial(formData);
+      console.log("🔍 OFFICIAL PAYLOAD DEBUG (useFinalizeApplication):", JSON.stringify(officialPayload, null, 2));
       
       // Build the application payload with official data
       const applicationPayload = buildApplicationPayload(formData, user.id);
       
       // Add the official formatted data to the payload
       applicationPayload.official_data = officialPayload;
+      console.log("🔍 APPLICATION PAYLOAD DEBUG (before sanitization):", JSON.stringify(applicationPayload, null, 2));
       
       // Sanitize the payload
       const sanitizedPayload = sanitizeObjectData(applicationPayload);
+      console.log("🔍 SANITIZED PAYLOAD DEBUG (after sanitization):", JSON.stringify(sanitizedPayload, null, 2));
 
       // Check if offline - enqueue if no connection
       if (!navigator.onLine) {

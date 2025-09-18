@@ -137,6 +137,11 @@ export const sanitizeObjectData = (obj: any): any => {
   }
   
   if (typeof obj === 'object') {
+    // Don't sanitize catalog objects with id/value structure
+    if (typeof obj.id !== 'undefined' && typeof obj.value !== 'undefined') {
+      return obj; // Return catalog objects unchanged
+    }
+    
     const sanitized: any = {};
     for (const [key, value] of Object.entries(obj)) {
       sanitized[key] = sanitizeObjectData(value);
