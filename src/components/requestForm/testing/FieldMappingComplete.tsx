@@ -36,17 +36,50 @@ const FieldMappingComplete: React.FC<FieldMappingCompleteProps> = ({ formData })
   };
 
   const analyzeMapping = (original: any, mapped: any, fieldName: string) => {
-    if (!mapped) return { status: 'error', message: 'Campo faltante' };
+    // Field not mapped at all
+    if (mapped === null || mapped === undefined) {
+      return { status: 'error', message: 'No mapeado' };
+    }
+    
+    // Successful mappings
     if (mapped && typeof mapped === 'object' && mapped.id && mapped.value) {
-      return { status: 'success', message: 'Mapeo correcto' };
+      return { status: 'success', message: 'Objeto con ID y valor' };
     }
-    if (mapped && typeof mapped === 'string' && mapped.trim() !== '') {
-      return { status: 'success', message: 'Valor mapeado' };
+    
+    if (typeof mapped === 'string' && mapped.trim() !== '') {
+      // Check if it's an exact or close match
+      if (original && String(original).toLowerCase() === mapped.toLowerCase()) {
+        return { status: 'success', message: 'Mapeo exacto' };
+      }
+      return { status: 'success', message: 'Cadena mapeada' };
     }
-    if (mapped && typeof mapped === 'number') {
-      return { status: 'success', message: 'Valor numérico' };
+    
+    if (typeof mapped === 'number' && !isNaN(mapped)) {
+      return { status: 'success', message: 'Número mapeado' };
     }
-    return { status: 'warning', message: 'Mapeo incompleto' };
+    
+    if (typeof mapped === 'boolean') {
+      return { status: 'success', message: 'Booleano mapeado' };
+    }
+    
+    if (Array.isArray(mapped) && mapped.length > 0) {
+      return { status: 'success', message: 'Array con datos' };
+    }
+    
+    // Warnings
+    if (typeof mapped === 'string' && mapped.trim() === '') {
+      return { status: 'warning', message: 'Cadena vacía' };
+    }
+    
+    if (Array.isArray(mapped) && mapped.length === 0) {
+      return { status: 'warning', message: 'Array vacío' };
+    }
+    
+    if (typeof mapped === 'object' && Object.keys(mapped).length === 0) {
+      return { status: 'warning', message: 'Objeto vacío' };
+    }
+    
+    return { status: 'warning', message: 'Mapeo parcial' };
   };
 
   const getStatusIcon = (status: string) => {
@@ -69,94 +102,132 @@ const FieldMappingComplete: React.FC<FieldMappingCompleteProps> = ({ formData })
     const allFields = Object.keys(formData);
     const categories: { [key: string]: any[] } = {};
     
-    // Helper function to find mapped value in officialPayload
-    const findMappedValue = (fieldName: string, fieldValue: any) => {
-      const payload = officialPayload?.data?.process?.profile;
-      if (!payload) return null;
+    // Recursive function to find a value anywhere in the payload structure
+    const findValueInPayload = (payload: any, searchValue: any, searchKey?: string): any => {
+      if (!payload || typeof payload !== 'object') return null;
       
-      // Common field mappings
-      const mappings: { [key: string]: string } = {
-        firstName: 'personalDocument.firstName',
-        firstLastName: 'personalDocument.firstLastName',
-        secondLastName: 'personalDocument.secondLastName',
-        lastName: 'personalDocument.firstLastName',
-        dpi: 'personalDocument.personalDocumentId',
-        gender: 'personalDocument.gender',
-        civilStatus: 'personalDocument.maritalStatus',
-        birthDate: 'personalDocument.birthDate',
-        age: 'personalDocument.age',
-        mobilePhone: 'personData.mobile',
-        homePhone: 'personData.telephone',
-        email: 'personData.email[0].emailAddress',
-        address: 'personalDocument.personalDocumentAddress.fullAddress',
-        educationLevel: 'personData.academicDegree',
-        profession: 'personalDocument.academicTitle',
-        occupation: 'personalDocument.occupation',
-        housingType: 'personalDocument.typeOfHousing',
-        housingStability: 'personalDocument.housingStability',
-        residentialStability: 'personalDocument.housingStability',
-        requestedAmount: 'productDetail.requestedAmount',
-        termMonths: 'productDetail.startingTerm',
-        destinationGroup: 'productDetail.destinationGroup',
-        creditDestination: 'productDetail.creditDestination',
-        department: 'personalDocument.personalDocumentAddress.department',
-        municipality: 'personalDocument.personalDocumentAddress.municipality'
-      };
+      // Direct match by key name
+      if (searchKey && payload[searchKey] !== undefined) {
+        return payload[searchKey];
+      }
       
-      const mappingPath = mappings[fieldName];
-      if (mappingPath) {
-        return mappingPath.split('.').reduce((obj, key) => {
-          if (key.includes('[') && key.includes(']')) {
-            const arrayKey = key.split('[')[0];
-            const index = parseInt(key.split('[')[1].split(']')[0]);
-            return obj?.[arrayKey]?.[index];
-          }
-          return obj?.[key];
-        }, payload);
+      // Search for value match
+      for (const [key, value] of Object.entries(payload)) {
+        if (value === searchValue) {
+          return value;
+        }
+        
+        // Recursive search in nested objects
+        if (typeof value === 'object' && value !== null) {
+          const found = findValueInPayload(value, searchValue, searchKey);
+          if (found !== null) return found;
+        }
       }
       
       return null;
     };
     
-    // Categorize fields
+    // Enhanced mapping function that searches the entire payload
+    const findMappedValue = (fieldName: string, fieldValue: any) => {
+      if (!officialPayload?.data?.process?.profile) return null;
+      
+      const payload = officialPayload.data.process.profile;
+      
+      // First try direct field name mapping
+      let mappedValue = findValueInPayload(payload, fieldValue, fieldName);
+      
+      // If not found, try common field transformations
+      if (!mappedValue) {
+        const fieldTransforms: { [key: string]: string[] } = {
+          firstName: ['firstName', 'first_name', 'nombre'],
+          firstLastName: ['firstLastName', 'first_last_name', 'apellido'],
+          secondLastName: ['secondLastName', 'second_last_name', 'segundoApellido'],
+          dpi: ['personalDocumentId', 'document_id', 'dpi', 'cui'],
+          gender: ['gender', 'sexo', 'genero'],
+          civilStatus: ['maritalStatus', 'civil_status', 'estado_civil'],
+          birthDate: ['birthDate', 'birth_date', 'fecha_nacimiento'],
+          age: ['age', 'edad'],
+          mobilePhone: ['mobile', 'cellphone', 'telefono_movil'],
+          homePhone: ['telephone', 'phone', 'telefono'],
+          email: ['emailAddress', 'email', 'correo'],
+          address: ['fullAddress', 'address', 'direccion'],
+          educationLevel: ['academicDegree', 'education', 'educacion'],
+          profession: ['academicTitle', 'profession', 'profesion'],
+          occupation: ['occupation', 'ocupacion'],
+          housingType: ['typeOfHousing', 'housing_type', 'tipo_vivienda'],
+          housingStability: ['housingStability', 'housing_stability'],
+          requestedAmount: ['requestedAmount', 'amount', 'monto'],
+          termMonths: ['startingTerm', 'term', 'plazo'],
+          department: ['department', 'departamento'],
+          municipality: ['municipality', 'municipio']
+        };
+        
+        const possibleKeys = fieldTransforms[fieldName] || [fieldName];
+        for (const key of possibleKeys) {
+          mappedValue = findValueInPayload(payload, fieldValue, key);
+          if (mappedValue) break;
+        }
+      }
+      
+      // If still not found, search by value similarity
+      if (!mappedValue && fieldValue !== null && fieldValue !== undefined && fieldValue !== '') {
+        mappedValue = findValueInPayload(payload, fieldValue);
+      }
+      
+      return mappedValue;
+    };
+    
+    // Enhanced categorization logic
     allFields.forEach(fieldName => {
       const fieldValue = formData[fieldName];
       const mappedValue = findMappedValue(fieldName, fieldValue);
       
       let category = 'Otros';
       
-      // Categorization logic
-      if (['firstName', 'firstLastName', 'secondLastName', 'lastName', 'dpi', 'gender', 'civilStatus', 'birthDate', 'age', 'nationality', 'ethnicity'].includes(fieldName)) {
+      // More comprehensive categorization
+      if (/^(first|second|last)?(name|Name|lastName|firstLastName|secondLastName)$/i.test(fieldName) || 
+          ['dpi', 'cui', 'gender', 'civilStatus', 'birthDate', 'age', 'nationality', 'ethnicity'].includes(fieldName)) {
         category = 'Identificación Personal';
-      } else if (['mobilePhone', 'homePhone', 'email', 'address', 'department', 'municipality'].includes(fieldName)) {
+      } else if (/^(mobile|home|work)?[Pp]hone$/i.test(fieldName) || 
+                 ['email', 'address', 'department', 'municipality', 'zone', 'coordinates'].includes(fieldName)) {
         category = 'Contacto y Ubicación';
-      } else if (fieldName.startsWith('spouse')) {
+      } else if (fieldName.toLowerCase().includes('spouse') || fieldName.startsWith('spouse')) {
         category = 'Información del Cónyuge';
-      } else if (['educationLevel', 'profession', 'occupation'].includes(fieldName)) {
+      } else if (['educationLevel', 'profession', 'occupation', 'academicTitle', 'academicDegree'].includes(fieldName)) {
         category = 'Educación y Profesión';
-      } else if (['housingType', 'housingStability', 'residentialStability', 'houseOwner'].includes(fieldName)) {
+      } else if (/housing|house|residence|residential/i.test(fieldName) || 
+                 ['housingType', 'housingStability', 'residentialStability', 'houseOwner'].includes(fieldName)) {
         category = 'Vivienda';
-      } else if (['requestedAmount', 'termMonths', 'destinationGroup', 'creditDestination', 'product', 'productType'].includes(fieldName)) {
+      } else if (/^(requested|credit|loan|product)/i.test(fieldName) || 
+                 ['requestedAmount', 'termMonths', 'destinationGroup', 'creditDestination', 'product', 'productType'].includes(fieldName)) {
         category = 'Producto Crediticio';
-      } else if (['income', 'cashAndBanks', 'realEstate', 'movableAssets', 'totalAssets', 'accountsPayable', 'creditLiabilities', 'totalLiabilities', 'netWorth'].includes(fieldName)) {
+      } else if (/^(income|salary|wage|assets|liabilities|cash|bank|real)/i.test(fieldName) || 
+                 ['totalAssets', 'totalLiabilities', 'netWorth', 'movableAssets', 'accountsPayable'].includes(fieldName)) {
         category = 'Información Financiera';
-      } else if (['workCompany', 'workPosition', 'workPhone', 'workAddress', 'workDepartment', 'workMunicipality', 'workStartDate', 'workType'].includes(fieldName)) {
+      } else if (/^work/i.test(fieldName) || 
+                 ['workCompany', 'workPosition', 'workPhone', 'workAddress', 'workDepartment', 'workMunicipality', 'workStartDate', 'workType', 'employment'].includes(fieldName)) {
         category = 'Información Laboral';
-      } else if (['references', 'guarantors'].includes(fieldName)) {
+      } else if (['references', 'guarantors'].includes(fieldName) || Array.isArray(fieldValue)) {
         category = 'Referencias y Fiadores';
-      } else if (['documents', 'signature', 'coordinates', 'location', 'photos'].includes(fieldName)) {
+      } else if (/document|signature|photo|file|upload/i.test(fieldName) || 
+                 ['documents', 'signature', 'coordinates', 'location', 'photos'].includes(fieldName)) {
         category = 'Documentos y Verificación';
+      } else if (fieldValue === null || fieldValue === undefined || fieldValue === '') {
+        category = 'Campos Vacíos';
       }
       
       if (!categories[category]) {
         categories[category] = [];
       }
       
+      // Enhanced field information
+      const analysis = analyzeMapping(fieldValue, mappedValue, fieldName);
       categories[category].push({
         name: fieldName,
         original: fieldValue,
         mapped: mappedValue,
-        expected: `Campo: ${fieldName} ${mappedValue ? '(Mapeado)' : '(No mapeado)'}`
+        expected: `${fieldName}: ${analysis.message}`,
+        status: analysis.status
       });
     });
     
