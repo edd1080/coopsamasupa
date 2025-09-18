@@ -602,19 +602,21 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
   const personData = {
     nit: formData.nit || '',
     mobile: formData.mobilePhone || '',
-    telephone: formData.homePhone || '',
+    telephone: formData.homePhone || formData.mobilePhone || '',
     email: formData.email ? [{
       emailAddress: formData.email,
-      emailType: "PERSONAL",
-      emailId: 1
+      emailType: "personal",
+      emailId: "1"
     }] : [],
     numberOfDependants: parseInt(formData.dependents) || 0,
     ethnicity: mappedEthnicity || { id: "3", value: "Ladino" },
-    academicDegree: mappedEducation || { id: "5", value: "N/A" }
+    academicDegree: mappedEducation || { id: "1", value: "PRIMARIA" }
   };
 
   // Map product details
   const productDetail = {
+    idTypeProduct: 1, // Default for personal credit
+    idAgency: 12, // Default agency for Coopsama
     requestedAmount: parseFloat(formData.requestedAmount) || 0,
     interestRate: parseFloat(formData.interestRate) || undefined,
     startingTerm: parseInt(formData.termMonths) || 0,
