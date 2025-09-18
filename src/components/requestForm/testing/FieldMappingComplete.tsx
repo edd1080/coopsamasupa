@@ -62,171 +62,112 @@ const FieldMappingComplete: React.FC<FieldMappingCompleteProps> = ({ formData })
     }
   };
 
-  // Field mappings organized by category
-  const fieldMappings = [
-    {
-      category: 'Identificación Personal',
-      fields: [
-        {
-          name: 'Nombres',
-          original: formData?.firstName,
-          mapped: officialPayload?.data?.process?.profile?.personalDocument?.firstName,
-          expected: 'Nombre completo del solicitante'
-        },
-        {
-          name: 'Apellidos',
-          original: formData?.firstLastName || formData?.lastName,
-          mapped: officialPayload?.data?.process?.profile?.personalDocument?.firstLastName,
-          expected: 'Primer apellido'
-        },
-        {
-          name: 'DPI',
-          original: formData?.dpi,
-          mapped: officialPayload?.data?.process?.profile?.personalDocument?.personalDocumentId,
-          expected: 'Documento de identidad de 13 dígitos'
-        },
-        {
-          name: 'Género',
-          original: formData?.gender,
-          mapped: officialPayload?.data?.process?.profile?.personalDocument?.gender,
-          expected: 'MUJER/HOMBRE con ID válido'
-        },
-        {
-          name: 'Estado Civil',
-          original: formData?.civilStatus,
-          mapped: officialPayload?.data?.process?.profile?.personalDocument?.maritalStatus,
-          expected: 'SOLTERO/CASADO/etc con ID válido'
-        },
-        {
-          name: 'Fecha de Nacimiento',
-          original: formData?.birthDate,
-          mapped: officialPayload?.data?.process?.profile?.personalDocument?.birthDate,
-          expected: 'Fecha en formato YYYY-MM-DD'
-        },
-        {
-          name: 'Edad',
-          original: formData?.age,
-          mapped: officialPayload?.data?.process?.profile?.personalDocument?.age,
-          expected: 'Edad calculada en años'
-        }
-      ]
-    },
-    {
-      category: 'Contacto',
-      fields: [
-        {
-          name: 'Teléfono Móvil',
-          original: formData?.mobilePhone,
-          mapped: officialPayload?.data?.process?.profile?.personData?.mobile,
-          expected: 'Número de teléfono móvil'
-        },
-        {
-          name: 'Teléfono Fijo',
-          original: formData?.homePhone,
-          mapped: officialPayload?.data?.process?.profile?.personData?.telephone,
-          expected: 'Número de teléfono fijo'
-        },
-        {
-          name: 'Email',
-          original: formData?.email,
-          mapped: officialPayload?.data?.process?.profile?.personData?.email?.[0]?.emailAddress,
-          expected: 'Dirección de correo electrónico'
-        },
-        {
-          name: 'Dirección',
-          original: formData?.address,
-          mapped: officialPayload?.data?.process?.profile?.personalDocument?.personalDocumentAddress?.fullAddress,
-          expected: 'Dirección completa de residencia'
-        }
-      ]
-    },
-    {
-      category: 'Educación y Profesión',
-      fields: [
-        {
-          name: 'Nivel Educativo',
-          original: formData?.educationLevel,
-          mapped: officialPayload?.data?.process?.profile?.personData?.academicDegree,
-          expected: 'SUPERIOR para universitario'
-        },
-        {
-          name: 'Profesión',
-          original: formData?.profession,
-          mapped: officialPayload?.data?.process?.profile?.personalDocument?.academicTitle,
-          expected: 'Título profesional específico'
-        },
-        {
-          name: 'Ocupación',
-          original: formData?.occupation,
-          mapped: officialPayload?.data?.process?.profile?.personalDocument?.occupation,
-          expected: 'Ocupación con ID del catálogo'
-        }
-      ]
-    },
-    {
-      category: 'Vivienda',
-      fields: [
-        {
-          name: 'Tipo de Vivienda',
-          original: formData?.housingType,
-          mapped: officialPayload?.data?.process?.profile?.personalDocument?.typeOfHousing,
-          expected: 'PROPIA/ALQUILADA/etc con ID'
-        },
-        {
-          name: 'Estabilidad Habitacional',
-          original: formData?.housingStability || formData?.residentialStability,
-          mapped: officialPayload?.data?.process?.profile?.personalDocument?.housingStability,
-          expected: 'Período de estabilidad con ID'
-        }
-      ]
-    },
-    {
-      category: 'Producto Crediticio',
-      fields: [
-        {
-          name: 'Monto Solicitado',
-          original: formData?.requestedAmount,
-          mapped: officialPayload?.data?.process?.profile?.productDetail?.requestedAmount,
-          expected: 'Monto numérico en GTQ'
-        },
-        {
-          name: 'Plazo en Meses',
-          original: formData?.termMonths,
-          mapped: officialPayload?.data?.process?.profile?.productDetail?.startingTerm,
-          expected: 'Número de meses del plazo'
-        },
-        {
-          name: 'Grupo de Destino',
-          original: formData?.destinationGroup,
-          mapped: officialPayload?.data?.process?.profile?.productDetail?.destinationGroup,
-          expected: 'Grupo de destino con ID'
-        },
-        {
-          name: 'Destino del Crédito',
-          original: formData?.creditDestination,
-          mapped: officialPayload?.data?.process?.profile?.productDetail?.creditDestination,
-          expected: 'Destino específico con ID'
-        }
-      ]
-    },
-    {
-      category: 'Ingresos',
-      fields: [
-        {
-          name: 'Fuentes de Ingreso',
-          original: formData?.income?.length || 0,
-          mapped: officialPayload?.data?.process?.profile?.income?.length || 0,
-          expected: 'Al menos una fuente de ingreso'
-        },
-        {
-          name: 'Ingreso Principal',
-          original: formData?.income?.[0]?.amount,
-          mapped: officialPayload?.data?.process?.profile?.income?.[0]?.monthlyIncome,
-          expected: 'Monto del ingreso principal'
-        }
-      ]
-    }
-  ];
+  // Generate dynamic field mappings from all formData fields
+  const generateDynamicFieldMappings = (formData: any, officialPayload: any) => {
+    if (!formData) return [];
+    
+    const allFields = Object.keys(formData);
+    const categories: { [key: string]: any[] } = {};
+    
+    // Helper function to find mapped value in officialPayload
+    const findMappedValue = (fieldName: string, fieldValue: any) => {
+      const payload = officialPayload?.data?.process?.profile;
+      if (!payload) return null;
+      
+      // Common field mappings
+      const mappings: { [key: string]: string } = {
+        firstName: 'personalDocument.firstName',
+        firstLastName: 'personalDocument.firstLastName',
+        secondLastName: 'personalDocument.secondLastName',
+        lastName: 'personalDocument.firstLastName',
+        dpi: 'personalDocument.personalDocumentId',
+        gender: 'personalDocument.gender',
+        civilStatus: 'personalDocument.maritalStatus',
+        birthDate: 'personalDocument.birthDate',
+        age: 'personalDocument.age',
+        mobilePhone: 'personData.mobile',
+        homePhone: 'personData.telephone',
+        email: 'personData.email[0].emailAddress',
+        address: 'personalDocument.personalDocumentAddress.fullAddress',
+        educationLevel: 'personData.academicDegree',
+        profession: 'personalDocument.academicTitle',
+        occupation: 'personalDocument.occupation',
+        housingType: 'personalDocument.typeOfHousing',
+        housingStability: 'personalDocument.housingStability',
+        residentialStability: 'personalDocument.housingStability',
+        requestedAmount: 'productDetail.requestedAmount',
+        termMonths: 'productDetail.startingTerm',
+        destinationGroup: 'productDetail.destinationGroup',
+        creditDestination: 'productDetail.creditDestination',
+        department: 'personalDocument.personalDocumentAddress.department',
+        municipality: 'personalDocument.personalDocumentAddress.municipality'
+      };
+      
+      const mappingPath = mappings[fieldName];
+      if (mappingPath) {
+        return mappingPath.split('.').reduce((obj, key) => {
+          if (key.includes('[') && key.includes(']')) {
+            const arrayKey = key.split('[')[0];
+            const index = parseInt(key.split('[')[1].split(']')[0]);
+            return obj?.[arrayKey]?.[index];
+          }
+          return obj?.[key];
+        }, payload);
+      }
+      
+      return null;
+    };
+    
+    // Categorize fields
+    allFields.forEach(fieldName => {
+      const fieldValue = formData[fieldName];
+      const mappedValue = findMappedValue(fieldName, fieldValue);
+      
+      let category = 'Otros';
+      
+      // Categorization logic
+      if (['firstName', 'firstLastName', 'secondLastName', 'lastName', 'dpi', 'gender', 'civilStatus', 'birthDate', 'age', 'nationality', 'ethnicity'].includes(fieldName)) {
+        category = 'Identificación Personal';
+      } else if (['mobilePhone', 'homePhone', 'email', 'address', 'department', 'municipality'].includes(fieldName)) {
+        category = 'Contacto y Ubicación';
+      } else if (fieldName.startsWith('spouse')) {
+        category = 'Información del Cónyuge';
+      } else if (['educationLevel', 'profession', 'occupation'].includes(fieldName)) {
+        category = 'Educación y Profesión';
+      } else if (['housingType', 'housingStability', 'residentialStability', 'houseOwner'].includes(fieldName)) {
+        category = 'Vivienda';
+      } else if (['requestedAmount', 'termMonths', 'destinationGroup', 'creditDestination', 'product', 'productType'].includes(fieldName)) {
+        category = 'Producto Crediticio';
+      } else if (['income', 'cashAndBanks', 'realEstate', 'movableAssets', 'totalAssets', 'accountsPayable', 'creditLiabilities', 'totalLiabilities', 'netWorth'].includes(fieldName)) {
+        category = 'Información Financiera';
+      } else if (['workCompany', 'workPosition', 'workPhone', 'workAddress', 'workDepartment', 'workMunicipality', 'workStartDate', 'workType'].includes(fieldName)) {
+        category = 'Información Laboral';
+      } else if (['references', 'guarantors'].includes(fieldName)) {
+        category = 'Referencias y Fiadores';
+      } else if (['documents', 'signature', 'coordinates', 'location', 'photos'].includes(fieldName)) {
+        category = 'Documentos y Verificación';
+      }
+      
+      if (!categories[category]) {
+        categories[category] = [];
+      }
+      
+      categories[category].push({
+        name: fieldName,
+        original: fieldValue,
+        mapped: mappedValue,
+        expected: `Campo: ${fieldName} ${mappedValue ? '(Mapeado)' : '(No mapeado)'}`
+      });
+    });
+    
+    // Convert to array format
+    return Object.entries(categories).map(([categoryName, fields]) => ({
+      category: categoryName,
+      fields: fields
+    }));
+  };
+  
+  const fieldMappings = generateDynamicFieldMappings(formData, officialPayload);
 
   // Calculate summary statistics
   const totalFields = fieldMappings.reduce((sum, category) => sum + category.fields.length, 0);
