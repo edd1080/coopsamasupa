@@ -25,8 +25,8 @@ export const useCreateTestApplication = () => {
           fullName: 'Andrea Prueba',
           firstName: 'Andrea',
           lastName: 'Prueba',
-          gender: 'MUJER',
-          civilStatus: 'SOLTERO',
+          gender: 'HOMBRE',
+          civilStatus: 'VIUDO',
           dpi: '1234567890123',
           dpiExtendedIn: 'Guatemala',
           cua: 'AP12345',
@@ -45,23 +45,23 @@ export const useCreateTestApplication = () => {
           
           // Vivienda
           housingType: 'PROPIA',
-          housingStability: 'MAYOR A 3 AÑOS',
-          residentialStability: 'MAYOR A 3 AÑOS',
+          housingStability: 'MENOR A 1 AÑO',
+          residentialStability: 'MENOR A 1 AÑO',
           
           // Educación y profesión
-          educationLevel: 'SUPERIOR',
-          profession: 'CIENCIAS ECONOMICAS Y EMPRESARIALES',
-          occupation: 'Comercio', // Should map to COMERCIANTE
-          economicActivity: 'Comercio',
+          educationLevel: 'PRIMARIA',
+          profession: 'MAESTRIA',
+          occupation: 'Avicultor',
+          economicActivity: 'Avicultura',
           
           // Crédito
-          creditPurpose: 'Capital de Trabajo',
+          creditPurpose: 'Vivienda',
           requestedAmount: '25000',
           termMonths: '24',
           paymentPlan: 'nivelada',
-          destinationGroup: 'Grupo MicroCredito',
-          creditDestination: 'COMERCIO',
-          destinationCategory: 'Capital de trabajo',
+          destinationGroup: 'Grupo Vivienda',
+          creditDestination: 'VIVIENDA',
+          destinationCategory: 'Mantenimiento',
           
           // Ubicación (coordenadas de Guatemala)
           coordinates: {
