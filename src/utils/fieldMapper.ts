@@ -833,30 +833,15 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
     }] : []
   };
 
-  // Enhanced product detail with all required fields
-  const enhancedProductDetail = {
-    idTypeProduct: 1,
-    idAgency: 12,
-    requestedAmount: parseFloat(formData.requestedAmount) || 0,
-    interestRate: 12.5,
-    startingTerm: parseInt(formData.termMonths) || 36,
-    principalAmortization: { id: "1", value: "Mensual" },
-    interestAmortization: { id: "1", value: "Mensual" },
-    partnerType: { id: "1", value: "individual" },
-    requestType: { id: "1", value: "nuevo" },
-    sourceOfFunds: { id: "2", value: "ahorros" },
-    principalProject: { id: "5", value: "Comercio" },
-    secondaryProject: { id: "5", value: "Transporte" },
-    paymentMethod: { id: "1", value: "ventanilla" },
-    fundsDestination: {
-      investmentState: mapToCatalog(departments, formData.investmentPlaceDepartment) || { id: "01", value: "Guatemala" },
-      investmentCounty: mapToCatalog(municipalities, formData.investmentPlaceMunicipality) || { id: "0101", value: "Guatemala" },
-      destinationCategory: { id: "22", value: "Comercial" },
-      otherDestination: formData.specificDestination || "Compra de inventario",
-      description: formData.destinationDescription || "Compra de mercadería para tienda",
-      comments: formData.destinationComments || "Urgente"
-    }
+  // Corregir productDetail usando los mapeos correctos sin hardcodear destinationCategory
+  const correctedProductDetail = {
+    ...productDetail,
+    idTypeProduct: 1, // Valor requerido por el microservicio
+    idAgency: 12, // Valor requerido por el microservicio
+    paymentMethod: { id: "1", value: "ventanilla" }
   };
+  
+  console.log("✅ ProductDetail corregido (sin hardcodeos):", JSON.stringify(correctedProductDetail, null, 2));
 
   // Enhanced financial status with correct structure
   const enhancedFinancialStatus = {
@@ -935,7 +920,7 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
           },
           personalDocument: enhancedPersonalDoc,
           personData: enhancedPersonData,
-          productDetail: enhancedProductDetail,
+          productDetail: correctedProductDetail,
           income,
           expense: expenseItems,
           financialStatus: enhancedFinancialStatus,
