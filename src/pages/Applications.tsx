@@ -3,14 +3,14 @@ import Header from '@/components/layout/Header';
 import BottomNavigation from '@/components/layout/BottomNavigation';
 import ApplicationsHeader from '@/components/applications/ApplicationsHeader';
 import ApplicationsList from '@/components/applications/ApplicationsList';
-// import CreateTestApplicationButton from '@/components/applications/CreateTestApplicationButton';
+import CreateTestApplicationButton from '@/components/applications/CreateTestApplicationButton';
 import BreadcrumbNavigation from '@/components/navigation/BreadcrumbNavigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useApplicationsList } from '@/hooks/useApplicationsList';
 import { useDeleteApplication, useCancelApplication } from '@/hooks/useApplicationActions';
-import { Trash2, RefreshCw } from 'lucide-react';
+import { Trash2, RefreshCw, Code2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from "@/hooks/use-toast";
 const Applications = () => {
@@ -137,8 +137,7 @@ const Applications = () => {
         
         <ApplicationsHeader />
         
-        {/* Herramientas de Testing - Oculto temporalmente */}
-        {/* 
+        {/* Herramientas de Testing */}
         <Card className="mb-6 bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
@@ -155,7 +154,6 @@ const Applications = () => {
             </div>
           </CardContent>
         </Card>
-        */}
         
         <ApplicationsList applications={applications || []} isLoading={isLoading} onEdit={editApplication} onCancel={handleCancelApplication} onDelete={handleDeleteApplication} />
       </main>
