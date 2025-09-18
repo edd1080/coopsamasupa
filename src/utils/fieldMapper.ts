@@ -186,6 +186,7 @@ const mapToCatalog = <T extends { id: string; value: string }>(
   
   if (appValue) {
     console.log(`🔍 Mapping "${appValue}" in catalog with ${catalog.length} items`);
+    console.log(`📋 Catalog items:`, catalog.map(item => `"${item.value}" (ID: ${item.id})`).join(', '));
     
     // Handle specific gender mappings
     if (catalog === genders) {
@@ -238,7 +239,12 @@ const mapToCatalog = <T extends { id: string; value: string }>(
         'Universidad': 'SUPERIOR',
         'Bachillerato': 'DIVERSIFICADO',
         'Básicos': 'BASICO',
-        'Primaria': 'PRIMARIA'
+        'Primaria': 'PRIMARIA',
+        // Map numeric values based on form data
+        '300': 'SUPERIOR',  // University level education
+        '200': 'DIVERSIFICADO',  // High school level
+        '100': 'BASICO',  // Basic level
+        '50': 'PRIMARIA'  // Primary level
       };
       const mappedValue = educationMappings[appValue] || appValue;
       const match = findCatalogMatch(catalog, mappedValue);
@@ -271,6 +277,8 @@ const mapToCatalog = <T extends { id: string; value: string }>(
     if (match) {
       console.log(`✅ Default match: "${appValue}" → "${match.value}" (ID: ${match.id})`);
       return { id: match.id, value: match.value };
+    } else {
+      console.log(`❌ No direct match found for "${appValue}". Available values:`, catalog.map(c => c.value));
     }
     
     console.log(`❌ No match found for "${appValue}" in catalog`);
@@ -520,9 +528,10 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
   console.log("🔍 EDUCATION DEBUG - Resultado mapeo:", mappedEducation);
 
   // Map ethnicity - probar múltiples nombres de campo
-  const ethnicityValue = formData.ethnicity || formData.etnia || formData.ethnic;
+  const ethnicityValue = formData.ethnicity || formData.etnia || formData.ethnic || '';
   console.log("🔍 ETHNICITY DEBUG - Valor encontrado:", ethnicityValue);
-  const mappedEthnicity = mapToCatalog(ethnicities, ethnicityValue);
+  // Si no hay valor específico de etnia, usar Ladino como default según los datos de formulario
+  const mappedEthnicity = ethnicityValue ? mapToCatalog(ethnicities, ethnicityValue) : { id: "3", value: "Ladino" };
   console.log("🔍 ETHNICITY DEBUG - Resultado mapeo:", mappedEthnicity);
 
   // Map personal identification

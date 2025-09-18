@@ -306,9 +306,9 @@ serve(async (req) => {
       }
     });
 
-    // Build Coopsama payload
+    // Build Coopsama payload with correct structure (avoiding double nesting)
     const coopsamaPayload = {
-      data: officialData,
+      ...officialData,
       metadata: {
         processId: applicationId,
         user: user.email || profile.email || 'unknown'
