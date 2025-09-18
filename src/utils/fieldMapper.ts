@@ -517,12 +517,6 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
   const mappedEthnicity = ethnicityValue ? mapToCatalog(ethnicities, ethnicityValue) : { id: "3", value: "Ladino" };
   console.log("🔍 ETHNICITY DEBUG - Resultado mapeo:", mappedEthnicity);
 
-  // Helper function to determine if spouse data should be included
-  const shouldIncludeSpouseData = (civilStatus: any): boolean => {
-    const marriedIds = ["2", "3"]; // "CASADO" and "UNIDO"
-    return marriedIds.includes(civilStatus?.id);
-  };
-
   // Map personal identification
   const personalDoc = {
     firstName: formData.firstName || '',
@@ -587,26 +581,24 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
       otherIndications: formData.addressReference || '',
       state: mapToCatalog(departments, formData.residenceDepartment) || { id: "01", value: "GUATEMALA" }
     },
-    // Conditionally include spouse data only for married/partnered individuals
-    ...(shouldIncludeSpouseData(mappedCivilStatus) && {
-      spouseFirstName: formData.spouseFirstName || '',
-      spouseSecondName: formData.spouseSecondName || '',
-      spouseThirdName: '', // Can be empty as confirmed
-      spouseFirstLastName: formData.spouseFirstLastName || '',
-      spouseSecondLastName: formData.spouseSecondLastName || '',
-      spouseCompanyName: formData.spouseWorkplace || '',
-      spouseJobStability: formData.spouseJobStability ? mapToCatalog(
-        [
-          { id: "1", value: "MENOR A 1 AÑO" },
-          { id: "2", value: "1 A 2 AÑOS" },
-          { id: "3", value: "2 A 3 AÑOS" },
-          { id: "4", value: "MAYOR A 3 AÑOS" }
-        ],
-        formData.spouseJobStability
-      ) : undefined,
-      spouseMobile: formData.spouseMobile || '',
-      spouseBirthDate: formData.spouseBirthDate ? new Date(formData.spouseBirthDate).toISOString().split('T')[0] : ''
-    })
+    // Spouse data
+    spouseFirstName: formData.spouseFirstName || '',
+    spouseSecondName: formData.spouseSecondName || '',
+    spouseThirdName: '', // Can be empty as confirmed
+    spouseFirstLastName: formData.spouseFirstLastName || '',
+    spouseSecondLastName: formData.spouseSecondLastName || '',
+    spouseCompanyName: formData.spouseWorkplace || '',
+    spouseJobStability: formData.spouseJobStability ? mapToCatalog(
+      [
+        { id: "1", value: "MENOR A 1 AÑO" },
+        { id: "2", value: "1 A 2 AÑOS" },
+        { id: "3", value: "2 A 3 AÑOS" },
+        { id: "4", value: "MAYOR A 3 AÑOS" }
+      ],
+      formData.spouseJobStability
+    ) : undefined,
+    spouseMobile: formData.spouseMobile || '',
+    spouseBirthDate: formData.spouseBirthDate ? new Date(formData.spouseBirthDate).toISOString().split('T')[0] : ''
   };
 
   // Map person data
