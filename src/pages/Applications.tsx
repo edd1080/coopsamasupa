@@ -3,7 +3,7 @@ import Header from '@/components/layout/Header';
 import BottomNavigation from '@/components/layout/BottomNavigation';
 import ApplicationsHeader from '@/components/applications/ApplicationsHeader';
 import ApplicationsList from '@/components/applications/ApplicationsList';
-// Removed CreateTestApplicationButton - functionality moved to form
+import CreateTestApplicationButton from '@/components/applications/CreateTestApplicationButton';
 import BreadcrumbNavigation from '@/components/navigation/BreadcrumbNavigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -139,21 +139,24 @@ const Applications = () => {
         <ApplicationsHeader />
         
         {/* Herramientas de Testing */}
-        <Card className="mb-6 bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-800">
+        <Card className="mb-6 bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
           <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+            <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
               <Code2 className="h-5 w-5" />
               Herramientas de Testing
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="text-center py-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                Las herramientas de testing ahora están integradas en el formulario de solicitud.
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-500">
-                Accede a cualquier solicitud para usar las nuevas herramientas de testing integradas.
-              </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <CreateTestApplicationButton />
+              <div className="flex-1">
+                <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
+                  Crea una solicitud con datos de prueba precargados para testing del microservicio Coopsama.
+                </p>
+                <p className="text-xs text-blue-600 dark:text-blue-400">
+                  Los datos incluyen valores corregidos para educación (SUPERIOR), profesión (MAESTRIA) y estabilidad habitacional (MENOR A 1 AÑO).
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
