@@ -16,6 +16,89 @@ interface TenantCredentials {
   userToken: string;
 }
 
+// Error code mapping for Coopsama microservice
+interface ErrorCodeMap {
+  [key: string]: {
+    message: string;
+    description: string;
+    isRetryable: boolean;
+  };
+}
+
+const COOPSAMA_ERROR_CODES: ErrorCodeMap = {
+  'Erx001': {
+    message: 'Error en el guardado del plan de pagos',
+    description: 'Hubo un problema al procesar el plan de pagos de la solicitud',
+    isRetryable: true
+  },
+  'Erx002': {
+    message: 'Error en el guardado del análisis financiero',
+    description: 'No se pudo procesar correctamente el análisis financiero',
+    isRetryable: true
+  },
+  'Erx003': {
+    message: 'Error en alguno de los registros de las fuentes de ingreso',
+    description: 'Problema al procesar la información de ingresos',
+    isRetryable: true
+  },
+  'Erx004': {
+    message: 'Error en la información adicional',
+    description: 'Hubo un problema con los datos adicionales proporcionados',
+    isRetryable: true
+  },
+  'Erx005': {
+    message: 'Error en el guardado de la solicitud de crédito',
+    description: 'No se pudo guardar correctamente la solicitud de crédito',
+    isRetryable: true
+  },
+  'Erx006': {
+    message: 'Error en el guardado del balance patrimonial',
+    description: 'Problema al procesar la información patrimonial',
+    isRetryable: true
+  },
+  'Erx007': {
+    message: 'Error en la calificación del asociado',
+    description: 'No se pudo completar la evaluación del asociado',
+    isRetryable: false
+  },
+  'Erx008': {
+    message: 'Error al guardar las referencias personales y comerciales',
+    description: 'Problema al procesar las referencias proporcionadas',
+    isRetryable: true
+  },
+  'Erx009': {
+    message: 'Error al guardar el plan de inversión',
+    description: 'No se pudo procesar el plan de inversión',
+    isRetryable: true
+  },
+  'Erx010': {
+    message: 'Error al guardar la información del cliente',
+    description: 'Problema al procesar los datos del cliente',
+    isRetryable: true
+  }
+};
+
+function getErrorDetails(errorCode: string, originalMessage?: string) {
+  const errorInfo = COOPSAMA_ERROR_CODES[errorCode];
+  if (errorInfo) {
+    return {
+      code: errorCode,
+      message: errorInfo.message,
+      description: errorInfo.description,
+      isRetryable: errorInfo.isRetryable,
+      originalMessage: originalMessage
+    };
+  }
+  
+  return {
+    code: errorCode,
+    message: originalMessage || `Error no identificado: ${errorCode}`,
+    description: 'Se produjo un error no catalogado en el procesamiento',
+    isRetryable: true,
+    originalMessage: originalMessage
+  };
+}
+
 function getTenantCredentials(tenant: string): TenantCredentials | null {
   switch (tenant) {
     case 'coopsama':
@@ -131,7 +214,7 @@ serve(async (req) => {
 
     // Enrich official data with agent information
     const agentData = {
-      dpi: profile.phone, // Using phone as DPI placeholder - should be updated with actual DPI field
+      dpi: user.email || profile.email, // Using email as DPI per requirement
       email: user.email || profile.email,
       full_name: profile.full_name
     };
@@ -209,7 +292,7 @@ serve(async (req) => {
       data: officialData,
       metadata: {
         processId: applicationId,
-        user: profile.full_name || user.email || 'unknown'
+        user: user.email || profile.email || 'unknown'
       }
     };
 
@@ -256,7 +339,7 @@ serve(async (req) => {
       throw new Error('Invalid microservice response format');
     }
 
-    // Determine success based on internal code (0 = success, 1 = communication error)
+    // Determine success based on internal code (0 = success, others = errors)
     const isSuccess = coopsamaResult.code === 0;
     const isCommunicationError = coopsamaResult.code === 1;
 
@@ -272,14 +355,38 @@ serve(async (req) => {
       updateData.coopsama_external_reference_id = coopsamaResult.data.externalReferenceId;
       console.log('✅ Success - Mapped operation ID:', updateData.coopsama_operation_id);
     } else {
-      // Handle different types of errors
+      // Handle different types of errors with detailed error mapping
+      let errorDetails;
+      
       if (isCommunicationError) {
-        updateData.coopsama_sync_error = `Communication error: ${coopsamaResult.message || 'Connection to Coopsama failed'}`;
+        errorDetails = {
+          code: '1',
+          message: 'Error de comunicación con el microservicio',
+          description: 'No se pudo establecer conexión con el servicio de Coopsama',
+          isRetryable: true,
+          originalMessage: coopsamaResult.message || 'Connection to Coopsama failed'
+        };
         console.error('🔌 Communication error with Coopsama:', coopsamaResult.message);
       } else {
-        updateData.coopsama_sync_error = coopsamaResult.message || `Unknown error (code: ${coopsamaResult.code})`;
-        console.error('❌ Coopsama error:', coopsamaResult.message, 'Code:', coopsamaResult.code);
+        // Check if it's a known error code (Erx001-Erx010)
+        const errorCode = String(coopsamaResult.code);
+        if (errorCode.startsWith('Erx') || COOPSAMA_ERROR_CODES[errorCode]) {
+          errorDetails = getErrorDetails(errorCode, coopsamaResult.message);
+          console.error(`❌ Coopsama business error [${errorCode}]:`, errorDetails.message);
+        } else {
+          errorDetails = {
+            code: errorCode,
+            message: coopsamaResult.message || `Error desconocido (código: ${coopsamaResult.code})`,
+            description: 'Se produjo un error no identificado en el procesamiento',
+            isRetryable: true,
+            originalMessage: coopsamaResult.message
+          };
+          console.error('❌ Unknown Coopsama error:', coopsamaResult.message, 'Code:', coopsamaResult.code);
+        }
       }
+      
+      // Store detailed error information
+      updateData.coopsama_sync_error = JSON.stringify(errorDetails);
     }
 
     // Update application in Supabase
@@ -298,7 +405,8 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       success: true,
       coopsama_response: coopsamaResult,
-      sync_status: updateData.coopsama_sync_status
+      sync_status: updateData.coopsama_sync_status,
+      error_details: updateData.coopsama_sync_error ? JSON.parse(updateData.coopsama_sync_error) : null
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Send, CheckCircle, AlertCircle, Clock, Code, FlaskConical } from 'lucide-react';
+import { Send, CheckCircle, AlertCircle, Clock, Code, FlaskConical, RefreshCw, Info } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { toOfficial, validateCoverage } from '@/utils/fieldMapper';
@@ -62,11 +62,21 @@ const TestIntegrationButton: React.FC<TestIntegrationButtonProps> = ({
           description: response.error.message || "Error desconocido",
           variant: "destructive",
         });
-      } else {
+      } else if (response.data?.error_details) {
+        const errorDetails = response.data.error_details;
         toast({
-          title: "Integración ejecutada",
-          description: `Validación: ${validation.isValid ? 'Exitosa' : validation.issues.length + ' errores'}. Revisa los detalles.`,
-          variant: validation.isValid ? "default" : "warning",
+          title: `Error del Microservicio (${errorDetails.code})`,
+          description: errorDetails.message,
+          variant: "destructive",
+        });
+      } else {
+        const hasBusinessError = response.data?.coopsama_response?.code !== 0;
+        toast({
+          title: hasBusinessError ? "Error en procesamiento" : "Integración ejecutada",
+          description: hasBusinessError 
+            ? "Se produjo un error en el microservicio. Revisa los detalles."
+            : `Validación: ${validation.isValid ? 'Exitosa' : validation.issues.length + ' errores'}. Revisa los detalles.`,
+          variant: hasBusinessError ? "destructive" : (validation.isValid ? "default" : "warning"),
         });
       }
     } catch (error: any) {
@@ -155,26 +165,84 @@ const TestIntegrationButton: React.FC<TestIntegrationButtonProps> = ({
               )}
               
               {result.data && (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="outline" className="bg-green-50 text-green-700">
                       Status: {result.data.success ? 'Éxito' : 'Error'}
                     </Badge>
-                    {result.data.operationId && (
-                      <Badge variant="outline" className="bg-blue-50 text-blue-700">
-                        Operation ID: {result.data.operationId}
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                      Sync Status: {result.data.sync_status || 'Unknown'}
+                    </Badge>
+                    {result.data.coopsama_response?.data?.operationId && (
+                      <Badge variant="outline" className="bg-purple-50 text-purple-700">
+                        Operation ID: {result.data.coopsama_response.data.operationId}
                       </Badge>
                     )}
-                    {result.data.externalReferenceId && (
+                    {result.data.coopsama_response?.data?.externalReferenceId && (
                       <Badge variant="outline" className="bg-purple-50 text-purple-700">
-                        External Ref: {result.data.externalReferenceId}
+                        External Ref: {result.data.coopsama_response.data.externalReferenceId}
                       </Badge>
                     )}
                   </div>
                   
-                  {result.data.message && (
-                    <div className="bg-blue-50 border border-blue-200 rounded p-2 text-sm text-blue-800">
-                      {result.data.message}
+                  {/* Error details from microservice */}
+                  {result.data.error_details && (
+                    <div className="bg-red-50 border border-red-200 rounded p-3">
+                      <div className="flex items-start gap-2 mb-2">
+                        <AlertCircle className="h-4 w-4 text-red-500 mt-0.5" />
+                        <div className="flex-1">
+                          <h5 className="font-medium text-red-800">
+                            Error del Microservicio ({result.data.error_details.code})
+                          </h5>
+                          <p className="text-sm text-red-700 mt-1">
+                            {result.data.error_details.message}
+                          </p>
+                          {result.data.error_details.description && (
+                            <p className="text-xs text-red-600 mt-1">
+                              {result.data.error_details.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {result.data.error_details.isRetryable && (
+                        <div className="flex gap-2 mt-3">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={handleTestIntegration}
+                            disabled={isLoading}
+                            className="text-red-700 border-red-300 hover:bg-red-50"
+                          >
+                            <RefreshCw className="h-3 w-3 mr-1" />
+                            Reintentar
+                          </Button>
+                          <div className="flex items-center gap-1 text-xs text-red-600">
+                            <Info className="h-3 w-3" />
+                            Este error puede resolverse reintentando
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Success response */}
+                  {result.data.coopsama_response && result.data.coopsama_response.code === 0 && (
+                    <div className="bg-green-50 border border-green-200 rounded p-2 text-sm text-green-800">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        {result.data.coopsama_response.message || 'Procesamiento exitoso'}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Communication error */}
+                  {result.data.coopsama_response && result.data.coopsama_response.code === 1 && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded p-2 text-sm text-yellow-800">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 text-yellow-500" />
+                        Error de comunicación: {result.data.coopsama_response.message}
+                      </div>
                     </div>
                   )}
                 </div>
