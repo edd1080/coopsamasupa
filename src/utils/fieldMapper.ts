@@ -186,102 +186,74 @@ const mapToCatalog = <T extends { id: string; value: string }>(
   
   if (appValue) {
     console.log(`🔍 Mapping "${appValue}" in catalog with ${catalog.length} items`);
-    console.log(`📋 Catalog items:`, catalog.map(item => `"${item.value}" (ID: ${item.id})`).join(', '));
     
-    // Handle specific gender mappings
+    // 1. EXACT MATCH FIRST - Direct comparison without any transformation
+    const exactMatch = catalog.find(item => item.value === appValue);
+    if (exactMatch) {
+      console.log(`✅ Exact match: "${appValue}" → "${exactMatch.value}" (ID: ${exactMatch.id})`);
+      return { id: exactMatch.id, value: exactMatch.value };
+    }
+    
+    // 2. CASE-INSENSITIVE EXACT MATCH
+    const caseInsensitiveMatch = catalog.find(item => 
+      item.value.toLowerCase() === appValue.toLowerCase()
+    );
+    if (caseInsensitiveMatch) {
+      console.log(`✅ Case-insensitive match: "${appValue}" → "${caseInsensitiveMatch.value}" (ID: ${caseInsensitiveMatch.id})`);
+      return { id: caseInsensitiveMatch.id, value: caseInsensitiveMatch.value };
+    }
+    
+    // 3. SPECIFIC MAPPINGS ONLY IF NEEDED
+    let mappedValue = appValue;
+    
+    // Gender mappings only for variants
     if (catalog === genders) {
       const genderMappings: { [key: string]: string } = {
         'Femenino': 'MUJER',
         'Masculino': 'HOMBRE',
-        'FEMENINO': 'MUJER',
-        'MASCULINO': 'HOMBRE',
         'F': 'MUJER',
-        'M': 'HOMBRE',
-        'mujer': 'MUJER',
-        'hombre': 'HOMBRE',
-        'MUJER': 'MUJER',
-        'HOMBRE': 'HOMBRE'
+        'M': 'HOMBRE'
       };
-      const mappedValue = genderMappings[appValue] || appValue;
-      const match = findCatalogMatch(catalog, mappedValue);
-      if (match) {
-        console.log(`✅ Gender mapped: "${appValue}" → "${match.value}" (ID: ${match.id})`);
-        return { id: match.id, value: match.value };
-      }
+      mappedValue = genderMappings[appValue] || appValue;
     }
     
-    // Handle civil status mappings
+    // Civil status mappings only for variants  
     if (catalog === civilStatuses) {
       const civilStatusMappings: { [key: string]: string } = {
         'Soltera': 'SOLTERO',
-        'Soltero': 'SOLTERO',
         'Casada': 'CASADO',
-        'Casado': 'CASADO',
         'Unida': 'UNIDO',
-        'Unido': 'UNIDO',
         'Divorciada': 'DIVORCIADO',
-        'Divorciado': 'DIVORCIADO',
-        'Viuda': 'VIUDO',
-        'Viudo': 'VIUDO'
+        'Viuda': 'VIUDO'
       };
-      const mappedValue = civilStatusMappings[appValue] || appValue;
-      const match = findCatalogMatch(catalog, mappedValue);
-      if (match) {
-        console.log(`✅ Civil status mapped: "${appValue}" → "${match.value}" (ID: ${match.id})`);
-        return { id: match.id, value: match.value };
-      }
+      mappedValue = civilStatusMappings[appValue] || appValue;
     }
     
-    // Handle education level mappings
+    // Education mappings
     if (catalog === educationLevels) {
       const educationMappings: { [key: string]: string } = {
         'Universitario': 'SUPERIOR',
         'Universidad': 'SUPERIOR',
         'Bachillerato': 'DIVERSIFICADO',
         'Básicos': 'BASICO',
-        'Primaria': 'PRIMARIA',
-        // Map numeric values based on form data
-        '300': 'SUPERIOR',  // University level education
-        '200': 'DIVERSIFICADO',  // High school level
-        '100': 'BASICO',  // Basic level
-        '50': 'PRIMARIA'  // Primary level
+        '300': 'SUPERIOR',
+        '200': 'DIVERSIFICADO', 
+        '100': 'BASICO',
+        '50': 'PRIMARIA'
       };
-      const mappedValue = educationMappings[appValue] || appValue;
-      const match = findCatalogMatch(catalog, mappedValue);
-      if (match) {
-        console.log(`✅ Education mapped: "${appValue}" → "${match.value}" (ID: ${match.id})`);
-        return { id: match.id, value: match.value };
+      mappedValue = educationMappings[appValue] || appValue;
+    }
+    
+    // Try with mapped value if different
+    if (mappedValue !== appValue) {
+      const mappedMatch = catalog.find(item => item.value === mappedValue);
+      if (mappedMatch) {
+        console.log(`✅ Mapped match: "${appValue}" → "${mappedMatch.value}" (ID: ${mappedMatch.id})`);
+        return { id: mappedMatch.id, value: mappedMatch.value };
       }
     }
     
-    // Handle ethnicity mappings  
-    if (catalog === ethnicities) {
-      const ethnicityMappings: { [key: string]: string } = {
-        'Maya': 'Maya',
-        'Mestizo': 'Mestizo',
-        'Ladino': 'Ladino',
-        'maya': 'Maya',
-        'mestizo': 'Mestizo',
-        'ladino': 'Ladino'
-      };
-      const mappedValue = ethnicityMappings[appValue] || appValue;
-      const match = findCatalogMatch(catalog, mappedValue);
-      if (match) {
-        console.log(`✅ Ethnicity mapped: "${appValue}" → "${match.value}" (ID: ${match.id})`);
-        return { id: match.id, value: match.value };
-      }
-    }
-    
-    // Default catalog matching
-    const match = findCatalogMatch(catalog, appValue);
-    if (match) {
-      console.log(`✅ Default match: "${appValue}" → "${match.value}" (ID: ${match.id})`);
-      return { id: match.id, value: match.value };
-    } else {
-      console.log(`❌ No direct match found for "${appValue}". Available values:`, catalog.map(c => c.value));
-    }
-    
-    console.log(`❌ No match found for "${appValue}" in catalog`);
+    console.log(`❌ No match found for "${appValue}". Available values:`, catalog.map(c => c.value));
   }
   
   if (fallbackId) {

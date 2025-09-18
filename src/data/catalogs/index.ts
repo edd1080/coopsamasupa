@@ -14,22 +14,23 @@ export const findCatalogMatch = <T extends { id: string; value: string }>(
 ): T | null => {
   if (!searchValue) return null;
 
-  const normalizedSearch = normalizeCatalogString(searchValue);
+  // 1. EXACT MATCH - No transformation
+  const exactMatch = catalog.find(item => item.value === searchValue);
+  if (exactMatch) return exactMatch;
   
-  // Exact match first
-  const exactMatch = catalog.find(item => 
+  // 2. CASE-INSENSITIVE EXACT MATCH
+  const caseMatch = catalog.find(item => 
+    item.value.toLowerCase() === searchValue.toLowerCase()
+  );
+  if (caseMatch) return caseMatch;
+  
+  // 3. NORMALIZED MATCH - Only as last resort
+  const normalizedSearch = normalizeCatalogString(searchValue);
+  const normalizedMatch = catalog.find(item => 
     normalizeCatalogString(item.value) === normalizedSearch
   );
   
-  if (exactMatch) return exactMatch;
-  
-  // Partial match
-  const partialMatch = catalog.find(item => 
-    normalizeCatalogString(item.value).includes(normalizedSearch) ||
-    normalizedSearch.includes(normalizeCatalogString(item.value))
-  );
-  
-  return partialMatch || null;
+  return normalizedMatch || null;
 };
 
 // Re-export all catalogs
