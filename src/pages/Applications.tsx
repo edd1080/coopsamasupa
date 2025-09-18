@@ -14,6 +14,7 @@ import { Trash2, RefreshCw, Code2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from "@/hooks/use-toast";
 const Applications = () => {
+  console.log('Applications component loaded - testing tools moved to form');
   const {
     user
   } = useAuth();
