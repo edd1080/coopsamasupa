@@ -86,7 +86,7 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="agencyType">Tipo de Agencia</Label>
+            <Label htmlFor="agencyType">Agencia</Label>
             <Select value={formData.agencyType || ''} onValueChange={(value) => updateFormData('agencyType', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar agencia" />
@@ -179,7 +179,6 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
               <SelectContent>
                 <SelectItem value="hombre">Hombre</SelectItem>
                 <SelectItem value="mujer">Mujer</SelectItem>
-                <SelectItem value="nd">N/D</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -270,7 +269,6 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
               <SelectContent>
                 <SelectItem value="casado">Casado(a)</SelectItem>
                 <SelectItem value="divorciado">Divorciado(a)</SelectItem>
-                <SelectItem value="nd">N/D</SelectItem>
                 <SelectItem value="soltero">Soltero(a)</SelectItem>
                 <SelectItem value="unido">Unido(a)</SelectItem>
                 <SelectItem value="viudo">Viudo(a)</SelectItem>
