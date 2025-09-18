@@ -48,12 +48,12 @@ export const useCreateTestApplication = () => {
           
           // Vivienda
           housingType: 'ALQUILADA',
-          housingStability: 'DE 1 A 3 AÑOS',
-          residentialStability: 'DE 1 A 3 AÑOS',
+          housingStability: 'MENOR A 1 AÑO',
+          residentialStability: 'MENOR A 1 AÑO',
           
           // Educación y profesión
-          educationLevel: 'UNIVERSITARIA',
-          profession: 'LICENCIATURA',
+          educationLevel: 'SUPERIOR',
+          profession: 'MAESTRIA',
           occupation: 'Comerciante',
           economicActivity: 'Comercio al por menor',
           
