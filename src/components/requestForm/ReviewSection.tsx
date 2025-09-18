@@ -9,6 +9,8 @@ import { useFormContext } from './RequestFormProvider';
 import SubformHeader from '@/components/forms/SubformHeader';
 import { toOfficial, validateCoverage } from '@/utils/fieldMapper';
 import { toast } from '@/hooks/use-toast';
+import IntegrationTester from './testing/IntegrationTester';
+import FieldMappingComplete from './testing/FieldMappingComplete';
 
 interface ReviewSectionProps {
   formData: any;
@@ -167,6 +169,15 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
               Enviar Solicitud
             </Button>
           </div>
+        </div>
+
+        {/* Nuevas Herramientas de Testing Integradas */}
+        <div className="space-y-4">
+          <IntegrationTester 
+            formData={formData} 
+            applicationId={formData.applicationId || 'test-application'} 
+          />
+          <FieldMappingComplete formData={formData} />
         </div>
 
         {/* Información Personal */}

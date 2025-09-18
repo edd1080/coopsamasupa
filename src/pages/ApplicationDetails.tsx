@@ -14,8 +14,7 @@ import Header from '@/components/layout/Header';
 import BottomNavigation from '@/components/layout/BottomNavigation';
 import BreadcrumbNavigation from '@/components/navigation/BreadcrumbNavigation';
 import CircularProgress from '@/components/requestForm/CircularProgress';
-import TestIntegrationButton from '@/components/applications/TestIntegrationButton';
-import FieldMappingAnalyzer from '@/components/applications/FieldMappingAnalyzer';
+// Removed old testing components - now integrated in ReviewSection
 
 import { NewGuarantorSheet } from '@/components/requestForm/guarantors/NewGuarantorSheet';
 import { useApplicationData } from '@/hooks/useApplicationData';
@@ -396,40 +395,27 @@ const ApplicationDetails = () => {
             </CardContent>
           </Card>
 
-          {/* Herramientas de Testing */}
-          <Card className="mb-6 bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+          {/* Testing Tools moved to form ReviewSection */}
+          <Card className="mb-6 bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-800">
             <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
+              <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
                 <Code2 className="h-5 w-5" />
                 Herramientas de Testing
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                <div className="flex flex-wrap gap-3">
-                  <TestIntegrationButton 
-                    applicationId={applicationData.id || id || ''}
-                    formData={formData}
-                  />
-                  
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowFieldMapping(!showFieldMapping)}
-                    className="border-green-200 text-green-700 hover:bg-green-50"
-                  >
-                    <TestTube className="h-4 w-4 mr-2" />
-                    {showFieldMapping ? 'Ocultar' : 'Ver'} Mapeo de Campos
-                  </Button>
-                </div>
-                
-                {showFieldMapping && (
-                  <div className="mt-4">
-                    <FieldMappingAnalyzer 
-                      formData={formData}
-                      officialData={{}}
-                    />
-                  </div>
-                )}
+              <div className="text-center py-6">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                  Las herramientas de testing ahora están integradas en el formulario.
+                </p>
+                <Button
+                  onClick={() => navigate(`/request-form/${id}`)}
+                  variant="outline"
+                  className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Ir al Formulario
+                </Button>
               </div>
             </CardContent>
           </Card>
