@@ -221,20 +221,10 @@ serve(async (req) => {
 
     // Add agent data and creation timestamp to the payload
     if (officialData.process && officialData.process.profile && officialData.process.profile.processControl) {
-      officialData.process.profile.processControl.agentDPI = agentData.email; // Email as DPI
+      officialData.process.profile.processControl.agentDPI = agentData.dpi;
       officialData.process.profile.processControl.agentEmail = agentData.email;
       officialData.process.profile.processControl.agentName = agentData.full_name;
-      officialData.process.profile.processControl.userEmail = agentData.email;
       officialData.process.profile.processControl.creationDateTime = new Date().toISOString();
-      // Add default values based on successful JSON
-      officialData.process.profile.processControl.cuaT24 = officialData.process.profile.processControl.cuaT24 || "2031045";
-      officialData.process.profile.processControl.cif = officialData.process.profile.processControl.cif || "98622";
-    }
-
-    // Add missing productDetail fields
-    if (officialData.process && officialData.process.profile && officialData.process.profile.productDetail) {
-      officialData.process.profile.productDetail.idTypeProduct = officialData.process.profile.productDetail.idTypeProduct || 1;
-      officialData.process.profile.productDetail.idAgency = officialData.process.profile.productDetail.idAgency || 12;
     }
 
     // Log the official data payload for debugging
@@ -302,7 +292,7 @@ serve(async (req) => {
       data: officialData,
       metadata: {
         processId: applicationId,
-        user: user.email || profile.email
+        user: user.email || profile.email || 'unknown'
       }
     };
 

@@ -30,7 +30,6 @@ interface OfficialPayload {
         agentEmail?: string;
         agentName?: string;
         creationDateTime?: string;
-        userEmail?: string;
       };
       personalDocument: {
         firstName: string;
@@ -91,8 +90,6 @@ interface OfficialPayload {
         secondaryProject?: { id: string; value: string };
         paymentMethod: { id: string; value: string };
         productType?: { id: string; value: string };
-        idTypeProduct?: number;
-        idAgency?: number;
         fundsDestination: {
           investmentState?: { id: string; value: string };
           investmentCounty?: { id: string; value: string };
@@ -408,16 +405,6 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
       ],
       formData.paymentPlan
     ) || { id: "2", value: "NIVELADA" },
-    productType: mapToCatalog(
-      [
-        { id: "1", value: "CREDITO" },
-        { id: "2", value: "AUTOMATICO" },
-        { id: "3", value: "TARJETA_CREDITO" }
-      ],
-      formData.creditType
-    ) || { id: "1", value: "CREDITO" },
-    idTypeProduct: 1,
-    idAgency: 12,
     fundsDestination: {
       investmentState: formData.investmentPlaceDepartment ? mapToCatalog(departments, formData.investmentPlaceDepartment) : undefined,
       investmentCounty: formData.investmentPlaceMunicipality ? mapToCatalog(municipalities, formData.investmentPlaceMunicipality) : undefined,
@@ -566,15 +553,14 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
       profile: {
         processControl: {
           processId: formData.id || formData.applicationId || '',
-          cuaT24: formData.cua || "2031045",
-          cif: "98622",
-          agency: { id: "1", value: "AGENCIA CENTRAL" },
+          cuaT24: formData.cua || undefined,
+          cif: undefined, // Ignored as confirmed
+          agency: { id: "1", value: "AGENCIA CENTRAL" }, // Will be updated from new catalog
           ownerCounty: mapToCatalog(municipalities, formData.residenceMunicipality) || { id: "01", value: "GUATEMALA" },
-          agentDPI: agentData?.email,
+          agentDPI: agentData?.dpi,
           agentEmail: agentData?.email,
           agentName: agentData?.full_name,
-          creationDateTime: new Date().toISOString(),
-          userEmail: agentData?.email
+          creationDateTime: new Date().toISOString()
         },
         personalDocument: personalDoc,
         personData,
