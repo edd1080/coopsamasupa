@@ -28,6 +28,9 @@ interface OfficialPayload {
           cuaT24?: string;
           cif?: string;
           userEmail?: string;
+          agentDPI?: string;
+          agentName?: string;
+          creationDateTime?: string;
         };
         personalDocument: {
           firstName: string;
@@ -1014,7 +1017,10 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
             ownerState: mapToCatalog(departments, formData.residenceDepartment) || { id: "01", value: "Guatemala" },
             cuaT24: "2031045",
             cif: "98622",
-            userEmail: agentData?.email || "jose.garcia@coopsama.com.gt"
+            userEmail: agentData?.email || "agente@test.com",
+            agentDPI: agentData?.dpi || agentData?.email || "agente@test.com",
+            agentName: agentData?.full_name || "Agente de Prueba",
+            creationDateTime: new Date().toISOString()
           },
           personalDocument: enhancedPersonalDoc,
           personData: enhancedPersonData,
