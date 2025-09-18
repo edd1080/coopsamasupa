@@ -225,6 +225,25 @@ serve(async (req) => {
       officialData.process.profile.processControl.agentEmail = agentData.email;
       officialData.process.profile.processControl.agentName = agentData.full_name;
       officialData.process.profile.processControl.creationDateTime = new Date().toISOString();
+      officialData.process.profile.processControl.userEmail = agentData.email;
+      
+      // Ensure default values are set
+      if (!officialData.process.profile.processControl.cuaT24) {
+        officialData.process.profile.processControl.cuaT24 = "2031045";
+      }
+      if (!officialData.process.profile.processControl.cif) {
+        officialData.process.profile.processControl.cif = "98622";
+      }
+    }
+
+    // Ensure productDetail has required fields
+    if (officialData.process && officialData.process.profile && officialData.process.profile.productDetail) {
+      if (!officialData.process.profile.productDetail.idTypeProduct) {
+        officialData.process.profile.productDetail.idTypeProduct = 1;
+      }
+      if (!officialData.process.profile.productDetail.idAgency) {
+        officialData.process.profile.productDetail.idAgency = 12;
+      }
     }
 
     // Log the official data payload for debugging
