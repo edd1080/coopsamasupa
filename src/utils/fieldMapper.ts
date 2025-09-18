@@ -878,8 +878,11 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
     });
   }
 
+  // Determine if spouse fields should be included based on marital status
+  const isMarried = personalDoc.maritalStatus?.value === 'CASADO' || personalDoc.maritalStatus?.value === 'CASADA';
+  
   // Enhanced personal document with required fields and validation
-  const enhancedPersonalDoc = {
+  const basePersonalDoc = {
     ...personalDoc,
     // CRITICAL: Ensure all required fields are present
     firstName: personalDoc.firstName || 'NO_ESPECIFICADO',
@@ -898,6 +901,19 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
       county: mapToCatalog(municipalities, formData.residenceMunicipality) || { id: "0101", value: "GUATEMALA" }
     }
   };
+
+  // Only include spouse fields if actually married and spouse data exists
+  const enhancedPersonalDoc = isMarried && formData.spouseFirstName ? {
+    ...basePersonalDoc,
+    spouseFirstName: formData.spouseFirstName,
+    spouseSecondName: formData.spouseSecondName || '',
+    spouseThirdName: formData.spouseThirdName || '',
+    spouseFirstLastName: formData.spouseFirstLastName || '',
+    spouseSecondLastName: formData.spouseSecondLastName || '',
+    spouseCompanyName: formData.spouseCompanyName || '',
+    spouseMobile: formData.spouseMobile || '',
+    spouseBirthDate: formData.spouseBirthDate || ''
+  } : basePersonalDoc;
 
   // Enhanced person data with correct email structure and validation
   const enhancedPersonData = {
@@ -1004,7 +1020,7 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
       process: {
         profile: {
           processControl: {
-            processId: formData.id || formData.applicationId || "PRC-000123",
+            processId: `SCO_${Date.now().toString().slice(-6)}`,
             ownerCounty: mapToCatalog(municipalities, formData.residenceMunicipality) || { id: "0101", value: "Guatemala" },
             ownerState: mapToCatalog(departments, formData.residenceDepartment) || { id: "01", value: "Guatemala" },
             cuaT24: "2031045",
