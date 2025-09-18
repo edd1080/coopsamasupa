@@ -481,6 +481,12 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
   const mappedOccupation = mapOccupation(occupationValue);
   console.log("🔍 OCCUPATION DEBUG - Resultado mapeo:", mappedOccupation);
 
+  // Map profession with debug
+  const professionValue = formData.profession || formData.profesion || formData.title;
+  console.log("🔍 PROFESSION DEBUG - Valor encontrado:", professionValue);
+  const mappedProfession = mapProfession(professionValue);
+  console.log("🔍 PROFESSION DEBUG - Resultado mapeo:", mappedProfession);
+
   // Map gender - probar múltiples nombres de campo
   const genderValue = formData.gender || formData.genero || formData.sexo;
   console.log("🔍 GENDER DEBUG - Valor encontrado:", genderValue);
@@ -493,8 +499,8 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
   const mappedCivilStatus = mapToCatalog(civilStatuses, civilStatusValue);
   console.log("🔍 CIVIL STATUS DEBUG - Resultado mapeo:", mappedCivilStatus);
 
-  // Map education level - probar múltiples nombres de campo
-  const educationValue = formData.education || formData.educacion || formData.nivel_educativo;
+  // Map education level - probar múltiples nombres de campo (prioritize educationLevel)
+  const educationValue = formData.educationLevel || formData.education || formData.educacion || formData.nivel_educativo;
   console.log("🔍 EDUCATION DEBUG - Valor encontrado:", educationValue);
   const mappedEducation = mapToCatalog(educationLevels, educationValue);
   console.log("🔍 EDUCATION DEBUG - Resultado mapeo:", mappedEducation);
@@ -518,7 +524,7 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
     maritalStatus: mappedCivilStatus || { id: "6", value: "N/D" },
     birthDate: formData.birthDate ? new Date(formData.birthDate).toISOString().split('T')[0] : '',
     age: formData.age || 0,
-    academicTitle: mapProfession(formData.profession) || { id: "1", value: "BACHILLER" },
+    academicTitle: mappedProfession || { id: "1", value: "BACHILLER" },
     occupation: mappedOccupation || { id: "169", value: "NINGUNA" },
     typeOfHousing: mapToCatalog(
       [
@@ -537,7 +543,9 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
         { id: "4", value: "MAYOR A 3 AÑOS" }
       ];
       
-      console.log(`🏠 Mapping housing stability: "${formData.residentialStability}"`);
+      // Use housingStability first, then fall back to residentialStability
+      const stabilityValue = formData.housingStability || formData.residentialStability;
+      console.log(`🏠 Mapping housing stability: "${stabilityValue}" (from housingStability: ${formData.housingStability}, residentialStability: ${formData.residentialStability})`);
       
       // Enhanced housing stability mappings
       const stabilityMappings: { [key: string]: string } = {
@@ -556,10 +564,10 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
         'mayor a 3 años': 'MAYOR A 3 AÑOS'
       };
       
-      const mappedValue = stabilityMappings[formData.residentialStability?.toLowerCase()] || formData.residentialStability;
+      const mappedValue = stabilityMappings[stabilityValue?.toLowerCase()] || stabilityValue;
       const result = mapToCatalog(housingStabilityCatalog, mappedValue, "4");
       
-      console.log(`✅ Housing stability mapped: "${formData.residentialStability}" → "${result?.value}" (ID: ${result?.id})`);
+      console.log(`✅ Housing stability mapped: "${stabilityValue}" → "${result?.value}" (ID: ${result?.id})`);
       return result || { id: "4", value: "MAYOR A 3 AÑOS" };
     })(),
     geolocalization: formData.coordinates ? `${formData.coordinates.latitude},${formData.coordinates.longitude}` : undefined,
@@ -641,6 +649,22 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
       ],
       formData.memberType
     ) : undefined,
+    // Map destination group and credit destination
+    destinationGroup: (() => {
+      console.log(`🎯 Mapping destination group: "${formData.destinationGroup}"`);
+      const result = mapToCatalog(destinationGroups, formData.destinationGroup);
+      console.log(`✅ Destination group mapped: "${formData.destinationGroup}" → "${result?.value}" (ID: ${result?.id})`);
+      return result || { id: "1", value: "Grupo MicroCredito" };
+    })(),
+    creditDestination: (() => {
+      console.log(`💳 Mapping credit destination: "${formData.creditDestination}"`);
+      // Get destinations for the selected group
+      const destinationGroupId = mapToCatalog(destinationGroups, formData.destinationGroup)?.id || "1";
+      const availableDestinations = getDestinationsByGroup(destinationGroupId);
+      const result = mapToCatalog(availableDestinations, formData.creditDestination);
+      console.log(`✅ Credit destination mapped: "${formData.creditDestination}" → "${result?.value}" (ID: ${result?.id})`);
+      return result || { id: "1", value: "COMERCIO" };
+    })(),
     paymentMethod: mapToCatalog(
       [
         { id: "1", value: "DECRECIENTE" },
