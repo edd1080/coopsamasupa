@@ -9,11 +9,13 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, Edit, Send, DollarSign, Users, Building2, BarChart3, MapPin, FileCheck, User, Briefcase, FileSignature, CheckCircle, Clock, Camera, Plus, PartyPopper, ChevronRight, UserCheck } from 'lucide-react';
+import { ArrowLeft, Edit, Send, DollarSign, Users, Building2, BarChart3, MapPin, FileCheck, User, Briefcase, FileSignature, CheckCircle, Clock, Camera, Plus, PartyPopper, ChevronRight, UserCheck, Code2, TestTube } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import BottomNavigation from '@/components/layout/BottomNavigation';
 import BreadcrumbNavigation from '@/components/navigation/BreadcrumbNavigation';
 import CircularProgress from '@/components/requestForm/CircularProgress';
+import TestIntegrationButton from '@/components/applications/TestIntegrationButton';
+import FieldMappingAnalyzer from '@/components/applications/FieldMappingAnalyzer';
 
 import { NewGuarantorSheet } from '@/components/requestForm/guarantors/NewGuarantorSheet';
 import { useApplicationData } from '@/hooks/useApplicationData';
@@ -32,6 +34,7 @@ const ApplicationDetails = () => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showFieldMapping, setShowFieldMapping] = useState(false);
   const {
     data: applicationData,
     isLoading,
@@ -390,6 +393,44 @@ const ApplicationDetails = () => {
                         Agregar Otro Fiador
                       </Button>} onCreateGuarantor={handleAddGuarantor} onDiscard={() => {}} />
                 </div>}
+            </CardContent>
+          </Card>
+
+          {/* Herramientas de Testing */}
+          <Card className="mb-6 bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
+                <Code2 className="h-5 w-5" />
+                Herramientas de Testing
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex flex-wrap gap-3">
+                  <TestIntegrationButton 
+                    applicationId={applicationData.id || id || ''}
+                    formData={formData}
+                  />
+                  
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowFieldMapping(!showFieldMapping)}
+                    className="border-green-200 text-green-700 hover:bg-green-50"
+                  >
+                    <TestTube className="h-4 w-4 mr-2" />
+                    {showFieldMapping ? 'Ocultar' : 'Ver'} Mapeo de Campos
+                  </Button>
+                </div>
+                
+                {showFieldMapping && (
+                  <div className="mt-4">
+                    <FieldMappingAnalyzer 
+                      formData={formData}
+                      officialData={{}}
+                    />
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
