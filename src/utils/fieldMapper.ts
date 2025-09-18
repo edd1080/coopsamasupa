@@ -195,7 +195,11 @@ const mapToCatalog = <T extends { id: string; value: string }>(
         'FEMENINO': 'MUJER',
         'MASCULINO': 'HOMBRE',
         'F': 'MUJER',
-        'M': 'HOMBRE'
+        'M': 'HOMBRE',
+        'mujer': 'MUJER',
+        'hombre': 'HOMBRE',
+        'MUJER': 'MUJER',
+        'HOMBRE': 'HOMBRE'
       };
       const mappedValue = genderMappings[appValue] || appValue;
       const match = findCatalogMatch(catalog, mappedValue);
