@@ -13,9 +13,9 @@ const DynamicFormHeader: React.FC = () => {
 
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const currentStep = steps[activeStep];
+  const currentStep = steps[activeStep] || steps[0]; // Fallback to first step if activeStep is invalid
   const totalSteps = steps.length;
-  const currentStepNumber = activeStep + 1;
+  const currentStepNumber = Math.min(activeStep + 1, totalSteps); // Ensure within bounds
   const progress = currentStepNumber / totalSteps * 100;
 
   // Define step contexts for each section
@@ -72,10 +72,10 @@ const DynamicFormHeader: React.FC = () => {
 
           {/* Dropdown menu */}
           {isExpanded && (
-            <div className="absolute top-full left-0 mt-2 w-full max-w-md bg-popover border rounded-lg shadow-lg z-30 py-2">
+             <div className="absolute top-full left-0 mt-2 w-full max-w-md bg-popover border rounded-lg shadow-lg z-30 py-2">
               {steps.map((step, index) => {
                 const isActive = activeStep === index;
-                const isCompleted = sectionStatus[step.id] === 'complete';
+                const isCompleted = step?.id ? sectionStatus[step.id] === 'complete' : false;
                 
                 return (
                   <button
@@ -94,12 +94,12 @@ const DynamicFormHeader: React.FC = () => {
                     `}>
                       {isCompleted && !isActive ? <CheckCircle size={14} /> : index + 1}
                     </div>
-                    <div className="flex-1 min-w-0">
+                     <div className="flex-1 min-w-0">
                       <div className={`font-medium text-sm truncate ${isActive ? 'text-primary' : ''} ${isCompleted && !isActive ? 'text-primary' : ''}`}>
-                        {step.title}
+                        {step?.title || `Paso ${index + 1}`}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {getStepContext(step.id)}
+                        {step?.id ? getStepContext(step.id) : 'Información general'}
                       </div>
                     </div>
                   </button>
