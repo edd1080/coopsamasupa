@@ -15,44 +15,47 @@ export const useCreateTestApplication = () => {
     mutationFn: async () => {
       if (!user?.id) throw new Error('Usuario no autenticado');
       
-      console.log('🧪 Creating test application "Andrea Prueba"');
+      console.log('🧪 Creating test application "María Esperanza López"');
       
       const testApplicationData = {
         agent_id: user.id,
-        client_name: 'Andrea Prueba',
+        client_name: 'María Esperanza López',
         draft_data: {
           // Identificación personal
-          fullName: 'Andrea Prueba',
-          firstName: 'Andrea',
-          lastName: 'Prueba',
-          gender: 'HOMBRE',
-          civilStatus: 'VIUDO',
-          dpi: '1234567890123',
+          fullName: 'María Esperanza López',
+          firstName: 'María',
+          secondName: 'Esperanza',
+          lastName: 'López',
+          secondLastName: 'García',
+          gender: 'MUJER',
+          civilStatus: 'SOLTERO',
+          dpi: '9876543210987',
           dpiExtendedIn: 'Guatemala',
-          cua: 'AP12345',
-          birthDate: '1995-06-15',
-          age: 28,
+          cua: 'MEL54321',
+          birthDate: '1990-03-22',
+          age: 33,
           
           // Contacto
-          nit: '12345678',
-          mobilePhone: '50123456',
-          email: 'andrea.prueba@test.com',
-          address: '5ta Avenida 12-34 Zona 10, Ciudad de Guatemala',
+          nit: '87654321',
+          mobilePhone: '50987654',
+          homePhone: '22334455', // Teléfono fijo para probar fallback
+          email: 'maria.lopez@testing.com',
+          address: '12 Calle 8-45 Zona 1, Guatemala City',
           department: 'Guatemala',
           municipality: 'Guatemala',
           residenceDepartment: 'Guatemala',
           residenceMunicipality: 'Guatemala',
           
           // Vivienda
-          housingType: 'PROPIA',
-          housingStability: 'MENOR A 1 AÑO',
-          residentialStability: 'MENOR A 1 AÑO',
+          housingType: 'ALQUILADA',
+          housingStability: 'DE 1 A 3 AÑOS',
+          residentialStability: 'DE 1 A 3 AÑOS',
           
           // Educación y profesión
-          educationLevel: 'PRIMARIA',
-          profession: 'MAESTRIA',
-          occupation: 'Avicultor',
-          economicActivity: 'Avicultura',
+          educationLevel: 'UNIVERSITARIA',
+          profession: 'LICENCIATURA',
+          occupation: 'Comerciante',
+          economicActivity: 'Comercio al por menor',
           
           // Crédito
           creditPurpose: 'Vivienda',
@@ -127,12 +130,12 @@ export const useCreateTestApplication = () => {
       const { data: existing } = await supabase
         .from('application_drafts')
         .select('id')
-        .eq('client_name', 'Andrea Prueba')
+        .eq('client_name', 'María Esperanza López')
         .eq('agent_id', user.id)
         .maybeSingle();
         
       if (existing) {
-        throw new Error('La solicitud de prueba "Andrea Prueba" ya existe para este usuario');
+        throw new Error('La solicitud de prueba "María Esperanza López" ya existe para este usuario');
       }
       
       // Crear la nueva solicitud
@@ -156,7 +159,7 @@ export const useCreateTestApplication = () => {
       
       toast({
         title: "Solicitud de prueba creada",
-        description: "La solicitud 'Andrea Prueba' ha sido creada exitosamente",
+        description: "La solicitud 'María Esperanza López' ha sido creada exitosamente",
         variant: "default",
         className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
         duration: 3000,
