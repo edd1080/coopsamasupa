@@ -102,30 +102,6 @@ const FieldMappingComplete: React.FC<FieldMappingCompleteProps> = ({ formData })
     const allFields = Object.keys(formData);
     const categories: { [key: string]: any[] } = {};
     
-    // Recursive function to find a value anywhere in the payload structure
-    const findValueInPayload = (payload: any, searchValue: any, searchKey?: string): any => {
-      if (!payload || typeof payload !== 'object') return null;
-      
-      // Direct match by key name
-      if (searchKey && payload[searchKey] !== undefined) {
-        return payload[searchKey];
-      }
-      
-      // Search for value match
-      for (const [key, value] of Object.entries(payload)) {
-        if (value === searchValue) {
-          return value;
-        }
-        
-        // Recursive search in nested objects
-        if (typeof value === 'object' && value !== null) {
-          const found = findValueInPayload(value, searchValue, searchKey);
-          if (found !== null) return found;
-        }
-      }
-      
-      return null;
-    };
     
     // Enhanced mapping function that searches the entire payload
     const findMappedValue = (fieldName: string, fieldValue: any) => {
@@ -133,48 +109,136 @@ const FieldMappingComplete: React.FC<FieldMappingCompleteProps> = ({ formData })
       
       const payload = officialPayload.data.process.profile;
       
-      // First try direct field name mapping
-      let mappedValue = findValueInPayload(payload, fieldValue, fieldName);
+      // Debug logging to understand the payload structure
+      console.log(`🔍 Mapping field: ${fieldName} with value:`, fieldValue);
+      console.log('📦 Full payload structure:', JSON.stringify(payload, null, 2));
       
-      // If not found, try common field transformations
-      if (!mappedValue) {
-        const fieldTransforms: { [key: string]: string[] } = {
-          firstName: ['firstName', 'first_name', 'nombre'],
-          firstLastName: ['firstLastName', 'first_last_name', 'apellido'],
-          secondLastName: ['secondLastName', 'second_last_name', 'segundoApellido'],
-          dpi: ['personalDocumentId', 'document_id', 'dpi', 'cui'],
-          gender: ['gender', 'sexo', 'genero'],
-          civilStatus: ['maritalStatus', 'civil_status', 'estado_civil'],
-          birthDate: ['birthDate', 'birth_date', 'fecha_nacimiento'],
-          age: ['age', 'edad'],
-          mobilePhone: ['mobile', 'cellphone', 'telefono_movil'],
-          homePhone: ['telephone', 'phone', 'telefono'],
-          email: ['emailAddress', 'email', 'correo'],
-          address: ['fullAddress', 'address', 'direccion'],
-          educationLevel: ['academicDegree', 'education', 'educacion'],
-          profession: ['academicTitle', 'profession', 'profesion'],
-          occupation: ['occupation', 'ocupacion'],
-          housingType: ['typeOfHousing', 'housing_type', 'tipo_vivienda'],
-          housingStability: ['housingStability', 'housing_stability'],
-          requestedAmount: ['requestedAmount', 'amount', 'monto'],
-          termMonths: ['startingTerm', 'term', 'plazo'],
-          department: ['department', 'departamento'],
-          municipality: ['municipality', 'municipio']
-        };
+      // Direct field mapping paths based on the actual structure
+      const fieldMappings: { [key: string]: string } = {
+        // Personal Document fields
+        firstName: 'personalDocument.firstName',
+        firstLastName: 'personalDocument.firstLastName', 
+        secondLastName: 'personalDocument.secondLastName',
+        dpi: 'personalDocument.personalDocumentId',
+        gender: 'personalDocument.gender.value',
+        civilStatus: 'personalDocument.maritalStatus.value',
+        birthDate: 'personalDocument.birthDate',
+        age: 'personalDocument.age',
+        ethnicity: 'personalDocument.ethnicity.value',
         
-        const possibleKeys = fieldTransforms[fieldName] || [fieldName];
-        for (const key of possibleKeys) {
-          mappedValue = findValueInPayload(payload, fieldValue, key);
-          if (mappedValue) break;
+        // Person Data fields
+        mobilePhone: 'personData.mobile',
+        homePhone: 'personData.telephone',
+        educationLevel: 'personData.academicDegree.value',
+        
+        // Email (array structure)
+        email: 'personData.email.0.emailAddress',
+        
+        // Address fields
+        address: 'personalDocument.personalDocumentAddress.fullAddress',
+        department: 'personalDocument.personalDocumentAddress.department.value',
+        municipality: 'personalDocument.personalDocumentAddress.municipality.value',
+        
+        // Housing
+        housingType: 'personalDocument.typeOfHousing.value',
+        housingStability: 'personalDocument.housingStability.value',
+        
+        // Work/Professional
+        profession: 'personalDocument.academicTitle.value',
+        occupation: 'personalDocument.occupation.value',
+        workCompany: 'personalDocument.businessData.companyName',
+        workPosition: 'personalDocument.businessData.position',
+        workPhone: 'personalDocument.businessData.telephone',
+        workAddress: 'personalDocument.businessData.address',
+        workStartDate: 'personalDocument.businessData.startDate',
+        
+        // Product details
+        requestedAmount: 'productDetail.requestedAmount',
+        termMonths: 'productDetail.startingTerm',
+        destinationGroup: 'productDetail.destinationGroup.value',
+        creditDestination: 'productDetail.creditDestination.value',
+        productType: 'productDetail.productType.value',
+        
+        // Financial arrays - take first element or sum
+        income: 'personalDocument.incomeStatement.0.amount',
+        totalAssets: 'personalDocument.patrimonialStatement.totalAssets',
+        totalLiabilities: 'personalDocument.patrimonialStatement.totalLiabilities',
+        netWorth: 'personalDocument.patrimonialStatement.netWorth',
+        
+        // Spouse fields (conditional)
+        spouseFirstName: 'personalDocument.spouse.firstName',
+        spouseFirstLastName: 'personalDocument.spouse.firstLastName',
+        spouseSecondLastName: 'personalDocument.spouse.secondLastName',
+        spouseAge: 'personalDocument.spouse.age',
+        spouseDpi: 'personalDocument.spouse.personalDocumentId',
+        spouseProfession: 'personalDocument.spouse.academicTitle.value',
+        spouseOccupation: 'personalDocument.spouse.occupation.value'
+      };
+      
+      // Try direct mapping first
+      const mappingPath = fieldMappings[fieldName];
+      if (mappingPath) {
+        try {
+          const value = mappingPath.split('.').reduce((obj, key) => {
+            if (key.match(/^\d+$/)) {
+              // Array index
+              return obj?.[parseInt(key)];
+            }
+            return obj?.[key];
+          }, payload);
+          
+          if (value !== undefined && value !== null) {
+            console.log(`✅ Found direct mapping for ${fieldName}:`, value);
+            return value;
+          }
+        } catch (error) {
+          console.log(`❌ Error accessing path ${mappingPath} for ${fieldName}:`, error);
         }
       }
       
-      // If still not found, search by value similarity
-      if (!mappedValue && fieldValue !== null && fieldValue !== undefined && fieldValue !== '') {
-        mappedValue = findValueInPayload(payload, fieldValue);
+      // Fallback: Try to find the value anywhere in the structure
+      const searchInObject = (obj: any, targetValue: any, path: string = ''): any => {
+        if (obj === targetValue) {
+          console.log(`🎯 Found value match at ${path}:`, obj);
+          return obj;
+        }
+        
+        if (obj && typeof obj === 'object') {
+          for (const [key, value] of Object.entries(obj)) {
+            const currentPath = path ? `${path}.${key}` : key;
+            
+            // Check if the value matches what we're looking for
+            if (value === targetValue) {
+              console.log(`🎯 Found exact value match for ${fieldName} at ${currentPath}:`, value);
+              return value;
+            }
+            
+            // For objects with value property, check the value
+            if (value && typeof value === 'object' && 'value' in value && value.value === targetValue) {
+              console.log(`🎯 Found object.value match for ${fieldName} at ${currentPath}:`, value);
+              return value;
+            }
+            
+            // Recursive search
+            const found = searchInObject(value, targetValue, currentPath);
+            if (found !== null) return found;
+          }
+        }
+        
+        return null;
+      };
+      
+      // Only search if we have a meaningful value to search for
+      if (fieldValue !== null && fieldValue !== undefined && fieldValue !== '') {
+        const found = searchInObject(payload, fieldValue);
+        if (found) {
+          console.log(`🔄 Recursive search found mapping for ${fieldName}:`, found);
+          return found;
+        }
       }
       
-      return mappedValue;
+      console.log(`❌ No mapping found for ${fieldName} with value:`, fieldValue);
+      return null;
     };
     
     // Enhanced categorization logic
