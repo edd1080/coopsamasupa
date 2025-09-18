@@ -30,43 +30,54 @@ const FormActionBar: React.FC<FormActionBarProps> = ({
 
   // Check if we should show the next button
   const showNext = !(isLastStep && isLastSubStep);
-  return <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t z-40 my-[10px] px-0 py-[4px]">
-      <div className="container max-w-5xl mx-auto py-0">
-        <div className="flex justify-between items-center py-[16px]">
+  return <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t z-40 px-4 py-3">
+      <div className="container max-w-5xl mx-auto">
+        <div className="flex items-center justify-center gap-6">
           {/* Left: Anterior button */}
-          <div className="flex-1">
-            <Button variant="outline" onClick={handleSubPrevious} disabled={isFirstStep} className={isFirstStep ? "opacity-50 cursor-not-allowed" : ""}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Anterior
-            </Button>
-          </div>
+          <Button 
+            variant="outline" 
+            onClick={handleSubPrevious} 
+            disabled={isFirstStep} 
+            className={`${isFirstStep ? "opacity-50 cursor-not-allowed" : ""} min-w-[100px]`}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Anterior
+          </Button>
           
-          {/* Center: Save draft button (icon only) */}
-          <div className="flex-1 flex justify-center px-0 mx-0">
-            <Button 
-              variant="outline" 
-              onClick={handleSaveDraft} 
-              size="icon"
-              disabled={isSavingDraft}
-            >
-              {isSavingDraft ? (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-              ) : (
-                <Save className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
+          {/* Center: Save draft button */}
+          <Button 
+            variant="outline" 
+            onClick={handleSaveDraft} 
+            disabled={isSavingDraft}
+            className="min-w-[120px]"
+          >
+            {isSavingDraft ? (
+              <>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent mr-2" />
+                Guardando...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Guardar
+              </>
+            )}
+          </Button>
 
           {/* Right: Next/Submit button */}
-          <div className="flex-1 flex justify-end">
-            {isLastStep && isLastSubStep ? <Button onClick={handleSubmit}>
-                <Check className="mr-2 h-4 w-4" />
-                Enviar solicitud
-              </Button> : showNext ? <Button onClick={handleSubNext}>
-                Siguiente
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button> : <div></div>}
-          </div>
+          {isLastStep && isLastSubStep ? (
+            <Button onClick={handleSubmit} className="min-w-[140px]">
+              <Check className="mr-2 h-4 w-4" />
+              Enviar solicitud
+            </Button>
+          ) : showNext ? (
+            <Button onClick={handleSubNext} className="min-w-[100px]">
+              Siguiente
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          ) : (
+            <div className="min-w-[100px]"></div>
+          )}
         </div>
       </div>
     </div>;

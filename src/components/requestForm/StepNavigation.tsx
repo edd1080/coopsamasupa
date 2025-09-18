@@ -32,7 +32,7 @@ const StepNavigation: React.FC<StepNavigationProps> = ({
   
   return (
     <div className="relative">
-      <div className="flex overflow-x-auto gap-1 pb-1" style={hideScrollbarStyle}>
+      <div className="flex overflow-x-auto gap-1 pb-1 dropdown-content" style={hideScrollbarStyle}>
         {steps.map((step, index) => {
           const isActive = activeStep === index;
           const isCompleted = sectionStatus[step.id] === 'complete';

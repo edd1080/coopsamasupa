@@ -13,6 +13,7 @@ import StepContent from '@/components/requestForm/StepContent';
 import ExitDialog from '@/components/requestForm/ExitDialog';
 import FormActionBar from '@/components/requestForm/FormActionBar';
 import ApplicationSuccessScreen from '@/components/requestForm/ApplicationSuccessScreen';
+import SafeNavigationWrapper from '@/components/requestForm/SafeNavigationWrapper';
 import { steps } from '@/components/requestForm/formSteps';
 
 const RequestFormContent = () => {
@@ -96,7 +97,9 @@ const RequestForm = () => {
       onNavigateAfterExit={handleNavigateToApplications}
       onRedirectSubmittedApplication={(id) => navigate(`/applications/${id}`)}
     >
-      <RequestFormContent />
+      <SafeNavigationWrapper>
+        <RequestFormContent />
+      </SafeNavigationWrapper>
     </RequestFormProvider>
   );
 };

@@ -1,9 +1,10 @@
 
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useSecurityHeaders } from '@/hooks/useSecurityHeaders';
 import { useSecurityMonitoring } from '@/hooks/useSecurityMonitoring';
+import { useSessionTimeout } from '@/hooks/useSessionTimeout';
 import { Loader2 } from 'lucide-react';
 
 // Pages
@@ -25,6 +26,7 @@ const AuthRouter = () => {
   // Initialize security features
   useSecurityHeaders();
   useSecurityMonitoring();
+  useSessionTimeout();
 
   console.log('🔀 AuthRouter - Loading:', loading, 'User:', !!user);
 
@@ -60,7 +62,7 @@ const AuthRouter = () => {
         <Route path="/settings/personal-info" element={<PersonalInfo />} />
         <Route path="/settings/change-password" element={<ChangePassword />} />
         <Route path="/settings/report-problem" element={<ReportProblem />} />
-        <Route path="/login" element={<Index />} />
+        <Route path="/login" element={<Navigate to="/" replace />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     );

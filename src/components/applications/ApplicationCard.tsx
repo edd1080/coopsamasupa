@@ -10,6 +10,7 @@ import { Calendar, FileText, Edit, Trash2, MoreVertical, CheckCircle, AlertCircl
 import { useToast } from "@/hooks/use-toast";
 import { formatApplicationId } from '@/utils/applicationIdGenerator';
 import { getFirstNameAndLastName } from '@/lib/nameUtils';
+import { formatDateToGuatemalan } from '@/utils/dateUtils';
 interface Application {
   id: string;
   applicationId?: string;
@@ -91,12 +92,7 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
     }
   };
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('es-GT', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    }).format(date);
+    return formatDateToGuatemalan(dateString);
   };
   const getStageIcon = (stage: string) => {
     switch (stage) {

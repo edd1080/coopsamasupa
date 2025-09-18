@@ -5,6 +5,23 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Prevent scroll behind dropdowns and modals */
+.scroll-lock {
+  overflow: hidden !important;
+}
+
+/* Fix for dropdown scroll isolation */
+.dropdown-content {
+  position: fixed;
+  z-index: 50;
+  isolation: isolate;
+}
+
+/* Prevent body scroll when modals are open */
+body.modal-open {
+  overflow: hidden;
+}
+
 /* Prevent pull-to-refresh and overscroll */
 html {
   overscroll-behavior: none;

@@ -22,6 +22,11 @@ const CreditDestinationForm: React.FC<CreditDestinationFormProps> = ({ formData,
   const [selectedDepartment, setSelectedDepartment] = useState(formData.investmentPlaceDepartment || '');
 
   useEffect(() => {
+    // Sync local state with form data
+    setSelectedDepartment(formData.investmentPlaceDepartment || '');
+  }, [formData.investmentPlaceDepartment]);
+
+  useEffect(() => {
     // Reset municipality when department changes
     if (selectedDepartment !== formData.investmentPlaceDepartment) {
       updateFormData('investmentPlaceMunicipality', '');
@@ -195,6 +200,7 @@ const CreditDestinationForm: React.FC<CreditDestinationFormProps> = ({ formData,
           <div className="space-y-2">
             <Label htmlFor="investmentDepartment">Departamento de la inversión</Label>
             <Select value={formData.investmentPlaceDepartment || ''} onValueChange={(value) => {
+              setSelectedDepartment(value);
               updateFormData('investmentPlaceDepartment', value);
               updateFormData('investmentPlaceMunicipality', '');
             }}>
@@ -216,13 +222,14 @@ const CreditDestinationForm: React.FC<CreditDestinationFormProps> = ({ formData,
             <Select 
               value={formData.investmentPlaceMunicipality || ''} 
               onValueChange={(value) => updateFormData('investmentPlaceMunicipality', value)}
-              disabled={!selectedDepartment}
+              disabled={!selectedDepartment && !formData.investmentPlaceDepartment}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar municipio" />
               </SelectTrigger>
               <SelectContent>
-                {selectedDepartment && departmentsMunicipalities[selectedDepartment]?.map((municipality) => (
+                {(selectedDepartment || formData.investmentPlaceDepartment) && 
+                 departmentsMunicipalities[selectedDepartment || formData.investmentPlaceDepartment]?.map((municipality) => (
                   <SelectItem key={municipality} value={municipality}>
                     {municipality}
                   </SelectItem>

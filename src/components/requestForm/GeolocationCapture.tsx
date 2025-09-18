@@ -6,6 +6,7 @@ import { MapPin, Loader2, AlertCircle, CheckCircle, RotateCcw } from 'lucide-rea
 import { useToast } from '@/hooks/use-toast';
 import CoordinateDisplay from './CoordinateDisplay';
 import LocationShare from './LocationShare';
+import { formatShortDateTimeToGuatemalan } from '@/utils/dateUtils';
 
 interface GeolocationData {
   latitude: number;
@@ -44,8 +45,8 @@ const GeolocationCapture: React.FC<GeolocationCaptureProps> = ({
 
     const options = {
       enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 300000 // 5 minutes
+      timeout: 15000,
+      maximumAge: 60000 // 1 minute for better precision
     };
 
     navigator.geolocation.getCurrentPosition(
@@ -62,7 +63,7 @@ const GeolocationCapture: React.FC<GeolocationCaptureProps> = ({
         
         toast({
           title: "Ubicación Capturada",
-          description: `Precisión: ${Math.round(position.coords.accuracy)} metros`,
+          description: `Precisión aproximada: ${Math.round(position.coords.accuracy)} metros`,
           className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
         });
       },
@@ -129,7 +130,7 @@ const GeolocationCapture: React.FC<GeolocationCaptureProps> = ({
         ) : (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-green-700">Ubicación Capturada</span>
+              <span className="text-sm font-medium text-green-700">Ubicación Capturada (GPS Aprox.)</span>
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-green-600" />
                 <LocationShare 
@@ -147,9 +148,9 @@ const GeolocationCapture: React.FC<GeolocationCaptureProps> = ({
             />
             
             <div className="flex items-center justify-between text-xs">
-              <div className="text-muted-foreground">
+              <div className="text-muted-foreground text-[11px] truncate max-w-[140px]">
                 Capturada: {typeof currentLocation.timestamp === 'number' 
-                  ? new Date(currentLocation.timestamp).toLocaleString('es-GT')
+                  ? formatShortDateTimeToGuatemalan(currentLocation.timestamp)
                   : 'N/A'
                 }
               </div>
