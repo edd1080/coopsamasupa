@@ -3,5 +3,6 @@ export const civilStatuses = [
   { id: "2", value: "CASADO" },
   { id: "3", value: "UNIDO" },
   { id: "4", value: "DIVORCIADO" },
-  { id: "5", value: "VIUDO" }
+  { id: "5", value: "VIUDO" },
+  { id: "6", value: "N/D" }
 ];
