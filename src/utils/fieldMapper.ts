@@ -833,12 +833,12 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
     }] : []
   };
 
-  // Corregir productDetail usando los mapeos correctos sin hardcodear destinationCategory
+  // Corregir productDetail usando los mapeos correctos
   const correctedProductDetail = {
     ...productDetail,
     idTypeProduct: 1, // Valor requerido por el microservicio
     idAgency: 12, // Valor requerido por el microservicio
-    paymentMethod: { id: "1", value: "ventanilla" }
+    paymentMethod: productDetail.paymentMethod || { id: "2", value: "NIVELADA" } // Usar mapeo original con fallback
   };
   
   console.log("✅ ProductDetail corregido (sin hardcodeos):", JSON.stringify(correctedProductDetail, null, 2));
