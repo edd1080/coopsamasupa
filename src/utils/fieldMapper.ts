@@ -376,10 +376,17 @@ const mapOccupation = (appValue: string): { id: string; value: string } | undefi
     'comercio': 'COMERCIANTE',
     'Comerciante': 'COMERCIANTE',
     'comerciante': 'COMERCIANTE',
-    'Venta': 'COMERCIANTE',
-    'venta': 'COMERCIANTE',
-    'Ventas': 'COMERCIANTE',
-    'ventas': 'COMERCIANTE',
+    'COMERCIO': 'COMERCIANTE',
+    'COMERCIANTE': 'COMERCIANTE', // Mapeo directo
+    'Venta': 'VENDEDOR/A',
+    'venta': 'VENDEDOR/A',
+    'Ventas': 'VENDEDOR/A',
+    'ventas': 'VENDEDOR/A',
+    'VENTA': 'VENDEDOR/A',
+    'VENTAS': 'VENDEDOR/A',
+    'Negocios': 'COMERCIANTE',
+    'negocios': 'COMERCIANTE',
+    'NEGOCIOS': 'COMERCIANTE',
     'Agricultura': 'AGRICULTOR',
     'agricultura': 'AGRICULTOR',
     'Agricultor': 'AGRICULTOR',
@@ -469,6 +476,51 @@ const splitFullName = (fullName: string) => {
 };
 
 export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
+  console.log("🔄 Iniciando transformación a OfficialPayload...");
+  console.log("📋 DEBUGGING - FormData completo recibido:", JSON.stringify(formData, null, 2));
+  
+  // Debug específico para campos problemáticos
+  console.log("🔍 DEBUGGING - Campos críticos:");
+  console.log("   - Gender:", formData.gender, formData.genero, formData.sexo);
+  console.log("   - Civil Status:", formData.civilStatus, formData.estadoCivil, formData.maritalStatus);
+  console.log("   - Occupation:", formData.occupation, formData.ocupacion, formData.work);
+  console.log("   - Education:", formData.education, formData.educacion, formData.nivel_educativo);
+  console.log("   - Ethnicity:", formData.ethnicity, formData.etnia, formData.ethnic);
+  console.log("   - Housing:", formData.housingStability, formData.estabilidadVivienda, formData.housing);
+  console.log("   - Profession:", formData.profession, formData.profesion);
+  console.log("   - Income Sources:", formData.incomeSources, formData.fuentesIngreso, formData.income);
+  console.log("   - Funds Destination:", formData.fundsDestination, formData.destinoFondos);
+
+  // Map occupation - probar múltiples nombres de campo
+  const occupationValue = formData.occupation || formData.ocupacion || formData.work || formData.trabajo;
+  console.log("🔍 OCCUPATION DEBUG - Valor encontrado:", occupationValue);
+  const mappedOccupation = mapOccupation(occupationValue);
+  console.log("🔍 OCCUPATION DEBUG - Resultado mapeo:", mappedOccupation);
+
+  // Map gender - probar múltiples nombres de campo
+  const genderValue = formData.gender || formData.genero || formData.sexo;
+  console.log("🔍 GENDER DEBUG - Valor encontrado:", genderValue);
+  const mappedGender = mapToCatalog(genders, genderValue);
+  console.log("🔍 GENDER DEBUG - Resultado mapeo:", mappedGender);
+
+  // Map civil status - probar múltiples nombres de campo
+  const civilStatusValue = formData.civilStatus || formData.estadoCivil || formData.maritalStatus;
+  console.log("🔍 CIVIL STATUS DEBUG - Valor encontrado:", civilStatusValue);
+  const mappedCivilStatus = mapToCatalog(civilStatuses, civilStatusValue);
+  console.log("🔍 CIVIL STATUS DEBUG - Resultado mapeo:", mappedCivilStatus);
+
+  // Map education level - probar múltiples nombres de campo
+  const educationValue = formData.education || formData.educacion || formData.nivel_educativo;
+  console.log("🔍 EDUCATION DEBUG - Valor encontrado:", educationValue);
+  const mappedEducation = mapToCatalog(educationLevels, educationValue);
+  console.log("🔍 EDUCATION DEBUG - Resultado mapeo:", mappedEducation);
+
+  // Map ethnicity - probar múltiples nombres de campo
+  const ethnicityValue = formData.ethnicity || formData.etnia || formData.ethnic;
+  console.log("🔍 ETHNICITY DEBUG - Valor encontrado:", ethnicityValue);
+  const mappedEthnicity = mapToCatalog(ethnicities, ethnicityValue);
+  console.log("🔍 ETHNICITY DEBUG - Resultado mapeo:", mappedEthnicity);
+
   // Map personal identification
   const personalDoc = {
     firstName: formData.firstName || '',
@@ -477,12 +529,12 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
     secondLastName: formData.secondLastName || '',
     marriedSurname: formData.marriedLastName || '',
     personalDocumentId: formData.dpi || '',
-    gender: mapToCatalog(genders, formData.gender) || { id: "3", value: "N/D" },
-    maritalStatus: mapToCatalog(civilStatuses, formData.civilStatus) || { id: "6", value: "N/D" },
+    gender: mappedGender || { id: "3", value: "N/D" },
+    maritalStatus: mappedCivilStatus || { id: "6", value: "N/D" },
     birthDate: formData.birthDate ? new Date(formData.birthDate).toISOString().split('T')[0] : '',
     age: formData.age || 0,
     academicTitle: mapProfession(formData.profession) || { id: "1", value: "BACHILLER" },
-    occupation: mapOccupation(formData.occupation) || { id: "169", value: "NINGUNA" },
+    occupation: mappedOccupation || { id: "169", value: "NINGUNA" },
     typeOfHousing: mapToCatalog(
       [
         { id: "1", value: "PROPIA" },
@@ -562,18 +614,8 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
       emailId: 1
     }] : [],
     numberOfDependants: parseInt(formData.dependents) || 0,
-    ethnicity: (() => {
-      console.log(`🌍 Mapping ethnicity: "${formData.ethnicity}"`);
-      const result = mapToCatalog(ethnicities, formData.ethnicity, "3");
-      console.log(`✅ Ethnicity mapped: "${formData.ethnicity}" → "${result?.value}" (ID: ${result?.id})`);
-      return result || { id: "3", value: "Ladino" };
-    })(),
-    academicDegree: (() => {
-      console.log(`🎓 Mapping academic degree: "${formData.educationLevel}"`);
-      const result = mapToCatalog(educationLevels, formData.educationLevel, "5");
-      console.log(`✅ Academic degree mapped: "${formData.educationLevel}" → "${result?.value}" (ID: ${result?.id})`);
-      return result || { id: "5", value: "N/A" };
-    })()
+    ethnicity: mappedEthnicity || { id: "3", value: "Ladino" },
+    academicDegree: mappedEducation || { id: "5", value: "N/A" }
   };
 
   // Map product details
@@ -906,7 +948,7 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
   // Calculate total expenses
   const totalExpenses = expenseItems.reduce((sum, item) => sum + item.amount, 0);
 
-  return {
+  const payload = {
     data: {
       process: {
         profile: {
@@ -941,6 +983,23 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
       user: agentData?.full_name || "yordan"
     }
   };
+
+  // Log payload final completo para debugging
+  console.log("📤 PAYLOAD FINAL COMPLETO:", JSON.stringify(payload, null, 2));
+  
+  // Validar payload antes de enviarlo
+  const validation = validateCoverage(payload);
+  console.log("🔍 VALIDACIÓN DEL PAYLOAD:", validation);
+  
+  if (!validation.isValid) {
+    console.error("❌ ERRORES EN PAYLOAD:", validation.issues);
+  }
+  
+  if (validation.warnings.length > 0) {
+    console.warn("⚠️ ADVERTENCIAS EN PAYLOAD:", validation.warnings);
+  }
+
+  return payload;
 };
 
 export const validateCoverage = (officialPayload: OfficialPayload) => {
