@@ -885,16 +885,12 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
     firstName: personalDoc.firstName || 'NO_ESPECIFICADO',
     firstLastName: personalDoc.firstLastName || 'NO_ESPECIFICADO', 
     personalDocumentId: personalDoc.personalDocumentId || '0000000000000',
-    // Fix gender mapping - ensure it's not undefined
-    gender: personalDoc.gender || { id: "1", value: "HOMBRE" },
-    // Fix marital status mapping - ensure it's not undefined  
-    maritalStatus: personalDoc.maritalStatus || { id: "1", value: "SOLTERO" },
-    // Fix occupation mapping - ensure it's not undefined
-    occupation: personalDoc.occupation || { id: "2", value: "AVICULTOR" },
-    // Fix academic title mapping - ensure it's not undefined
-    academicTitle: personalDoc.academicTitle || { id: "1", value: "BACHILLER" },
-    // Fix housing stability mapping - ensure it's not undefined
-    housingStability: personalDoc.housingStability || { id: "4", value: "MAYOR A 3 AÑOS" },
+    // Only use fallbacks if mapping is actually undefined
+    gender: personalDoc.gender !== undefined ? personalDoc.gender : { id: "1", value: "HOMBRE" },
+    maritalStatus: personalDoc.maritalStatus !== undefined ? personalDoc.maritalStatus : { id: "1", value: "SOLTERO" },
+    occupation: personalDoc.occupation !== undefined ? personalDoc.occupation : { id: "2", value: "AVICULTOR" },
+    academicTitle: personalDoc.academicTitle !== undefined ? personalDoc.academicTitle : { id: "1", value: "BACHILLER" },
+    housingStability: personalDoc.housingStability !== undefined ? personalDoc.housingStability : { id: "4", value: "MAYOR A 3 AÑOS" },
     emissionState: mapToCatalog(departments, formData.dpiIssueDepartment) || { id: "01", value: "GUATEMALA" },
     emissionCounty: mapToCatalog(municipalities, formData.dpiIssueMunicipality) || { id: "0101", value: "GUATEMALA" },
     personalDocumentAddress: {
@@ -908,10 +904,9 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
     ...personData,
     // CRITICAL: Ensure all required fields are present
     mobile: personData.mobile || '00000000',
-    // Fix ethnicity mapping - ensure it's not undefined
-    ethnicity: personData.ethnicity || { id: "3", value: "Ladino" },
-    // Fix academic degree mapping - ensure it's not undefined  
-    academicDegree: personData.academicDegree || { id: "1", value: "PRIMARIA" },
+    // Only use fallbacks if mapping is actually undefined
+    ethnicity: personData.ethnicity !== undefined ? personData.ethnicity : { id: "3", value: "Ladino" },
+    academicDegree: personData.academicDegree !== undefined ? personData.academicDegree : { id: "1", value: "PRIMARIA" },
     email: formData.email ? [{
       emailAddress: formData.email,
       emailType: "personal",
@@ -925,18 +920,15 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
     // CRITICAL: Ensure all required fields are present
     requestedAmount: productDetail.requestedAmount || 0,
     startingTerm: productDetail.startingTerm || 0,
-    // Fix destination group mapping - ensure it's not undefined
-    destinationGroup: productDetail.destinationGroup || { id: "4", value: "Grupo Vivienda" },
-    // Fix credit destination mapping - ensure it's not undefined
-    creditDestination: productDetail.creditDestination || { id: "6", value: "VIVIENDA" },
-    // Fix payment method mapping - ensure it's not undefined
-    paymentMethod: productDetail.paymentMethod || { id: "2", value: "NIVELADA" },
-    // Fix partner type mapping - ensure it's not undefined
-    partnerType: productDetail.partnerType || { id: "1", value: "A" },
+    // Only use fallbacks if mapping is actually undefined
+    destinationGroup: productDetail.destinationGroup !== undefined ? productDetail.destinationGroup : { id: "4", value: "Grupo Vivienda" },
+    creditDestination: productDetail.creditDestination !== undefined ? productDetail.creditDestination : { id: "6", value: "VIVIENDA" },
+    paymentMethod: productDetail.paymentMethod !== undefined ? productDetail.paymentMethod : { id: "2", value: "NIVELADA" },
+    partnerType: productDetail.partnerType !== undefined ? productDetail.partnerType : { id: "1", value: "A" },
     // Fix funds destination mapping - ensure it's not undefined
     fundsDestination: {
       ...productDetail.fundsDestination,
-      destinationCategory: productDetail.fundsDestination?.destinationCategory || { id: "2", value: "Mantenimiento" }
+      destinationCategory: productDetail.fundsDestination?.destinationCategory !== undefined ? productDetail.fundsDestination?.destinationCategory : { id: "2", value: "Mantenimiento" }
     },
     idTypeProduct: 1, // Valor requerido por el microservicio
     idAgency: 12 // Valor requerido por el microservicio
