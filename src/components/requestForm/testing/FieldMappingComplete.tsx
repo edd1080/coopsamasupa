@@ -102,125 +102,61 @@ const FieldMappingComplete: React.FC<FieldMappingCompleteProps> = ({ formData })
     const allFields = Object.keys(formData);
     const categories: { [key: string]: any[] } = {};
     
-    
-    // Enhanced mapping function that searches the entire payload
+    // True recursive search that traverses the entire payload structure
     const findMappedValue = (fieldName: string, fieldValue: any) => {
       if (!officialPayload?.data?.process?.profile) return null;
       
       const payload = officialPayload.data.process.profile;
       
-      // Debug logging to understand the payload structure
-      console.log(`🔍 Mapping field: ${fieldName} with value:`, fieldValue);
-      console.log('📦 Full payload structure:', JSON.stringify(payload, null, 2));
-      
-      // Direct field mapping paths based on the actual structure
-      const fieldMappings: { [key: string]: string } = {
-        // Personal Document fields
-        firstName: 'personalDocument.firstName',
-        firstLastName: 'personalDocument.firstLastName', 
-        secondLastName: 'personalDocument.secondLastName',
-        dpi: 'personalDocument.personalDocumentId',
-        gender: 'personalDocument.gender.value',
-        civilStatus: 'personalDocument.maritalStatus.value',
-        birthDate: 'personalDocument.birthDate',
-        age: 'personalDocument.age',
-        ethnicity: 'personalDocument.ethnicity.value',
+      // Function to determine if a field has been successfully mapped
+      const hasBeenMapped = (original: any, mapped: any): boolean => {
+        if (mapped === null || mapped === undefined) return false;
         
-        // Person Data fields
-        mobilePhone: 'personData.mobile',
-        homePhone: 'personData.telephone',
-        educationLevel: 'personData.academicDegree.value',
+        // For direct value matches
+        if (original === mapped) return true;
         
-        // Email (array structure)
-        email: 'personData.email.0.emailAddress',
+        // For objects with {id, value} structure
+        if (mapped && typeof mapped === 'object' && 'value' in mapped) {
+          if (original === mapped.value) return true;
+          if (typeof original === 'string' && typeof mapped.value === 'string') {
+            return original.toLowerCase() === mapped.value.toLowerCase();
+          }
+        }
         
-        // Address fields
-        address: 'personalDocument.personalDocumentAddress.fullAddress',
-        department: 'personalDocument.personalDocumentAddress.department.value',
-        municipality: 'personalDocument.personalDocumentAddress.municipality.value',
+        // For arrays, check if any element matches
+        if (Array.isArray(mapped)) {
+          return mapped.some(item => hasBeenMapped(original, item));
+        }
         
-        // Housing
-        housingType: 'personalDocument.typeOfHousing.value',
-        housingStability: 'personalDocument.housingStability.value',
+        // For string comparisons (case insensitive)
+        if (typeof original === 'string' && typeof mapped === 'string') {
+          return original.toLowerCase().trim() === mapped.toLowerCase().trim();
+        }
         
-        // Work/Professional
-        profession: 'personalDocument.academicTitle.value',
-        occupation: 'personalDocument.occupation.value',
-        workCompany: 'personalDocument.businessData.companyName',
-        workPosition: 'personalDocument.businessData.position',
-        workPhone: 'personalDocument.businessData.telephone',
-        workAddress: 'personalDocument.businessData.address',
-        workStartDate: 'personalDocument.businessData.startDate',
-        
-        // Product details
-        requestedAmount: 'productDetail.requestedAmount',
-        termMonths: 'productDetail.startingTerm',
-        destinationGroup: 'productDetail.destinationGroup.value',
-        creditDestination: 'productDetail.creditDestination.value',
-        productType: 'productDetail.productType.value',
-        
-        // Financial arrays - take first element or sum
-        income: 'personalDocument.incomeStatement.0.amount',
-        totalAssets: 'personalDocument.patrimonialStatement.totalAssets',
-        totalLiabilities: 'personalDocument.patrimonialStatement.totalLiabilities',
-        netWorth: 'personalDocument.patrimonialStatement.netWorth',
-        
-        // Spouse fields (conditional)
-        spouseFirstName: 'personalDocument.spouse.firstName',
-        spouseFirstLastName: 'personalDocument.spouse.firstLastName',
-        spouseSecondLastName: 'personalDocument.spouse.secondLastName',
-        spouseAge: 'personalDocument.spouse.age',
-        spouseDpi: 'personalDocument.spouse.personalDocumentId',
-        spouseProfession: 'personalDocument.spouse.academicTitle.value',
-        spouseOccupation: 'personalDocument.spouse.occupation.value'
+        return false;
       };
       
-      // Try direct mapping first
-      const mappingPath = fieldMappings[fieldName];
-      if (mappingPath) {
-        try {
-          const value = mappingPath.split('.').reduce((obj, key) => {
-            if (key.match(/^\d+$/)) {
-              // Array index
-              return obj?.[parseInt(key)];
-            }
-            return obj?.[key];
-          }, payload);
-          
-          if (value !== undefined && value !== null) {
-            console.log(`✅ Found direct mapping for ${fieldName}:`, value);
-            return value;
-          }
-        } catch (error) {
-          console.log(`❌ Error accessing path ${mappingPath} for ${fieldName}:`, error);
-        }
-      }
-      
-      // Fallback: Try to find the value anywhere in the structure
-      const searchInObject = (obj: any, targetValue: any, path: string = ''): any => {
-        if (obj === targetValue) {
-          console.log(`🎯 Found value match at ${path}:`, obj);
+      // Recursive search through the entire payload
+      const searchRecursively = (obj: any, targetValue: any, path: string = ''): any => {
+        if (obj === null || obj === undefined) return null;
+        
+        // Check direct match
+        if (hasBeenMapped(targetValue, obj)) {
           return obj;
         }
         
-        if (obj && typeof obj === 'object') {
+        // If it's an object, search through its properties
+        if (typeof obj === 'object' && !Array.isArray(obj)) {
           for (const [key, value] of Object.entries(obj)) {
-            const currentPath = path ? `${path}.${key}` : key;
-            
-            // Check if the value matches what we're looking for
-            if (value === targetValue) {
-              console.log(`🎯 Found exact value match for ${fieldName} at ${currentPath}:`, value);
-              return value;
-            }
-            
-            // For objects with value property, check the value
-            if (value && typeof value === 'object' && 'value' in value && value.value === targetValue) {
-              console.log(`🎯 Found object.value match for ${fieldName} at ${currentPath}:`, value);
-              return value;
-            }
-            
-            // Recursive search
-            const found = searchInObject(value, targetValue, currentPath);
+            const found = searchRecursively(value, targetValue, path ? `${path}.${key}` : key);
+            if (found !== null) return found;
+          }
+        }
+        
+        // If it's an array, search through its elements
+        if (Array.isArray(obj)) {
+          for (let i = 0; i < obj.length; i++) {
+            const found = searchRecursively(obj[i], targetValue, path ? `${path}[${i}]` : `[${i}]`);
             if (found !== null) return found;
           }
         }
@@ -230,14 +166,9 @@ const FieldMappingComplete: React.FC<FieldMappingCompleteProps> = ({ formData })
       
       // Only search if we have a meaningful value to search for
       if (fieldValue !== null && fieldValue !== undefined && fieldValue !== '') {
-        const found = searchInObject(payload, fieldValue);
-        if (found) {
-          console.log(`🔄 Recursive search found mapping for ${fieldName}:`, found);
-          return found;
-        }
+        return searchRecursively(payload, fieldValue);
       }
       
-      console.log(`❌ No mapping found for ${fieldName} with value:`, fieldValue);
       return null;
     };
     
