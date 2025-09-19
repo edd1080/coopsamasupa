@@ -127,7 +127,7 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
                     <span className="truncate">
                       {application.status === 'draft' 
                         ? 'Borrador' 
-                        : application.externalReferenceId || formatApplicationId(application.id)
+                        : `ID: ${application.externalReferenceId || formatApplicationId(application.id)}`
                       }
                     </span>
                   </div>
