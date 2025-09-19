@@ -35,7 +35,7 @@ export const useDeletePrequalification = () => {
       toast({
         title: "Precalificación eliminada",
         description: `La precalificación ha sido eliminada permanentemente`,
-        variant: "destructive",
+        variant: "success",
         duration: 3000
       });
     },

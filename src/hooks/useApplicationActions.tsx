@@ -59,7 +59,7 @@ export const useDeleteApplication = () => {
       toast({
         title: `${itemType.charAt(0).toUpperCase() + itemType.slice(1)} eliminada`,
         description: `La ${itemType} ${data.id.slice(0, 8)}... ha sido eliminada permanentemente`,
-        variant: "destructive",
+        variant: "success",
         duration: 3000
       });
     },
