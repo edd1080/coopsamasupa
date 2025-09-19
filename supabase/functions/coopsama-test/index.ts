@@ -243,9 +243,16 @@ async function testFullIntegration(payload: any, formData: any) {
     // Generar ID de proceso de prueba
     const testProcessId = `TEST-${Date.now()}`;
     
-    // Construir payload de prueba
+    // Construir payload de prueba con la estructura correcta
+    // Usar la misma estructura exitosa: { data: { process: { profile: {...} } }, metadata: {...} }
+    const profileData = payload.data?.process?.profile || payload;
+    
     const testPayload = {
-      process: payload.process || payload,
+      data: {
+        process: {
+          profile: profileData
+        }
+      },
       metadata: {
         processId: testProcessId,
         user: 'test@coopsama.com',
@@ -255,9 +262,17 @@ async function testFullIntegration(payload: any, formData: any) {
 
     console.log('📤 Sending test payload to Coopsama:', {
       processId: testProcessId,
-      hasProcess: !!testPayload.process,
+      hasProcess: !!testPayload.data?.process,
+      hasProfile: !!testPayload.data?.process?.profile,
       url: coopsamaUrl,
       payloadSize: JSON.stringify(testPayload).length
+    });
+
+    console.log('🔍 Test profile payload preview:', {
+      processControl: testPayload.data?.process?.profile?.processControl ? 'present' : 'missing',
+      personalDocument: testPayload.data?.process?.profile?.personalDocument ? 'present' : 'missing',
+      personData: testPayload.data?.process?.profile?.personData ? 'present' : 'missing',
+      productDetail: testPayload.data?.process?.profile?.productDetail ? 'present' : 'missing'
     });
 
     // Probar con headers directos primero
