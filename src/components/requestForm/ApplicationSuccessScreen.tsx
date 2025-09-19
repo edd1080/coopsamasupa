@@ -15,6 +15,7 @@ const ApplicationSuccessScreen: React.FC<ApplicationSuccessScreenProps> = ({
   externalReferenceId,
   onGoToApplications
 }) => {
+  console.log('✅ ApplicationSuccessScreen received:', { applicationId, externalReferenceId });
   
   useEffect(() => {
     // Trigger confetti animation
@@ -57,7 +58,7 @@ const ApplicationSuccessScreen: React.FC<ApplicationSuccessScreenProps> = ({
             </p>
             {(externalReferenceId || applicationId) && (
               <p className="text-sm text-gray-500">
-                ID de Solicitud: <span className="font-mono">{externalReferenceId || applicationId}</span>
+                ID de Solicitud: <span className="font-mono font-bold text-primary">{externalReferenceId || applicationId}</span>
               </p>
             )}
           </div>

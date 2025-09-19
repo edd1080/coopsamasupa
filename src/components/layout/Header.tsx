@@ -10,11 +10,12 @@ import { getFirstNameAndLastName } from '@/lib/nameUtils';
 interface HeaderProps {
   personName?: string;
   applicationId?: string;
+  externalReferenceId?: string;
   applicationStatus?: string;
   onExitFormClick?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ personName, applicationId, applicationStatus, onExitFormClick }) => {
+const Header: React.FC<HeaderProps> = ({ personName, applicationId, externalReferenceId, applicationStatus, onExitFormClick }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -70,6 +71,13 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, applicationS
   const getSubtitle = () => {
     // Solo mostrar subtítulo para formularios y detalles de aplicación
     if ((isFormPage || isApplicationDetails) && applicationId && location.pathname !== '/applications/new') {
+      // Priorizar externalReferenceId > "Borrador" para drafts > formatApplicationId como fallback
+      if (externalReferenceId) {
+        return `ID: ${externalReferenceId}`;
+      }
+      if (applicationStatus === 'draft') {
+        return 'Borrador';
+      }
       return `Solicitud ${formatApplicationId(applicationId)}`;
     }
     return null;

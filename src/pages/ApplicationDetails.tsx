@@ -224,7 +224,13 @@ const ApplicationDetails = () => {
   const sections = getFormSections('legacy');
   const personName = applicationData.client_name || `${formData.firstName || ''} ${formData.lastName || ''}`.trim() || 'Sin nombre';
   return <div className="min-h-screen flex flex-col">
-      <Header personName={getFirstNameAndLastName(personName)} applicationId={applicationData.id || ''} applicationStatus={'status' in applicationData ? applicationData.status : 'draft'} onExitFormClick={() => navigate('/applications')} />
+        <Header 
+          personName={getFirstNameAndLastName(personName)} 
+          applicationId={applicationData.id || ''} 
+          externalReferenceId={'coopsama_external_reference_id' in applicationData ? applicationData.coopsama_external_reference_id : undefined}
+          applicationStatus={'status' in applicationData ? applicationData.status : 'draft'} 
+          onExitFormClick={() => navigate('/applications')} 
+        />
       
       <main className="flex-1 container mx-auto px-4 py-0 pb-20 max-w-5xl">
         {/* Breadcrumb Navigation */}
@@ -239,6 +245,16 @@ const ApplicationDetails = () => {
             <h1 className="text-xl font-medium text-foreground w-full">
               {personName}
             </h1>
+            {'coopsama_external_reference_id' in applicationData && applicationData.coopsama_external_reference_id && (
+              <p className="text-sm text-muted-foreground mt-1">
+                ID: <span className="font-mono font-medium text-primary">{applicationData.coopsama_external_reference_id}</span>
+              </p>
+            )}
+            {applicationData.isDraft && (
+              <p className="text-sm text-muted-foreground mt-1">
+                Estado: <span className="font-medium">Borrador</span>
+              </p>
+            )}
           </div>
           
           {/* Buttons below name */}

@@ -139,7 +139,7 @@ export const useFinalizeApplication = () => {
             operationId = data.operationId;
             
             // Update the application with Coopsama IDs
-            await supabase
+            const { error: updateError } = await supabase
               .from('applications')
               .update({
                 coopsama_external_reference_id: externalReferenceId,
@@ -148,6 +148,12 @@ export const useFinalizeApplication = () => {
                 coopsama_synced_at: new Date().toISOString()
               })
               .eq('id', result.id);
+              
+            if (updateError) {
+              console.error('❌ Error updating application with Coopsama IDs:', updateError);
+            } else {
+              console.log('✅ Application updated with Coopsama IDs:', { externalReferenceId, operationId });
+            }
           }
         }
       } catch (coopsamaError) {

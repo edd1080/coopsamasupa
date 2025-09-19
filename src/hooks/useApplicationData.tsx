@@ -18,7 +18,7 @@ export const useApplicationData = (applicationId: string) => {
       // Primero intentar obtener desde aplicaciones completas
       const { data: application, error: appError } = await supabase
         .from('applications')
-        .select('*')
+        .select('*, coopsama_external_reference_id, coopsama_operation_id')
         .eq('id', applicationId)
         .eq('agent_id', user.id)
         .maybeSingle();
