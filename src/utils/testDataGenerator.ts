@@ -334,6 +334,65 @@ export const generateUltraCompleteApplication = () => {
   return generateTestData(profile);
 };
 
+// Generador de errores para testing
+export const generateErrorTestData = (errorType: 'date' | 'required' | 'catalog' | 'amount' | 'currency') => {
+  const baseData = generateTestData('random');
+  
+  switch(errorType) {
+    case 'date':
+      // Error de formato de fecha - enviar timestamp en lugar de DateOnly
+      return { 
+        ...baseData, 
+        birthDate: '2023-32-13', // Fecha inválida
+        spouseBirthDate: '2024-02-30T15:30:00Z' // Timestamp cuando se espera DateOnly
+      };
+      
+    case 'required':
+      // Campos requeridos faltantes
+      return { 
+        ...baseData, 
+        firstName: '', 
+        dpi: '', 
+        loanAmount: null,
+        nit: '',
+        productType: ''
+      };
+      
+    case 'catalog':
+      // IDs de catálogo inválidos
+      return { 
+        ...baseData, 
+        gender: '999', 
+        residenceDepartment: '999',
+        residenceMunicipality: '999',
+        civilStatus: 'ESTADO_INEXISTENTE',
+        ethnicity: '888'
+      };
+      
+    case 'amount':
+      // Montos negativos e inválidos
+      return { 
+        ...baseData, 
+        loanAmount: -5000,
+        ingresoPrincipal: 'texto-inválido',
+        monthlyIncome: -2500,
+        alimentacion: 'no-es-numero'
+      };
+      
+    case 'currency':
+      // Formato de moneda incorrecto
+      return {
+        ...baseData,
+        loanAmount: '50,000.50 GTQ', // Texto cuando se espera número
+        ingresoPrincipal: '$25,000', // Símbolo de dólar
+        efectivoSaldoBancos: 'Q15,000' // Formato guatemalteco no estándar
+      };
+      
+    default:
+      return baseData;
+  }
+};
+
 // Presets de datos comunes
 export const dataPresets = {
   agricultor: () => generateTestData('agricultor'),
@@ -341,4 +400,13 @@ export const dataPresets = {
   servicios: () => generateTestData('servicios'),
   random: () => generateTestData('random'),
   ultraCompleta: () => generateUltraCompleteApplication()
+};
+
+// Presets de errores para testing
+export const errorPresets = {
+  errorFecha: () => generateErrorTestData('date'),
+  errorRequerido: () => generateErrorTestData('required'),
+  errorCatalogo: () => generateErrorTestData('catalog'),
+  errorMonto: () => generateErrorTestData('amount'),
+  errorMoneda: () => generateErrorTestData('currency')
 };

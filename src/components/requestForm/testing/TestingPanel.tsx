@@ -16,7 +16,7 @@ import {
   Database,
   Settings
 } from 'lucide-react';
-import { generateTestData, dataPresets, generateUltraCompleteApplication } from '@/utils/testDataGenerator';
+import { generateTestData, dataPresets, generateUltraCompleteApplication, errorPresets } from '@/utils/testDataGenerator';
 import { PayloadViewer } from './PayloadViewer';
 import { ConnectionTester } from './ConnectionTester';
 import { PayloadValidator } from './PayloadValidator';
@@ -34,6 +34,7 @@ export const TestingPanel: React.FC<TestingPanelProps> = ({
   onGenerateTestData
 }) => {
   const [selectedProfile, setSelectedProfile] = useState<'random' | 'agricultor' | 'comerciante' | 'servicios' | 'ultraCompleta'>('random');
+  const [selectedErrorType, setSelectedErrorType] = useState<'errorFecha' | 'errorRequerido' | 'errorCatalogo' | 'errorMonto' | 'errorMoneda'>('errorFecha');
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleGenerateTestData = async (profile: typeof selectedProfile) => {
@@ -66,12 +67,48 @@ export const TestingPanel: React.FC<TestingPanelProps> = ({
     }
   };
 
+  const handleGenerateErrorData = async (errorType: keyof typeof errorPresets) => {
+    setIsGenerating(true);
+    try {
+      const errorData = errorPresets[errorType]();
+      
+      // Aplicar los datos con error al formulario
+      Object.entries(errorData).forEach(([key, value]) => {
+        updateFormData(key, value);
+      });
+      
+      onGenerateTestData(errorData);
+      
+      toast({
+        variant: "destructive",
+        title: "Datos de error generados",
+        description: `Se ha generado una solicitud con ${errorType.replace('error', '').toLowerCase()} para testing de errores. ⚠️`
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error al generar datos de prueba",
+        description: "No se pudieron generar los datos con error."
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const profileDescriptions = {
     random: "Genera un perfil aleatorio con datos variados",
     agricultor: "Perfil de agricultor con finca y actividades agrícolas", 
     comerciante: "Comerciante con negocio establecido y ventas regulares",
     servicios: "Proveedor de servicios profesionales",
     ultraCompleta: "Solicitud completísima con TODOS los campos llenos"
+  };
+
+  const errorDescriptions = {
+    errorFecha: "Error de formato DateOnly - envía timestamp completo",
+    errorRequerido: "Campos obligatorios vacíos - falla validación",
+    errorCatalogo: "IDs de catálogo inválidos - foreign key errors", 
+    errorMonto: "Montos negativos - falla validación de negocio",
+    errorMoneda: "Formato de moneda incorrecto - texto en campos numéricos"
   };
 
   return (
@@ -152,6 +189,66 @@ export const TestingPanel: React.FC<TestingPanelProps> = ({
                 <strong>✨ Solicitud Ultra Completa:</strong> Llena TODOS los campos de TODOS los pasos 
                 incluyendo información del cónyuge, análisis financiero completo, estado patrimonial, 
                 referencias detalladas, geolocalización y documentación completa.
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Generador de Errores de Testing */}
+          <AccordionItem value="error-generator" className="border-red-200">
+            <AccordionTrigger className="text-red-800 hover:text-red-900">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4" />
+                Generador de Errores de Testing
+                <Badge variant="destructive" className="text-xs">
+                  Error Testing
+                </Badge>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="space-y-4">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-3">
+                <div className="flex items-center gap-2 text-red-800">
+                  <AlertTriangle className="h-4 w-4" />
+                  <span className="font-medium">Herramientas para Testing de Errores</span>
+                </div>
+                <p className="text-sm text-red-700">
+                  Genera solicitudes con errores específicos para probar el manejo de fallos 
+                  y verificar que el <code className="bg-red-100 px-1 rounded">processId</code> se guarde correctamente en MongoDB.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3">
+                {Object.entries(errorDescriptions).map(([errorType, description]) => (
+                  <div key={errorType} className="space-y-2">
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleGenerateErrorData(errorType as keyof typeof errorPresets)}
+                      disabled={isGenerating}
+                      className="w-full justify-start text-xs bg-red-600 hover:bg-red-700"
+                    >
+                      {errorType === 'errorFecha' && <AlertTriangle className="h-3 w-3 mr-1" />}
+                      {errorType === 'errorRequerido' && <XCircle className="h-3 w-3 mr-1" />}
+                      {errorType === 'errorCatalogo' && <Database className="h-3 w-3 mr-1" />}
+                      {errorType === 'errorMonto' && <Settings className="h-3 w-3 mr-1" />}
+                      {errorType === 'errorMoneda' && <Copy className="h-3 w-3 mr-1" />}
+                      {isGenerating ? 'Generando...' : `Error de ${errorType.replace('error', '').charAt(0).toUpperCase() + errorType.replace('error', '').slice(1)}`}
+                    </Button>
+                    <p className="text-xs text-muted-foreground bg-white p-2 rounded border">
+                      <strong>{errorType.replace('error', '').toUpperCase()}:</strong> {description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="text-xs text-red-600 bg-red-50 p-3 rounded border border-red-200">
+                <strong>💡 Uso de Testing de Errores:</strong>
+                <ol className="list-decimal list-inside mt-1 space-y-1">
+                  <li>Genera una solicitud con error específico</li>
+                  <li>Envía la solicitud al microservicio</li>
+                  <li>Verifica que Coopsama rechace con el error esperado</li>
+                  <li>Confirma que el <strong>processId</strong> se guarde en la BD</li>
+                  <li>Busca en MongoDB usando: <code className="bg-red-100 px-1 rounded">{"{ \"metadata.processId\": \"PRC-XXXXXX\" }"}</code></li>
+                </ol>
               </div>
             </AccordionContent>
           </AccordionItem>
