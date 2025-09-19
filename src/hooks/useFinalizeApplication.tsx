@@ -128,36 +128,55 @@ export const useFinalizeApplication = () => {
           }
         });
         
+        console.log('🔍 RAW Coopsama function response:', coopsamaResult);
+        
         if (coopsamaResult.error) {
           console.warn('⚠️ Coopsama integration warning:', coopsamaResult.error);
         } else {
-          console.log('✅ Coopsama integration completed');
+          console.log('✅ Coopsama integration completed successfully');
+          console.log('📦 Coopsama response data structure:', coopsamaResult.data);
+          
           // Extract IDs from Coopsama response
           const data = coopsamaResult.data;
           if (data && typeof data === 'object') {
-            externalReferenceId = data.externalReferenceId;
-            operationId = data.operationId;
+            // The edge function should return: { success: true, data: { operationId, externalReferenceId } }
+            const responseData = data.data || data; // Handle both direct data and nested data
+            externalReferenceId = responseData.externalReferenceId;
+            operationId = responseData.operationId;
             
-            // Update the application with Coopsama IDs
-            const { error: updateError } = await supabase
-              .from('applications')
-              .update({
-                coopsama_external_reference_id: externalReferenceId,
-                coopsama_operation_id: operationId,
-                coopsama_sync_status: 'success',
-                coopsama_synced_at: new Date().toISOString()
-              })
-              .eq('id', result.id);
-              
-            if (updateError) {
-              console.error('❌ Error updating application with Coopsama IDs:', updateError);
+            console.log('🔍 Extracted IDs from response:', { 
+              externalReferenceId, 
+              operationId,
+              originalData: data
+            });
+            
+            if (externalReferenceId || operationId) {
+              // Update the application with Coopsama IDs
+              const { error: updateError } = await supabase
+                .from('applications')
+                .update({
+                  coopsama_external_reference_id: externalReferenceId,
+                  coopsama_operation_id: operationId,
+                  coopsama_sync_status: 'success',
+                  coopsama_synced_at: new Date().toISOString()
+                })
+                .eq('id', result.id);
+                
+              if (updateError) {
+                console.error('❌ Error updating application with Coopsama IDs:', updateError);
+              } else {
+                console.log('✅ Application updated with Coopsama IDs:', { externalReferenceId, operationId });
+              }
             } else {
-              console.log('✅ Application updated with Coopsama IDs:', { externalReferenceId, operationId });
+              console.warn('⚠️ No IDs found in Coopsama response to update');
             }
+          } else {
+            console.warn('⚠️ Invalid Coopsama response structure:', data);
           }
         }
       } catch (coopsamaError) {
         console.warn('⚠️ Coopsama integration failed (non-critical):', coopsamaError);
+        console.error('🔍 Full Coopsama error details:', coopsamaError);
         // Don't fail the main operation if Coopsama fails
       }
 

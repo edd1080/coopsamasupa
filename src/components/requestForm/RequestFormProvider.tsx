@@ -66,6 +66,7 @@ interface FormContextType {
   showSuccessScreen: boolean;
   submissionResult: any;
   isSavingDraft: boolean;
+  isSubmitting: boolean;
 }
 
 
@@ -682,6 +683,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     showSuccessScreen,
     submissionResult,
     isSavingDraft: saveDraftMutation.isPending,
+    isSubmitting: finalizeApplicationMutation.isPending,
   };
 
   return (

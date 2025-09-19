@@ -169,6 +169,11 @@ serve(async (req) => {
         })
         .eq('id', applicationId);
 
+      console.log('✅ Returning success response with data:', {
+        operationId: responseData.data?.operationId,
+        externalReferenceId: responseData.data?.externalReferenceId
+      });
+
       return new Response(JSON.stringify({
         success: true,
         message: responseData.message,

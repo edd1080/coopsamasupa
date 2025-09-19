@@ -63,13 +63,6 @@ const ApplicationSuccessScreen: React.FC<ApplicationSuccessScreenProps> = ({
             )}
           </div>
 
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <p className="text-sm text-green-800">
-              <strong>Próximos pasos:</strong><br />
-              El equipo de análisis revisará la solicitud y se comunicará 
-              con el solicitante en las próximas 24-48 horas.
-            </p>
-          </div>
 
           <Button 
             onClick={onGoToApplications}

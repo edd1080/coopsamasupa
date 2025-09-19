@@ -22,7 +22,8 @@ const FormActionBar: React.FC<FormActionBarProps> = ({
     handleSubNext,
     handleSubPrevious,
     handleSubmit,
-    isSavingDraft
+    isSavingDraft,
+    isSubmitting
   } = useFormContext();
 
   // Check if we're at the very first step
@@ -66,9 +67,22 @@ const FormActionBar: React.FC<FormActionBarProps> = ({
 
           {/* Right: Next/Submit button */}
           {isLastStep && isLastSubStep ? (
-            <Button onClick={handleSubmit} className="min-w-[140px]">
-              <Check className="mr-2 h-4 w-4" />
-              Enviar solicitud
+            <Button 
+              onClick={handleSubmit} 
+              className="min-w-[140px]"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent mr-2" />
+                  Enviando solicitud...
+                </>
+              ) : (
+                <>
+                  <Check className="mr-2 h-4 w-4" />
+                  Enviar solicitud
+                </>
+              )}
             </Button>
           ) : showNext ? (
             <Button onClick={handleSubNext} className="min-w-[100px]">
