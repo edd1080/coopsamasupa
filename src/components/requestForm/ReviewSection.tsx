@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useFormContext } from './RequestFormProvider';
 import SubformHeader from '@/components/forms/SubformHeader';
 import { toast } from '@/hooks/use-toast';
+import TestingPanel from './testing/TestingPanel';
 
 interface ReviewSectionProps {
   formData: any;
@@ -87,6 +88,14 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
     
     // Llamar a la función de envío del contexto
     handleSubmit();
+  };
+
+  const handleTestDataGenerated = (testData: any) => {
+    toast({
+      variant: "success",
+      title: "Datos de prueba aplicados",
+      description: "El formulario ha sido completado con datos de prueba coherentes."
+    });
   };
 
   return (
@@ -329,6 +338,15 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
             </div>
           </>
         )}
+
+        <Separator className="my-8" />
+
+        {/* Panel de Testing */}
+        <TestingPanel 
+          formData={formData}
+          updateFormData={updateFormData}
+          onGenerateTestData={handleTestDataGenerated}
+        />
 
       </CardContent>
     </Card>
