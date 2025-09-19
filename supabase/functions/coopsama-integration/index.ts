@@ -92,9 +92,10 @@ serve(async (req) => {
 
     console.log('📤 Sending to Coopsama microservice');
 
-    // Construct new payload structure for Coopsama microservice
+    // Construct corrected payload structure for Coopsama microservice
+    // The microservice expects 'process' at root level, not nested in 'data'
     const coopsamaPayload = {
-      data: payload,
+      process: payload.process || payload, // Extract process from payload or use entire payload
       metadata: {
         processId: processId,
         user: agentEmail
@@ -102,9 +103,16 @@ serve(async (req) => {
     };
 
     console.log('📦 Coopsama payload structure:', {
-      hasData: !!coopsamaPayload.data,
+      hasProcess: !!coopsamaPayload.process,
       processId: coopsamaPayload.metadata.processId,
-      user: coopsamaPayload.metadata.user
+      user: coopsamaPayload.metadata.user,
+      processFieldsCount: coopsamaPayload.process ? Object.keys(coopsamaPayload.process).length : 0
+    });
+
+    console.log('🔍 Process payload preview:', {
+      processControl: coopsamaPayload.process?.processControl ? 'present' : 'missing',
+      personalDocuments: coopsamaPayload.process?.personalDocuments ? 'present' : 'missing',
+      personData: coopsamaPayload.process?.personData ? 'present' : 'missing'
     });
 
     // Send to Coopsama microservice
