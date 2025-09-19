@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { CreditCard } from 'lucide-react';
-import { guatemalaDepartments, departmentsMunicipalities } from '@/data/guatemalaLocations';
+import { departments, getMunicipalitiesByDepartment } from '@/data/catalogs';
 import SubformHeader from '@/components/forms/SubformHeader';
 import { 
   Select,
@@ -208,9 +208,9 @@ const CreditDestinationForm: React.FC<CreditDestinationFormProps> = ({ formData,
                 <SelectValue placeholder="Seleccionar departamento" />
               </SelectTrigger>
               <SelectContent>
-                {guatemalaDepartments.map((dept) => (
-                  <SelectItem key={dept.value} value={dept.label}>
-                    {dept.label}
+                {departments.map((dept) => (
+                  <SelectItem key={dept.id} value={dept.id}>
+                    {dept.value}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -229,9 +229,9 @@ const CreditDestinationForm: React.FC<CreditDestinationFormProps> = ({ formData,
               </SelectTrigger>
               <SelectContent>
                 {(selectedDepartment || formData.investmentPlaceDepartment) && 
-                 departmentsMunicipalities[selectedDepartment || formData.investmentPlaceDepartment]?.map((municipality) => (
-                  <SelectItem key={municipality} value={municipality}>
-                    {municipality}
+                 getMunicipalitiesByDepartment(selectedDepartment || formData.investmentPlaceDepartment)?.map((municipality) => (
+                  <SelectItem key={municipality.id} value={municipality.id}>
+                    {municipality.value}
                   </SelectItem>
                 ))}
               </SelectContent>
