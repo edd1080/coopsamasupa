@@ -440,7 +440,7 @@ const mapOccupation = (appValue: string): { id: string; value: string } | undefi
   }
   
   console.log(`❌ No occupation mapping found for: "${appValue}"`);
-  return mapToCatalog(officialOccupations, '', "169"); // Fallback to NINGUNA
+  return mapToCatalog(officialOccupations, '', "127"); // Fallback to COMERCIANTE
 };
 
 const splitFullName = (fullName: string) => {
@@ -513,8 +513,8 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
   // Map ethnicity - probar múltiples nombres de campo
   const ethnicityValue = formData.ethnicity || formData.etnia || formData.ethnic || '';
   console.log("🔍 ETHNICITY DEBUG - Valor encontrado:", ethnicityValue);
-  // Si no hay valor específico de etnia, usar Ladino como default según los datos de formulario
-  const mappedEthnicity = ethnicityValue ? mapToCatalog(ethnicities, ethnicityValue) : { id: "3", value: "Ladino" };
+  // Si hay valor específico de etnia, mapear; si no, usar Mestizo como default más común
+  const mappedEthnicity = ethnicityValue ? mapToCatalog(ethnicities, ethnicityValue) : { id: "2", value: "Mestizo" };
   console.log("🔍 ETHNICITY DEBUG - Resultado mapeo:", mappedEthnicity);
 
   // Map personal identification
@@ -525,12 +525,12 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
     secondLastName: formData.secondLastName || '',
     marriedSurname: formData.marriedLastName || '',
     personalDocumentId: formData.dpi || '',
-    gender: mappedGender || { id: "3", value: "N/D" },
-    maritalStatus: mappedCivilStatus || { id: "6", value: "N/D" },
+    gender: mappedGender || { id: "1", value: "HOMBRE" },
+    maritalStatus: mappedCivilStatus || { id: "1", value: "SOLTERO" },
     birthDate: formData.birthDate ? new Date(formData.birthDate).toISOString().split('T')[0] : '',
     age: formData.age || 0,
     academicTitle: mappedProfession || { id: "1", value: "BACHILLER" },
-    occupation: mappedOccupation || { id: "169", value: "NINGUNA" },
+    occupation: mappedOccupation || { id: "127", value: "COMERCIANTE" },
     typeOfHousing: mapToCatalog(
       [
         { id: "1", value: "PROPIA" },
@@ -612,7 +612,7 @@ export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
       emailId: "1"
     }] : [],
     numberOfDependants: parseInt(formData.dependents) || 0,
-    ethnicity: mappedEthnicity || { id: "3", value: "Ladino" },
+    ethnicity: mappedEthnicity || { id: "2", value: "Mestizo" },
     academicDegree: mappedEducation || { id: "1", value: "PRIMARIA" }
   };
 
