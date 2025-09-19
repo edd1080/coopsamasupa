@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { formatApplicationId } from '@/utils/applicationIdGenerator';
 import { getFirstNameAndLastName } from '@/lib/nameUtils';
 import { formatDateToGuatemalan } from '@/utils/dateUtils';
+import { formatCurrencyWithSymbol } from '@/utils/formatters';
 interface Application {
   id: string;
   applicationId?: string;
@@ -182,7 +183,7 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
               {!isDraft && application.product && application.amount && (
                 <div className="flex justify-between items-center mt-2 text-sm">
                   <div className="font-medium">{application.product}</div>
-                  <div className="text-primary">{application.amount}</div>
+                  <div className="text-primary">{formatCurrencyWithSymbol(application.amount)}</div>
                 </div>
               )}
             </div>

@@ -65,3 +65,11 @@ export const normalizeDecimalInput = (value: string): string => {
   }
   return cleaned;
 };
+
+export const formatCurrencyWithSymbol = (value: string | number): string => {
+  const numValue = typeof value === 'string' ? parseFloat(value) || 0 : value;
+  return `Q${numValue.toLocaleString('es-GT', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })}`;
+};
