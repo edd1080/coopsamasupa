@@ -328,10 +328,210 @@ export const generateTestData = (profile: 'random' | 'agricultor' | 'comerciante
   };
 };
 
-// Función especial para generar solicitud ultra completa
+// Función especial para generar solicitud ultra completa - PERSONA CASADA 100% COMPLETA
 export const generateUltraCompleteApplication = () => {
   const profile = ['agricultor', 'comerciante', 'servicios'][Math.floor(Math.random() * 3)] as 'agricultor' | 'comerciante' | 'servicios';
-  return generateTestData(profile);
+  const baseData = generateTestData(profile);
+  
+  // FORZAR ESTADO CIVIL CASADO Y COMPLETAR TODOS LOS CAMPOS
+  return {
+    ...baseData,
+    
+    // ========== FORZAR CASADO ==========
+    civilStatus: 'CASADO',
+    
+    // ========== COMPLETAR NOMBRES COMPLETOS ==========
+    thirdName: guatemalanFirstNames.male[Math.floor(Math.random() * guatemalanFirstNames.male.length)],
+    marriedLastName: baseData.gender === 'MUJER' ? guatemalanLastNames[Math.floor(Math.random() * guatemalanLastNames.length)] : '',
+    
+    // ========== INFORMACIÓN COMPLETA DEL CÓNYUGE ==========
+    spouseFirstName: baseData.gender === 'HOMBRE' ? 
+      guatemalanFirstNames.female[Math.floor(Math.random() * guatemalanFirstNames.female.length)] :
+      guatemalanFirstNames.male[Math.floor(Math.random() * guatemalanFirstNames.male.length)],
+    spouseSecondName: baseData.gender === 'HOMBRE' ? 
+      guatemalanFirstNames.female[Math.floor(Math.random() * guatemalanFirstNames.female.length)] :
+      guatemalanFirstNames.male[Math.floor(Math.random() * guatemalanFirstNames.male.length)],
+    spouseThirdName: baseData.gender === 'HOMBRE' ? 
+      guatemalanFirstNames.female[Math.floor(Math.random() * guatemalanFirstNames.female.length)] :
+      guatemalanFirstNames.male[Math.floor(Math.random() * guatemalanFirstNames.male.length)],
+    spouseFirstLastName: guatemalanLastNames[Math.floor(Math.random() * guatemalanLastNames.length)],
+    spouseSecondLastName: guatemalanLastNames[Math.floor(Math.random() * guatemalanLastNames.length)],
+    spouseCompany: `Empresa ${guatemalanLastNames[Math.floor(Math.random() * guatemalanLastNames.length)]} S.A.`,
+    spouseJobStability: (Math.floor(Math.random() * 10) + 5).toString(), // 5-15 años
+    spousePhone: generatePhoneNumber(),
+    spouseBirthDate: generateBirthDate(25, 55).toISOString().split('T')[0],
+    
+    // ========== DATOS ESPECÍFICOS FALTANTES ==========
+    cua: `CUA${Math.floor(Math.random() * 999999).toString().padStart(6, '0')}`,
+    interestRate: profile === 'agricultor' ? 8.5 : profile === 'comerciante' ? 12.0 : 10.5,
+    startingTerm: [12, 18, 24, 36, 48][Math.floor(Math.random() * 5)],
+    principalAmortization: 'MENSUAL',
+    interestAmortization: 'MENSUAL',
+    sourceOfFunds: profile === 'agricultor' ? 'PATRIMONIO_PROPIO' : profile === 'comerciante' ? 'VENTAS' : 'SERVICIOS',
+    principalProject: profile === 'agricultor' ? 'AGRICULTURA' : profile === 'comerciante' ? 'COMERCIO' : 'SERVICIOS',
+    secondaryProject: 'OTROS',
+    paymentMethod: 'DEBITO_AUTOMATICO',
+    
+    // ========== INFORMACIÓN COMPLETA DEL NEGOCIO ==========
+    business: {
+      companyName: baseData.businessName,
+      activityDescription: profile === 'agricultor' ? 'Cultivo de granos básicos y hortalizas para venta local y regional' :
+                          profile === 'comerciante' ? 'Venta al por menor de productos de consumo diario y abarrotes' :
+                          'Prestación de servicios profesionales especializados',
+      grossProfit: Math.floor(parseFloat(baseData.ingresoPrincipal) * 1.5),
+      productType: profile === 'agricultor' ? 'Productos agrícolas' : 
+                  profile === 'comerciante' ? 'Abarrotes y productos varios' : 
+                  'Servicios profesionales',
+      startDate: new Date(Date.now() - (Math.floor(Math.random() * 10) + 2) * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      fullAddress: generateAddress()
+    },
+    
+    // ========== PLAN DE INVERSIÓN DETALLADO ==========
+    investmentPlan: profile === 'agricultor' ? [
+      {
+        quantity: 50,
+        unitOfMeasurement: 'quintales',
+        description: 'Semillas certificadas de maíz',
+        unitPrice: 180,
+        total: 9000
+      },
+      {
+        quantity: 20,
+        unitOfMeasurement: 'sacos',
+        description: 'Fertilizante 15-15-15',
+        unitPrice: 220,
+        total: 4400
+      },
+      {
+        quantity: 1,
+        unitOfMeasurement: 'unidad',
+        description: 'Equipo de riego básico',
+        unitPrice: Math.floor(baseData.loanAmount * 0.4),
+        total: Math.floor(baseData.loanAmount * 0.4)
+      }
+    ] : profile === 'comerciante' ? [
+      {
+        quantity: 500,
+        unitOfMeasurement: 'unidades',
+        description: 'Productos alimenticios diversos',
+        unitPrice: 25,
+        total: 12500
+      },
+      {
+        quantity: 200,
+        unitOfMeasurement: 'unidades',
+        description: 'Productos de limpieza',
+        unitPrice: 35,
+        total: 7000
+      },
+      {
+        quantity: 1,
+        unitOfMeasurement: 'unidad',
+        description: 'Equipo de refrigeración comercial',
+        unitPrice: Math.floor(baseData.loanAmount * 0.3),
+        total: Math.floor(baseData.loanAmount * 0.3)
+      }
+    ] : [
+      {
+        quantity: 1,
+        unitOfMeasurement: 'unidad',
+        description: 'Equipo profesional especializado',
+        unitPrice: Math.floor(baseData.loanAmount * 0.6),
+        total: Math.floor(baseData.loanAmount * 0.6)
+      },
+      {
+        quantity: 1,
+        unitOfMeasurement: 'unidad',
+        description: 'Software y licencias',
+        unitPrice: Math.floor(baseData.loanAmount * 0.2),
+        total: Math.floor(baseData.loanAmount * 0.2)
+      }
+    ],
+    
+    // ========== GARANTÍAS ESPECÍFICAS ==========
+    collateral: {
+      name: profile === 'agricultor' ? 'Hipoteca sobre finca agrícola' :
+            profile === 'comerciante' ? 'Hipoteca sobre local comercial' :
+            'Fiducia sobre vehículo',
+      amount: Math.floor(baseData.loanAmount * 1.5),
+      percentage: 150,
+      description: profile === 'agricultor' ? 'Finca de 2 manzanas ubicada en zona rural con cultivos establecidos' :
+                  profile === 'comerciante' ? 'Local comercial de 50m2 en zona comercial céntrica' :
+                  'Vehículo modelo reciente en excelente estado'
+    },
+    
+    // ========== REFERENCIAS COMPLETAS Y DETALLADAS ==========
+    references: [
+      {
+        referenceType: 'FAMILIAR',
+        fullName: `${guatemalanFirstNames.male[Math.floor(Math.random() * guatemalanFirstNames.male.length)]} ${guatemalanLastNames[Math.floor(Math.random() * guatemalanLastNames.length)]} ${guatemalanLastNames[Math.floor(Math.random() * guatemalanLastNames.length)]}`,
+        address: generateAddress(),
+        relation: 'Hermano',
+        phone: generatePhoneNumber(),
+        rating: 'EXCELENTE',
+        comment: 'Hermano mayor, persona muy responsable y trabajadora. Ha sido mi referencia por muchos años.',
+        yearsKnown: Math.floor(Math.random() * 20) + 10
+      },
+      {
+        referenceType: 'COMERCIAL',
+        fullName: `${guatemalanFirstNames.female[Math.floor(Math.random() * guatemalanFirstNames.female.length)]} ${guatemalanLastNames[Math.floor(Math.random() * guatemalanLastNames.length)]} ${guatemalanLastNames[Math.floor(Math.random() * guatemalanLastNames.length)]}`,
+        address: generateAddress(),
+        relation: profile === 'agricultor' ? 'Proveedora de insumos agrícolas' :
+                 profile === 'comerciante' ? 'Cliente mayorista' :
+                 'Cliente empresarial',
+        phone: generatePhoneNumber(),
+        rating: 'EXCELENTE',
+        comment: 'Excelente relación comercial, siempre cumple con sus compromisos de pago puntualmente.',
+        yearsKnown: Math.floor(Math.random() * 8) + 3
+      },
+      {
+        referenceType: 'PERSONAL',
+        fullName: `${guatemalanFirstNames.male[Math.floor(Math.random() * guatemalanFirstNames.male.length)]} ${guatemalanLastNames[Math.floor(Math.random() * guatemalanLastNames.length)]} ${guatemalanLastNames[Math.floor(Math.random() * guatemalanLastNames.length)]}`,
+        address: generateAddress(),
+        relation: 'Vecino y amigo',
+        phone: generatePhoneNumber(),
+        rating: 'BUENA',
+        comment: 'Vecino de confianza, persona honesta y trabajadora en la comunidad.',
+        yearsKnown: Math.floor(Math.random() * 15) + 5
+      }
+    ],
+    
+    // ========== GEOLOCALIZACIÓN PRECISA ==========
+    geolocation: {
+      latitude: 14.6349 + (Math.random() - 0.5) * 0.05, // Más preciso
+      longitude: -90.5069 + (Math.random() - 0.5) * 0.05,
+      accuracy: Math.floor(Math.random() * 10) + 5, // 5-15 metros
+      timestamp: new Date().toISOString(),
+      address: baseData.address,
+      verified: true
+    },
+    
+    // ========== DOCUMENTACIÓN COMPLETA ==========
+    documents: {
+      dpiPhoto: 'dpi_frente_123456.jpg',
+      dpiBackPhoto: 'dpi_reverso_123456.jpg',
+      incomeProof: 'comprobante_ingresos_2024.pdf',
+      bankStatement: 'estado_cuenta_6meses.pdf',
+      businessLicense: profile !== 'servicios' ? 'licencia_comercial.pdf' : 'patente_servicios.pdf',
+      propertyDeed: 'escritura_garantia.pdf',
+      signature: 'firma_digital_2024.png'
+    },
+    
+    // ========== ANÁLISIS FINANCIERO DETALLADO ==========
+    financialAnalysis: {
+      debtToIncomeRatio: Math.round((parseFloat(baseData.cuotaSolicitada) / parseFloat(baseData.ingresoPrincipal)) * 100) / 100,
+      liquidityRatio: Math.round((parseInt(baseData.efectivoSaldoBancos) / (parseInt(baseData.cuentasPorPagar) + parseInt(baseData.deudasCortoPlazo))) * 100) / 100,
+      equityRatio: Math.round(((parseInt(baseData.bienesInmuebles) + parseInt(baseData.vehiculos)) / (parseInt(baseData.prestamosLargoPlazo) + parseInt(baseData.deudasCortoPlazo))) * 100) / 100,
+      riskLevel: 'BAJO',
+      creditScore: Math.floor(Math.random() * 150) + 650, // 650-800
+      recommendations: [
+        'Cliente con perfil financiero sólido',
+        'Historial crediticio favorable',
+        'Capacidad de pago demostrada',
+        'Garantías suficientes para el monto solicitado'
+      ]
+    }
+  };
 };
 
 // Generador de errores para testing

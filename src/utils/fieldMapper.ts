@@ -471,40 +471,147 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
   return payload;
 };
 
-// Validation function
+// VALIDACIÓN EXHAUSTIVA DEL PAYLOAD - 40+ CAMPOS CRÍTICOS
 export const validateCoopsamaPayload = (payload: CoopsamaPayload): {
   isValid: boolean;
   issues: string[];
   warnings: string[];
   completeness: number;
+  criticalCompleteness?: number;
+  statistics?: any;
 } => {
-  const issues: string[] = [];
+  const criticalErrors: string[] = [];
   const warnings: string[] = [];
   
   const profile = payload.data.process.profile;
   
-  // Required field validations
-  if (!profile.personalDocument.firstName) issues.push("First name is required");
-  if (!profile.personalDocument.firstLastName) issues.push("First last name is required");
-  if (!profile.personalDocument.personalDocumentId) issues.push("DPI is required");
-  if (!profile.personData.mobile) issues.push("Mobile phone is required");
-  if (!profile.productDetail.requestedAmount || profile.productDetail.requestedAmount <= 0) {
-    issues.push("Requested amount must be greater than 0");
+  // ========== VALIDACIONES CRÍTICAS (BLOQUEAN ENVÍO) ==========
+  
+  // Información Personal Crítica (8 campos)
+  if (!profile.personalDocument.firstName?.trim()) criticalErrors.push("❌ Primer nombre es obligatorio");
+  if (!profile.personalDocument.firstLastName?.trim()) criticalErrors.push("❌ Primer apellido es obligatorio");
+  if (!profile.personalDocument.personalDocumentId?.trim()) criticalErrors.push("❌ DPI es obligatorio");
+  if (!profile.personalDocument.birthDate) criticalErrors.push("❌ Fecha de nacimiento es obligatoria");
+  if (!profile.personalDocument.gender?.id) criticalErrors.push("❌ Género es obligatorio");
+  if (!profile.personalDocument.maritalStatus?.id) criticalErrors.push("❌ Estado civil es obligatorio");
+  if (!profile.personalDocument.personalDocumentAddress?.fullAddress?.trim()) criticalErrors.push("❌ Dirección completa es obligatoria");
+  if (!profile.personalDocument.age || profile.personalDocument.age < 18) criticalErrors.push("❌ Edad debe ser mayor a 18 años");
+  
+  // Contacto Crítico (3 campos)
+  if (!profile.personData.mobile?.trim()) criticalErrors.push("❌ Teléfono móvil es obligatorio");
+  if (!profile.personData.email?.length || !profile.personData.email[0]?.emailAddress?.trim()) criticalErrors.push("❌ Email es obligatorio");
+  if (profile.personData.email?.[0]?.emailAddress && !profile.personData.email[0].emailAddress.includes('@')) criticalErrors.push("❌ Formato de email inválido");
+  
+  // Información del Producto Crítica (6 campos)
+  if (!profile.productDetail.requestedAmount || profile.productDetail.requestedAmount <= 0) criticalErrors.push("❌ Monto solicitado debe ser mayor a 0");
+  if (!profile.productDetail.idTypeProduct) criticalErrors.push("❌ Tipo de producto es obligatorio");
+  if (!profile.productDetail.idAgency) criticalErrors.push("❌ Agencia es obligatoria");
+  if (!profile.productDetail.startingTerm || profile.productDetail.startingTerm <= 0) criticalErrors.push("❌ Plazo en meses es obligatorio");
+  if (!profile.productDetail.partnerType?.id) criticalErrors.push("❌ Tipo de socio es obligatorio");
+  if (!profile.productDetail.requestType?.id) criticalErrors.push("❌ Tipo de solicitud es obligatorio");
+  
+  // Ingresos Críticos (2 campos)
+  if (!profile.income?.length) criticalErrors.push("❌ Debe tener al menos una fuente de ingresos");
+  if (profile.income?.length && (!profile.income[0].monthlyIncome || profile.income[0].monthlyIncome <= 0)) criticalErrors.push("❌ Ingreso mensual debe ser mayor a 0");
+  
+  // Gastos Críticos (1 campo)
+  if (!profile.expense?.length || profile.expenseSummary.totalExpenses <= 0) criticalErrors.push("❌ Debe registrar gastos mensuales");
+  
+  // Estado Financiero Crítico (4 campos)
+  if (profile.financialStatus.assets.total <= 0) criticalErrors.push("❌ Debe declarar activos");
+  if (profile.financialStatus.liabilities.total < 0) criticalErrors.push("❌ Pasivos no pueden ser negativos");
+  if (profile.financialStatus.equity.total <= 0) criticalErrors.push("❌ Patrimonio debe ser positivo");
+  if (profile.financialStatus.equity.currentDebtRatio > 70) criticalErrors.push("❌ Nivel de endeudamiento muy alto (>70%)");
+  
+  // Referencias Críticas (2 campos)
+  if (!profile.personal.references?.length) criticalErrors.push("❌ Debe proporcionar al menos una referencia");
+  if (profile.personal.references?.length < 2) criticalErrors.push("❌ Se requieren mínimo 2 referencias");
+  
+  // Control de Proceso Crítico (3 campos)
+  if (!profile.processControl.processId?.trim()) criticalErrors.push("❌ Process ID es obligatorio");
+  if (!profile.processControl.userEmail?.trim()) criticalErrors.push("❌ Email del usuario es obligatorio");
+  if (!profile.processControl.cuaT24?.trim()) criticalErrors.push("❌ CUA T24 es obligatorio");
+  
+  // ========== VALIDACIONES DE ADVERTENCIA (RECOMENDACIONES) ==========
+  
+  // Información Personal Opcional
+  if (!profile.personalDocument.secondName?.trim()) warnings.push("⚠️ Segundo nombre recomendado para identificación completa");
+  if (!profile.personalDocument.secondLastName?.trim()) warnings.push("⚠️ Segundo apellido recomendado");
+  if (!profile.personalDocument.marriedSurname?.trim() && profile.personalDocument.maritalStatus?.value === 'CASADO') warnings.push("⚠️ Apellido de casada recomendado para personas casadas");
+  if (!profile.personData.nit?.trim()) warnings.push("⚠️ NIT recomendado para trámites fiscales");
+  if (!profile.personData.telephone?.trim()) warnings.push("⚠️ Teléfono fijo recomendado como contacto adicional");
+  
+  // Información del Cónyuge (si está casado)
+  if (profile.personalDocument.maritalStatus?.value === 'CASADO') {
+    if (!profile.personalDocument.spouseFirstName?.trim()) warnings.push("⚠️ Información del cónyuge incompleta: primer nombre");
+    if (!profile.personalDocument.spouseFirstLastName?.trim()) warnings.push("⚠️ Información del cónyuge incompleta: primer apellido");
+    if (!profile.personalDocument.spouseMobile?.trim()) warnings.push("⚠️ Teléfono del cónyuge recomendado");
+    if (!profile.personalDocument.spouseBirthDate) warnings.push("⚠️ Fecha de nacimiento del cónyuge recomendada");
+    if (!profile.personalDocument.spouseCompanyName?.trim()) warnings.push("⚠️ Empresa del cónyuge recomendada");
   }
   
-  // Warnings for optional but recommended fields
-  if (!profile.personalDocument.secondName) warnings.push("Second name not provided");
-  if (!profile.personData.email[0]?.emailAddress) warnings.push("Email not provided");
-  if (!profile.personal.references.length) warnings.push("No references provided");
+  // Producto y Finanzas
+  if (!profile.productDetail.interestRate || profile.productDetail.interestRate <= 0) warnings.push("⚠️ Tasa de interés no especificada");
+  if (!profile.productDetail.sourceOfFunds?.id) warnings.push("⚠️ Origen de fondos recomendado");
+  if (!profile.productDetail.principalProject?.id) warnings.push("⚠️ Proyecto principal recomendado");
+  if (!profile.productDetail.paymentMethod?.id) warnings.push("⚠️ Método de pago recomendado");
   
-  const requiredFields = 10; // Approximate count of critical fields
-  const providedFields = requiredFields - issues.length;
-  const completeness = Math.max(0, (providedFields / requiredFields) * 100);
+  // Destino de Fondos
+  if (!profile.productDetail.fundsDestination.description?.trim()) warnings.push("⚠️ Descripción del destino de fondos recomendada");
+  if (!profile.productDetail.fundsDestination.comments?.trim()) warnings.push("⚠️ Comentarios sobre destino recomendados");
+  
+  // Información del Negocio
+  if (!profile.business?.companyName?.trim()) warnings.push("⚠️ Información del negocio incompleta");
+  if (profile.business && !profile.business.startDate) warnings.push("⚠️ Fecha de inicio del negocio recomendada");
+  if (profile.business && (!profile.business.grossProfit || profile.business.grossProfit <= 0)) warnings.push("⚠️ Utilidad bruta del negocio recomendada");
+  
+  // Plan de Inversión
+  if (!profile.investmentPlan?.length) warnings.push("⚠️ Plan de inversión detallado recomendado");
+  
+  // Garantías
+  if (!profile.collateral?.length || profile.collateral[0].amount <= 0) warnings.push("⚠️ Garantías específicas recomendadas");
+  
+  // Geolocalización
+  if (!profile.personalDocument.geolocalization?.trim()) warnings.push("⚠️ Geolocalización recomendada para verificación");
+  
+  // Referencias Detalladas
+  if (profile.personal.references?.length) {
+    profile.personal.references.forEach((ref, index) => {
+      if (!ref.firstName?.trim()) warnings.push(`⚠️ Referencia ${index + 1}: primer nombre faltante`);
+      if (!ref.firstLastName?.trim()) warnings.push(`⚠️ Referencia ${index + 1}: primer apellido faltante`);
+      if (!ref.mobile?.trim()) warnings.push(`⚠️ Referencia ${index + 1}: teléfono faltante`);
+      if (!ref.fullAddress?.trim()) warnings.push(`⚠️ Referencia ${index + 1}: dirección faltante`);
+      if (!ref.relationship?.trim()) warnings.push(`⚠️ Referencia ${index + 1}: relación faltante`);
+    });
+  }
+  
+  // ========== CÁLCULO DE COMPLETITUD REAL ==========
+  const totalCriticalFields = 33; // Campos críticos reales
+  const totalOptionalFields = 25; // Campos opcionales/recomendados
+  const totalFields = totalCriticalFields + totalOptionalFields;
+  
+  const criticalFieldsFilled = totalCriticalFields - criticalErrors.length;
+  const optionalFieldsFilled = totalOptionalFields - warnings.length;
+  const totalFilled = criticalFieldsFilled + optionalFieldsFilled;
+  
+  const completeness = Math.round((totalFilled / totalFields) * 100);
+  const criticalCompleteness = Math.round((criticalFieldsFilled / totalCriticalFields) * 100);
   
   return {
-    isValid: issues.length === 0,
-    issues,
-    warnings,
-    completeness
+    isValid: criticalErrors.length === 0,
+    issues: criticalErrors, // Solo errores críticos
+    warnings, // Recomendaciones y campos opcionales
+    completeness,
+    criticalCompleteness,
+    statistics: {
+      totalFields,
+      totalCriticalFields,
+      totalOptionalFields,
+      criticalFieldsFilled,
+      optionalFieldsFilled,
+      totalFilled,
+      criticalErrors: criticalErrors.length,
+      warnings: warnings.length
+    }
   };
 };

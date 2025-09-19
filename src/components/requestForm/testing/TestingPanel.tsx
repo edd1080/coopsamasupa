@@ -100,7 +100,7 @@ export const TestingPanel: React.FC<TestingPanelProps> = ({
     agricultor: "Perfil de agricultor con finca y actividades agrícolas", 
     comerciante: "Comerciante con negocio establecido y ventas regulares",
     servicios: "Proveedor de servicios profesionales",
-    ultraCompleta: "Solicitud completísima con TODOS los campos llenos"
+    ultraCompleta: "👨‍👩‍👧‍👦 PERSONA CASADA - 100% COMPLETO: Todos los campos + cónyuge + negocio + garantías + referencias detalladas"
   };
 
   const errorDescriptions = {
@@ -169,26 +169,31 @@ export const TestingPanel: React.FC<TestingPanelProps> = ({
                   {isGenerating ? 'Generando...' : `Generar Solicitud de ${selectedProfile.charAt(0).toUpperCase() + selectedProfile.slice(1)}`}
                 </Button>
                 
-                {selectedProfile !== 'ultraCompleta' && (
-                  <Button
-                    onClick={() => handleGenerateTestData('ultraCompleta')}
-                    disabled={isGenerating}
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg"
-                    size="lg"
-                  >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    {isGenerating ? 'Generando...' : 'Generar Solicitud Ultra Completa ✨'}
-                  </Button>
-                )}
+                {/* NUEVO BOTÓN ESPECÍFICO PARA CASADO 100% COMPLETO */}
+                <Button
+                  onClick={() => handleGenerateTestData('ultraCompleta')}
+                  disabled={isGenerating}
+                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg border-2 border-emerald-300"
+                  size="lg"
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  {isGenerating ? 'Generando...' : '👨‍👩‍👧‍👦 Generar Casado 100% Completo'}
+                </Button>
               </div>
               
               <div className="text-xs text-muted-foreground bg-white p-3 rounded border">
                 <strong>Nota:</strong> Los datos generados incluyen DPIs válidos guatemaltecos, 
                 nombres reales, direcciones coherentes y montos apropiados para cada perfil.
                 <br /><br />
-                <strong>✨ Solicitud Ultra Completa:</strong> Llena TODOS los campos de TODOS los pasos 
-                incluyendo información del cónyuge, análisis financiero completo, estado patrimonial, 
-                referencias detalladas, geolocalización y documentación completa.
+                <strong>👨‍👩‍👧‍👦 PERSONA CASADA 100% COMPLETO:</strong> Genera una solicitud de persona casada con:
+                • TODOS los campos del solicitante y cónyuge completos
+                • Información financiera y patrimonial detallada  
+                • Negocio con datos específicos y plan de inversión
+                • 3 referencias comerciales/familiares/personales completas
+                • Garantías específicas según el perfil
+                • Geolocalización precisa y documentación completa
+                • Análisis financiero con ratios calculados
+                • <strong>100% de completitud garantizada</strong>
               </div>
             </AccordionContent>
           </AccordionItem>
