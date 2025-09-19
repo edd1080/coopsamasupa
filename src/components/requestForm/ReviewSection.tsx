@@ -7,10 +7,7 @@ import { CheckCircle, AlertCircle, Send, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useFormContext } from './RequestFormProvider';
 import SubformHeader from '@/components/forms/SubformHeader';
-import { toOfficial, validateCoverage } from '@/utils/fieldMapper';
 import { toast } from '@/hooks/use-toast';
-import IntegrationTester from './testing/IntegrationTester';
-import FieldMappingComplete from './testing/FieldMappingComplete';
 
 interface ReviewSectionProps {
   formData: any;
@@ -19,7 +16,7 @@ interface ReviewSectionProps {
 
 const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData }) => {
   const { handleSubmit } = useFormContext();
-  const [validationResult, setValidationResult] = useState<any>(null);
+  
 
   const formatCurrency = (amount: number | string) => {
     const num = typeof amount === 'string' ? parseFloat(amount) : amount;
@@ -81,34 +78,6 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
 
   const completion = getCompletionStatus();
 
-  const handleValidateMapping = () => {
-    try {
-      const officialPayload = toOfficial(formData);
-      const validation = validateCoverage(officialPayload);
-      setValidationResult(validation);
-      
-      if (validation.isValid) {
-        toast({
-          title: "Validación exitosa",
-          description: "El mapeo de campos está completo y correcto.",
-          variant: "success"
-        });
-      } else {
-        toast({
-          title: "Problemas encontrados",
-          description: `${validation.issues.length} problemas críticos encontrados.`,
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      console.error('Error validating mapping:', error);
-      toast({
-        title: "Error de validación",
-        description: "No se pudo validar el mapeo de campos.",
-        variant: "destructive"
-      });
-    }
-  };
 
   const handleSendApplication = () => {
     // Marcar términos como aceptados antes del envío
@@ -171,14 +140,6 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
           </div>
         </div>
 
-        {/* Nuevas Herramientas de Testing Integradas */}
-        <div className="space-y-4">
-          <IntegrationTester 
-            formData={formData} 
-            applicationId={formData.applicationId || 'test-application'} 
-          />
-          <FieldMappingComplete formData={formData} />
-        </div>
 
         {/* Información Personal */}
         <div className="space-y-4">
