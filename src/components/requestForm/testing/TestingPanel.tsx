@@ -16,7 +16,7 @@ import {
   Database,
   Settings
 } from 'lucide-react';
-import { generateTestData, dataPresets } from '@/utils/testDataGenerator';
+import { generateTestData, dataPresets, generateUltraCompleteApplication } from '@/utils/testDataGenerator';
 import { PayloadViewer } from './PayloadViewer';
 import { ConnectionTester } from './ConnectionTester';
 import { PayloadValidator } from './PayloadValidator';
@@ -33,13 +33,13 @@ export const TestingPanel: React.FC<TestingPanelProps> = ({
   updateFormData,
   onGenerateTestData
 }) => {
-  const [selectedProfile, setSelectedProfile] = useState<'random' | 'agricultor' | 'comerciante' | 'servicios'>('random');
+  const [selectedProfile, setSelectedProfile] = useState<'random' | 'agricultor' | 'comerciante' | 'servicios' | 'ultraCompleta'>('random');
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleGenerateTestData = async (profile: typeof selectedProfile) => {
     setIsGenerating(true);
     try {
-      const testData = dataPresets[profile]();
+      const testData = profile === 'ultraCompleta' ? generateUltraCompleteApplication() : dataPresets[profile]();
       
       // Aplicar los datos generados al formulario
       Object.entries(testData).forEach(([key, value]) => {
@@ -51,7 +51,9 @@ export const TestingPanel: React.FC<TestingPanelProps> = ({
       toast({
         variant: "success",
         title: "Datos de prueba generados",
-        description: `Se ha generado un perfil de ${profile} con datos coherentes.`
+        description: profile === 'ultraCompleta' 
+          ? "¡Solicitud ultra completa generada! Todos los campos han sido llenados con datos coherentes." 
+          : `Se ha generado un perfil de ${profile} con datos coherentes.`
       });
     } catch (error) {
       toast({
@@ -68,7 +70,8 @@ export const TestingPanel: React.FC<TestingPanelProps> = ({
     random: "Genera un perfil aleatorio con datos variados",
     agricultor: "Perfil de agricultor con finca y actividades agrícolas", 
     comerciante: "Comerciante con negocio establecido y ventas regulares",
-    servicios: "Proveedor de servicios profesionales"
+    servicios: "Proveedor de servicios profesionales",
+    ultraCompleta: "Solicitud completísima con TODOS los campos llenos"
   };
 
   return (
@@ -108,6 +111,7 @@ export const TestingPanel: React.FC<TestingPanelProps> = ({
                       {profile === 'agricultor' && <Database className="h-3 w-3 mr-1" />}
                       {profile === 'comerciante' && <Settings className="h-3 w-3 mr-1" />}
                       {profile === 'servicios' && <Zap className="h-3 w-3 mr-1" />}
+                      {profile === 'ultraCompleta' && <CheckCircle className="h-3 w-3 mr-1" />}
                       {profile.charAt(0).toUpperCase() + profile.slice(1)}
                     </Button>
                     <p className="text-xs text-muted-foreground">{description}</p>
@@ -117,19 +121,37 @@ export const TestingPanel: React.FC<TestingPanelProps> = ({
               
               <Separator />
               
-              <Button
-                onClick={() => handleGenerateTestData(selectedProfile)}
-                disabled={isGenerating}
-                className="w-full bg-orange-600 hover:bg-orange-700"
-                size="lg"
-              >
-                <Shuffle className="h-4 w-4 mr-2" />
-                {isGenerating ? 'Generando...' : `Generar Solicitud de ${selectedProfile.charAt(0).toUpperCase() + selectedProfile.slice(1)}`}
-              </Button>
+              <div className="space-y-3">
+                <Button
+                  onClick={() => handleGenerateTestData(selectedProfile)}
+                  disabled={isGenerating}
+                  className="w-full bg-orange-600 hover:bg-orange-700"
+                  size="lg"
+                >
+                  <Shuffle className="h-4 w-4 mr-2" />
+                  {isGenerating ? 'Generando...' : `Generar Solicitud de ${selectedProfile.charAt(0).toUpperCase() + selectedProfile.slice(1)}`}
+                </Button>
+                
+                {selectedProfile !== 'ultraCompleta' && (
+                  <Button
+                    onClick={() => handleGenerateTestData('ultraCompleta')}
+                    disabled={isGenerating}
+                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg"
+                    size="lg"
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    {isGenerating ? 'Generando...' : 'Generar Solicitud Ultra Completa ✨'}
+                  </Button>
+                )}
+              </div>
               
               <div className="text-xs text-muted-foreground bg-white p-3 rounded border">
                 <strong>Nota:</strong> Los datos generados incluyen DPIs válidos guatemaltecos, 
                 nombres reales, direcciones coherentes y montos apropiados para cada perfil.
+                <br /><br />
+                <strong>✨ Solicitud Ultra Completa:</strong> Llena TODOS los campos de TODOS los pasos 
+                incluyendo información del cónyuge, análisis financiero completo, estado patrimonial, 
+                referencias detalladas, geolocalización y documentación completa.
               </div>
             </AccordionContent>
           </AccordionItem>
