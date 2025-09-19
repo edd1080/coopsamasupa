@@ -93,9 +93,15 @@ serve(async (req) => {
     console.log('📤 Sending to Coopsama microservice');
 
     // Construct corrected payload structure for Coopsama microservice
-    // The microservice expects 'process' at root level, not nested in 'data'
+    // The microservice expects: { data: { process: { profile: {...} } }, metadata: {...} }
+    const profileData = payload.data?.process?.profile || payload;
+    
     const coopsamaPayload = {
-      process: payload.process || payload, // Extract process from payload or use entire payload
+      data: {
+        process: {
+          profile: profileData
+        }
+      },
       metadata: {
         processId: processId,
         user: agentEmail
@@ -103,17 +109,23 @@ serve(async (req) => {
     };
 
     console.log('📦 Coopsama payload structure:', {
-      hasProcess: !!coopsamaPayload.process,
+      hasData: !!coopsamaPayload.data,
+      hasProcess: !!coopsamaPayload.data?.process,
+      hasProfile: !!coopsamaPayload.data?.process?.profile,
       processId: coopsamaPayload.metadata.processId,
       user: coopsamaPayload.metadata.user,
-      processFieldsCount: coopsamaPayload.process ? Object.keys(coopsamaPayload.process).length : 0
+      profileFieldsCount: coopsamaPayload.data?.process?.profile ? Object.keys(coopsamaPayload.data.process.profile).length : 0
     });
 
-    console.log('🔍 Process payload preview:', {
-      processControl: coopsamaPayload.process?.processControl ? 'present' : 'missing',
-      personalDocuments: coopsamaPayload.process?.personalDocuments ? 'present' : 'missing',
-      personData: coopsamaPayload.process?.personData ? 'present' : 'missing'
+    console.log('🔍 Profile payload preview:', {
+      processControl: coopsamaPayload.data?.process?.profile?.processControl ? 'present' : 'missing',
+      personalDocument: coopsamaPayload.data?.process?.profile?.personalDocument ? 'present' : 'missing',
+      personData: coopsamaPayload.data?.process?.profile?.personData ? 'present' : 'missing',
+      productDetail: coopsamaPayload.data?.process?.profile?.productDetail ? 'present' : 'missing'
     });
+
+    // Log the actual structure being sent for debugging
+    console.log('📋 Complete payload being sent to Coopsama:', JSON.stringify(coopsamaPayload, null, 2));
 
     // Send to Coopsama microservice
     const coopsamaResponse = await fetch('https://services.bowpi.com/v1/micro-coopsama/coopsama/operation', {
