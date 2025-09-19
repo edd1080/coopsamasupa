@@ -16,6 +16,7 @@ interface Application {
   id: string;
   applicationId?: string;
   externalReferenceId?: string;
+  processId?: string;
   clientName: string;
   product: string;
   amount: string;
@@ -128,7 +129,9 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
                     <span className="truncate">
                       {application.status === 'draft' 
                         ? 'Borrador' 
-                        : `ID: ${application.externalReferenceId || formatApplicationId(application.id)}`
+                        : application.status === 'error' 
+                          ? `PRC-${application.processId || 'N/A'} (Error)`
+                          : `ID: ${application.externalReferenceId || formatApplicationId(application.id)}`
                       }
                     </span>
                   </div>

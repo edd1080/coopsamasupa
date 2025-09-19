@@ -9,6 +9,7 @@ interface Application {
   id: string;
   applicationId?: string;
   externalReferenceId?: string;
+  processId?: string;
   clientName: string;
   product: string;
   amount: string;
@@ -31,7 +32,7 @@ export const useApplicationsList = () => {
       // Fetch from applications table including Coopsama fields
       const { data: applications, error: appError } = await supabase
         .from('applications')
-        .select('*, coopsama_external_reference_id, coopsama_operation_id')
+        .select('*, coopsama_external_reference_id, coopsama_operation_id, coopsama_process_id')
         .eq('agent_id', user.id)
         .order('created_at', { ascending: false });
         
@@ -98,6 +99,7 @@ export const useApplicationsList = () => {
             id: app.id,
             applicationId: applicationId,
             externalReferenceId: app.coopsama_external_reference_id,
+            processId: app.coopsama_process_id,
             clientName: getFirstNameAndLastName(fullName),
             product: app.product || 'Crédito Personal',
             amount: app.amount_requested?.toString() || '0',
@@ -144,6 +146,7 @@ export const useApplicationsList = () => {
             id: draft.id,
             applicationId: applicationId,
             externalReferenceId: undefined, // Drafts don't have external reference
+            processId: undefined, // Drafts don't have process ID
             clientName: getFirstNameAndLastName(fullName),
             product: '', // Empty for drafts to hide in UI
             amount: '', // Empty for drafts to hide in UI

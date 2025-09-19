@@ -54,6 +54,7 @@ export type Database = {
           client_name: string
           coopsama_external_reference_id: string | null
           coopsama_operation_id: string | null
+          coopsama_process_id: string | null
           coopsama_sync_error: string | null
           coopsama_sync_status: string | null
           coopsama_synced_at: string | null
@@ -73,6 +74,7 @@ export type Database = {
           client_name: string
           coopsama_external_reference_id?: string | null
           coopsama_operation_id?: string | null
+          coopsama_process_id?: string | null
           coopsama_sync_error?: string | null
           coopsama_sync_status?: string | null
           coopsama_synced_at?: string | null
@@ -92,6 +94,7 @@ export type Database = {
           client_name?: string
           coopsama_external_reference_id?: string | null
           coopsama_operation_id?: string | null
+          coopsama_process_id?: string | null
           coopsama_sync_error?: string | null
           coopsama_sync_status?: string | null
           coopsama_synced_at?: string | null

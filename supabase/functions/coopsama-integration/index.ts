@@ -191,6 +191,7 @@ serve(async (req) => {
         .update({
           coopsama_sync_status: 'error',
           coopsama_sync_error: responseData.message || 'Unknown error from Coopsama',
+          coopsama_process_id: processId,
           coopsama_synced_at: new Date().toISOString()
         })
         .eq('id', applicationId);
@@ -221,6 +222,7 @@ serve(async (req) => {
           .update({
             coopsama_sync_status: 'error',
             coopsama_sync_error: error.message,
+            coopsama_process_id: processId,
             coopsama_synced_at: new Date().toISOString()
           })
           .eq('id', body.applicationId);

@@ -250,6 +250,12 @@ const ApplicationDetails = () => {
                 ID: <span className="font-mono font-medium text-primary">{applicationData.coopsama_external_reference_id}</span>
               </p>
             )}
+            {'coopsama_process_id' in applicationData && applicationData.coopsama_process_id && 'status' in applicationData && (applicationData.status === 'error' || applicationData.coopsama_sync_status === 'failed') && (
+              <p className="text-sm text-muted-foreground mt-1">
+                Process ID: <span className="font-mono font-medium text-destructive">{applicationData.coopsama_process_id}</span>
+                <span className="ml-2 text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">Error de sincronización</span>
+              </p>
+            )}
             {applicationData.isDraft && (
               <p className="text-sm text-muted-foreground mt-1">
                 Estado: <span className="font-medium">Borrador</span>
