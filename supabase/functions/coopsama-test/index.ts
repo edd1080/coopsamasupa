@@ -1,6 +1,42 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
-import { toCoopsamaPayload, validateCoopsamaPayload } from '../../../src/utils/fieldMapper.ts';
+
+// Basic validation function for payload structure
+function validateCoopsamaPayload(payload: any) {
+  const issues: string[] = [];
+  const warnings: string[] = [];
+  
+  // Basic structure validation
+  if (!payload) {
+    issues.push('Payload is null or undefined');
+    return { isValid: false, completeness: 0, issues, warnings };
+  }
+
+  if (!payload.data?.process) {
+    issues.push('Missing process data structure');
+  }
+
+  // Check required sections
+  const requiredSections = ['processControl', 'personalDocument', 'personData'];
+  let foundSections = 0;
+  
+  for (const section of requiredSections) {
+    if (payload.data?.process?.profile?.[section]) {
+      foundSections++;
+    } else {
+      warnings.push(`Missing section: ${section}`);
+    }
+  }
+
+  const completeness = Math.round((foundSections / requiredSections.length) * 100);
+  const isValid = issues.length === 0 && foundSections >= 2;
+
+  return {
+    isValid,
+    completeness,
+    issues,
+    warnings
+  };
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
