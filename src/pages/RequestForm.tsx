@@ -25,7 +25,8 @@ const RequestFormContent = () => {
     hasUnsavedChanges,
     formData,
     handleShowExitDialog,
-    showSuccessScreen
+    showSuccessScreen,
+    submissionResult
   } = useFormContext();
   
   const navigate = useNavigate();
@@ -36,6 +37,7 @@ const RequestFormContent = () => {
     return (
       <ApplicationSuccessScreen
         applicationId={formData.applicationId}
+        externalReferenceId={submissionResult?.externalReferenceId}
         onGoToApplications={() => navigate('/applications')}
       />
     );

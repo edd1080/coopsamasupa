@@ -115,6 +115,9 @@ export const useFinalizeApplication = () => {
       console.log('✅ Application finalized successfully');
 
       // Call Coopsama integration (non-blocking)
+      let externalReferenceId = null;
+      let operationId = null;
+      
       try {
         console.log('🔄 Sending to Coopsama microservice...');
         const coopsamaResult = await supabase.functions.invoke('coopsama-integration', {
@@ -129,13 +132,34 @@ export const useFinalizeApplication = () => {
           console.warn('⚠️ Coopsama integration warning:', coopsamaResult.error);
         } else {
           console.log('✅ Coopsama integration completed');
+          // Extract IDs from Coopsama response
+          const data = coopsamaResult.data;
+          if (data && typeof data === 'object') {
+            externalReferenceId = data.externalReferenceId;
+            operationId = data.operationId;
+            
+            // Update the application with Coopsama IDs
+            await supabase
+              .from('applications')
+              .update({
+                coopsama_external_reference_id: externalReferenceId,
+                coopsama_operation_id: operationId,
+                coopsama_sync_status: 'success',
+                coopsama_synced_at: new Date().toISOString()
+              })
+              .eq('id', result.id);
+          }
         }
       } catch (coopsamaError) {
         console.warn('⚠️ Coopsama integration failed (non-critical):', coopsamaError);
         // Don't fail the main operation if Coopsama fails
       }
 
-      return result;
+      return {
+        ...result,
+        externalReferenceId,
+        operationId
+      };
     },
     onSuccess: () => {
       // Invalidate all relevant queries

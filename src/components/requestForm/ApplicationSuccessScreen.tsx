@@ -6,11 +6,13 @@ import confetti from 'canvas-confetti';
 
 interface ApplicationSuccessScreenProps {
   applicationId?: string;
+  externalReferenceId?: string;
   onGoToApplications: () => void;
 }
 
 const ApplicationSuccessScreen: React.FC<ApplicationSuccessScreenProps> = ({
   applicationId,
+  externalReferenceId,
   onGoToApplications
 }) => {
   
@@ -53,9 +55,9 @@ const ApplicationSuccessScreen: React.FC<ApplicationSuccessScreenProps> = ({
             <p className="text-gray-600">
               La solicitud de crédito ha sido enviada exitosamente
             </p>
-            {applicationId && (
+            {(externalReferenceId || applicationId) && (
               <p className="text-sm text-gray-500">
-                ID de Solicitud: <span className="font-mono">{applicationId}</span>
+                ID de Solicitud: <span className="font-mono">{externalReferenceId || applicationId}</span>
               </p>
             )}
           </div>

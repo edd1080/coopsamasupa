@@ -8,6 +8,7 @@ import { getFirstNameAndLastName } from '@/lib/nameUtils';
 interface Application {
   id: string;
   applicationId?: string;
+  externalReferenceId?: string;
   clientName: string;
   product: string;
   amount: string;
@@ -27,10 +28,10 @@ export const useApplicationsList = () => {
       
       console.log('🔍 Fetching applications list for user:', sanitizeConsoleOutput({ userId: user.id }));
       
-      // Fetch from applications table
+      // Fetch from applications table including Coopsama fields
       const { data: applications, error: appError } = await supabase
         .from('applications')
-        .select('*')
+        .select('*, coopsama_external_reference_id, coopsama_operation_id')
         .eq('agent_id', user.id)
         .order('created_at', { ascending: false });
         
@@ -96,6 +97,7 @@ export const useApplicationsList = () => {
           return {
             id: app.id,
             applicationId: applicationId,
+            externalReferenceId: app.coopsama_external_reference_id,
             clientName: getFirstNameAndLastName(fullName),
             product: app.product || 'Crédito Personal',
             amount: app.amount_requested?.toString() || '0',
@@ -141,6 +143,7 @@ export const useApplicationsList = () => {
           return {
             id: draft.id,
             applicationId: applicationId,
+            externalReferenceId: undefined, // Drafts don't have external reference
             clientName: getFirstNameAndLastName(fullName),
             product: '', // Empty for drafts to hide in UI
             amount: '', // Empty for drafts to hide in UI

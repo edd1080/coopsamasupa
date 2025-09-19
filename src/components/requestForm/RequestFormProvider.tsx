@@ -64,6 +64,7 @@ interface FormContextType {
   hasUnsavedChanges: boolean;
   handleShowExitDialog: () => void;
   showSuccessScreen: boolean;
+  submissionResult: any;
   isSavingDraft: boolean;
 }
 
@@ -331,6 +332,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showSuccessScreen, setShowSuccessScreen] = useState(false);
+  const [submissionResult, setSubmissionResult] = useState<any>(null);
 
   // Add save draft mutation
   const saveDraftMutation = useSaveDraft();
@@ -549,7 +551,8 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     });
     
     finalizeApplicationMutation.mutate(formData, {
-      onSuccess: () => {
+      onSuccess: (result) => {
+        setSubmissionResult(result);
         setShowSuccessScreen(true);
       },
       onError: (error) => {
@@ -677,6 +680,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     hasUnsavedChanges,
     handleShowExitDialog,
     showSuccessScreen,
+    submissionResult,
     isSavingDraft: saveDraftMutation.isPending,
   };
 

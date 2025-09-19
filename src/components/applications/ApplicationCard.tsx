@@ -14,6 +14,7 @@ import { formatDateToGuatemalan } from '@/utils/dateUtils';
 interface Application {
   id: string;
   applicationId?: string;
+  externalReferenceId?: string;
   clientName: string;
   product: string;
   amount: string;
@@ -123,7 +124,12 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
                     <Calendar className="h-3 w-3" />
                     <span>{formatDate(application.date)}</span>
                     <FileText className="h-3 w-3 ml-2" />
-                    <span className="truncate">{application.applicationId || formatApplicationId(application.id)}</span>
+                    <span className="truncate">
+                      {application.status === 'draft' 
+                        ? 'Borrador' 
+                        : application.externalReferenceId || application.applicationId || formatApplicationId(application.id)
+                      }
+                    </span>
                   </div>
                 </div>
                 
