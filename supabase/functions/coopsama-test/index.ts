@@ -93,18 +93,27 @@ async function testConnectivity() {
       throw new Error('Faltan variables de entorno de Coopsama');
     }
 
-    // Test básico de conectividad (sin enviar datos)
-    const testUrl = `${coopsamaUrl}/health`; // Asumiendo que existe un endpoint de health
+    // Test básico de conectividad usando el endpoint principal
+    const testUrl = coopsamaUrl; // Usar la URL base sin /health
     
     console.log('🌐 Testing connection to:', testUrl);
+    console.log('🔑 Using credentials:', {
+      userId: coopsamaUserId ? 'present' : 'missing',
+      token: coopsamaToken ? 'present' : 'missing'
+    });
+    
+    // Probar diferentes formatos de autenticación
+    const authHeaders = {
+      'Content-Type': 'application/json',
+      'COOPSAMA_USER_ID': coopsamaUserId,
+      'COOPSAMA_USER_TOKEN': coopsamaToken
+    };
+    
+    console.log('📤 Sending headers:', Object.keys(authHeaders));
     
     const response = await fetch(testUrl, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${coopsamaToken}`,
-        'X-User-ID': coopsamaUserId
-      }
+      headers: authHeaders
     });
 
     const responseData = await response.text();
@@ -112,7 +121,8 @@ async function testConnectivity() {
     console.log('📡 Connectivity test response:', {
       status: response.status,
       statusText: response.statusText,
-      ok: response.ok
+      ok: response.ok,
+      responsePreview: responseData.slice(0, 200)
     });
 
     if (response.ok) {
@@ -120,12 +130,44 @@ async function testConnectivity() {
         JSON.stringify({ 
           success: true, 
           message: 'Conectividad exitosa',
-          status: response.status 
+          status: response.status,
+          responseData: responseData
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     } else {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      // Si falla con headers directos, intentar con Bearer token
+      console.log('🔄 Trying alternative authentication format...');
+      
+      const alternativeResponse = await fetch(testUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Token ${coopsamaToken}`,
+          'X-User-ID': coopsamaUserId
+        }
+      });
+      
+      const altResponseData = await alternativeResponse.text();
+      console.log('📡 Alternative auth response:', {
+        status: alternativeResponse.status,
+        ok: alternativeResponse.ok
+      });
+      
+      if (alternativeResponse.ok) {
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            message: 'Conectividad exitosa (formato alternativo)',
+            status: alternativeResponse.status,
+            authFormat: 'Token',
+            responseData: altResponseData
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } else {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}. Alternative: ${alternativeResponse.status}`);
+      }
     }
 
   } catch (error) {
@@ -214,17 +256,23 @@ async function testFullIntegration(payload: any, formData: any) {
     console.log('📤 Sending test payload to Coopsama:', {
       processId: testProcessId,
       hasProcess: !!testPayload.process,
-      url: coopsamaUrl
+      url: coopsamaUrl,
+      payloadSize: JSON.stringify(testPayload).length
     });
 
+    // Probar con headers directos primero
+    const authHeaders = {
+      'Content-Type': 'application/json',
+      'COOPSAMA_USER_ID': coopsamaUserId,
+      'COOPSAMA_USER_TOKEN': coopsamaToken
+    };
+    
+    console.log('📤 Using direct headers authentication');
+    
     // Enviar al microservicio
     const response = await fetch(coopsamaUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${coopsamaToken}`,
-        'X-User-ID': coopsamaUserId
-      },
+      headers: authHeaders,
       body: JSON.stringify(testPayload)
     });
 
@@ -242,20 +290,56 @@ async function testFullIntegration(payload: any, formData: any) {
           success: true,
           message: 'Integración exitosa',
           response: responseData,
-          processId: testProcessId
+          processId: testProcessId,
+          authFormat: 'direct_headers'
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     } else {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: responseData.message || `HTTP ${response.status}`,
-          response: responseData,
-          httpStatus: response.status
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      // Si falla con headers directos, intentar con Token auth
+      console.log('🔄 Trying alternative Token authentication for integration...');
+      
+      const alternativeResponse = await fetch(coopsamaUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Token ${coopsamaToken}`,
+          'X-User-ID': coopsamaUserId
+        },
+        body: JSON.stringify(testPayload)
+      });
+      
+      const altResponseData = await alternativeResponse.json();
+      console.log('📨 Alternative auth integration response:', {
+        status: alternativeResponse.status,
+        ok: alternativeResponse.ok,
+        data: altResponseData
+      });
+      
+      if (alternativeResponse.ok) {
+        return new Response(
+          JSON.stringify({
+            success: true,
+            message: 'Integración exitosa (formato Token)',
+            response: altResponseData,
+            processId: testProcessId,
+            authFormat: 'token'
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } else {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: responseData.message || `HTTP ${response.status}`,
+            response: responseData,
+            httpStatus: response.status,
+            alternativeError: altResponseData.message || `HTTP ${alternativeResponse.status}`,
+            alternativeStatus: alternativeResponse.status
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
   } catch (error) {
