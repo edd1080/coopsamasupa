@@ -120,7 +120,8 @@ export const useFinalizeApplication = () => {
         const coopsamaResult = await supabase.functions.invoke('coopsama-integration', {
           body: { 
             applicationId: result.id, // Use the generated UUID from the created application
-            payload: coopsamaPayload 
+            payload: coopsamaPayload,
+            userEmail: user.email
           }
         });
         
