@@ -158,7 +158,7 @@ export function validateCoopsamaPayload(payload: CoopsamaPayload): ValidationRes
     warnings.push('No expenses defined');
   }
 
-  if (payload.data.process.profile.reference && payload.data.process.profile.reference.length < 2) {
+  if (payload.data.process.profile.personal?.references && payload.data.process.profile.personal.references.length < 2) {
     warnings.push('At least 2 references are recommended');
   }
 

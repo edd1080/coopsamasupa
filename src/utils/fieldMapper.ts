@@ -11,6 +11,23 @@ import {
   productTypes,
   destinationGroups,
   destinationsByGroup,
+  destinationCategories,
+  getDestinationsByGroup,
+  getCategoriesByDestination,
+  housingTypes,
+  residentialStabilities,
+  workStabilities,
+  capitalAmortizations,
+  interestAmortizations,
+  memberTypes,
+  requestTypes,
+  fundsOrigins,
+  projectTypes,
+  paymentMethods,
+  incomeSourceTypes,
+  referenceTypes,
+  referenceRatings,
+  creditRecordTypes,
   findCatalogMatch
 } from '@/data/catalogs';
 
@@ -275,15 +292,15 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
               state: { id: departmentMatch.id, value: departmentMatch.value },
               county: { id: municipalityMatch.id, value: municipalityMatch.value }
             },
-            typeOfHousing: { id: "1", value: formData.housingType || "Propia" },
-            housingStability: { id: "4", value: formData.housingStability || "3 años" },
+            typeOfHousing: mapToCatalog(housingTypes, formData.housingType || formData.tipoVivienda || "", "1"),
+            housingStability: mapToCatalog(residentialStabilities, formData.residentialStability || formData.estabilidadResidencial || "", "4"),
             geolocalization: formData.coordinates || formData.coordenadas || undefined,
             spouseFirstName: formData.spouseName ? splitFullName(formData.spouseName).firstName : undefined,
             spouseSecondName: formData.spouseName ? splitFullName(formData.spouseName).secondName : undefined,
             spouseFirstLastName: formData.spouseName ? splitFullName(formData.spouseName).firstLastName : undefined,
             spouseSecondLastName: formData.spouseName ? splitFullName(formData.spouseName).secondLastName : undefined,
             spouseCompanyName: formData.spouseCompany || undefined,
-            spouseJobStability: formData.spouseJobStability ? { id: "4", value: formData.spouseJobStability } : undefined,
+            spouseJobStability: formData.spouseJobStability ? mapToCatalog(workStabilities, formData.spouseJobStability, "4") : undefined,
             spouseMobile: formData.spousePhone || undefined,
             spouseBirthDate: formData.spouseBirthDate || undefined
           },
@@ -306,14 +323,14 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             requestedAmount: parseFloat(formData.requestedAmount || formData.montoSolicitado || "0") || 0,
             interestRate: parseFloat(formData.interestRate || "12.5") || 12.5,
             startingTerm: parseInt(formData.term || formData.plazo || "36") || 36,
-            principalAmortization: { id: "1", value: "Mensual" },
-            interestAmortization: { id: "1", value: "Mensual" },
-            partnerType: { id: "1", value: "individual" },
-            requestType: { id: "1", value: "nuevo" },
-            sourceOfFunds: { id: "2", value: formData.sourceOfFunds || "ahorros" },
-            principalProject: { id: "5", value: formData.creditPurpose || formData.proposito || "Comercio" },
-            secondaryProject: { id: "5", value: formData.secondaryPurpose || "Transporte" },
-            paymentMethod: { id: "1", value: "ventanilla" },
+            principalAmortization: mapToCatalog(capitalAmortizations, formData.capitalAmortization || formData.amortizacionCapital || "", "1"),
+            interestAmortization: mapToCatalog(interestAmortizations, formData.interestAmortization || formData.amortizacionInteres || "", "1"),
+            partnerType: mapToCatalog(memberTypes, formData.memberType || formData.tipoSocio || "", "1"),
+            requestType: mapToCatalog(requestTypes, formData.requestType || formData.tipoSolicitud || "", "1"),
+            sourceOfFunds: mapToCatalog(fundsOrigins, formData.sourceOfFunds || formData.origenFondos || "", "2"),
+            principalProject: mapToCatalog(projectTypes, formData.principalProject || formData.proyectoPrincipal || "", "5"),
+            secondaryProject: mapToCatalog(projectTypes, formData.secondaryProject || formData.proyectoSecundario || "", "5"),
+            paymentMethod: mapToCatalog(paymentMethods, formData.paymentMethod || formData.formaPago || "", "1"),
             fundsDestination: {
               investmentState: { id: departmentMatch.id, value: departmentMatch.value },
               investmentCounty: { id: municipalityMatch.id, value: municipalityMatch.value },
@@ -323,14 +340,19 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
               comments: formData.destinationComments || undefined
             }
           },
-          income: [
+          income: (formData.incomes || [
             {
-              incomeSource: { id: "1", value: "Salario" },
-              monthlyIncome: parseFloat(formData.monthlyIncome || formData.ingresoMensual || "0") || 0,
-              comments: formData.incomeComments || "Empleo formal",
+              incomeSource: formData.incomeSource || "NOMINAL",
+              monthlyIncome: formData.monthlyIncome || formData.ingresoMensual || 0,
+              comments: formData.incomeComments || "",
               mainIncomeSource: true
             }
-          ],
+          ]).map((income: any) => ({
+            incomeSource: mapToCatalog(incomeSourceTypes, income.incomeSource || income.tipoIngreso || "", "1"),
+            monthlyIncome: parseFloat(income.monthlyIncome || income.ingresoMensual || "0") || 0,
+            comments: income.comments || income.comentarios || "",
+            mainIncomeSource: income.mainIncomeSource || income.ingresoFuentePrincipal || false
+          })),
           expense: [
             { name: "food", amount: parseFloat(formData.foodExpense || "1500") || 1500 },
             { name: "clothing", amount: parseFloat(formData.clothingExpense || "300") || 300 },
@@ -376,16 +398,16 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
           }] : undefined,
           personal: {
             references: (formData.references || []).map((ref: any, index: number) => ({
-              type: { id: ref.type === 'commercial' ? "2" : "1", value: ref.type === 'commercial' ? "comercial" : "personal" },
+              type: mapToCatalog(referenceTypes, ref.type || ref.tipoReferencia || "", "1"),
               firstName: ref.name ? splitFullName(ref.name).firstName : `Referencia${index + 1}`,
               secondName: ref.name ? splitFullName(ref.name).secondName : undefined,
               firstLastName: ref.name ? splitFullName(ref.name).firstLastName : "",
               secondLastName: ref.name ? splitFullName(ref.name).secondLastName : undefined,
-              fullAddress: ref.address || "",
-              relationship: ref.relationship || "Conocido",
-              mobile: ref.phone || "",
-              score: { id: "1", value: ref.score || "8" },
-              comments: ref.comments || undefined
+              fullAddress: ref.address || ref.direccion || "",
+              relationship: ref.relationship || ref.relacion || "Conocido",
+              mobile: ref.phone || ref.telefono || "",
+              score: mapToCatalog(referenceRatings, ref.score || ref.calificacion || "", "1"),
+              comments: ref.comments || ref.comentarios || undefined
             }))
           },
           business: formData.businessName ? {
