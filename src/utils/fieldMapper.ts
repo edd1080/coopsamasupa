@@ -1,23 +1,21 @@
-import { 
-  findCatalogMatch, 
-  departments, 
-  municipalities, 
-  genders, 
-  civilStatuses, 
-  ethnicities, 
-  educationLevels, 
-  officialProfessions, 
+import {
+  departments,
+  municipalities,
+  genders,
+  civilStatuses,
+  ethnicities,
+  educationLevels,
+  officialProfessions,
   officialOccupations,
+  agencies,
+  productTypes,
   destinationGroups,
   destinationsByGroup,
-  destinationCategories,
-  getDestinationsByGroup,
-  getCategoriesByDestination
+  findCatalogMatch
 } from '@/data/catalogs';
-import { professions } from '@/data/professions';
-import { occupations } from '@/data/occupations';
 
-interface OfficialPayload {
+// Interface for the Coopsama microservice payload
+export interface CoopsamaPayload {
   data: {
     process: {
       profile: {
@@ -25,12 +23,9 @@ interface OfficialPayload {
           processId: string;
           ownerCounty: { id: string; value: string };
           ownerState: { id: string; value: string };
-          cuaT24?: string;
-          cif?: string;
-          userEmail?: string;
-          agentDPI?: string;
-          agentName?: string;
-          creationDateTime?: string;
+          cuaT24: string;
+          cif: string;
+          userEmail: string;
         };
         personalDocument: {
           firstName: string;
@@ -68,65 +63,57 @@ interface OfficialPayload {
         };
         personData: {
           nit?: string;
-          numberOfDependants: number;
+          numberOfDependants?: number;
           ethnicity: { id: string; value: string };
           academicDegree: { id: string; value: string };
           mobile: string;
           telephone?: string;
-          email: Array<{
+          email: {
             emailAddress: string;
             emailType: string;
             emailId: string;
-          }>;
+          }[];
         };
         productDetail: {
           idTypeProduct: number;
           idAgency: number;
           requestedAmount: number;
           interestRate?: number;
-          startingTerm: number;
+          startingTerm?: number;
           principalAmortization?: { id: string; value: string };
           interestAmortization?: { id: string; value: string };
-          partnerType?: { id: string; value: string };
-          requestType?: { id: string; value: string };
+          partnerType: { id: string; value: string };
+          requestType: { id: string; value: string };
           sourceOfFunds?: { id: string; value: string };
           principalProject?: { id: string; value: string };
           secondaryProject?: { id: string; value: string };
           paymentMethod?: { id: string; value: string };
-          destinationGroup: { id: string; value: string };
-          creditDestination: { id: string; value: string };
           fundsDestination: {
-            investmentState?: { id: string; value: string };
-            investmentCounty?: { id: string; value: string };
+            investmentState: { id: string; value: string };
+            investmentCounty: { id: string; value: string };
             destinationCategory: { id: string; value: string };
             otherDestination?: string;
             description?: string;
             comments?: string;
           };
         };
-        income: Array<{
+        income: {
           incomeSource: { id: string; value: string };
           monthlyIncome: number;
           comments?: string;
           mainIncomeSource: boolean;
-        }>;
-        expense: Array<{
+        }[];
+        expense: {
           name: string;
           amount: number;
-        }>;
+        }[];
         financialStatus: {
           assets: {
-            list: Array<{
-              name: string;
-              amount: number;
-            }>;
+            list: { name: string; amount: number }[];
             total: number;
           };
           liabilities: {
-            list: Array<{
-              name: string;
-              amount: number;
-            }>;
+            list: { name: string; amount: number }[];
             total: number;
           };
           equity: {
@@ -135,13 +122,13 @@ interface OfficialPayload {
             total: number;
           };
         };
-        collateral?: Array<{
+        collateral?: {
           name: string;
           amount: number;
           percentage: number;
-        }>;
+        }[];
         personal: {
-          references: Array<{
+          references: {
             type: { id: string; value: string };
             firstName: string;
             secondName?: string;
@@ -150,9 +137,9 @@ interface OfficialPayload {
             fullAddress: string;
             relationship: string;
             mobile: string;
-            score: { id: string; value: string };
+            score?: { id: string; value: string };
             comments?: string;
-          }>;
+          }[];
         };
         business?: {
           companyName: string;
@@ -162,13 +149,13 @@ interface OfficialPayload {
           startDate: string;
           fullAddress: string;
         };
-        investmentPlan?: Array<{
+        investmentPlan?: {
           quantity: number;
           unitOfMeasurement: string;
           description: string;
           unitPrice: number;
           total: number;
-        }>;
+        }[];
         expenseSummary: {
           totalExpenses: number;
         };
@@ -181,1015 +168,307 @@ interface OfficialPayload {
   };
 }
 
-// Mapping helpers
+// Helper function to map catalog values
 const mapToCatalog = <T extends { id: string; value: string }>(
   catalog: T[],
   appValue: string,
-  fallbackId?: string
-): { id: string; value: string } | undefined => {
-  if (!appValue && !fallbackId) return undefined;
+  fallbackId = "1"
+): { id: string; value: string } => {
+  if (!appValue) return { id: fallbackId, value: catalog.find(c => c.id === fallbackId)?.value || "" };
   
-  if (appValue) {
-    console.log(`🔍 Mapping "${appValue}" in catalog with ${catalog.length} items`);
-    
-    // 1. EXACT MATCH FIRST - Direct comparison without any transformation
-    const exactMatch = catalog.find(item => item.value === appValue);
-    if (exactMatch) {
-      console.log(`✅ Exact match: "${appValue}" → "${exactMatch.value}" (ID: ${exactMatch.id})`);
-      return { id: exactMatch.id, value: exactMatch.value };
-    }
-    
-    // 2. CASE-INSENSITIVE EXACT MATCH
-    const caseInsensitiveMatch = catalog.find(item => 
-      item.value.toLowerCase() === appValue.toLowerCase()
-    );
-    if (caseInsensitiveMatch) {
-      console.log(`✅ Case-insensitive match: "${appValue}" → "${caseInsensitiveMatch.value}" (ID: ${caseInsensitiveMatch.id})`);
-      return { id: caseInsensitiveMatch.id, value: caseInsensitiveMatch.value };
-    }
-    
-    // 3. SPECIFIC MAPPINGS ONLY IF NEEDED
-    let mappedValue = appValue;
-    
-    // Gender mappings only for variants
-    if (catalog === genders) {
-      const genderMappings: { [key: string]: string } = {
-        'Femenino': 'MUJER',
-        'Masculino': 'HOMBRE',
-        'F': 'MUJER',
-        'M': 'HOMBRE'
-      };
-      mappedValue = genderMappings[appValue] || appValue;
-    }
-    
-    // Civil status mappings only for variants  
-    if (catalog === civilStatuses) {
-      const civilStatusMappings: { [key: string]: string } = {
-        'Soltera': 'SOLTERO',
-        'Casada': 'CASADO',
-        'Unida': 'UNIDO',
-        'Divorciada': 'DIVORCIADO',
-        'Viuda': 'VIUDO'
-      };
-      mappedValue = civilStatusMappings[appValue] || appValue;
-    }
-    
-    // Education mappings
-    if (catalog === educationLevels) {
-      const educationMappings: { [key: string]: string } = {
-        'Universitario': 'SUPERIOR',
-        'Universidad': 'SUPERIOR',
-        'Bachillerato': 'DIVERSIFICADO',
-        'Básicos': 'BASICO',
-        '300': 'SUPERIOR',
-        '200': 'DIVERSIFICADO', 
-        '100': 'BASICO',
-        '50': 'PRIMARIA'
-      };
-      mappedValue = educationMappings[appValue] || appValue;
-    }
-    
-    // Try with mapped value if different
-    if (mappedValue !== appValue) {
-      const mappedMatch = catalog.find(item => item.value === mappedValue);
-      if (mappedMatch) {
-        console.log(`✅ Mapped match: "${appValue}" → "${mappedMatch.value}" (ID: ${mappedMatch.id})`);
-        return { id: mappedMatch.id, value: mappedMatch.value };
-      }
-    }
-    
-    console.log(`❌ No match found for "${appValue}". Available values:`, catalog.map(c => c.value));
-  }
+  const match = findCatalogMatch(catalog, appValue);
+  if (match) return { id: match.id, value: match.value };
   
-  if (fallbackId) {
-    const fallback = catalog.find(item => item.id === fallbackId);
-    if (fallback) {
-      console.log(`🔄 Using fallback: ID ${fallbackId} → "${fallback.value}"`);
-      return { id: fallback.id, value: fallback.value };
-    }
-    console.log(`❌ Fallback ID ${fallbackId} not found in catalog`);
-  }
-  
-  return undefined;
+  return { id: fallbackId, value: catalog.find(c => c.id === fallbackId)?.value || appValue };
 };
 
-const mapProfession = (appValue: string): { id: string; value: string } | undefined => {
-  if (!appValue) return undefined;
-  
-  console.log(`🎓 Mapping profession: "${appValue}"`);
-  
-  // Enhanced profession mappings
-  const professionMappings: { [key: string]: string } = {
-    'Bachiller': 'BACHILLER',
-    'bachiller': 'BACHILLER', 
-    'Magisterio': 'MAGISTERIO',
-    'magisterio': 'MAGISTERIO',
-    'Perito Contador': 'PERITO CONTADOR',
-    'perito contador': 'PERITO CONTADOR',
-    'Contador': 'PERITO CONTADOR',
-    'contador': 'PERITO CONTADOR',
-    'Secretariado': 'SECRETARIADO',
-    'secretariado': 'SECRETARIADO',
-    'Universitario': 'TECNICO DE GRADO UNIVERSITARIO',
-    'universitario': 'TECNICO DE GRADO UNIVERSITARIO',
-    'Universidad': 'TECNICO DE GRADO UNIVERSITARIO',
-    'Técnico Universitario': 'TECNICO DE GRADO UNIVERSITARIO',
-    'Licenciatura': 'TECNICO DE GRADO UNIVERSITARIO',
-    'licenciatura': 'TECNICO DE GRADO UNIVERSITARIO',
-    'Ingeniería': 'INGENIERIAS',
-    'ingeniería': 'INGENIERIAS',
-    'Ingeniero': 'INGENIERIAS',
-    'ingeniero': 'INGENIERIAS',
-    'Medicina': 'CIENCIAS MEDICAS Y DE LA SALUD',
-    'medicina': 'CIENCIAS MEDICAS Y DE LA SALUD',
-    'Médico': 'CIENCIAS MEDICAS Y DE LA SALUD',
-    'médico': 'CIENCIAS MEDICAS Y DE LA SALUD',
-    'Abogado': 'CIENCIAS JURIDICAS Y SOCIALES',
-    'abogado': 'CIENCIAS JURIDICAS Y SOCIALES',
-    'Derecho': 'CIENCIAS JURIDICAS Y SOCIALES',
-    'derecho': 'CIENCIAS JURIDICAS Y SOCIALES',
-    'Administración': 'CIENCIAS ECONOMICAS Y EMPRESARIALES',
-    'administración': 'CIENCIAS ECONOMICAS Y EMPRESARIALES',
-    'Economía': 'CIENCIAS ECONOMICAS Y EMPRESARIALES',
-    'economía': 'CIENCIAS ECONOMICAS Y EMPRESARIALES',
-    'Primaria': 'NIVEL PRIMARIO',
-    'primaria': 'NIVEL PRIMARIO',
-    'Básicos': 'NIVEL BASICO',
-    'básicos': 'NIVEL BASICO',
-    'No sabe leer': 'NO SABE LEER / ESCRIBIR',
-    'no sabe leer': 'NO SABE LEER / ESCRIBIR'
-  };
-  
-  // Try specific mappings first
-  const mappedValue = professionMappings[appValue];
-  if (mappedValue) {
-    const result = mapToCatalog(officialProfessions, mappedValue);
-    if (result) {
-      console.log(`✅ Profession specific mapping: "${appValue}" → "${result.value}" (ID: ${result.id})`);
-      return result;
-    }
-  }
-  
-  // Find in local professions
-  const localProf = professions.find(p => 
-    p.value === appValue || 
-    p.label.toLowerCase() === appValue.toLowerCase()
-  );
-  if (localProf) {
-    const result = mapToCatalog(officialProfessions, localProf.label);
-    if (result) {
-      console.log(`✅ Profession local mapping: "${appValue}" → "${result.value}" (ID: ${result.id})`);
-      return result;
-    }
-  }
-  
-  // Direct mapping attempt
-  const result = mapToCatalog(officialProfessions, appValue);
-  if (result) {
-    console.log(`✅ Profession direct mapping: "${appValue}" → "${result.value}" (ID: ${result.id})`);
-    return result;
-  }
-  
-  console.log(`❌ No profession mapping found for: "${appValue}"`);
-  return mapToCatalog(officialProfessions, '', "1"); // Fallback to BACHILLER
-};
-
-const mapOccupation = (appValue: string): { id: string; value: string } | undefined => {
-  if (!appValue) return undefined;
-  
-  console.log(`💼 Mapping occupation: "${appValue}"`);
-  
-  // Enhanced occupation mappings
-  const occupationMappings: { [key: string]: string } = {
-    'Comercio': 'COMERCIANTE',
-    'comercio': 'COMERCIANTE',
-    'Comerciante': 'COMERCIANTE',
-    'comerciante': 'COMERCIANTE',
-    'COMERCIO': 'COMERCIANTE',
-    'COMERCIANTE': 'COMERCIANTE', // Mapeo directo
-    'Venta': 'VENDEDOR/A',
-    'venta': 'VENDEDOR/A',
-    'Ventas': 'VENDEDOR/A',
-    'ventas': 'VENDEDOR/A',
-    'VENTA': 'VENDEDOR/A',
-    'VENTAS': 'VENDEDOR/A',
-    'Negocios': 'COMERCIANTE',
-    'negocios': 'COMERCIANTE',
-    'NEGOCIOS': 'COMERCIANTE',
-    'Agricultura': 'AGRICULTOR',
-    'agricultura': 'AGRICULTOR',
-    'Agricultor': 'AGRICULTOR',
-    'agricultor': 'AGRICULTOR',
-    'Ganadería': 'GANADERO',
-    'ganadería': 'GANADERO',
-    'Ganadero': 'GANADERO',
-    'ganadero': 'GANADERO',
-    'Avicultura': 'AVICULTOR',
-    'avicultura': 'AVICULTOR',
-    'Avicultor': 'AVICULTOR',
-    'avicultor': 'AVICULTOR',
-    'Ninguna': 'NINGUNA',
-    'ninguna': 'NINGUNA',
-    'Sin ocupación': 'NINGUNA',
-    'sin ocupación': 'NINGUNA',
-    'No aplica': 'NINGUNA',
-    'no aplica': 'NINGUNA',
-    'Desempleado': 'NINGUNA',
-    'desempleado': 'NINGUNA',
-    'Ama de casa': 'NINGUNA',
-    'ama de casa': 'NINGUNA',
-    'Estudiante': 'NINGUNA',
-    'estudiante': 'NINGUNA'
-  };
-  
-  // Try specific mappings first
-  const mappedValue = occupationMappings[appValue];
-  if (mappedValue) {
-    const result = mapToCatalog(officialOccupations, mappedValue);
-    if (result) {
-      console.log(`✅ Occupation specific mapping: "${appValue}" → "${result.value}" (ID: ${result.id})`);
-      return result;
-    }
-  }
-  
-  // Find in local occupations
-  const localOcc = occupations.find(o => 
-    o.value === appValue || 
-    o.label.toLowerCase() === appValue.toLowerCase()
-  );
-  if (localOcc) {
-    const result = mapToCatalog(officialOccupations, localOcc.label);
-    if (result) {
-      console.log(`✅ Occupation local mapping: "${appValue}" → "${result.value}" (ID: ${result.id})`);
-      return result;
-    }
-  }
-  
-  // Direct mapping attempt
-  let result = mapToCatalog(officialOccupations, appValue);
-  if (result) {
-    console.log(`✅ Occupation direct mapping: "${appValue}" → "${result.value}" (ID: ${result.id})`);
-    return result;
-  }
-  
-  // Try uppercase version
-  result = mapToCatalog(officialOccupations, appValue.toUpperCase());
-  if (result) {
-    console.log(`✅ Occupation uppercase mapping: "${appValue}" → "${result.value}" (ID: ${result.id})`);
-    return result;
-  }
-  
-  console.log(`❌ No occupation mapping found for: "${appValue}"`);
-  return mapToCatalog(officialOccupations, '', "169"); // Fallback to NINGUNA
-};
-
+// Helper function to split full name
 const splitFullName = (fullName: string) => {
-  if (!fullName) return { firstName: '', secondName: '', firstLastName: '', secondLastName: '' };
+  if (!fullName) return { firstName: "", secondName: "", firstLastName: "", secondLastName: "" };
   
   const parts = fullName.trim().split(/\s+/);
   
   if (parts.length === 1) {
-    return { firstName: parts[0], secondName: '', firstLastName: '', secondLastName: '' };
+    return { firstName: parts[0], secondName: "", firstLastName: "", secondLastName: "" };
   } else if (parts.length === 2) {
-    return { firstName: parts[0], secondName: '', firstLastName: parts[1], secondLastName: '' };
+    return { firstName: parts[0], secondName: "", firstLastName: parts[1], secondLastName: "" };
   } else if (parts.length === 3) {
-    return { firstName: parts[0], secondName: parts[1], firstLastName: parts[2], secondLastName: '' };
+    return { firstName: parts[0], secondName: "", firstLastName: parts[1], secondLastName: parts[2] };
   } else {
-    return { 
-      firstName: parts[0], 
-      secondName: parts[1], 
-      firstLastName: parts[2], 
-      secondLastName: parts.slice(3).join(' ') 
+    return {
+      firstName: parts[0],
+      secondName: parts[1],
+      firstLastName: parts[2],
+      secondLastName: parts.slice(3).join(" ")
     };
   }
 };
 
-export const toOfficial = (formData: any, agentData?: any): OfficialPayload => {
-  console.log("🔄 Iniciando transformación a OfficialPayload...");
-  console.log("📋 DEBUGGING - FormData completo recibido:", JSON.stringify(formData, null, 2));
-  
-  // Debug específico para campos problemáticos
-  console.log("🔍 DEBUGGING - Campos críticos:");
-  console.log("   - Gender:", formData.gender, formData.genero, formData.sexo);
-  console.log("   - Civil Status:", formData.civilStatus, formData.estadoCivil, formData.maritalStatus);
-  console.log("   - Occupation:", formData.occupation, formData.ocupacion, formData.work);
-  console.log("   - Education:", formData.education, formData.educacion, formData.nivel_educativo);
-  console.log("   - Ethnicity:", formData.ethnicity, formData.etnia, formData.ethnic);
-  console.log("   - Housing:", formData.housingStability, formData.estabilidadVivienda, formData.housing);
-  console.log("   - Profession:", formData.profession, formData.profesion);
-  console.log("   - Income Sources:", formData.incomeSources, formData.fuentesIngreso, formData.income);
-  console.log("   - Funds Destination:", formData.fundsDestination, formData.destinoFondos);
-
-  // Map occupation - probar múltiples nombres de campo
-  const occupationValue = formData.occupation || formData.ocupacion || formData.work || formData.trabajo;
-  console.log("🔍 OCCUPATION DEBUG - Valor encontrado:", occupationValue);
-  const mappedOccupation = mapOccupation(occupationValue);
-  console.log("🔍 OCCUPATION DEBUG - Resultado mapeo:", mappedOccupation);
-
-  // Map profession with debug
-  const professionValue = formData.profession || formData.profesion || formData.title;
-  console.log("🔍 PROFESSION DEBUG - Valor encontrado:", professionValue);
-  const mappedProfession = mapProfession(professionValue);
-  console.log("🔍 PROFESSION DEBUG - Resultado mapeo:", mappedProfession);
-
-  // Map gender - probar múltiples nombres de campo
-  const genderValue = formData.gender || formData.genero || formData.sexo;
-  console.log("🔍 GENDER DEBUG - Valor encontrado:", genderValue);
-  const mappedGender = mapToCatalog(genders, genderValue);
-  console.log("🔍 GENDER DEBUG - Resultado mapeo:", mappedGender);
-
-  // Map civil status - probar múltiples nombres de campo
-  const civilStatusValue = formData.civilStatus || formData.estadoCivil || formData.maritalStatus;
-  console.log("🔍 CIVIL STATUS DEBUG - Valor encontrado:", civilStatusValue);
-  const mappedCivilStatus = mapToCatalog(civilStatuses, civilStatusValue);
-  console.log("🔍 CIVIL STATUS DEBUG - Resultado mapeo:", mappedCivilStatus);
-
-  // Map education level - probar múltiples nombres de campo (prioritize educationLevel)
-  const educationValue = formData.educationLevel || formData.education || formData.educacion || formData.nivel_educativo;
-  console.log("🔍 EDUCATION DEBUG - Valor encontrado:", educationValue);
-  const mappedEducation = mapToCatalog(educationLevels, educationValue);
-  console.log("🔍 EDUCATION DEBUG - Resultado mapeo:", mappedEducation);
-
-  // Map ethnicity - probar múltiples nombres de campo
-  const ethnicityValue = formData.ethnicity || formData.etnia || formData.ethnic || '';
-  console.log("🔍 ETHNICITY DEBUG - Valor encontrado:", ethnicityValue);
-  // Si no hay valor específico de etnia, usar Ladino como default según los datos de formulario
-  const mappedEthnicity = ethnicityValue ? mapToCatalog(ethnicities, ethnicityValue) : { id: "3", value: "Ladino" };
-  console.log("🔍 ETHNICITY DEBUG - Resultado mapeo:", mappedEthnicity);
-
-  // Map personal identification
-  const personalDoc = {
-    firstName: formData.firstName || '',
-    secondName: formData.secondName || formData.middleName || '',
-    firstLastName: formData.lastName || formData.firstLastName || '',
-    secondLastName: formData.secondLastName || '',
-    marriedSurname: formData.marriedLastName || '',
-    personalDocumentId: formData.dpi || '',
-    gender: mappedGender || { id: "3", value: "N/D" },
-    maritalStatus: mappedCivilStatus || { id: "6", value: "N/D" },
-    birthDate: formData.birthDate ? new Date(formData.birthDate).toISOString().split('T')[0] : '',
-    age: formData.age || 0,
-    academicTitle: mappedProfession || { id: "1", value: "BACHILLER" },
-    occupation: mappedOccupation || { id: "169", value: "NINGUNA" },
-    typeOfHousing: mapToCatalog(
-      [
-        { id: "1", value: "PROPIA" },
-        { id: "2", value: "ALQUILADA" }, 
-        { id: "3", value: "FAMILIAR" },
-        { id: "4", value: "PAGANDO" }
-      ], 
-      formData.housingType
-    ) || { id: "1", value: "PROPIA" },
-    housingStability: (() => {
-      const housingStabilityCatalog = [
-        { id: "1", value: "MENOR A 1 AÑO" },
-        { id: "2", value: "1 A 2 AÑOS" },
-        { id: "3", value: "2 A 3 AÑOS" },
-        { id: "4", value: "MAYOR A 3 AÑOS" }
-      ];
-      
-      // Use housingStability first, then fall back to residentialStability
-      const stabilityValue = formData.housingStability || formData.residentialStability;
-      console.log(`🏠 Mapping housing stability: "${stabilityValue}" (from housingStability: ${formData.housingStability}, residentialStability: ${formData.residentialStability})`);
-      
-      // Enhanced housing stability mappings
-      const stabilityMappings: { [key: string]: string } = {
-        '< 1 año': 'MENOR A 1 AÑO',
-        'menos de 1 año': 'MENOR A 1 AÑO',
-        'menor a 1 año': 'MENOR A 1 AÑO',
-        '1 año': '1 A 2 AÑOS',
-        '1-2 años': '1 A 2 AÑOS',
-        '1 a 2 años': '1 A 2 AÑOS',
-        '2 años': '2 A 3 AÑOS',
-        '2-3 años': '2 A 3 AÑOS',
-        '2 a 3 años': '2 A 3 AÑOS',
-        '3 años': 'MAYOR A 3 AÑOS',
-        '> 3 años': 'MAYOR A 3 AÑOS',
-        'más de 3 años': 'MAYOR A 3 AÑOS',
-        'mayor a 3 años': 'MAYOR A 3 AÑOS'
-      };
-      
-      const mappedValue = stabilityMappings[stabilityValue?.toLowerCase()] || stabilityValue;
-      const result = mapToCatalog(housingStabilityCatalog, mappedValue, "4");
-      
-      console.log(`✅ Housing stability mapped: "${stabilityValue}" → "${result?.value}" (ID: ${result?.id})`);
-      return result || { id: "4", value: "MAYOR A 3 AÑOS" };
-    })(),
-    geolocalization: formData.coordinates ? `${formData.coordinates.latitude},${formData.coordinates.longitude}` : undefined,
-    personalDocumentAddress: {
-      fullAddress: formData.address || '',
-      otherIndications: formData.addressReference || '',
-      state: mapToCatalog(departments, formData.residenceDepartment) || { id: "01", value: "GUATEMALA" }
-    },
-    // Spouse data
-    spouseFirstName: formData.spouseFirstName || '',
-    spouseSecondName: formData.spouseSecondName || '',
-    spouseThirdName: '', // Can be empty as confirmed
-    spouseFirstLastName: formData.spouseFirstLastName || '',
-    spouseSecondLastName: formData.spouseSecondLastName || '',
-    spouseCompanyName: formData.spouseWorkplace || '',
-    spouseJobStability: formData.spouseJobStability ? mapToCatalog(
-      [
-        { id: "1", value: "MENOR A 1 AÑO" },
-        { id: "2", value: "1 A 2 AÑOS" },
-        { id: "3", value: "2 A 3 AÑOS" },
-        { id: "4", value: "MAYOR A 3 AÑOS" }
-      ],
-      formData.spouseJobStability
-    ) : undefined,
-    spouseMobile: formData.spouseMobile || '',
-    spouseBirthDate: formData.spouseBirthDate ? new Date(formData.spouseBirthDate).toISOString().split('T')[0] : ''
-  };
-
-  // Map person data
-  const personData = {
-    nit: formData.nit || '',
-    mobile: formData.mobilePhone || '',
-    telephone: formData.homePhone || formData.mobilePhone || '',
-    email: formData.email ? [{
-      emailAddress: formData.email,
-      emailType: "personal",
-      emailId: "1"
-    }] : [],
-    numberOfDependants: parseInt(formData.dependents) || 0,
-    ethnicity: mappedEthnicity || { id: "3", value: "Ladino" },
-    academicDegree: mappedEducation || { id: "1", value: "PRIMARIA" }
-  };
-
-  // Map product details
-  const productDetail = {
-    idTypeProduct: 1, // Default for personal credit
-    idAgency: 12, // Default agency for Coopsama
-    requestedAmount: parseFloat(formData.requestedAmount) || 0,
-    interestRate: parseFloat(formData.interestRate) || undefined,
-    startingTerm: parseInt(formData.termMonths) || 0,
-    principalAmortization: formData.capitalAmortization ? mapToCatalog(
-      [
-        { id: "1", value: "MENSUAL" },
-        { id: "2", value: "BIMENSUAL" },
-        { id: "3", value: "TRIMESTRAL" },
-        { id: "4", value: "SEMESTRAL" },
-        { id: "5", value: "ANUAL" },
-        { id: "8", value: "AL VENCIMIENTO" },
-        { id: "9", value: "FONDO REVOLVENTE" }
-      ],
-      formData.capitalAmortization
-    ) : undefined,
-    interestAmortization: formData.interestAmortization ? mapToCatalog(
-      [
-        { id: "1", value: "MENSUAL" },
-        { id: "2", value: "BIMENSUAL" },
-        { id: "3", value: "TRIMESTRAL" },
-        { id: "4", value: "SEMESTRAL" },
-        { id: "5", value: "ANUAL" },
-        { id: "8", value: "AL VENCIMIENTO" },
-        { id: "9", value: "FONDO REVOLVENTE" }
-      ],
-      formData.interestAmortization
-    ) : undefined,
-    partnerType: formData.memberType ? mapToCatalog(
-      [
-        { id: "1", value: "A" },
-        { id: "2", value: "B" },
-        { id: "3", value: "C" },
-        { id: "4", value: "D" }
-      ],
-      formData.memberType
-    ) : undefined,
-    // Map destination group and credit destination
-    destinationGroup: (() => {
-      console.log(`🎯 Mapping destination group: "${formData.destinationGroup}"`);
-      const result = mapToCatalog(destinationGroups, formData.destinationGroup);
-      console.log(`✅ Destination group mapped: "${formData.destinationGroup}" → "${result?.value}" (ID: ${result?.id})`);
-      return result || { id: "1", value: "Grupo MicroCredito" };
-    })(),
-    creditDestination: (() => {
-      console.log(`💳 Mapping credit destination: "${formData.creditDestination}"`);
-      // Get destinations for the selected group
-      const destinationGroupId = mapToCatalog(destinationGroups, formData.destinationGroup)?.id || "1";
-      const availableDestinations = getDestinationsByGroup(destinationGroupId);
-      const result = mapToCatalog(availableDestinations, formData.creditDestination);
-      console.log(`✅ Credit destination mapped: "${formData.creditDestination}" → "${result?.value}" (ID: ${result?.id})`);
-      return result || { id: "1", value: "COMERCIO" };
-    })(),
-    paymentMethod: mapToCatalog(
-      [
-        { id: "1", value: "DECRECIENTE" },
-        { id: "2", value: "NIVELADA" }
-      ],
-      formData.paymentPlan
-    ) || { id: "2", value: "NIVELADA" },
-    fundsDestination: {
-      investmentState: formData.investmentPlaceDepartment ? mapToCatalog(departments, formData.investmentPlaceDepartment) : undefined,
-      investmentCounty: formData.investmentPlaceMunicipality ? mapToCatalog(municipalities, formData.investmentPlaceMunicipality) : undefined,
-      destinationCategory: (() => {
-        console.log(`📍 Mapping destination category: "${formData.destinationCategory}"`);
-        if (!formData.destinationCategory) {
-          return { id: "22", value: "Gastos personales" };
-        }
-        const result = mapToCatalog(destinationCategories, formData.destinationCategory);
-        console.log(`✅ Destination category mapped: "${formData.destinationCategory}" → "${result?.value}" (ID: ${result?.id})`);
-        return result || { id: "22", value: "Gastos personales" };
-      })(),
-      otherDestination: formData.specificDestination || '',
-      description: formData.destinationDescription || '',
-      comments: formData.destinationComments || ''
-    }
-  };
-
-  // Map income (if exists) - CRITICAL: Ensure income sources are properly mapped
-  const income = formData.income && Array.isArray(formData.income) && formData.income.length > 0 ? formData.income.map((inc: any) => {
-    console.log(`💰 Mapping income source: "${inc.source}"`);
-    
-    const incomeSourceCatalog = [
-      { id: "1", value: "NOMINAL" },
-      { id: "2", value: "COMERCIAL" },
-      { id: "3", value: "AGRICOLA" },
-      { id: "4", value: "CONYUGE" },
-      { id: "5", value: "OTROS" }
-    ];
-    
-    // Enhanced income source mappings
-    const incomeSourceMappings: { [key: string]: string } = {
-      'Salario': 'NOMINAL',
-      'salario': 'NOMINAL',
-      'Sueldo': 'NOMINAL',
-      'sueldo': 'NOMINAL',
-      'Empleo': 'NOMINAL',
-      'empleo': 'NOMINAL',
-      'Comercio': 'COMERCIAL',
-      'comercio': 'COMERCIAL',
-      'Negocio': 'COMERCIAL',
-      'negocio': 'COMERCIAL',
-      'Ventas': 'COMERCIAL',
-      'ventas': 'COMERCIAL',
-      'Agricultura': 'AGRICOLA',
-      'agricultura': 'AGRICOLA',
-      'Ganadería': 'AGRICOLA',
-      'ganadería': 'AGRICOLA',
-      'Cónyuge': 'CONYUGE',
-      'cónyuge': 'CONYUGE',
-      'Esposo': 'CONYUGE',
-      'esposo': 'CONYUGE',
-      'Esposa': 'CONYUGE',
-      'esposa': 'CONYUGE',
-      'Pareja': 'CONYUGE',
-      'pareja': 'CONYUGE',
-      'Otros': 'OTROS',
-      'otros': 'OTROS',
-      'Remesas': 'OTROS',
-      'remesas': 'OTROS',
-      'Pensión': 'OTROS',
-      'pensión': 'OTROS'
-    };
-    
-    const mappedValue = incomeSourceMappings[inc.source] || inc.source;
-    const result = mapToCatalog(incomeSourceCatalog, mappedValue, "5");
-    
-    console.log(`✅ Income source mapped: "${inc.source}" → "${result?.value}" (ID: ${result?.id})`);
-    
-    return {
-      incomeSource: result || { id: "5", value: "OTROS" },
-      monthlyIncome: parseFloat(inc.amount) || 0,
-      comments: inc.observations || '',
-      mainIncomeSource: inc.isMain || false
-    };
-  }) : [
-    // CRITICAL: If no income provided, add default income to prevent "missing required fields" error
-    {
-      incomeSource: { id: "2", value: "COMERCIAL" },
-      monthlyIncome: 8000,
-      comments: "Venta de productos textiles",
-      mainIncomeSource: true
-    }
-  ];
-
-  // Map expenses (transform from object to array)
-  const expenseItems = [];
-  const expenseMap = [
-    { key: 'food', name: 'Alimentación' },
-    { key: 'clothing', name: 'Vestuario' },
-    { key: 'utilities', name: 'Servicios básicos' },
-    { key: 'education', name: 'Educación' },
-    { key: 'housing', name: 'Vivienda' },
-    { key: 'transport', name: 'Transporte' },
-    { key: 'commitments', name: 'Compromisos' },
-    { key: 'financial', name: 'Gastos financieros' },
-    { key: 'payrollDeductions', name: 'Descuentos de planilla' },
-    { key: 'other', name: 'Otros gastos' }
-  ];
-
-  expenseMap.forEach(({ key, name }) => {
-    if (formData[key] && parseFloat(formData[key]) > 0) {
-      expenseItems.push({
-        name,
-        amount: parseFloat(formData[key])
-      });
-    }
-  });
-
-  const expense = Object.assign(expenseItems, {
-    totalExpenses: expenseItems.reduce((sum, item) => sum + item.amount, 0)
-  });
-
-  // Map financial status
-  const assetItems = [];
-  const liabilityItems = [];
-  
-  // Assets mapping
-  const assetMap = [
-    { key: 'cashAndBanks', name: 'Efectivo y saldo en bancos' },
-    { key: 'accountsReceivable', name: 'Cuentas por cobrar' },
-    { key: 'merchandise', name: 'Mercaderías' },
-    { key: 'movableGoods', name: 'Bienes muebles' },
-    { key: 'vehicles', name: 'Vehículos' },
-    { key: 'realEstate', name: 'Bienes inmuebles' },
-    { key: 'otherAssets', name: 'Otros activos' }
-  ];
-
-  assetMap.forEach(({ key, name }) => {
-    if (formData[key] && parseFloat(formData[key]) > 0) {
-      assetItems.push({
-        name,
-        amount: parseFloat(formData[key])
-      });
-    }
-  });
-
-  // Liabilities mapping  
-  const liabilityMap = [
-    { key: 'accountsPayable', name: 'Cuentas por pagar' },
-    { key: 'shortTermDebts', name: 'Deudas a corto plazo' },
-    { key: 'longTermLoans', name: 'Préstamos a largo plazo' }
-  ];
-
-  liabilityMap.forEach(({ key, name }) => {
-    if (formData[key] && parseFloat(formData[key]) > 0) {
-      liabilityItems.push({
-        name,
-        amount: parseFloat(formData[key])
-      });
-    }
-  });
-
-  const assetsTotal = assetItems.reduce((sum, item) => sum + item.amount, 0);
-  const liabilitiesTotal = liabilityItems.reduce((sum, item) => sum + item.amount, 0);
-  const equityTotal = assetsTotal - liabilitiesTotal;
-
-  const assets = Object.assign(assetItems, { total: assetsTotal });
-  const liabilities = Object.assign(liabilityItems, { total: liabilitiesTotal });
-
-  const financialStatus = {
-    assets,
-    liabilities,
-    equity: {
-      currentDebtRatio: assetsTotal > 0 ? (liabilitiesTotal / assetsTotal) * 100 : 0,
-      projectedDebtRatio: assetsTotal > 0 ? ((liabilitiesTotal + parseFloat(formData.requestedAmount || 0)) / assetsTotal) * 100 : 0,
-      total: equityTotal
-    }
-  };
-
-  // Map personal references
-  const references = [];
-  if (formData.references && Array.isArray(formData.references)) {
-    formData.references.forEach((ref: any) => {
-      const names = splitFullName(ref.fullName || '');
-      
-      references.push({
-        type: { id: "1", value: "PERSONAL" }, // Always personal as confirmed
-        firstName: names.firstName,
-        secondName: names.secondName,
-        firstLastName: names.firstLastName,
-        secondLastName: names.secondLastName,
-        fullAddress: ref.address || '',
-        relationship: ref.relationship || '',
-        mobile: ref.phone || '',
-        score: mapToCatalog(
-          [
-            { id: "1", value: "EXCELENTE" },
-            { id: "2", value: "BUENO" },
-            { id: "3", value: "REGULAR" },
-            { id: "4", value: "MALO" }
-          ],
-          ref.rating
-        ) || { id: "2", value: "BUENO" },
-        comments: ref.comments || ''
-      });
-    });
+// Helper function to calculate age from birth date
+const calculateAge = (birthDate: string): number => {
+  if (!birthDate) return 30; // Default age
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
   }
+  return age > 0 ? age : 30;
+};
 
-  // Determine if spouse fields should be included based on marital status
-  const isMarried = personalDoc.maritalStatus?.value === 'CASADO' || personalDoc.maritalStatus?.value === 'CASADA';
+// Helper function to calculate total expenses
+const calculateTotalExpenses = (expenses: { name: string; amount: number }[]): number => {
+  return expenses.reduce((total, expense) => total + expense.amount, 0);
+};
+
+// Main transformation function
+export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPayload => {
+  console.log('🔄 Starting Coopsama payload transformation', { formData, agentData });
   
-  // Enhanced personal document with required fields and validation
-  const basePersonalDoc = {
-    ...personalDoc,
-    // CRITICAL: Ensure all required fields are present
-    firstName: personalDoc.firstName || 'NO_ESPECIFICADO',
-    firstLastName: personalDoc.firstLastName || 'NO_ESPECIFICADO', 
-    personalDocumentId: personalDoc.personalDocumentId || '0000000000000',
-    // Only use fallbacks if mapping is actually undefined
-    gender: personalDoc.gender !== undefined ? personalDoc.gender : { id: "1", value: "HOMBRE" },
-    maritalStatus: personalDoc.maritalStatus !== undefined ? personalDoc.maritalStatus : { id: "1", value: "SOLTERO" },
-    occupation: personalDoc.occupation !== undefined ? personalDoc.occupation : { id: "2", value: "AVICULTOR" },
-    academicTitle: personalDoc.academicTitle !== undefined ? personalDoc.academicTitle : { id: "1", value: "BACHILLER" },
-    housingStability: personalDoc.housingStability !== undefined ? personalDoc.housingStability : { id: "4", value: "MAYOR A 3 AÑOS" },
-    emissionState: mapToCatalog(departments, formData.dpiIssueDepartment) || { id: "01", value: "GUATEMALA" },
-    emissionCounty: mapToCatalog(municipalities, formData.dpiIssueMunicipality) || { id: "0101", value: "GUATEMALA" },
-    personalDocumentAddress: {
-      ...personalDoc.personalDocumentAddress,
-      county: mapToCatalog(municipalities, formData.residenceMunicipality) || { id: "0101", value: "GUATEMALA" }
-    }
-  };
-
-  // Only include spouse fields if actually married and spouse data exists
-  const enhancedPersonalDoc = isMarried && formData.spouseFirstName ? {
-    ...basePersonalDoc,
-    spouseFirstName: formData.spouseFirstName,
-    spouseSecondName: formData.spouseSecondName || '',
-    spouseThirdName: formData.spouseThirdName || '',
-    spouseFirstLastName: formData.spouseFirstLastName || '',
-    spouseSecondLastName: formData.spouseSecondLastName || '',
-    spouseCompanyName: formData.spouseCompanyName || '',
-    spouseMobile: formData.spouseMobile || '',
-    spouseBirthDate: formData.spouseBirthDate || ''
-  } : basePersonalDoc;
-
-  // Enhanced person data with correct email structure and validation
-  const enhancedPersonData = {
-    ...personData,
-    // CRITICAL: Ensure all required fields are present
-    mobile: personData.mobile || '00000000',
-    // Only use fallbacks if mapping is actually undefined
-    ethnicity: personData.ethnicity !== undefined ? personData.ethnicity : { id: "3", value: "Ladino" },
-    academicDegree: personData.academicDegree !== undefined ? personData.academicDegree : { id: "1", value: "PRIMARIA" },
-    email: formData.email ? [{
-      emailAddress: formData.email,
-      emailType: "personal",
-      emailId: "1"
-    }] : []
-  };
-
-  // Corregir productDetail usando los mapeos correctos y asegurar campos requeridos
-  const correctedProductDetail = {
-    ...productDetail,
-    // CRITICAL: Ensure all required fields are present
-    requestedAmount: productDetail.requestedAmount || 0,
-    startingTerm: productDetail.startingTerm || 0,
-    // Only use fallbacks if mapping is actually undefined
-    destinationGroup: productDetail.destinationGroup !== undefined ? productDetail.destinationGroup : { id: "4", value: "Grupo Vivienda" },
-    creditDestination: productDetail.creditDestination !== undefined ? productDetail.creditDestination : { id: "6", value: "VIVIENDA" },
-    paymentMethod: productDetail.paymentMethod !== undefined ? productDetail.paymentMethod : { id: "2", value: "NIVELADA" },
-    partnerType: productDetail.partnerType !== undefined ? productDetail.partnerType : { id: "1", value: "A" },
-    // Fix funds destination mapping - ensure it's not undefined
-    fundsDestination: {
-      ...productDetail.fundsDestination,
-      destinationCategory: productDetail.fundsDestination?.destinationCategory !== undefined ? productDetail.fundsDestination?.destinationCategory : { id: "2", value: "Mantenimiento" }
-    },
-    idTypeProduct: 1, // Valor requerido por el microservicio
-    idAgency: 12 // Valor requerido por el microservicio
-  };
+  const fullName = formData.fullName || formData.nombres || "";
+  const names = splitFullName(fullName);
   
-  console.log("✅ ProductDetail corregido (sin hardcodeos):", JSON.stringify(correctedProductDetail, null, 2));
-
-  // Enhanced financial status with correct structure
-  const enhancedFinancialStatus = {
-    assets: {
-      list: assetItems.map(item => ({
-        name: item.name,
-        amount: item.amount
-      })),
-      total: assetItems.reduce((sum, item) => sum + item.amount, 0)
-    },
-    liabilities: {
-      list: liabilityItems.map(item => ({
-        name: item.name,
-        amount: item.amount
-      })),
-      total: liabilityItems.reduce((sum, item) => sum + item.amount, 0)
-    },
-    equity: {
-      currentDebtRatio: 0.31,
-      projectedDebtRatio: 0.45,
-      total: equityTotal
-    }
-  };
-
-  // Business information (default values)
-  const business = {
-    companyName: formData.businessName || "Abarrotería Pérez",
-    activityDescription: formData.businessActivity || "Venta de abarrotes",
-    grossProfit: parseFloat(formData.businessProfit) || 3500.0,
-    productType: "Consumo",
-    startDate: formData.businessStartDate || "2018-03-01",
-    fullAddress: formData.businessAddress || "4a calle 3-45 Zona 2, Guatemala"
-  };
-
-  // Investment plan (default values)
-  const investmentPlan = [
-    {
-      quantity: 2,
-      unitOfMeasurement: "unidad",
-      description: "Congelador comercial",
-      unitPrice: 6000.0,
-      total: 12000.0
-    },
-    {
-      quantity: 1,
-      unitOfMeasurement: "unidad",
-      description: "Bascula industrial",
-      unitPrice: 2500.0,
-      total: 2500.0
-    }
-  ];
-
-  // Collateral (default values)
-  const collateral = [
-    {
-      name: "Hipoteca vivienda",
-      amount: 100000.0,
-      percentage: 80
-    }
-  ];
-
-  // Calculate total expenses
-  const totalExpenses = expenseItems.reduce((sum, item) => sum + item.amount, 0);
-
-  const payload = {
+  // Get agency info
+  const agencyMatch = mapToCatalog(agencies, agentData?.agency || formData.agency || "", "1");
+  const agencyId = parseInt(agencyMatch.id) || 1;
+  
+  // Get location data
+  const departmentMatch = mapToCatalog(departments, formData.department || formData.departamento || "", "01");
+  const municipalityMatch = mapToCatalog(municipalities, formData.municipality || formData.municipio || "", "0101");
+  
+  // Product type mapping
+  const productTypeMatch = mapToCatalog(productTypes, formData.productType || formData.tipoProducto || "", "1");
+  const productTypeId = parseInt(productTypeMatch.id) || 1;
+  
+  // Build the payload
+  const payload: CoopsamaPayload = {
     data: {
       process: {
         profile: {
           processControl: {
-            processId: `SCO_${Date.now().toString().slice(-6)}`,
-            ownerCounty: mapToCatalog(municipalities, formData.residenceMunicipality) || { id: "0101", value: "Guatemala" },
-            ownerState: mapToCatalog(departments, formData.residenceDepartment) || { id: "01", value: "Guatemala" },
-            cuaT24: "2031045",
-            cif: "98622",
-            userEmail: agentData?.email || "agente@test.com",
-            agentDPI: agentData?.dpi || agentData?.email || "agente@test.com",
-            agentName: agentData?.full_name || "Agente de Prueba",
-            creationDateTime: new Date().toISOString()
+            processId: formData.applicationId || `APP-${Date.now()}`,
+            ownerCounty: { id: municipalityMatch.id, value: municipalityMatch.value },
+            ownerState: { id: departmentMatch.id, value: departmentMatch.value },
+            cuaT24: agentData?.cuaT24 || "2031045",
+            cif: agentData?.cif || "98622",
+            userEmail: agentData?.email || formData.email || "agent@coopsama.com.gt"
           },
-          personalDocument: enhancedPersonalDoc,
-          personData: enhancedPersonData,
-          productDetail: correctedProductDetail,
-          income,
-          expense: expenseItems,
-          financialStatus: enhancedFinancialStatus,
-          collateral,
+          personalDocument: {
+            firstName: names.firstName,
+            secondName: names.secondName || undefined,
+            firstLastName: names.firstLastName,
+            secondLastName: names.secondLastName || undefined,
+            marriedSurname: formData.marriedSurname || undefined,
+            personalDocumentId: formData.dpi || formData.documentoPersonal || "",
+            emissionState: { id: departmentMatch.id, value: departmentMatch.value },
+            emissionCounty: { id: municipalityMatch.id, value: municipalityMatch.value },
+            gender: mapToCatalog(genders, formData.gender || formData.genero || "", "1"),
+            maritalStatus: mapToCatalog(civilStatuses, formData.civilStatus || formData.estadoCivil || "", "1"),
+            birthDate: formData.birthDate || formData.fechaNacimiento || "1990-01-01",
+            age: calculateAge(formData.birthDate || formData.fechaNacimiento),
+            academicTitle: mapToCatalog(officialProfessions, formData.profession || formData.profesion || "", "1"),
+            occupation: mapToCatalog(officialOccupations, formData.occupation || formData.ocupacion || "", "1"),
+            personalDocumentAddress: {
+              fullAddress: formData.address || formData.direccion || "",
+              otherIndications: formData.addressDetails || formData.detallesDireccion || undefined,
+              state: { id: departmentMatch.id, value: departmentMatch.value },
+              county: { id: municipalityMatch.id, value: municipalityMatch.value }
+            },
+            typeOfHousing: { id: "1", value: formData.housingType || "Propia" },
+            housingStability: { id: "4", value: formData.housingStability || "3 años" },
+            geolocalization: formData.coordinates || formData.coordenadas || undefined,
+            spouseFirstName: formData.spouseName ? splitFullName(formData.spouseName).firstName : undefined,
+            spouseSecondName: formData.spouseName ? splitFullName(formData.spouseName).secondName : undefined,
+            spouseFirstLastName: formData.spouseName ? splitFullName(formData.spouseName).firstLastName : undefined,
+            spouseSecondLastName: formData.spouseName ? splitFullName(formData.spouseName).secondLastName : undefined,
+            spouseCompanyName: formData.spouseCompany || undefined,
+            spouseJobStability: formData.spouseJobStability ? { id: "4", value: formData.spouseJobStability } : undefined,
+            spouseMobile: formData.spousePhone || undefined,
+            spouseBirthDate: formData.spouseBirthDate || undefined
+          },
+          personData: {
+            nit: formData.nit || undefined,
+            numberOfDependants: parseInt(formData.dependents || formData.dependientes || "0") || 0,
+            ethnicity: mapToCatalog(ethnicities, formData.ethnicity || formData.etnia || "", "2"),
+            academicDegree: mapToCatalog(educationLevels, formData.educationLevel || formData.nivelEducacion || "", "3"),
+            mobile: formData.phone || formData.telefono || "",
+            telephone: formData.landline || formData.telefonoFijo || undefined,
+            email: [{
+              emailAddress: formData.email || formData.correo || "",
+              emailType: "personal",
+              emailId: "1"
+            }]
+          },
+          productDetail: {
+            idTypeProduct: productTypeId,
+            idAgency: agencyId,
+            requestedAmount: parseFloat(formData.requestedAmount || formData.montoSolicitado || "0") || 0,
+            interestRate: parseFloat(formData.interestRate || "12.5") || 12.5,
+            startingTerm: parseInt(formData.term || formData.plazo || "36") || 36,
+            principalAmortization: { id: "1", value: "Mensual" },
+            interestAmortization: { id: "1", value: "Mensual" },
+            partnerType: { id: "1", value: "individual" },
+            requestType: { id: "1", value: "nuevo" },
+            sourceOfFunds: { id: "2", value: formData.sourceOfFunds || "ahorros" },
+            principalProject: { id: "5", value: formData.creditPurpose || formData.proposito || "Comercio" },
+            secondaryProject: { id: "5", value: formData.secondaryPurpose || "Transporte" },
+            paymentMethod: { id: "1", value: "ventanilla" },
+            fundsDestination: {
+              investmentState: { id: departmentMatch.id, value: departmentMatch.value },
+              investmentCounty: { id: municipalityMatch.id, value: municipalityMatch.value },
+              destinationCategory: { id: "22", value: formData.destinationCategory || "Comercial" },
+              otherDestination: formData.otherDestination || undefined,
+              description: formData.destinationDescription || undefined,
+              comments: formData.destinationComments || undefined
+            }
+          },
+          income: [
+            {
+              incomeSource: { id: "1", value: "Salario" },
+              monthlyIncome: parseFloat(formData.monthlyIncome || formData.ingresoMensual || "0") || 0,
+              comments: formData.incomeComments || "Empleo formal",
+              mainIncomeSource: true
+            }
+          ],
+          expense: [
+            { name: "food", amount: parseFloat(formData.foodExpense || "1500") || 1500 },
+            { name: "clothing", amount: parseFloat(formData.clothingExpense || "300") || 300 },
+            { name: "basic services", amount: parseFloat(formData.servicesExpense || "800") || 800 },
+            { name: "education", amount: parseFloat(formData.educationExpense || "500") || 500 },
+            { name: "housing", amount: parseFloat(formData.housingExpense || "2000") || 2000 },
+            { name: "transportation", amount: parseFloat(formData.transportExpense || "600") || 600 },
+            { name: "commitments", amount: parseFloat(formData.commitmentsExpense || "1000") || 1000 },
+            { name: "financial expenses", amount: parseFloat(formData.financialExpense || "200") || 200 },
+            { name: "payroll deductions", amount: parseFloat(formData.payrollDeductions || "400") || 400 },
+            { name: "other expenses", amount: parseFloat(formData.otherExpenses || "300") || 300 }
+          ],
+          financialStatus: {
+            assets: {
+              list: [
+                { name: "cashAndBanks", amount: parseFloat(formData.cashAndBanks || "10000") || 10000 },
+                { name: "accountReceivable", amount: parseFloat(formData.accountReceivable || "5000") || 5000 },
+                { name: "merchandise", amount: parseFloat(formData.merchandise || "15000") || 15000 },
+                { name: "vehicles", amount: parseFloat(formData.vehicles || "50000") || 50000 },
+                { name: "realEstate", amount: parseFloat(formData.realEstate || "100000") || 100000 },
+                { name: "otherAssets", amount: parseFloat(formData.otherAssets || "5000") || 5000 }
+              ],
+              total: 0 // Will be calculated
+            },
+            liabilities: {
+              list: [
+                { name: "accountsPayable", amount: parseFloat(formData.accountsPayable || "5000") || 5000 },
+                { name: "longTermCreditors", amount: parseFloat(formData.longTermCreditors || "10000") || 10000 },
+                { name: "longTermLoans", amount: parseFloat(formData.longTermLoans || "20000") || 20000 }
+              ],
+              total: 0 // Will be calculated
+            },
+            equity: {
+              currentDebtRatio: 0, // Will be calculated
+              projectedDebtRatio: 0, // Will be calculated
+              total: 0 // Will be calculated
+            }
+          },
+          collateral: formData.collateral ? [{
+            name: formData.collateral.name || "Garantía",
+            amount: parseFloat(formData.collateral.amount || "0") || 0,
+            percentage: parseInt(formData.collateral.percentage || "80") || 80
+          }] : undefined,
           personal: {
-            references
+            references: (formData.references || []).map((ref: any, index: number) => ({
+              type: { id: ref.type === 'commercial' ? "2" : "1", value: ref.type === 'commercial' ? "comercial" : "personal" },
+              firstName: ref.name ? splitFullName(ref.name).firstName : `Referencia${index + 1}`,
+              secondName: ref.name ? splitFullName(ref.name).secondName : undefined,
+              firstLastName: ref.name ? splitFullName(ref.name).firstLastName : "",
+              secondLastName: ref.name ? splitFullName(ref.name).secondLastName : undefined,
+              fullAddress: ref.address || "",
+              relationship: ref.relationship || "Conocido",
+              mobile: ref.phone || "",
+              score: { id: "1", value: ref.score || "8" },
+              comments: ref.comments || undefined
+            }))
           },
-          business,
-          investmentPlan,
+          business: formData.businessName ? {
+            companyName: formData.businessName,
+            activityDescription: formData.businessActivity || "Actividad comercial",
+            grossProfit: parseFloat(formData.businessProfit || "0") || 0,
+            productType: formData.businessProductType || "Comercio",
+            startDate: formData.businessStartDate || "2020-01-01",
+            fullAddress: formData.businessAddress || ""
+          } : undefined,
+          investmentPlan: formData.investmentPlan || undefined,
           expenseSummary: {
-            totalExpenses
+            totalExpenses: 0 // Will be calculated
           }
         }
       }
     },
     metadata: {
-      processId: formData.id || formData.applicationId || "TEST1222",
-      user: agentData?.full_name || "yordan"
+      processId: formData.applicationId || `APP-${Date.now()}`,
+      user: agentData?.email || "agent"
     }
   };
 
-  // CRITICAL: Detailed validation before sending to Coopsama
-  console.log("🔍 PRE-VALIDATION CHECKS:");
-  console.log("- PersonalDocument firstName:", payload.data.process.profile.personalDocument.firstName);
-  console.log("- PersonalDocument personalDocumentId:", payload.data.process.profile.personalDocument.personalDocumentId);
-  console.log("- PersonalDocument gender:", payload.data.process.profile.personalDocument.gender);
-  console.log("- PersonalDocument maritalStatus:", payload.data.process.profile.personalDocument.maritalStatus);
-  console.log("- PersonalDocument occupation:", payload.data.process.profile.personalDocument.occupation);
-  console.log("- PersonalDocument academicTitle:", payload.data.process.profile.personalDocument.academicTitle);
-  console.log("- PersonalDocument housingStability:", payload.data.process.profile.personalDocument.housingStability);
-  console.log("- PersonData ethnicity:", payload.data.process.profile.personData.ethnicity);
-  console.log("- PersonData academicDegree:", payload.data.process.profile.personData.academicDegree);
-  console.log("- ProductDetail destinationGroup:", payload.data.process.profile.productDetail.destinationGroup);
-  console.log("- ProductDetail creditDestination:", payload.data.process.profile.productDetail.creditDestination);
-  console.log("- Income sources count:", payload.data.process.profile.income.length);
-  console.log("- Expense items count:", payload.data.process.profile.expense.length);
+  // Calculate totals
+  const profile = payload.data.process.profile;
+  
+  // Calculate assets total
+  profile.financialStatus.assets.total = profile.financialStatus.assets.list.reduce(
+    (sum, asset) => sum + asset.amount, 0
+  );
+  
+  // Calculate liabilities total
+  profile.financialStatus.liabilities.total = profile.financialStatus.liabilities.list.reduce(
+    (sum, liability) => sum + liability.amount, 0
+  );
+  
+  // Calculate equity
+  profile.financialStatus.equity.total = profile.financialStatus.assets.total - profile.financialStatus.liabilities.total;
+  profile.financialStatus.equity.currentDebtRatio = profile.financialStatus.assets.total > 0 ? 
+    profile.financialStatus.liabilities.total / profile.financialStatus.assets.total : 0;
+  profile.financialStatus.equity.projectedDebtRatio = profile.financialStatus.equity.currentDebtRatio + 0.1; // Example projection
+  
+  // Calculate total expenses
+  profile.expenseSummary.totalExpenses = calculateTotalExpenses(profile.expense);
 
-  // Log payload final completo para debugging
-  console.log("📤 PAYLOAD FINAL COMPLETO:", JSON.stringify(payload, null, 2));
-  
-  // Validar payload antes de enviarlo
-  const validation = validateCoverage(payload);
-  console.log("🔍 VALIDACIÓN DEL PAYLOAD:", validation);
-  
-  if (!validation.isValid) {
-    console.error("❌ ERRORES EN PAYLOAD:", validation.issues);
-  }
-  
-  if (validation.warnings.length > 0) {
-    console.warn("⚠️ ADVERTENCIAS EN PAYLOAD:", validation.warnings);
-  }
-
+  console.log('✅ Coopsama payload transformation completed', payload);
   return payload;
 };
 
-export const validateCoverage = (officialPayload: OfficialPayload) => {
-  const issues = [];
-  const warnings = [];
-
-  // Check mandatory fields
-  const profile = officialPayload.data.process.profile;
+// Validation function
+export const validateCoopsamaPayload = (payload: CoopsamaPayload): {
+  isValid: boolean;
+  issues: string[];
+  warnings: string[];
+  completeness: number;
+} => {
+  const issues: string[] = [];
+  const warnings: string[] = [];
   
-  // CRITICAL: Enhanced validation for Coopsama required fields
-  if (!profile.processControl.processId) {
-    issues.push('Missing application ID (processControl.processId)');
-  }
+  const profile = payload.data.process.profile;
   
-  if (!profile.personalDocument.firstName) {
-    issues.push('Missing first name (personalDocument.firstName)');
-  }
-  
-  if (!profile.personalDocument.firstLastName) {
-    issues.push('Missing first last name (personalDocument.firstLastName)');
-  }
-  
-  if (!profile.personalDocument.personalDocumentId) {
-    issues.push('Missing DPI (personalDocument.personalDocumentId)');
-  }
-  
-  if (!profile.personalDocument.gender || !profile.personalDocument.gender.id) {
-    issues.push('Missing gender mapping (personalDocument.gender)');
-  }
-  
-  if (!profile.personalDocument.maritalStatus || !profile.personalDocument.maritalStatus.id) {
-    issues.push('Missing marital status mapping (personalDocument.maritalStatus)');
-  }
-  
-  if (!profile.personalDocument.occupation || !profile.personalDocument.occupation.id) {
-    issues.push('Missing occupation mapping (personalDocument.occupation)');
-  }
-  
-  if (!profile.personalDocument.academicTitle || !profile.personalDocument.academicTitle.id) {
-    issues.push('Missing academic title mapping (personalDocument.academicTitle)');
-  }
-  
-  if (!profile.personalDocument.housingStability || !profile.personalDocument.housingStability.id) {
-    issues.push('Missing housing stability mapping (personalDocument.housingStability)');
-  }
-  
-  if (!profile.personData.ethnicity || !profile.personData.ethnicity.id) {
-    issues.push('Missing ethnicity mapping (personData.ethnicity)');
-  }
-  
-  if (!profile.personData.academicDegree || !profile.personData.academicDegree.id) {
-    issues.push('Missing academic degree mapping (personData.academicDegree)');
-  }
-  
+  // Required field validations
+  if (!profile.personalDocument.firstName) issues.push("First name is required");
+  if (!profile.personalDocument.firstLastName) issues.push("First last name is required");
+  if (!profile.personalDocument.personalDocumentId) issues.push("DPI is required");
+  if (!profile.personData.mobile) issues.push("Mobile phone is required");
   if (!profile.productDetail.requestedAmount || profile.productDetail.requestedAmount <= 0) {
-    issues.push('Missing or invalid requested amount (productDetail.requestedAmount)');
+    issues.push("Requested amount must be greater than 0");
   }
   
-  if (!profile.productDetail.destinationGroup || !profile.productDetail.destinationGroup.id) {
-    issues.push('Missing destination group mapping (productDetail.destinationGroup)');
-  }
+  // Warnings for optional but recommended fields
+  if (!profile.personalDocument.secondName) warnings.push("Second name not provided");
+  if (!profile.personData.email[0]?.emailAddress) warnings.push("Email not provided");
+  if (!profile.personal.references.length) warnings.push("No references provided");
   
-  if (!profile.productDetail.creditDestination || !profile.productDetail.creditDestination.id) {
-    issues.push('Missing credit destination mapping (productDetail.creditDestination)');
-  }
+  const requiredFields = 10; // Approximate count of critical fields
+  const providedFields = requiredFields - issues.length;
+  const completeness = Math.max(0, (providedFields / requiredFields) * 100);
   
-  if (!profile.income || profile.income.length === 0) {
-    issues.push('Missing income sources (income array is empty)');
-  }
-
-  // Check for suspicious default values that might indicate mapping failures
-  if (profile.personalDocument.gender && profile.personalDocument.gender.id === "3") {
-    warnings.push('Gender defaulted to N/D - may indicate mapping failure');
-  }
-  
-  if (profile.personData.ethnicity && profile.personData.ethnicity.id === "3") {
-    warnings.push('Ethnicity defaulted to Ladino - may indicate mapping failure');
-  }
-  
-  if (profile.personalDocument.occupation && profile.personalDocument.occupation.id === "169") {
-    warnings.push('Occupation defaulted to NINGUNA - may indicate mapping failure');
-  }
-
   return {
     isValid: issues.length === 0,
     issues,
     warnings,
-    completeness: {
-      personalData: !!profile.personalDocument.firstName && !!profile.personalDocument.personalDocumentId,
-      contactData: !!profile.personData.mobile,
-      creditData: !!profile.productDetail.requestedAmount && profile.productDetail.requestedAmount > 0,
-      financialData: profile.income.length > 0 || profile.expense.length > 0,
-      referencesData: profile.personal.references.length > 0,
-      mappingIntegrity: {
-        genderMapped: !!profile.personalDocument.gender?.id,
-        maritalStatusMapped: !!profile.personalDocument.maritalStatus?.id,
-        occupationMapped: !!profile.personalDocument.occupation?.id,
-        academicTitleMapped: !!profile.personalDocument.academicTitle?.id,
-        housingStabilityMapped: !!profile.personalDocument.housingStability?.id,
-        ethnicityMapped: !!profile.personData.ethnicity?.id,
-        academicDegreeMapped: !!profile.personData.academicDegree?.id,
-        destinationGroupMapped: !!profile.productDetail.destinationGroup?.id,
-        creditDestinationMapped: !!profile.productDetail.creditDestination?.id
-      }
-    }
+    completeness
   };
 };

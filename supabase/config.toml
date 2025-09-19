@@ -102,6 +102,9 @@ port = 54322
 [functions.custom-access-token-hook]
 verify_jwt = false
 
+[functions.coopsama-integration]
+verify_jwt = false
+
 [studio]
 enabled = true
 port = 54323

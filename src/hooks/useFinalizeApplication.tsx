@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { sanitizeObjectData } from '@/utils/inputValidation';
-import { toOfficial } from '@/utils/fieldMapper';
+import { toCoopsamaPayload } from '@/utils/fieldMapper';
 
 // Build application payload with proper column mapping
 const buildApplicationPayload = (formData: any, userId: string) => {
@@ -56,15 +56,15 @@ export const useFinalizeApplication = () => {
 
       console.log('📤 Finalizing application for user:', user.id);
 
-      // Convert to official format first
-      const officialPayload = toOfficial(formData);
-      console.log("🔍 OFFICIAL PAYLOAD DEBUG (useFinalizeApplication):", JSON.stringify(officialPayload, null, 2));
+      // Convert to Coopsama format first
+      const coopsamaPayload = toCoopsamaPayload(formData);
+      console.log("🔍 COOPSAMA PAYLOAD DEBUG (useFinalizeApplication):", JSON.stringify(coopsamaPayload, null, 2));
       
       // Build the application payload with official data
       const applicationPayload = buildApplicationPayload(formData, user.id);
       
-      // Add the official formatted data to the payload
-      applicationPayload.official_data = officialPayload;
+      // Add the official formatted data to the payload (keeping for backward compatibility)
+      applicationPayload.official_data = coopsamaPayload;
       console.log("🔍 APPLICATION PAYLOAD DEBUG (before sanitization):", JSON.stringify(applicationPayload, null, 2));
       
       // Sanitize the payload
@@ -120,7 +120,7 @@ export const useFinalizeApplication = () => {
         const coopsamaResult = await supabase.functions.invoke('coopsama-integration', {
           body: { 
             applicationId: result.id, // Use the generated UUID from the created application
-            officialData: officialPayload 
+            payload: coopsamaPayload 
           }
         });
         
