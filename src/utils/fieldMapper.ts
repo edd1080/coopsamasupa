@@ -191,12 +191,12 @@ const mapToCatalog = <T extends { id: string; value: string }>(
   appValue: string,
   fallbackId = "1"
 ): { id: string; value: string } => {
-  if (!appValue) return { id: fallbackId, value: catalog.find(c => c.id === fallbackId)?.value || "" };
+  if (!appValue) return { id: fallbackId, value: "" };
   
   const match = findCatalogMatch(catalog, appValue);
   if (match) return { id: match.id, value: match.value };
   
-  return { id: fallbackId, value: catalog.find(c => c.id === fallbackId)?.value || appValue };
+  return { id: fallbackId, value: "" };
 };
 
 // Helper function to split full name
@@ -273,10 +273,10 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
           },
           personalDocument: {
             firstName: names.firstName,
-            secondName: names.secondName || undefined,
+            secondName: names.secondName || "",
             firstLastName: names.firstLastName,
-            secondLastName: names.secondLastName || undefined,
-            marriedSurname: formData.marriedSurname || undefined,
+            secondLastName: names.secondLastName || "",
+            marriedSurname: formData.marriedSurname || "",
             personalDocumentId: formData.dpi || formData.documentoPersonal || "",
             emissionState: { id: departmentMatch.id, value: departmentMatch.value },
             emissionCounty: { id: municipalityMatch.id, value: municipalityMatch.value },
@@ -288,29 +288,30 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             occupation: mapToCatalog(officialOccupations, formData.occupation || formData.ocupacion || "", "1"),
             personalDocumentAddress: {
               fullAddress: formData.address || formData.direccion || "",
-              otherIndications: formData.addressDetails || formData.detallesDireccion || undefined,
+              otherIndications: formData.addressDetails || formData.detallesDireccion || "",
               state: { id: departmentMatch.id, value: departmentMatch.value },
               county: { id: municipalityMatch.id, value: municipalityMatch.value }
             },
             typeOfHousing: mapToCatalog(housingTypes, formData.housingType || formData.tipoVivienda || "", "1"),
             housingStability: mapToCatalog(residentialStabilities, formData.residentialStability || formData.estabilidadResidencial || "", "4"),
-            geolocalization: formData.coordinates || formData.coordenadas || undefined,
-            spouseFirstName: formData.spouseName ? splitFullName(formData.spouseName).firstName : undefined,
-            spouseSecondName: formData.spouseName ? splitFullName(formData.spouseName).secondName : undefined,
-            spouseFirstLastName: formData.spouseName ? splitFullName(formData.spouseName).firstLastName : undefined,
-            spouseSecondLastName: formData.spouseName ? splitFullName(formData.spouseName).secondLastName : undefined,
-            spouseCompanyName: formData.spouseCompany || undefined,
-            spouseJobStability: formData.spouseJobStability ? mapToCatalog(workStabilities, formData.spouseJobStability, "4") : undefined,
-            spouseMobile: formData.spousePhone || undefined,
-            spouseBirthDate: formData.spouseBirthDate || undefined
+            geolocalization: formData.coordinates || formData.coordenadas || "",
+            spouseFirstName: formData.spouseName ? splitFullName(formData.spouseName).firstName : "",
+            spouseSecondName: formData.spouseName ? splitFullName(formData.spouseName).secondName : "",
+            spouseThirdName: "",
+            spouseFirstLastName: formData.spouseName ? splitFullName(formData.spouseName).firstLastName : "",
+            spouseSecondLastName: formData.spouseName ? splitFullName(formData.spouseName).secondLastName : "",
+            spouseCompanyName: formData.spouseCompany || "",
+            spouseJobStability: formData.spouseJobStability ? mapToCatalog(workStabilities, formData.spouseJobStability, "4") : { id: "1", value: "" },
+            spouseMobile: formData.spousePhone || "",
+            spouseBirthDate: formData.spouseBirthDate || ""
           },
           personData: {
-            nit: formData.nit || undefined,
+            nit: formData.nit || "",
             numberOfDependants: parseInt(formData.dependents || formData.dependientes || "0") || 0,
             ethnicity: mapToCatalog(ethnicities, formData.ethnicity || formData.etnia || "", "2"),
             academicDegree: mapToCatalog(educationLevels, formData.educationLevel || formData.nivelEducacion || "", "3"),
             mobile: formData.phone || formData.telefono || "",
-            telephone: formData.landline || formData.telefonoFijo || undefined,
+            telephone: formData.landline || formData.telefonoFijo || formData.phone || formData.telefono || "",
             email: [{
               emailAddress: formData.email || formData.correo || "",
               emailType: "personal",
@@ -335,9 +336,9 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
               investmentState: { id: departmentMatch.id, value: departmentMatch.value },
               investmentCounty: { id: municipalityMatch.id, value: municipalityMatch.value },
               destinationCategory: { id: "22", value: formData.destinationCategory || "Comercial" },
-              otherDestination: formData.otherDestination || undefined,
-              description: formData.destinationDescription || undefined,
-              comments: formData.destinationComments || undefined
+              otherDestination: formData.otherDestination || "",
+              description: formData.destinationDescription || "",
+              comments: formData.destinationComments || ""
             }
           },
           income: (formData.incomes || [
@@ -395,19 +396,23 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             name: formData.collateral.name || "Garantía",
             amount: parseFloat(formData.collateral.amount || "0") || 0,
             percentage: parseInt(formData.collateral.percentage || "80") || 80
-          }] : undefined,
+          }] : [{
+            name: "",
+            amount: 0,
+            percentage: 0
+          }],
           personal: {
             references: (formData.references || []).map((ref: any, index: number) => ({
               type: mapToCatalog(referenceTypes, ref.type || ref.tipoReferencia || "", "1"),
               firstName: ref.name ? splitFullName(ref.name).firstName : `Referencia${index + 1}`,
-              secondName: ref.name ? splitFullName(ref.name).secondName : undefined,
+              secondName: ref.name ? splitFullName(ref.name).secondName : "",
               firstLastName: ref.name ? splitFullName(ref.name).firstLastName : "",
-              secondLastName: ref.name ? splitFullName(ref.name).secondLastName : undefined,
+              secondLastName: ref.name ? splitFullName(ref.name).secondLastName : "",
               fullAddress: ref.address || ref.direccion || "",
               relationship: ref.relationship || ref.relacion || "Conocido",
               mobile: ref.phone || ref.telefono || "",
               score: mapToCatalog(referenceRatings, ref.score || ref.calificacion || "", "1"),
-              comments: ref.comments || ref.comentarios || undefined
+              comments: ref.comments || ref.comentarios || ""
             }))
           },
           business: formData.businessName ? {
@@ -418,7 +423,13 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             startDate: formData.businessStartDate || "2020-01-01",
             fullAddress: formData.businessAddress || ""
           } : undefined,
-          investmentPlan: formData.investmentPlan || undefined,
+          investmentPlan: formData.investmentPlan || [{
+            quantity: 0,
+            unitOfMeasurement: "",
+            description: "",
+            unitPrice: 0,
+            total: 0
+          }],
           expenseSummary: {
             totalExpenses: 0 // Will be calculated
           }
