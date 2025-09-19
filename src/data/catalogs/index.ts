@@ -10,22 +10,25 @@ export const normalizeCatalogString = (str: string): string => {
 
 export const findCatalogMatch = <T extends { id: string; value: string }>(
   catalog: T[],
-  searchValue: string
+  searchValue: any
 ): T | null => {
   if (!searchValue) return null;
 
+  // Convert to string safely
+  const stringValue = typeof searchValue === 'string' ? searchValue : String(searchValue);
+
   // 1. EXACT MATCH - No transformation
-  const exactMatch = catalog.find(item => item.value === searchValue);
+  const exactMatch = catalog.find(item => item.value === stringValue);
   if (exactMatch) return exactMatch;
   
   // 2. CASE-INSENSITIVE EXACT MATCH
   const caseMatch = catalog.find(item => 
-    item.value.toLowerCase() === searchValue.toLowerCase()
+    item.value.toLowerCase() === stringValue.toLowerCase()
   );
   if (caseMatch) return caseMatch;
   
   // 3. NORMALIZED MATCH - Only as last resort
-  const normalizedSearch = normalizeCatalogString(searchValue);
+  const normalizedSearch = normalizeCatalogString(stringValue);
   const normalizedMatch = catalog.find(item => 
     normalizeCatalogString(item.value) === normalizedSearch
   );

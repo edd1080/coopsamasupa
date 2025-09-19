@@ -188,12 +188,15 @@ export interface CoopsamaPayload {
 // Helper function to map catalog values
 const mapToCatalog = <T extends { id: string; value: string }>(
   catalog: T[],
-  appValue: string,
+  appValue: any,
   fallbackId = "1"
 ): { id: string; value: string } => {
   if (!appValue) return { id: fallbackId, value: "" };
   
-  const match = findCatalogMatch(catalog, appValue);
+  // Convert any value to string safely
+  const stringValue = typeof appValue === 'string' ? appValue : String(appValue);
+  
+  const match = findCatalogMatch(catalog, stringValue);
   if (match) return { id: match.id, value: match.value };
   
   return { id: fallbackId, value: "" };

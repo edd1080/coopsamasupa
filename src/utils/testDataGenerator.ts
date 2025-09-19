@@ -164,7 +164,7 @@ export const generateTestData = (profile: 'random' | 'agricultor' | 'comerciante
     spouseLastName: guatemalanLastNames[Math.floor(Math.random() * guatemalanLastNames.length)],
     spouseSecondLastName: guatemalanLastNames[Math.floor(Math.random() * guatemalanLastNames.length)],
     spouseCompany: companyName,
-    spouseJobStability: Math.floor(Math.random() * 10) + 1,
+    spouseJobStability: (Math.floor(Math.random() * 10) + 1).toString(),
     spousePhone: generatePhoneNumber(),
     spouseBirthDate: generateBirthDate(18, 60).toISOString().split('T')[0]
   } : {};
