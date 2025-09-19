@@ -51,3 +51,19 @@ export {
   getDestinationsByGroup,
   getCategoriesByDestination 
 } from './destinationGroups';
+
+// New Coopsama catalogs
+export { housingTypes, getHousingTypeById } from './housingTypes';
+export { residentialStabilities, getResidentialStabilityById } from './residentialStability';
+export { workStabilities, getWorkStabilityById } from './workStability';
+export { capitalAmortizations, getCapitalAmortizationById } from './capitalAmortization';
+export { interestAmortizations, getInterestAmortizationById } from './interestAmortization';
+export { memberTypes, getMemberTypeById } from './memberTypes';
+export { requestTypes, getRequestTypeById } from './requestTypes';
+export { fundsOrigins, getFundsOriginById } from './fundsOrigin';
+export { projectTypes, getProjectTypeById } from './projectTypes';
+export { paymentMethods, getPaymentMethodById } from './paymentMethods';
+export { incomeSourceTypes, getIncomeSourceTypeById } from './incomeSourceTypes';
+export { referenceTypes, getReferenceTypeById } from './referenceTypes';
+export { referenceRatings, getReferenceRatingById } from './referenceRatings';
+export { creditRecordTypes, getCreditRecordTypeById } from './creditRecordTypes';

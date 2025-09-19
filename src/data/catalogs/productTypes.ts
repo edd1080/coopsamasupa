@@ -9,18 +9,18 @@ export const productTypes: ProductType[] = [
   { 
     id: "1", 
     value: "CREDITO", 
-    name: "Crédito Normal",
+    name: "Crédito",
     description: "Créditos tradicionales y préstamos personales"
   },
   { 
     id: "2", 
     value: "AUTOMATICO", 
-    name: "Crédito Automático",
+    name: "Automático",
     description: "Préstamos automatizados con aprobación rápida"
   },
   { 
     id: "3", 
-    value: "TARJETA_CREDITO", 
+    value: "TARJETA_DE_CREDITO", 
     name: "Tarjeta de Crédito",
     description: "Líneas de crédito renovables mediante tarjetas"
   }
