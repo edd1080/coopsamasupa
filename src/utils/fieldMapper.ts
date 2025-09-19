@@ -282,7 +282,7 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             emissionCounty: { id: municipalityMatch.id, value: municipalityMatch.value },
             gender: mapToCatalog(genders, formData.gender || formData.genero || "", "1"),
             maritalStatus: mapToCatalog(civilStatuses, formData.civilStatus || formData.estadoCivil || "", "1"),
-            birthDate: formData.birthDate || formData.fechaNacimiento || "1990-01-01",
+            birthDate: formData.birthDate || formData.fechaNacimiento || null,
             age: calculateAge(formData.birthDate || formData.fechaNacimiento),
             academicTitle: mapToCatalog(officialProfessions, formData.profession || formData.profesion || "", "1"),
             occupation: mapToCatalog(officialOccupations, formData.occupation || formData.ocupacion || "", "1"),
@@ -303,7 +303,7 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             spouseCompanyName: formData.spouseCompany || "",
             spouseJobStability: formData.spouseJobStability ? mapToCatalog(workStabilities, formData.spouseJobStability, "4") : { id: "1", value: "" },
             spouseMobile: formData.spousePhone || "",
-            spouseBirthDate: formData.spouseBirthDate || ""
+            spouseBirthDate: formData.spouseBirthDate || null
           },
           personData: {
             nit: formData.nit || "",

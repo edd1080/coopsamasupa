@@ -94,6 +94,13 @@ serve(async (req) => {
 
     // Construct corrected payload structure for Coopsama microservice
     // The microservice expects: { data: { process: { profile: {...} } }, metadata: {...} }
+    console.log('📥 Received payload structure:', {
+      hasData: !!payload.data,
+      hasProcess: !!payload.data?.process,
+      hasProfile: !!payload.data?.process?.profile,
+      payloadKeys: Object.keys(payload)
+    });
+    
     const profileData = payload.data?.process?.profile || payload;
     
     const coopsamaPayload = {
