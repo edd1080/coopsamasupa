@@ -52,11 +52,6 @@ export type Database = {
           agent_id: string
           amount_requested: number | null
           client_name: string
-          coopsama_external_reference_id: string | null
-          coopsama_operation_id: string | null
-          coopsama_sync_error: string | null
-          coopsama_sync_status: string | null
-          coopsama_synced_at: string | null
           created_at: string
           current_stage: string | null
           draft_data: Json | null
@@ -71,11 +66,6 @@ export type Database = {
           agent_id: string
           amount_requested?: number | null
           client_name: string
-          coopsama_external_reference_id?: string | null
-          coopsama_operation_id?: string | null
-          coopsama_sync_error?: string | null
-          coopsama_sync_status?: string | null
-          coopsama_synced_at?: string | null
           created_at?: string
           current_stage?: string | null
           draft_data?: Json | null
@@ -90,11 +80,6 @@ export type Database = {
           agent_id?: string
           amount_requested?: number | null
           client_name?: string
-          coopsama_external_reference_id?: string | null
-          coopsama_operation_id?: string | null
-          coopsama_sync_error?: string | null
-          coopsama_sync_status?: string | null
-          coopsama_synced_at?: string | null
           created_at?: string
           current_stage?: string | null
           draft_data?: Json | null
