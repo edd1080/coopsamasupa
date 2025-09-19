@@ -185,11 +185,6 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
           <div></div>
         </div>
 
-        {/* Información del Cónyuge - aparece cuando se selecciona casado */}
-        {isMarried && (
-          <SpouseInfoForm formData={formData} updateFormData={updateFormData} />
-        )}
-
         {/* DPI, CUA y NIT */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
@@ -276,6 +271,11 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
             </Select>
           </div>
         </div>
+
+        {/* Información del Cónyuge - aparece cuando se selecciona casado */}
+        {isMarried && (
+          <SpouseInfoForm formData={formData} updateFormData={updateFormData} />
+        )}
       </div>
     </div>
   );
