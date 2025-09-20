@@ -246,8 +246,18 @@ const calculateTotalExpenses = (expenses: { name: string; amount: number }[]): n
 export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPayload => {
   console.log('🔄 Starting Coopsama payload transformation', { formData, agentData });
   
-  const fullName = formData.fullName || formData.nombres || "";
-  const names = splitFullName(fullName);
+  // Construir nombre completo desde campos individuales
+  const firstName = formData.firstName || "";
+  const secondName = formData.secondName || "";
+  const firstLastName = formData.firstLastName || "";
+  const secondLastName = formData.secondLastName || "";
+  
+  const names = {
+    firstName,
+    secondName,
+    firstLastName,
+    secondLastName
+  };
   
   // Get agency info
   const agencyMatch = mapToCatalog(agencies, agentData?.agency || formData.agency || "", "1");
@@ -280,7 +290,7 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             firstLastName: names.firstLastName,
             secondLastName: names.secondLastName || "",
             marriedSurname: formData.marriedSurname || "",
-            personalDocumentId: formData.dpi || formData.documentoPersonal || "",
+            personalDocumentId: formData.dpi || "",
             emissionState: { id: departmentMatch.id, value: departmentMatch.value },
             emissionCounty: { id: municipalityMatch.id, value: municipalityMatch.value },
             gender: mapToCatalog(genders, formData.gender || formData.genero || "", "1"),
@@ -298,14 +308,14 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             typeOfHousing: mapToCatalog(housingTypes, formData.housingType || formData.tipoVivienda || "", "1"),
             housingStability: mapToCatalog(residentialStabilities, formData.residentialStability || formData.estabilidadResidencial || "", "4"),
             geolocalization: formData.coordinates || formData.coordenadas || "",
-            spouseFirstName: formData.spouseName ? splitFullName(formData.spouseName).firstName : "",
-            spouseSecondName: formData.spouseName ? splitFullName(formData.spouseName).secondName : "",
+            spouseFirstName: formData.spouseFirstName || "",
+            spouseSecondName: formData.spouseSecondName || "",
             spouseThirdName: "",
-            spouseFirstLastName: formData.spouseName ? splitFullName(formData.spouseName).firstLastName : "",
-            spouseSecondLastName: formData.spouseName ? splitFullName(formData.spouseName).secondLastName : "",
-            spouseCompanyName: formData.spouseCompany || "",
+            spouseFirstLastName: formData.spouseFirstLastName || "",
+            spouseSecondLastName: formData.spouseSecondLastName || "",
+            spouseCompanyName: formData.spouseWorkplace || "",
             spouseJobStability: formData.spouseJobStability ? mapToCatalog(workStabilities, formData.spouseJobStability, "4") : { id: "1", value: "" },
-            spouseMobile: formData.spousePhone || "",
+            spouseMobile: formData.spouseMobilePhone || "",
             spouseBirthDate: formData.spouseBirthDate || null
           },
           personData: {
@@ -313,10 +323,10 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             numberOfDependants: parseInt(formData.dependents || formData.dependientes || "0") || 0,
             ethnicity: mapToCatalog(ethnicities, formData.ethnicity || formData.etnia || "", "2"),
             academicDegree: mapToCatalog(educationLevels, formData.educationLevel || formData.nivelEducacion || "", "3"),
-            mobile: formData.phone || formData.telefono || "",
-            telephone: formData.landline || formData.telefonoFijo || formData.phone || formData.telefono || "",
+            mobile: formData.mobilePhone || "",
+            telephone: formData.homePhone || "",
             email: [{
-              emailAddress: formData.email || formData.correo || "",
+              emailAddress: formData.email || "",
               emailType: "personal",
               emailId: "1"
             }]
@@ -324,9 +334,9 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
           productDetail: {
             idTypeProduct: productTypeId,
             idAgency: agencyId,
-            requestedAmount: parseFloat(formData.requestedAmount || formData.montoSolicitado || "0") || 0,
+            requestedAmount: parseFloat(formData.requestedAmount || "0") || 0,
             interestRate: parseFloat(formData.interestRate || "12.5") || 12.5,
-            startingTerm: parseInt(formData.term || formData.plazo || "36") || 36,
+            startingTerm: parseInt(formData.termMonths || "36") || 36,
             principalAmortization: mapToCatalog(capitalAmortizations, formData.capitalAmortization || formData.amortizacionCapital || "", "1"),
             interestAmortization: mapToCatalog(interestAmortizations, formData.interestAmortization || formData.amortizacionInteres || "", "1"),
             partnerType: mapToCatalog(memberTypes, formData.memberType || formData.tipoSocio || "", "1"),
