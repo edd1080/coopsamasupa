@@ -247,13 +247,16 @@ const mapMunicipality = (departmentId: string, municipalityName: string) => {
   
   // Normalizar el nombre del municipio para búsqueda
   const normalizedMunicipality = municipalityName.toLowerCase().trim();
-  console.log('🏘️ Searching for municipality:', normalizedMunicipality);
+  console.log('🏘️ Searching for normalized municipality:', normalizedMunicipality);
   
-  // Buscar coincidencia exacta primero
-  let municipality = municipalities.find(m => 
-    m.departmentId === dept.id && 
-    m.value.toLowerCase() === normalizedMunicipality
-  );
+  // Buscar coincidencia exacta primero (sin acentos)
+  let municipality = municipalities.find(m => {
+    const normalizedCatalogValue = m.value.toLowerCase().trim();
+    console.log('🔍 Comparing:', { normalized: normalizedMunicipality, catalog: normalizedCatalogValue, match: normalizedCatalogValue === normalizedMunicipality });
+    return m.departmentId === dept.id && normalizedCatalogValue === normalizedMunicipality;
+  });
+  
+  console.log('🏘️ Exact match result:', municipality);
   
   // Si no encuentra coincidencia exacta, buscar por includes
   if (!municipality) {
@@ -261,19 +264,21 @@ const mapMunicipality = (departmentId: string, municipalityName: string) => {
       m.departmentId === dept.id && 
       m.value.toLowerCase().includes(normalizedMunicipality)
     );
+    console.log('🏘️ Includes match result:', municipality);
   }
   
-  // Si aún no encuentra, buscar por palabras clave
+  // Si aún no encuentra, buscar por palabras clave (búsqueda inversa)
   if (!municipality) {
     municipality = municipalities.find(m => 
       m.departmentId === dept.id && 
       normalizedMunicipality.includes(m.value.toLowerCase())
     );
+    console.log('🏘️ Reverse includes match result:', municipality);
   }
   
   if (municipality) {
     const result = { id: dept.id + municipality.id, value: municipality.value };
-    console.log('🏘️ Municipality mapped successfully:', { municipality, result });
+    console.log('✅ Municipality mapped successfully:', { input: municipalityName, found: municipality, result });
     return result;
   }
   
@@ -409,26 +414,53 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             // Calcular ingresos reales del formulario
             const ingresoPrincipal = parseFloat(formData.ingresoPrincipal || "0") || 0;
             const ingresoSecundario = parseFloat(formData.ingresoSecundario || "0") || 0;
-            const otrasSourcesTotal = (formData.incomeSources || []).reduce((sum: number, source: any) => {
-              return sum + (parseFloat(source.amount || source.monto || "0") || 0);
-            }, 0);
-            
-            const totalMonthlyIncome = ingresoPrincipal + ingresoSecundario + otrasSourcesTotal;
             
             console.log('💰 Calculando ingresos:', {
               ingresoPrincipal,
-              ingresoSecundario, 
-              otrasSourcesTotal,
-              totalMonthlyIncome,
+              ingresoSecundario,
               incomeSources: formData.incomeSources
             });
             
-            return [{
-              incomeSource: mapToCatalog(incomeSourceTypes, formData.incomeSource || "NOMINAL", "1"),
-              monthlyIncome: totalMonthlyIncome,
-              comments: formData.incomeComments || "",
-              mainIncomeSource: true
-            }];
+            // Array de ingresos que incluye el principal y las fuentes adicionales
+            const incomes = [];
+            
+            // Ingreso principal (siempre mainIncomeSource: true)
+            if (ingresoPrincipal > 0) {
+              incomes.push({
+                incomeSource: mapToCatalog(incomeSourceTypes, formData.incomeSource || "NOMINAL", "1"),
+                monthlyIncome: ingresoPrincipal,
+                comments: formData.incomeComments || "Ingreso principal",
+                mainIncomeSource: true
+              });
+            }
+            
+            // Ingreso secundario (si existe)
+            if (ingresoSecundario > 0) {
+              incomes.push({
+                incomeSource: mapToCatalog(incomeSourceTypes, formData.secondaryIncomeSource || "OTROS", "5"),
+                monthlyIncome: ingresoSecundario,
+                comments: formData.secondaryIncomeComments || "Ingreso secundario",
+                mainIncomeSource: false
+              });
+            }
+            
+            // Otras fuentes de ingreso adicionales (todas con mainIncomeSource: false)
+            if (formData.incomeSources && Array.isArray(formData.incomeSources)) {
+              formData.incomeSources.forEach((source: any) => {
+                const amount = parseFloat(source.amount || source.monto || "0");
+                if (amount > 0) {
+                  incomes.push({
+                    incomeSource: mapToCatalog(incomeSourceTypes, source.type || "OTROS", "5"),
+                    monthlyIncome: amount,
+                    comments: source.description || source.descripcion || "Fuente adicional",
+                    mainIncomeSource: false
+                  });
+                }
+              });
+            }
+            
+            console.log('💰 Ingresos mapeados:', incomes);
+            return incomes;
           })(),
           expense: (() => {
             const expenses = [
