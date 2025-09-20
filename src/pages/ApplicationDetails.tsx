@@ -250,10 +250,9 @@ const ApplicationDetails = () => {
                 ID: <span className="font-mono font-medium text-primary">{applicationData.coopsama_external_reference_id}</span>
               </p>
             )}
-            {'coopsama_process_id' in applicationData && applicationData.coopsama_process_id && 'status' in applicationData && (applicationData.status === 'error' || applicationData.coopsama_sync_status === 'failed') && (
+            {'status' in applicationData && applicationData.status === 'error' && (
               <p className="text-sm text-muted-foreground mt-1">
-                Process ID: <span className="font-mono font-medium text-destructive">{applicationData.coopsama_process_id}</span>
-                <span className="ml-2 text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">Error de sincronización</span>
+                Código de error: <span className="font-mono font-medium text-destructive">{applicationData.id}</span>
               </p>
             )}
             {applicationData.isDraft && (
@@ -270,7 +269,8 @@ const ApplicationDetails = () => {
           
           {/* Buttons below name */}
           <div className="flex items-center gap-2 mb-4">
-            {applicationData.isDraft && (
+            {/* Draft applications or error applications */}
+            {(applicationData.isDraft || ('status' in applicationData && applicationData.status === 'error')) && (
               <>
                 <Button variant="outline" size="md" onClick={() => navigate(`/request-form/${id}`)}>
                   <Edit className="h-4 w-4 mr-2" />
@@ -278,11 +278,12 @@ const ApplicationDetails = () => {
                 </Button>
                 <Button size="md" onClick={handleSubmitApplication} disabled={!isApplicationReadyToSubmit()} className={!isApplicationReadyToSubmit() ? 'opacity-50 cursor-not-allowed' : ''}>
                   <Send className="h-4 w-4 mr-2" />
-                  Enviar Solicitud
+                  {'status' in applicationData && applicationData.status === 'error' ? 'Reintentar Envío' : 'Enviar Solicitud'}
                 </Button>
               </>
             )}
-            {!applicationData.isDraft && (
+            {/* Successfully submitted applications */}
+            {!applicationData.isDraft && 'status' in applicationData && applicationData.status !== 'error' && (
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1 text-sm px-3 py-1">
                   <CheckCircle className="h-4 w-4" />

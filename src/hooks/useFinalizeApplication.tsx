@@ -139,18 +139,38 @@ export const useFinalizeApplication = () => {
         
         if (coopsamaResult.error) {
           console.warn('⚠️ Coopsama integration warning:', coopsamaResult.error);
+          
+          // Try to extract actual microservice error message from the error
+          let actualErrorMessage = coopsamaResult.error.message || 'Error al conectar con el microservicio';
+          
+          // If it's a JSON string with error details, parse it
+          try {
+            const errorData = JSON.parse(coopsamaResult.error.message);
+            if (errorData.message) {
+              actualErrorMessage = errorData.message;
+            }
+          } catch {
+            // If not JSON, check if it contains the actual message after certain patterns
+            if (actualErrorMessage.includes('{"code":1')) {
+              const match = actualErrorMessage.match(/"message":"([^"]+)"/);
+              if (match) {
+                actualErrorMessage = match[1];
+              }
+            }
+          }
+          
           // Update application with error status
           await supabase
             .from('applications')
             .update({
               status: 'error',
               coopsama_sync_status: 'error',
-              coopsama_sync_error: coopsamaResult.error.message || 'Error desconocido'
+              coopsama_sync_error: actualErrorMessage
             })
             .eq('id', result.id);
           
           // Return error information to show error screen
-          throw new Error(`COOPSAMA_ERROR:${coopsamaResult.error.message || 'Error al conectar con el microservicio'}`);
+          throw new Error(`COOPSAMA_ERROR:${actualErrorMessage}`);
         } else {
           console.log('✅ Coopsama integration completed successfully');
           console.log('📦 Coopsama response data structure:', coopsamaResult.data);
