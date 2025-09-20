@@ -229,6 +229,13 @@ const calculateTotalExpenses = (expenses: { name: string; amount: number }[]): n
 
 // Helper function to map municipalities correctly
 const mapMunicipality = (departmentId: string, municipalityName: string) => {
+  console.log('🏘️ mapMunicipality called with:', { departmentId, municipalityName });
+  
+  if (!municipalityName || municipalityName.trim() === "") {
+    console.log('🏘️ Empty municipality name, using default');
+    return { id: departmentId + "01", value: "" };
+  }
+  
   // Find department first
   const dept = departments.find(d => d.id === departmentId);
   if (!dept) {
@@ -236,18 +243,42 @@ const mapMunicipality = (departmentId: string, municipalityName: string) => {
     return { id: "0101", value: "" };
   }
   
-  // Find municipality within the department
-  const municipality = municipalities.find(m => 
+  console.log('🏛️ Department found:', dept);
+  
+  // Normalizar el nombre del municipio para búsqueda
+  const normalizedMunicipality = municipalityName.toLowerCase().trim();
+  console.log('🏘️ Searching for municipality:', normalizedMunicipality);
+  
+  // Buscar coincidencia exacta primero
+  let municipality = municipalities.find(m => 
     m.departmentId === dept.id && 
-    m.value.toLowerCase().includes((municipalityName || "").toLowerCase())
+    m.value.toLowerCase() === normalizedMunicipality
   );
   
-  if (municipality) {
-    console.log('🏘️ Municipality found:', { municipality, fullId: dept.id + municipality.id });
-    return { id: dept.id + municipality.id, value: municipality.value };
+  // Si no encuentra coincidencia exacta, buscar por includes
+  if (!municipality) {
+    municipality = municipalities.find(m => 
+      m.departmentId === dept.id && 
+      m.value.toLowerCase().includes(normalizedMunicipality)
+    );
   }
   
-  console.log('🏘️ Municipality not found, using default:', { departmentId, municipalityName });
+  // Si aún no encuentra, buscar por palabras clave
+  if (!municipality) {
+    municipality = municipalities.find(m => 
+      m.departmentId === dept.id && 
+      normalizedMunicipality.includes(m.value.toLowerCase())
+    );
+  }
+  
+  if (municipality) {
+    const result = { id: dept.id + municipality.id, value: municipality.value };
+    console.log('🏘️ Municipality mapped successfully:', { municipality, result });
+    return result;
+  }
+  
+  console.log('🏘️ Municipality not found, available municipalities for dept:', 
+    municipalities.filter(m => m.departmentId === dept.id).map(m => m.value));
   return { id: dept.id + "01", value: "" };
 };
 
