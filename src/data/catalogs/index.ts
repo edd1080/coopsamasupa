@@ -36,31 +36,52 @@ export const findCatalogMatch = <T extends { id: string; value: string }>(
   return normalizedMatch || null;
 };
 
-// Function to map application values to catalog items
+// Función ultra-simple de mapeo de catálogos
 export const mapToCatalog = <T extends { id: string; value: string }>(
   catalog: T[], 
   appValue: any, 
   fallbackId = "1"
 ): { id: string; value: string } => {
-  // Si el valor es null o undefined, usar fallback
-  if (appValue == null) {
+  console.log('🔍 Mapeo de catálogo:', { 
+    catalogName: catalog[0]?.value || 'unknown',
+    inputValue: appValue, 
+    inputType: typeof appValue,
+    catalogItems: catalog.map(c => ({ id: c.id, value: c.value }))
+  });
+
+  // Si no hay valor, devolver fallback con valor vacío
+  if (appValue == null || appValue === "") {
+    console.log('❌ Valor nulo o vacío, usando fallback');
     return { id: fallbackId, value: "" };
   }
-
-  // Convertir a string de manera segura
+  
   const stringValue = String(appValue).trim();
   
-  // Si después de convertir a string está vacío, usar fallback
-  if (!stringValue) {
-    return { id: fallbackId, value: "" };
-  }
-
-  const match = findCatalogMatch(catalog, stringValue);
-  if (match) {
-    return { id: match.id, value: match.value };
+  // Buscar por ID exacto primero (más común en formularios)
+  const byId = catalog.find(item => item.id === stringValue);
+  if (byId) {
+    console.log('✅ Encontrado por ID:', byId);
+    return { id: byId.id, value: byId.value };
   }
   
-  // Si no hay coincidencia en catálogo, mantener el valor original
+  // Buscar por valor exacto
+  const byValue = catalog.find(item => item.value === stringValue);
+  if (byValue) {
+    console.log('✅ Encontrado por valor:', byValue);
+    return { id: byValue.id, value: byValue.value };
+  }
+  
+  // Buscar case-insensitive
+  const byValueCI = catalog.find(item => 
+    item.value.toLowerCase() === stringValue.toLowerCase()
+  );
+  if (byValueCI) {
+    console.log('✅ Encontrado case-insensitive:', byValueCI);
+    return { id: byValueCI.id, value: byValueCI.value };
+  }
+  
+  // Si no encuentra nada, mantener el valor original con fallback ID
+  console.log('⚠️ No encontrado, manteniendo valor original:', stringValue);
   return { id: fallbackId, value: stringValue };
 };
 
