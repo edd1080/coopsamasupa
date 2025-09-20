@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,6 +15,7 @@ import {
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { toCoopsamaPayload } from '@/utils/fieldMapper';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ConnectionTesterProps {
   formData: any;
@@ -30,9 +31,42 @@ interface TestResult {
 }
 
 export const ConnectionTester: React.FC<ConnectionTesterProps> = ({ formData }) => {
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [currentTest, setCurrentTest] = useState<string>('');
+  const [agentData, setAgentData] = useState<any>(null);
+
+  useEffect(() => {
+    const getAgentData = async () => {
+      if (!user) {
+        console.warn("🔍 ConnectionTester: No hay usuario autenticado");
+        return;
+      }
+
+      try {
+        console.log("🔍 ConnectionTester: Obteniendo perfil del usuario", user.email);
+        
+        const { data: userProfile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        const finalAgentData = {
+          ...userProfile,
+          email: user.email || userProfile?.email
+        };
+
+        console.log("🔍 ConnectionTester: Agent data obtenido:", finalAgentData);
+        setAgentData(finalAgentData);
+      } catch (error) {
+        console.error("❌ ConnectionTester: Error obteniendo agent data:", error);
+      }
+    };
+
+    getAgentData();
+  }, [user]);
 
   const addTestResult = (result: Omit<TestResult, 'timestamp'>) => {
     setTestResults(prev => [...prev, { ...result, timestamp: new Date() }]);
@@ -81,8 +115,19 @@ export const ConnectionTester: React.FC<ConnectionTesterProps> = ({ formData }) 
     const startTime = Date.now();
     setCurrentTest('Validando estructura del payload...');
     
+    if (!agentData?.email) {
+      addTestResult({
+        type: 'validation',
+        status: 'error',
+        message: 'No hay usuario autenticado o email del agente no disponible',
+        duration: Date.now() - startTime
+      });
+      return false;
+    }
+    
     try {
-      const payload = toCoopsamaPayload(formData);
+      console.log("🔍 ConnectionTester: Generando payload con agentData:", agentData);
+      const payload = toCoopsamaPayload(formData, agentData);
       
       const response = await supabase.functions.invoke('coopsama-test', {
         body: { 
@@ -140,8 +185,19 @@ export const ConnectionTester: React.FC<ConnectionTesterProps> = ({ formData }) 
     const startTime = Date.now();
     setCurrentTest('Probando integración completa...');
     
+    if (!agentData?.email) {
+      addTestResult({
+        type: 'full',
+        status: 'error',
+        message: 'No hay usuario autenticado o email del agente no disponible',
+        duration: Date.now() - startTime
+      });
+      return false;
+    }
+    
     try {
-      const payload = toCoopsamaPayload(formData);
+      console.log("🔍 ConnectionTester: Generando payload para test completo con agentData:", agentData);
+      const payload = toCoopsamaPayload(formData, agentData);
       
       const response = await supabase.functions.invoke('coopsama-test', {
         body: { 
@@ -254,8 +310,43 @@ export const ConnectionTester: React.FC<ConnectionTesterProps> = ({ formData }) 
     }
   };
 
+  // Show authentication warning if no user or agent data
+  if (!user) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <XCircle className="h-4 w-4 text-red-600" />
+          <span className="text-sm text-red-800">
+            Debe iniciar sesión para probar la conexión al microservicio
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!agentData?.email) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <Loader2 className="h-4 w-4 animate-spin text-yellow-600" />
+          <span className="text-sm text-yellow-800">
+            Cargando datos del agente...
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
+      {/* Info del usuario autenticado */}
+      <div className="flex items-center gap-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+        <CheckCircle className="h-4 w-4 text-green-600" />
+        <span className="text-sm text-green-800">
+          Usuario autenticado: {agentData.email}
+        </span>
+      </div>
+
       {/* Controles de Test */}
       <div className="flex gap-2 flex-wrap">
         <Button
