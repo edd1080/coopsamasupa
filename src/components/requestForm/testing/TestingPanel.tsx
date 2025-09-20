@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +14,8 @@ import {
   AlertTriangle,
   Zap,
   Database,
-  Settings
+  Settings,
+  RefreshCw
 } from 'lucide-react';
 import { generateTestData, dataPresets, generateUltraCompleteApplication, errorPresets } from '@/utils/testDataGenerator';
 import { PayloadViewer } from './PayloadViewer';
@@ -36,6 +37,8 @@ export const TestingPanel: React.FC<TestingPanelProps> = ({
   const [selectedProfile, setSelectedProfile] = useState<'random' | 'agricultor' | 'comerciante' | 'servicios' | 'ultraCompleta'>('random');
   const [selectedErrorType, setSelectedErrorType] = useState<'errorFecha' | 'errorRequerido' | 'errorCatalogo' | 'errorMonto' | 'errorMoneda'>('errorFecha');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [isRegenerating, setIsRegenerating] = useState(false);
 
   const handleGenerateTestData = async (profile: typeof selectedProfile) => {
     setIsGenerating(true);
@@ -111,6 +114,22 @@ export const TestingPanel: React.FC<TestingPanelProps> = ({
     errorMoneda: "Formato de moneda incorrecto - texto en campos numéricos"
   };
 
+  const handleRegenerateAnalysis = useCallback(async () => {
+    setIsRegenerating(true);
+    
+    // Simular procesamiento para feedback visual
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    setRefreshKey(prev => prev + 1);
+    setIsRegenerating(false);
+    
+    toast({
+      variant: "success",
+      title: "Análisis actualizado",
+      description: "Completitud, errores y payload regenerados exitosamente."
+    });
+  }, []);
+
   return (
     <Card className="border-orange-200 bg-orange-50/50">
       <CardHeader className="pb-4">
@@ -124,6 +143,32 @@ export const TestingPanel: React.FC<TestingPanelProps> = ({
       </CardHeader>
       
       <CardContent className="space-y-4">
+        {/* Botón de Regeneración de Análisis */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 space-y-3">
+          <div className="flex items-center gap-2 text-blue-800">
+            <RefreshCw className="h-4 w-4" />
+            <span className="font-medium">Regenerar Análisis Completo</span>
+          </div>
+          <p className="text-sm text-blue-700">
+            Actualiza la completitud, errores críticos, advertencias y vista previa del payload 
+            después de modificar campos manualmente.
+          </p>
+          <Button
+            onClick={handleRegenerateAnalysis}
+            disabled={isRegenerating}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+            size="lg"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRegenerating ? 'animate-spin' : ''}`} />
+            {isRegenerating ? 'Regenerando Análisis...' : 'Regenerar Análisis Completo'}
+          </Button>
+          {refreshKey > 0 && !isRegenerating && (
+            <div className="text-xs text-blue-600 text-center">
+              ✓ Actualizado {new Date().toLocaleTimeString()}
+            </div>
+          )}
+        </div>
+
         <Accordion type="multiple" className="w-full">
           
           {/* Generador de Datos de Prueba */}
@@ -267,7 +312,7 @@ export const TestingPanel: React.FC<TestingPanelProps> = ({
               </div>
             </AccordionTrigger>
             <AccordionContent>
-              <PayloadValidator formData={formData} />
+              <PayloadValidator key={`validator-${refreshKey}`} formData={formData} />
             </AccordionContent>
           </AccordionItem>
 
@@ -280,7 +325,7 @@ export const TestingPanel: React.FC<TestingPanelProps> = ({
               </div>
             </AccordionTrigger>
             <AccordionContent>
-              <PayloadViewer formData={formData} />
+              <PayloadViewer key={`viewer-${refreshKey}`} formData={formData} />
             </AccordionContent>
           </AccordionItem>
 
