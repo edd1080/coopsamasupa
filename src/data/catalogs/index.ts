@@ -42,17 +42,26 @@ export const mapToCatalog = <T extends { id: string; value: string }>(
   appValue: any, 
   fallbackId = "1"
 ): { id: string; value: string } => {
-  if (!appValue || typeof appValue !== 'string') {
+  // Si el valor es null o undefined, usar fallback
+  if (appValue == null) {
     return { id: fallbackId, value: "" };
   }
 
-  const match = findCatalogMatch(catalog, appValue);
+  // Convertir a string de manera segura
+  const stringValue = String(appValue).trim();
+  
+  // Si después de convertir a string está vacío, usar fallback
+  if (!stringValue) {
+    return { id: fallbackId, value: "" };
+  }
+
+  const match = findCatalogMatch(catalog, stringValue);
   if (match) {
     return { id: match.id, value: match.value };
   }
   
   // Si no hay coincidencia en catálogo, mantener el valor original
-  return { id: fallbackId, value: appValue };
+  return { id: fallbackId, value: stringValue };
 };
 
 // Re-export all catalogs
