@@ -43,7 +43,7 @@ export interface CoopsamaPayload {
           ownerState: { id: string; value: string };
           cuaT24: string;
           cif: string;
-          email: string;
+          userEmail: string;
         };
         personalDocument: {
           firstName: string;
@@ -324,7 +324,7 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             ownerState: { id: residenceDepartmentMatch.id, value: residenceDepartmentMatch.value },
             cuaT24: formData.cua || "",
             cif: "",
-            email: (() => {
+            userEmail: (() => {
               console.log("🔍 DEBUG EMAIL METADATA - agentData?.email:", agentData?.email);
               const finalEmail = agentData?.email;
               if (!finalEmail) {
@@ -663,7 +663,7 @@ export const validateCoopsamaPayload = (payload: CoopsamaPayload): {
   
   // Control de Proceso Crítico (3 campos)
   if (!profile.processControl.processId?.trim()) criticalErrors.push("❌ Process ID es obligatorio");
-  if (!profile.processControl.email?.trim()) criticalErrors.push("❌ Email del usuario es obligatorio");
+  if (!profile.processControl.userEmail?.trim()) criticalErrors.push("❌ Email del usuario es obligatorio");
   if (!profile.processControl.cuaT24?.trim()) criticalErrors.push("❌ CUA T24 es obligatorio");
   
   // ========== VALIDACIONES DE ADVERTENCIA (RECOMENDACIONES) ==========
