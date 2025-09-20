@@ -43,7 +43,7 @@ export interface CoopsamaPayload {
           ownerState: { id: string; value: string };
           cuaT24: string;
           cif: string;
-          userEmail: string;
+          email: string;
         };
         personalDocument: {
           firstName: string;
@@ -182,7 +182,7 @@ export interface CoopsamaPayload {
   };
   metadata: {
     processId: string;
-    user: string;
+    email: string;
   };
 }
 
@@ -313,7 +313,7 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             ownerState: { id: residenceDepartmentMatch.id, value: residenceDepartmentMatch.value },
             cuaT24: formData.cua || "",
             cif: "",
-            userEmail: agentData?.email || formData.email || "agent@coopsama.com.gt"
+            email: agentData?.email || formData.email || "agent@coopsama.com.gt"
           },
           personalDocument: {
             firstName: names.firstName,
@@ -546,7 +546,7 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
     },
     metadata: {
       processId: formData.applicationId || `APP-${Date.now()}`,
-      user: agentData?.email || "agent"
+      email: agentData?.email || "agent@coopsama.com.gt"
     }
   };
 
@@ -634,7 +634,7 @@ export const validateCoopsamaPayload = (payload: CoopsamaPayload): {
   
   // Control de Proceso Crítico (3 campos)
   if (!profile.processControl.processId?.trim()) criticalErrors.push("❌ Process ID es obligatorio");
-  if (!profile.processControl.userEmail?.trim()) criticalErrors.push("❌ Email del usuario es obligatorio");
+  if (!profile.processControl.email?.trim()) criticalErrors.push("❌ Email del usuario es obligatorio");
   if (!profile.processControl.cuaT24?.trim()) criticalErrors.push("❌ CUA T24 es obligatorio");
   
   // ========== VALIDACIONES DE ADVERTENCIA (RECOMENDACIONES) ==========

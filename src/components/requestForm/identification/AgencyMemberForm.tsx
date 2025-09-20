@@ -26,7 +26,7 @@ const AgencyMemberForm: React.FC<AgencyMemberFormProps> = ({ formData, updateFor
           </SelectTrigger>
            <SelectContent>
               {agencies.map((agency) => (
-                <SelectItem key={agency.id} value={agency.name}>
+                <SelectItem key={agency.id} value={agency.id}>
                   {agency.name}
                 </SelectItem>
               ))}
