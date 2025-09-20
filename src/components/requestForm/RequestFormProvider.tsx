@@ -191,10 +191,10 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   // Check if application is submitted
   const { data: applicationData } = useApplicationData(applicationId || '');
   
-  // Redirect if application is submitted (not a draft)
+  // Redirect if application is successfully submitted (not a draft and not error)
   useEffect(() => {
-    if (applicationData && !applicationData.isDraft && onRedirectSubmittedApplication) {
-      console.log('🔄 Application is submitted, redirecting to read-only view');
+    if (applicationData && !applicationData.isDraft && 'status' in applicationData && applicationData.status !== 'error' && onRedirectSubmittedApplication) {
+      console.log('🔄 Application is successfully submitted, redirecting to read-only view');
       onRedirectSubmittedApplication(applicationData.id);
     }
   }, [applicationData, onRedirectSubmittedApplication]);
