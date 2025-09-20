@@ -247,7 +247,7 @@ const mapMunicipality = (departmentId: string, municipalityName: string): { id: 
   });
   
   if (municipality) {
-    const result = { id: municipality.id, value: municipality.value };
+    const result = { id: departmentId + municipality.id, value: municipality.value };
     console.log('✅ Municipality mapped:', { input: municipalityName, result });
     return result;
   }
