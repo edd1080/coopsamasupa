@@ -339,62 +339,91 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
               comments: formData.destinationComments || ""
             }
           },
-          income: (formData.incomes || [
-            {
-              incomeSource: formData.incomeSource || "NOMINAL",
-              monthlyIncome: formData.monthlyIncome || formData.ingresoMensual || 0,
+          income: (() => {
+            // Calcular ingresos reales del formulario
+            const ingresoPrincipal = parseFloat(formData.ingresoPrincipal || "0") || 0;
+            const ingresoSecundario = parseFloat(formData.ingresoSecundario || "0") || 0;
+            const otrasSourcesTotal = (formData.incomeSources || []).reduce((sum: number, source: any) => {
+              return sum + (parseFloat(source.amount || source.monto || "0") || 0);
+            }, 0);
+            
+            const totalMonthlyIncome = ingresoPrincipal + ingresoSecundario + otrasSourcesTotal;
+            
+            console.log('💰 Calculando ingresos:', {
+              ingresoPrincipal,
+              ingresoSecundario, 
+              otrasSourcesTotal,
+              totalMonthlyIncome,
+              incomeSources: formData.incomeSources
+            });
+            
+            return [{
+              incomeSource: mapToCatalog(incomeSourceTypes, formData.incomeSource || "NOMINAL", "1"),
+              monthlyIncome: totalMonthlyIncome,
               comments: formData.incomeComments || "",
               mainIncomeSource: true
-            }
-          ]).map((income: any) => ({
-            incomeSource: mapToCatalog(incomeSourceTypes, income.incomeSource || income.tipoIngreso || "", "1"),
-            monthlyIncome: parseFloat(income.monthlyIncome || income.ingresoMensual || "0") || 0,
-            comments: income.comments || income.comentarios || "",
-            mainIncomeSource: income.mainIncomeSource || income.ingresoFuentePrincipal || false
-          })),
-          expense: [
-            { name: "food", amount: parseFloat(formData.foodExpense || "1500") || 1500 },
-            { name: "clothing", amount: parseFloat(formData.clothingExpense || "300") || 300 },
-            { name: "basic services", amount: parseFloat(formData.servicesExpense || "800") || 800 },
-            { name: "education", amount: parseFloat(formData.educationExpense || "500") || 500 },
-            { name: "housing", amount: parseFloat(formData.housingExpense || "2000") || 2000 },
-            { name: "transportation", amount: parseFloat(formData.transportExpense || "600") || 600 },
-            { name: "commitments", amount: parseFloat(formData.commitmentsExpense || "1000") || 1000 },
-            { name: "financial expenses", amount: parseFloat(formData.financialExpense || "200") || 200 },
-            { name: "payroll deductions", amount: parseFloat(formData.payrollDeductions || "400") || 400 },
-            { name: "other expenses", amount: parseFloat(formData.otherExpenses || "300") || 300 }
-          ],
-          financialStatus: {
-            assets: {
-              list: [
-                { name: "cashAndBanks", amount: parseFloat(formData.cashAndBanks || "10000") || 10000 },
-                { name: "accountReceivable", amount: parseFloat(formData.accountReceivable || "5000") || 5000 },
-                { name: "merchandise", amount: parseFloat(formData.merchandise || "15000") || 15000 },
-                { name: "vehicles", amount: parseFloat(formData.vehicles || "50000") || 50000 },
-                { name: "realEstate", amount: parseFloat(formData.realEstate || "100000") || 100000 },
-                { name: "otherAssets", amount: parseFloat(formData.otherAssets || "5000") || 5000 }
-              ],
-              total: 0 // Will be calculated
-            },
-            liabilities: {
-              list: [
-                { name: "accountsPayable", amount: parseFloat(formData.accountsPayable || "5000") || 5000 },
-                { name: "longTermCreditors", amount: parseFloat(formData.longTermCreditors || "10000") || 10000 },
-                { name: "longTermLoans", amount: parseFloat(formData.longTermLoans || "20000") || 20000 }
-              ],
-              total: 0 // Will be calculated
-            },
-            equity: {
-              currentDebtRatio: 0, // Will be calculated
-              projectedDebtRatio: 0, // Will be calculated
-              total: 0 // Will be calculated
-            }
-          },
-          collateral: formData.collateral ? [{
-            name: formData.collateral.name || "Garantía",
-            amount: parseFloat(formData.collateral.amount || "0") || 0,
-            percentage: parseInt(formData.collateral.percentage || "80") || 80
-          }] : [{
+            }];
+          })(),
+          expense: (() => {
+            const expenses = [
+              { name: "food", amount: parseFloat(formData.alimentacion || "0") || 0 },
+              { name: "clothing", amount: parseFloat(formData.vestuario || "0") || 0 },
+              { name: "basic services", amount: parseFloat(formData.serviciosBasicos || "0") || 0 },
+              { name: "education", amount: parseFloat(formData.educacion || "0") || 0 },
+              { name: "housing", amount: parseFloat(formData.vivienda || "0") || 0 },
+              { name: "transportation", amount: parseFloat(formData.transporte || "0") || 0 },
+              { name: "commitments", amount: parseFloat(formData.compromisos || "0") || 0 },
+              { name: "financial expenses", amount: parseFloat(formData.gastosFinancieros || "0") || 0 },
+              { name: "payroll deductions", amount: parseFloat(formData.descuentosPlanilla || "0") || 0 },
+              { name: "other expenses", amount: parseFloat(formData.otros || "0") || 0 }
+            ];
+            
+            console.log('💸 Mapeando gastos reales:', expenses);
+            return expenses;
+          })(),
+          financialStatus: (() => {
+            const assets = [
+              { name: "cashAndBanks", amount: parseFloat(formData.efectivoSaldoBancos || "0") || 0 },
+              { name: "accountReceivable", amount: parseFloat(formData.cuentasPorCobrar || "0") || 0 },
+              { name: "merchandise", amount: parseFloat(formData.mercaderias || "0") || 0 },
+              { name: "vehicles", amount: parseFloat(formData.vehiculos || "0") || 0 },
+              { name: "realEstate", amount: parseFloat(formData.bienesInmuebles || "0") || 0 },
+              { name: "otherAssets", amount: parseFloat(formData.otrosActivos || "0") || 0 }
+            ];
+            
+            const liabilities = [
+              { name: "accountsPayable", amount: parseFloat(formData.cuentasPorPagar || "0") || 0 },
+              { name: "longTermCreditors", amount: parseFloat(formData.deudasCortoPlazo || "0") || 0 },
+              { name: "longTermLoans", amount: parseFloat(formData.prestamosLargoPlazo || "0") || 0 }
+            ];
+            
+            const totalAssets = assets.reduce((sum, asset) => sum + asset.amount, 0);
+            const totalLiabilities = liabilities.reduce((sum, liability) => sum + liability.amount, 0);
+            const totalEquity = totalAssets - totalLiabilities;
+            
+            console.log('🏦 Mapeando estado financiero real:', {
+              assets: { list: assets, total: totalAssets },
+              liabilities: { list: liabilities, total: totalLiabilities },
+              equity: { total: totalEquity }
+            });
+            
+            return {
+              assets: {
+                list: assets,
+                total: totalAssets
+              },
+              liabilities: {
+                list: liabilities,
+                total: totalLiabilities
+              },
+              equity: {
+                currentDebtRatio: totalAssets > 0 ? (totalLiabilities / totalAssets * 100) : 0,
+                projectedDebtRatio: 0, // Se calculará después
+                total: totalEquity
+              }
+            };
+          })(),
+          collateral: [{
             name: "",
             amount: 0,
             percentage: 0
