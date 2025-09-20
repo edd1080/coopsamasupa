@@ -280,8 +280,8 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             processId: formData.applicationId || `APP-${Date.now()}`,
             ownerCounty: { id: municipalityMatch.id, value: municipalityMatch.value },
             ownerState: { id: departmentMatch.id, value: departmentMatch.value },
-            cuaT24: agentData?.cuaT24 || "2031045",
-            cif: agentData?.cif || "98622",
+            cuaT24: formData.cua || "",
+            cif: "",
             userEmail: agentData?.email || formData.email || "agent@coopsama.com.gt"
           },
           personalDocument: {
@@ -307,7 +307,7 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             },
             typeOfHousing: mapToCatalog(housingTypes, formData.housingType || formData.tipoVivienda || "", "1"),
             housingStability: mapToCatalog(residentialStabilities, formData.residentialStability || formData.estabilidadResidencial || "", "4"),
-            geolocalization: formData.coordinates || formData.coordenadas || "",
+            geolocalization: formData.geolocation ? `${formData.geolocation.latitude},${formData.geolocation.longitude}` : "",
             spouseFirstName: formData.spouseFirstName || "",
             spouseSecondName: formData.spouseSecondName || "",
             spouseThirdName: "",
@@ -416,15 +416,15 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
           }],
           personal: {
             references: (formData.references || []).map((ref: any, index: number) => ({
-              type: mapToCatalog(referenceTypes, ref.type || ref.tipoReferencia || "", "1"),
-              firstName: ref.name ? splitFullName(ref.name).firstName : `Referencia${index + 1}`,
-              secondName: ref.name ? splitFullName(ref.name).secondName : "",
-              firstLastName: ref.name ? splitFullName(ref.name).firstLastName : "",
-              secondLastName: ref.name ? splitFullName(ref.name).secondLastName : "",
-              fullAddress: ref.address || ref.direccion || "",
-              relationship: ref.relationship || ref.relacion || "Conocido",
-              mobile: ref.phone || ref.telefono || "",
-              score: mapToCatalog(referenceRatings, ref.score || ref.calificacion || "", "1"),
+              type: mapToCatalog(referenceTypes, ref.referenceType || "", "1"),
+              firstName: ref.fullName ? splitFullName(ref.fullName).firstName : "",
+              secondName: ref.fullName ? splitFullName(ref.fullName).secondName : "",
+              firstLastName: ref.fullName ? splitFullName(ref.fullName).firstLastName : "",
+              secondLastName: ref.fullName ? splitFullName(ref.fullName).secondLastName : "",
+              fullAddress: ref.address || "",
+              relationship: ref.relation || "",
+              mobile: ref.phone || "",
+              score: mapToCatalog(referenceRatings, ref.rating || "", "3"),
               comments: ref.comments || ref.comentarios || ""
             }))
           },

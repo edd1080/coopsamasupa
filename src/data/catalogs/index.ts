@@ -36,6 +36,25 @@ export const findCatalogMatch = <T extends { id: string; value: string }>(
   return normalizedMatch || null;
 };
 
+// Function to map application values to catalog items
+export const mapToCatalog = <T extends { id: string; value: string }>(
+  catalog: T[], 
+  appValue: any, 
+  fallbackId = "1"
+): { id: string; value: string } => {
+  if (!appValue || typeof appValue !== 'string') {
+    return { id: fallbackId, value: "" };
+  }
+
+  const match = findCatalogMatch(catalog, appValue);
+  if (match) {
+    return { id: match.id, value: match.value };
+  }
+  
+  // Si no hay coincidencia en catálogo, mantener el valor original
+  return { id: fallbackId, value: appValue };
+};
+
 // Re-export all catalogs
 export { departments } from './departments';
 export { municipalities, getMunicipalitiesByDepartment } from './municipalities';

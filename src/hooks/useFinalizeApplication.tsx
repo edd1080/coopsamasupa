@@ -56,8 +56,15 @@ export const useFinalizeApplication = () => {
 
       console.log('📤 Finalizing application for user:', user.id);
 
+      // Get user profile for agent data
+      const { data: userProfile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
       // Convert to Coopsama format first
-      const coopsamaPayload = toCoopsamaPayload(formData);
+      const coopsamaPayload = toCoopsamaPayload(formData, userProfile);
       console.log("🔍 COOPSAMA PAYLOAD DEBUG (useFinalizeApplication):", JSON.stringify(coopsamaPayload, null, 2));
       
       // Build the application payload with official data
