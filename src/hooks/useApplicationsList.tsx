@@ -32,7 +32,7 @@ export const useApplicationsList = () => {
       // Fetch from applications table including Coopsama fields
       const { data: applications, error: appError } = await supabase
         .from('applications')
-        .select('*, coopsama_external_reference_id, coopsama_operation_id, coopsama_process_id')
+        .select('*, coopsama_external_reference_id, coopsama_operation_id, coopsama_process_id, coopsama_sync_status, coopsama_sync_error')
         .eq('agent_id', user.id)
         .order('created_at', { ascending: false });
         

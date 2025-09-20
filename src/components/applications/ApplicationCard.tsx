@@ -90,6 +90,10 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
         return <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-200 text-xs px-2 py-0.5">
             Cancelado
           </Badge>;
+      case 'error':
+        return <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200 text-xs px-2 py-0.5">
+            Falló envío
+          </Badge>;
       default:
         return null;
     }
@@ -130,7 +134,7 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
                       {application.status === 'draft' 
                         ? 'Borrador' 
                         : application.status === 'error' 
-                          ? `PRC-${application.processId || 'N/A'} (Error)`
+                          ? application.applicationId || formatApplicationId(application.id)
                           : `ID: ${application.externalReferenceId || formatApplicationId(application.id)}`
                       }
                     </span>
@@ -150,9 +154,9 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
                         <Eye className="mr-2 h-4 w-4" />
                         <span>Ver detalles</span>
                       </DropdownMenuItem>
-                      {isDraft ? <DropdownMenuItem onClick={e => handleContinueApplication(application.id, application.clientName, e)}>
+                      {isDraft || application.status === 'error' ? <DropdownMenuItem onClick={e => handleContinueApplication(application.id, application.clientName, e)}>
                           <Edit className="mr-2 h-4 w-4" />
-                          <span>Continuar</span>
+                          <span>{application.status === 'error' ? 'Reintentar' : 'Continuar'}</span>
                         </DropdownMenuItem> : application.status !== 'submitted' && <DropdownMenuItem onClick={e => handleEditApplication(application.id, application.clientName, e)}>
                           <Edit className="mr-2 h-4 w-4" />
                           <span>Editar</span>
@@ -198,9 +202,9 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
           <Eye className="mr-2 h-4 w-4" />
           <span>Ver detalles</span>
         </ContextMenuItem>
-        {isDraft ? <ContextMenuItem onClick={e => handleContinueApplication(application.id, application.clientName, e)}>
+        {isDraft || application.status === 'error' ? <ContextMenuItem onClick={e => handleContinueApplication(application.id, application.clientName, e)}>
             <Edit className="mr-2 h-4 w-4" />
-            <span>Continuar</span>
+            <span>{application.status === 'error' ? 'Reintentar' : 'Continuar'}</span>
           </ContextMenuItem> : application.status !== 'submitted' && <ContextMenuItem onClick={e => onEdit(application.id, application.clientName, e)}>
             <Edit className="mr-2 h-4 w-4" />
             <span>Editar</span>

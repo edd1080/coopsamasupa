@@ -67,6 +67,8 @@ interface FormContextType {
   submissionResult: any;
   isSavingDraft: boolean;
   isSubmitting: boolean;
+  showErrorScreen: boolean;
+  errorMessage: string;
 }
 
 
@@ -334,6 +336,8 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showSuccessScreen, setShowSuccessScreen] = useState(false);
   const [submissionResult, setSubmissionResult] = useState<any>(null);
+  const [showErrorScreen, setShowErrorScreen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Add save draft mutation
   const saveDraftMutation = useSaveDraft();
@@ -555,9 +559,19 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
       onSuccess: (result) => {
         setSubmissionResult(result);
         setShowSuccessScreen(true);
+        setShowErrorScreen(false); // Reset error screen
       },
       onError: (error) => {
         console.error('❌ Error submitting form:', error);
+        
+        // Check if this is a Coopsama microservice error
+        if (error.message?.includes('COOPSAMA_ERROR:')) {
+          const errorMsg = error.message.replace('COOPSAMA_ERROR:', '');
+          setErrorMessage(errorMsg);
+          setShowErrorScreen(true);
+          setShowSuccessScreen(false);
+        }
+        // Other errors will be handled by the mutation's onError
       }
     });
   }, [formData, finalizeApplicationMutation, steps, updateSectionStatus]);
@@ -684,6 +698,8 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     submissionResult,
     isSavingDraft: saveDraftMutation.isPending,
     isSubmitting: finalizeApplicationMutation.isPending,
+    showErrorScreen,
+    errorMessage,
   };
 
   return (

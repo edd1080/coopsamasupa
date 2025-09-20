@@ -13,6 +13,7 @@ import StepContent from '@/components/requestForm/StepContent';
 import ExitDialog from '@/components/requestForm/ExitDialog';
 import FormActionBar from '@/components/requestForm/FormActionBar';
 import ApplicationSuccessScreen from '@/components/requestForm/ApplicationSuccessScreen';
+import ApplicationErrorScreen from '@/components/requestForm/ApplicationErrorScreen';
 import SafeNavigationWrapper from '@/components/requestForm/SafeNavigationWrapper';
 import { steps } from '@/components/requestForm/formSteps';
 
@@ -26,7 +27,9 @@ const RequestFormContent = () => {
     formData,
     handleShowExitDialog,
     showSuccessScreen,
-    submissionResult
+    submissionResult,
+    showErrorScreen,
+    errorMessage
   } = useFormContext();
   
   const navigate = useNavigate();
@@ -38,6 +41,16 @@ const RequestFormContent = () => {
       <ApplicationSuccessScreen
         applicationId={formData.applicationId}
         externalReferenceId={submissionResult?.externalReferenceId}
+        onGoToApplications={() => navigate('/applications')}
+      />
+    );
+  }
+
+  if (showErrorScreen) {
+    return (
+      <ApplicationErrorScreen
+        errorMessage={errorMessage}
+        applicationId={formData.applicationId}
         onGoToApplications={() => navigate('/applications')}
       />
     );
