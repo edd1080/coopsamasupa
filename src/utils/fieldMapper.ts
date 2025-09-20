@@ -227,6 +227,30 @@ const calculateTotalExpenses = (expenses: { name: string; amount: number }[]): n
   return expenses.reduce((total, expense) => total + expense.amount, 0);
 };
 
+// Helper function to map municipalities correctly
+const mapMunicipality = (departmentId: string, municipalityName: string) => {
+  // Find department first
+  const dept = departments.find(d => d.id === departmentId);
+  if (!dept) {
+    console.log('🏛️ Department not found:', departmentId);
+    return { id: "0101", value: "" };
+  }
+  
+  // Find municipality within the department
+  const municipality = municipalities.find(m => 
+    m.departmentId === dept.id && 
+    m.value.toLowerCase().includes((municipalityName || "").toLowerCase())
+  );
+  
+  if (municipality) {
+    console.log('🏘️ Municipality found:', { municipality, fullId: dept.id + municipality.id });
+    return { id: dept.id + municipality.id, value: municipality.value };
+  }
+  
+  console.log('🏘️ Municipality not found, using default:', { departmentId, municipalityName });
+  return { id: dept.id + "01", value: "" };
+};
+
 // Main transformation function
 export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPayload => {
   console.log('🔄 Starting Coopsama payload transformation', { formData, agentData });
@@ -248,9 +272,20 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
   const agencyMatch = mapToCatalog(agencies, agentData?.agency || formData.agency || "", "1");
   const agencyId = parseInt(agencyMatch.id) || 1;
   
-  // Get location data
-  const departmentMatch = mapToCatalog(departments, formData.department || formData.departamento || "", "01");
-  const municipalityMatch = mapToCatalog(municipalities, formData.municipality || formData.municipio || "", "0101");
+  // Get residence location data
+  const residenceDepartmentMatch = mapToCatalog(departments, formData.residenceDepartment || formData.departamento || "", "01");
+  const residenceMunicipalityMatch = mapMunicipality(residenceDepartmentMatch.id, formData.residenceMunicipality || formData.municipio || "");
+  
+  // Get investment location data  
+  const investmentDepartmentMatch = mapToCatalog(departments, formData.investmentPlaceDepartment || "", "01");
+  const investmentMunicipalityMatch = mapMunicipality(investmentDepartmentMatch.id, formData.investmentPlaceMunicipality || "");
+  
+  console.log('🗺️ Location mapping:', {
+    residenceDepartment: { id: residenceDepartmentMatch.id, value: residenceDepartmentMatch.value },
+    residenceMunicipality: { id: residenceMunicipalityMatch.id, value: residenceMunicipalityMatch.value },
+    investmentDepartment: { id: investmentDepartmentMatch.id, value: investmentDepartmentMatch.value },
+    investmentMunicipality: { id: investmentMunicipalityMatch.id, value: investmentMunicipalityMatch.value }
+  });
   
   // Product type mapping
   const productTypeMatch = mapToCatalog(productTypes, formData.productType || formData.tipoProducto || "", "1");
@@ -263,8 +298,8 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
         profile: {
           processControl: {
             processId: formData.applicationId || `APP-${Date.now()}`,
-            ownerCounty: { id: municipalityMatch.id, value: municipalityMatch.value },
-            ownerState: { id: departmentMatch.id, value: departmentMatch.value },
+            ownerCounty: { id: residenceMunicipalityMatch.id, value: residenceMunicipalityMatch.value },
+            ownerState: { id: residenceDepartmentMatch.id, value: residenceDepartmentMatch.value },
             cuaT24: formData.cua || "",
             cif: "",
             userEmail: agentData?.email || formData.email || "agent@coopsama.com.gt"
@@ -276,8 +311,8 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             secondLastName: names.secondLastName || "",
             marriedSurname: formData.marriedSurname || "",
             personalDocumentId: formData.dpi || "",
-            emissionState: { id: departmentMatch.id, value: departmentMatch.value },
-            emissionCounty: { id: municipalityMatch.id, value: municipalityMatch.value },
+            emissionState: { id: residenceDepartmentMatch.id, value: residenceDepartmentMatch.value },
+            emissionCounty: { id: residenceMunicipalityMatch.id, value: residenceMunicipalityMatch.value },
             gender: mapToCatalog(genders, formData.gender || formData.genero || "", "1"),
             maritalStatus: mapToCatalog(civilStatuses, formData.civilStatus || formData.estadoCivil || "", "1"),
             birthDate: formData.birthDate || formData.fechaNacimiento || null,
@@ -287,8 +322,8 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             personalDocumentAddress: {
               fullAddress: formData.address || formData.direccion || "",
               otherIndications: formData.addressDetails || formData.detallesDireccion || "",
-              state: { id: departmentMatch.id, value: departmentMatch.value },
-              county: { id: municipalityMatch.id, value: municipalityMatch.value }
+              state: { id: residenceDepartmentMatch.id, value: residenceDepartmentMatch.value },
+              county: { id: residenceMunicipalityMatch.id, value: residenceMunicipalityMatch.value }
             },
             typeOfHousing: mapToCatalog(housingTypes, formData.housingType || formData.tipoVivienda || "", "1"),
             housingStability: mapToCatalog(residentialStabilities, formData.residentialStability || formData.estabilidadResidencial || "", "4"),
@@ -331,8 +366,8 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             secondaryProject: mapToCatalog(projectTypes, formData.secondaryProject || formData.proyectoSecundario || "", "5"),
             paymentMethod: mapToCatalog(paymentMethods, formData.paymentMethod || formData.formaPago || "", "1"),
             fundsDestination: {
-              investmentState: { id: departmentMatch.id, value: departmentMatch.value },
-              investmentCounty: { id: municipalityMatch.id, value: municipalityMatch.value },
+              investmentState: { id: investmentDepartmentMatch.id, value: investmentDepartmentMatch.value },
+              investmentCounty: { id: investmentMunicipalityMatch.id, value: investmentMunicipalityMatch.value },
               destinationCategory: { id: "22", value: formData.destinationCategory || "Comercial" },
               otherDestination: formData.otherDestination || "",
               description: formData.destinationDescription || "",
@@ -450,13 +485,21 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             startDate: formData.businessStartDate || "2020-01-01",
             fullAddress: formData.businessAddress || ""
           } : undefined,
-          investmentPlan: formData.investmentPlan || [{
-            quantity: 0,
-            unitOfMeasurement: "",
-            description: "",
-            unitPrice: 0,
-            total: 0
-          }],
+          investmentPlan: (() => {
+            console.log('📋 Mapeando plan de inversión:', formData.investmentPlan);
+            // Si existe plan de inversión en formData, usarlo; si no, array vacío
+            if (formData.investmentPlan && Array.isArray(formData.investmentPlan) && formData.investmentPlan.length > 0) {
+              return formData.investmentPlan.map((item: any) => ({
+                quantity: parseFloat(item.quantity || "0") || 0,
+                unitOfMeasurement: item.unitOfMeasurement || "",
+                description: item.description || "",
+                unitPrice: parseFloat(item.unitPrice || "0") || 0,
+                total: parseFloat(item.total || "0") || 0
+              }));
+            }
+            // Plan de inversión vacío por defecto
+            return [];
+          })(),
           expenseSummary: {
             totalExpenses: 0 // Will be calculated
           }
