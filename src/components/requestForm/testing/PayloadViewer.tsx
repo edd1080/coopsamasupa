@@ -1,25 +1,66 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Copy, Download, Eye } from 'lucide-react';
+import { Copy, Download, Eye, Loader2, CheckCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { toCoopsamaPayload } from '@/utils/fieldMapper';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PayloadViewerProps {
   formData: any;
 }
 
 export const PayloadViewer: React.FC<PayloadViewerProps> = ({ formData }) => {
+  const { user } = useAuth();
   const [viewMode, setViewMode] = useState<'pretty' | 'compact'>('pretty');
+  const [agentData, setAgentData] = useState<any>(null);
+
+  useEffect(() => {
+    const getAgentData = async () => {
+      if (!user) {
+        console.warn("🔍 PayloadViewer: No hay usuario autenticado");
+        return;
+      }
+
+      try {
+        console.log("🔍 PayloadViewer: Obteniendo perfil del usuario", user.email);
+        
+        const { data: userProfile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        const finalAgentData = {
+          ...userProfile,
+          email: user.email || userProfile?.email
+        };
+
+        console.log("🔍 PayloadViewer: Agent data obtenido:", finalAgentData);
+        setAgentData(finalAgentData);
+      } catch (error) {
+        console.error("❌ PayloadViewer: Error obteniendo agent data:", error);
+      }
+    };
+
+    getAgentData();
+  }, [user]);
 
   const payload = useMemo(() => {
-    try {
-      return toCoopsamaPayload(formData);
-    } catch (error) {
-      console.error('Error generating payload:', error);
+    if (!agentData?.email) {
+      console.warn("🔍 PayloadViewer: No hay agentData disponible aún");
       return null;
     }
-  }, [formData]);
+
+    try {
+      console.log("🔍 PayloadViewer: Generando payload con agentData:", agentData);
+      return toCoopsamaPayload(formData, agentData);
+    } catch (error) {
+      console.error('❌ PayloadViewer: Error generating payload:', error);
+      return null;
+    }
+  }, [formData, agentData]);
 
   const jsonString = useMemo(() => {
     if (!payload) return '';
@@ -85,6 +126,31 @@ export const PayloadViewer: React.FC<PayloadViewerProps> = ({ formData }) => {
 
   const stats = getPayloadStats();
 
+  // Show authentication warning if no user
+  if (!user) {
+    return (
+      <div className="p-4 border border-red-200 bg-red-50 rounded-lg">
+        <p className="text-red-800 text-sm">
+          Debe iniciar sesión para visualizar el payload
+        </p>
+      </div>
+    );
+  }
+
+  // Show loading while getting agent data
+  if (!agentData?.email) {
+    return (
+      <div className="p-4 border border-yellow-200 bg-yellow-50 rounded-lg">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-4 w-4 animate-spin text-yellow-600" />
+          <p className="text-yellow-800 text-sm">
+            Cargando datos del agente...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (!payload) {
     return (
       <div className="p-4 border border-red-200 bg-red-50 rounded-lg">
@@ -97,6 +163,14 @@ export const PayloadViewer: React.FC<PayloadViewerProps> = ({ formData }) => {
 
   return (
     <div className="space-y-4">
+      {/* Info del usuario autenticado */}
+      <div className="flex items-center gap-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+        <CheckCircle className="h-4 w-4 text-green-600" />
+        <span className="text-sm text-green-800">
+          Usuario autenticado: {agentData.email}
+        </span>
+      </div>
+
       {/* Estadísticas del Payload */}
       <div className="flex flex-wrap gap-2">
         <Badge variant="outline" className="text-xs">
