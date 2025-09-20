@@ -227,64 +227,39 @@ const calculateTotalExpenses = (expenses: { name: string; amount: number }[]): n
   return expenses.reduce((total, expense) => total + expense.amount, 0);
 };
 
-// Helper function to map municipalities correctly
-const mapMunicipality = (departmentId: string, municipalityName: string) => {
-  console.log('🏘️ mapMunicipality called with:', { departmentId, municipalityName });
+// Helper function to map municipality with department
+const mapMunicipality = (departmentId: string, municipalityName: string): { id: string; value: string } => {
+  console.log('🏘️ Mapping municipality:', { departmentId, municipalityName });
   
-  if (!municipalityName || municipalityName.trim() === "") {
-    console.log('🏘️ Empty municipality name, using default');
+  if (!municipalityName) {
+    console.log('🏘️ No municipality name provided');
     return { id: departmentId + "01", value: "" };
   }
   
-  // Find department first
-  const dept = departments.find(d => d.id === departmentId);
-  if (!dept) {
-    console.log('🏛️ Department not found:', departmentId);
-    return { id: "0101", value: "" };
-  }
-  
-  console.log('🏛️ Department found:', dept);
-  
-  // Normalizar el nombre del municipio para búsqueda
-  const normalizedMunicipality = municipalityName.toLowerCase().trim();
-  console.log('🏘️ Searching for normalized municipality:', normalizedMunicipality);
-  
-  // Buscar coincidencia exacta primero (sin acentos)
-  let municipality = municipalities.find(m => {
-    const normalizedCatalogValue = m.value.toLowerCase().trim();
-    console.log('🔍 Comparing:', { normalized: normalizedMunicipality, catalog: normalizedCatalogValue, match: normalizedCatalogValue === normalizedMunicipality });
-    return m.departmentId === dept.id && normalizedCatalogValue === normalizedMunicipality;
+  // Buscar municipio directamente por coincidencia exacta
+  const municipality = municipalities.find(m => {
+    const match = m.departmentId === departmentId && 
+                  m.value.toLowerCase() === municipalityName.toLowerCase();
+    if (match) {
+      console.log('✅ Exact municipality match:', m);
+    }
+    return match;
   });
   
-  console.log('🏘️ Exact match result:', municipality);
-  
-  // Si no encuentra coincidencia exacta, buscar por includes
-  if (!municipality) {
-    municipality = municipalities.find(m => 
-      m.departmentId === dept.id && 
-      m.value.toLowerCase().includes(normalizedMunicipality)
-    );
-    console.log('🏘️ Includes match result:', municipality);
-  }
-  
-  // Si aún no encuentra, buscar por palabras clave (búsqueda inversa)
-  if (!municipality) {
-    municipality = municipalities.find(m => 
-      m.departmentId === dept.id && 
-      normalizedMunicipality.includes(m.value.toLowerCase())
-    );
-    console.log('🏘️ Reverse includes match result:', municipality);
-  }
-  
   if (municipality) {
-    const result = { id: dept.id + municipality.id, value: municipality.value };
-    console.log('✅ Municipality mapped successfully:', { input: municipalityName, found: municipality, result });
+    const result = { id: municipality.id, value: municipality.value };
+    console.log('✅ Municipality mapped:', { input: municipalityName, result });
     return result;
   }
   
-  console.log('🏘️ Municipality not found, available municipalities for dept:', 
-    municipalities.filter(m => m.departmentId === dept.id).map(m => m.value));
-  return { id: dept.id + "01", value: "" };
+  // Log available municipalities for debugging
+  console.log('🏘️ Municipality not found. Available for dept ' + departmentId + ':', 
+    municipalities
+      .filter(m => m.departmentId === departmentId)
+      .map(m => ({ id: m.id, value: m.value }))
+  );
+  
+  return { id: departmentId + "01", value: "" };
 };
 
 // Main transformation function
