@@ -110,7 +110,7 @@ serve(async (req) => {
         }
       },
       metadata: {
-        processId: processId,
+        processId: applicationId, // Use SCO_XXXXXX instead of PRC-XXXXXX
         user: agentEmail
       }
     };

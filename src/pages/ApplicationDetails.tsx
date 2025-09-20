@@ -259,6 +259,11 @@ const ApplicationDetails = () => {
             {applicationData.isDraft && (
               <p className="text-sm text-muted-foreground mt-1">
                 Estado: <span className="font-medium">Borrador</span>
+                {'status' in applicationData && applicationData.status === 'error' && 'coopsama_sync_status' in applicationData && applicationData.coopsama_sync_status === 'error' && (
+                  <span className="ml-4">
+                    Código de error: <span className="font-mono font-medium text-destructive">{applicationData.id}</span>
+                  </span>
+                )}
               </p>
             )}
           </div>
