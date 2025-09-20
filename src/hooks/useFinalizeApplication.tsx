@@ -63,8 +63,12 @@ export const useFinalizeApplication = () => {
         .eq('id', user.id)
         .single();
 
-      // Convert to Coopsama format first
-      const coopsamaPayload = toCoopsamaPayload(formData, userProfile);
+      // Convert to Coopsama format first - include agent email
+      const agentData = {
+        ...userProfile,
+        email: user.email // Add authenticated user's email
+      };
+      const coopsamaPayload = toCoopsamaPayload(formData, agentData);
       console.log("🔍 COOPSAMA PAYLOAD DEBUG (useFinalizeApplication):", JSON.stringify(coopsamaPayload, null, 2));
       
       // Build the application payload with official data

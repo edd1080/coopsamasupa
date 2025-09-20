@@ -279,8 +279,8 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
     secondLastName
   };
   
-  // Get agency info
-  const agencyMatch = mapToCatalog(agencies, agentData?.agency || formData.agency || "", "1");
+  // Get agency info - prioritize form data (user selection)
+  const agencyMatch = mapToCatalog(agencies, formData.agency || agentData?.agency || "", "1");
   const agencyId = parseInt(agencyMatch.id) || 1;
   
   // Get residence location data
@@ -313,7 +313,7 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             ownerState: { id: residenceDepartmentMatch.id, value: residenceDepartmentMatch.value },
             cuaT24: formData.cua || "",
             cif: "",
-            email: agentData?.email || formData.email || "agent@coopsama.com.gt"
+            email: agentData?.email || "agent@coopsama.com.gt"
           },
           personalDocument: {
             firstName: names.firstName,
