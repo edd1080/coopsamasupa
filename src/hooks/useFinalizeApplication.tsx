@@ -63,11 +63,20 @@ export const useFinalizeApplication = () => {
         .eq('id', user.id)
         .single();
 
+      // DEBUG: Email del agente autenticado
+      console.log("🔍 DEBUG AGENT EMAIL - user.email:", user.email);
+      console.log("🔍 DEBUG AGENT EMAIL - userProfile.email:", userProfile?.email);
+      console.log("🔍 DEBUG AGENT EMAIL - userProfile:", userProfile);
+
       // Convert to Coopsama format first - include agent email
       const agentData = {
         ...userProfile,
-        email: user.email // Add authenticated user's email
+        email: user.email || userProfile?.email // Prioritize authenticated user email
       };
+      
+      console.log("🔍 DEBUG AGENT DATA FINAL:", agentData);
+      console.log("🔍 DEBUG AGENT EMAIL FINAL:", agentData.email);
+      
       const coopsamaPayload = toCoopsamaPayload(formData, agentData);
       console.log("🔍 COOPSAMA PAYLOAD DEBUG (useFinalizeApplication):", JSON.stringify(coopsamaPayload, null, 2));
       

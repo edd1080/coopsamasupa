@@ -279,9 +279,20 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
     secondLastName
   };
   
+  // DEBUG: Mapeo de agencias
+  console.log("🔍 DEBUG AGENCY - formData.agency:", formData.agency);
+  console.log("🔍 DEBUG AGENCY - agentData?.agency:", agentData?.agency);
+  console.log("🔍 DEBUG AGENCY - agencies catalog:", agencies);
+  
   // Get agency info - prioritize form data (user selection)
-  const agencyMatch = mapToCatalog(agencies, formData.agency || agentData?.agency || "", "1");
+  const agencySearchValue = formData.agency || agentData?.agency || "";
+  console.log("🔍 DEBUG AGENCY - searching for:", agencySearchValue);
+  
+  const agencyMatch = mapToCatalog(agencies, agencySearchValue, "1");
+  console.log("🔍 DEBUG AGENCY - agencyMatch result:", agencyMatch);
+  
   const agencyId = parseInt(agencyMatch.id) || 1;
+  console.log("🔍 DEBUG AGENCY - final agencyId:", agencyId);
   
   // Get residence location data
   const residenceDepartmentMatch = mapToCatalog(departments, formData.residenceDepartment || formData.departamento || "", "01");
@@ -313,7 +324,16 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             ownerState: { id: residenceDepartmentMatch.id, value: residenceDepartmentMatch.value },
             cuaT24: formData.cua || "",
             cif: "",
-            email: agentData?.email || "agent@coopsama.com.gt"
+            email: (() => {
+              console.log("🔍 DEBUG EMAIL METADATA - agentData?.email:", agentData?.email);
+              const finalEmail = agentData?.email;
+              if (!finalEmail) {
+                console.error("❌ ERROR: No agent email found in metadata!");
+                throw new Error("Email del agente requerido para metadata");
+              }
+              console.log("🔍 DEBUG EMAIL METADATA - final email:", finalEmail);
+              return finalEmail;
+            })()
           },
           personalDocument: {
             firstName: names.firstName,
@@ -546,7 +566,16 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
     },
     metadata: {
       processId: formData.applicationId || `APP-${Date.now()}`,
-      email: agentData?.email || "agent@coopsama.com.gt"
+      email: (() => {
+        console.log("🔍 DEBUG EMAIL METADATA FINAL - agentData?.email:", agentData?.email);
+        const finalEmail = agentData?.email;
+        if (!finalEmail) {
+          console.error("❌ ERROR: No agent email found in metadata final!");
+          throw new Error("Email del agente requerido para metadata final");
+        }
+        console.log("🔍 DEBUG EMAIL METADATA FINAL - final email:", finalEmail);
+        return finalEmail;
+      })()
     }
   };
 
