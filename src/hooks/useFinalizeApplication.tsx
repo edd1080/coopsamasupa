@@ -212,13 +212,31 @@ export const useFinalizeApplication = () => {
             // Success case (code: 0, success: true)
             if (data.code === 0 && data.success === true) {
               const responseData = data.data || {};
-              externalReferenceId = responseData.externalReferenceId;
-              operationId = responseData.operationId;
+              
+              // 🔍 DEBUG: Log complete response structure to identify field names
+              console.log('🔍 FULL MICROSERVICE RESPONSE STRUCTURE:', JSON.stringify(data, null, 2));
+              console.log('🔍 RESPONSE DATA KEYS:', Object.keys(responseData));
+              console.log('🔍 RESPONSE DATA CONTENT:', JSON.stringify(responseData, null, 2));
+              
+              // Try multiple possible field names for external reference ID
+              externalReferenceId = responseData.externalReferenceId || 
+                                   responseData.external_reference_id || 
+                                   responseData.referenceId || 
+                                   responseData.reference_id ||
+                                   responseData.id ||
+                                   responseData.solicitudId ||
+                                   responseData.applicationId;
+                                   
+              operationId = responseData.operationId || 
+                           responseData.operation_id ||
+                           responseData.processId ||
+                           responseData.process_id;
               
               console.log('🔍 Extracted IDs from successful response:', { 
                 externalReferenceId, 
                 operationId,
-                originalData: data
+                originalData: data,
+                responseDataKeys: Object.keys(responseData)
               });
               
               if (externalReferenceId || operationId) {
