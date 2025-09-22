@@ -356,7 +356,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
         <Separator className="my-8" />
 
         {/* Panel de Testing - Solo visible en desarrollo cuando VITE_ENABLE_TESTING_TOOLS=true */}
-        {import.meta.env.VITE_ENABLE_TESTING_TOOLS === 'true' && (
+        {!import.meta.env.PROD && import.meta.env.VITE_ENABLE_TESTING_TOOLS === 'true' && (
           <TestingPanel 
             formData={formData}
             updateFormData={updateFormData}

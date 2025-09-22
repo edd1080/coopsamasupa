@@ -11,6 +11,10 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
+  define: {
+    // Asegurar que las herramientas de testing estén ocultas en producción
+    'import.meta.env.VITE_ENABLE_TESTING_TOOLS': mode === 'development' ? 'false' : 'false',
+  },
   plugins: [
     react(),
     mode === 'development' &&
