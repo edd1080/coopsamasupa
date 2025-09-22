@@ -36,6 +36,9 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
     removeDocument,
   } = useDocumentManager();
 
+  // Get applicationId from formData
+  const applicationId = formData?.applicationId || formData?.id;
+
   // Update form data when documents change
   React.useEffect(() => {
     const documentsData = documents.reduce((acc, doc) => {
@@ -113,7 +116,7 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
     canvas.toBlob((blob) => {
       if (blob) {
         const file = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
-        uploadDocument(activeCameraId, file);
+        uploadDocument(activeCameraId, file, applicationId);
         stopCamera();
       }
     }, 'image/jpeg', 0.9);
@@ -121,7 +124,7 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
 
   const handleFileSelection = (e: React.ChangeEvent<HTMLInputElement>, documentId: string) => {
     if (e.target.files && e.target.files[0]) {
-      uploadDocument(documentId, e.target.files[0]);
+      uploadDocument(documentId, e.target.files[0], applicationId);
     }
   };
 
@@ -151,6 +154,24 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
         variant="applicant"
       />
       
+      {/* Debug Information */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+          <h4 className="text-sm font-medium text-yellow-800 mb-2">Debug Info</h4>
+          <div className="text-xs text-yellow-700 space-y-1">
+            <p>Application ID: {applicationId || 'No disponible'}</p>
+            <p>Online: {navigator.onLine ? 'Sí' : 'No'}</p>
+            <p>Capacitor: {typeof window !== 'undefined' && (window as any).Capacitor ? 'Disponible' : 'No disponible'}</p>
+            <p>Camera Plugin: {typeof window !== 'undefined' && (window as any).Capacitor?.Plugins?.Camera ? 'Disponible' : 'No disponible'}</p>
+            <p>Documentos cargados: {documents.filter(d => d.status === 'success').length}/{documents.length}</p>
+               <p>Storage: Local (se subirá al enviar solicitud)</p>
+               <p className="text-blue-600">
+                 📱 Documentos almacenados localmente hasta envío
+               </p>
+          </div>
+        </div>
+      )}
+      
       {/* Document Grid */}
       {documentRows.map((row, rowIndex) => (
         <div key={rowIndex} className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -159,7 +180,7 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
               key={document.id}
               document={document}
               isLoading={loadingDocument === document.id}
-              onUploadFile={(file) => uploadDocument(document.id, file)}
+              onUploadFile={(file) => uploadDocument(document.id, file, applicationId)}
               onTakePhoto={() => startCamera(document.id)}
               onRemove={() => removeDocument(document.id)}
               onView={() => handleOpenPreview(document)}
@@ -192,7 +213,7 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
             <NativeCameraCapture
               documentTitle={documents.find(d => d.id === showNativeCamera)?.title || ''}
               onPhotoCapture={(file) => {
-                uploadDocument(showNativeCamera, file);
+                uploadDocument(showNativeCamera, file, applicationId);
                 setShowNativeCamera(null);
               }}
               onFileUpload={() => {

@@ -15,6 +15,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from "@/hooks/use-toast";
 const Applications = () => {
   console.log('Applications component loaded - testing tools moved to form');
+  const [searchTerm, setSearchTerm] = useState('');
+  
   const {
     user
   } = useAuth();
@@ -40,20 +42,51 @@ const Applications = () => {
   const deleteApplication = useDeleteApplication();
   const cancelApplication = useCancelApplication();
 
+  // Función para normalizar texto (remover acentos)
+  const normalizeText = (text: string) => {
+    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  };
+
+  // Filtrar aplicaciones basado en el término de búsqueda
+  const filteredApplications = React.useMemo(() => {
+    if (!applications) return [];
+    if (!searchTerm.trim()) return applications;
+
+    const searchNormalized = normalizeText(searchTerm.trim());
+    
+    return applications.filter(app => {
+      // Buscar por nombre del cliente
+      const nameMatch = normalizeText(app.clientName).includes(searchNormalized);
+      
+      // Buscar por DPI
+      const dpiMatch = app.dpi && normalizeText(app.dpi).includes(searchNormalized);
+      
+      // Buscar por número de solicitud (SCO_XXXXXX)
+      const applicationIdMatch = app.applicationId && 
+        normalizeText(app.applicationId).includes(searchNormalized);
+      
+      return nameMatch || dpiMatch || applicationIdMatch;
+    });
+  }, [applications, searchTerm]);
+
   // Debug: Log current user and applications
   React.useEffect(() => {
     console.log('🔍 Applications page debug info:', {
       currentUser: user?.id,
       applicationsCount: applications?.length || 0,
+      filteredCount: filteredApplications.length,
+      searchTerm,
       isLoading,
       applications: applications?.map(app => ({
         id: app.id,
         clientName: app.clientName,
+        dpi: app.dpi,
+        applicationId: app.applicationId,
         status: app.status,
         isDraft: app.status === 'draft'
       })) || []
     });
-  }, [user, applications, isLoading]);
+  }, [user, applications, filteredApplications, searchTerm, isLoading]);
   const handleRefresh = async () => {
     console.log('🔄 Manual refresh triggered by user');
     toast({
@@ -92,7 +125,7 @@ const Applications = () => {
     if (e) e.stopPropagation();
 
     // Determinar si es borrador basándose en si existe en la lista con status 'draft'
-    const application = applications?.find(app => app.id === id);
+    const application = filteredApplications?.find(app => app.id === id);
     const isDraft = application?.status === 'draft';
     console.log('🗑️ Delete triggered:', {
       id,
@@ -136,10 +169,19 @@ const Applications = () => {
           <BreadcrumbNavigation />
         </div>
         
-        <ApplicationsHeader />
+        <ApplicationsHeader 
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+        />
         
         
-        <ApplicationsList applications={applications || []} isLoading={isLoading} onEdit={editApplication} onCancel={handleCancelApplication} onDelete={handleDeleteApplication} />
+        <ApplicationsList 
+          applications={filteredApplications || []} 
+          isLoading={isLoading} 
+          onEdit={editApplication} 
+          onCancel={handleCancelApplication} 
+          onDelete={handleDeleteApplication} 
+        />
       </main>
       
       <BottomNavigation />

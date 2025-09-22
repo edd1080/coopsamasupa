@@ -2,7 +2,7 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { formatDPI, validateDPIFormat, normalizeIntegerInput } from '@/utils/formatters';
+import { formatDPI, validateDPIFormat, validateDPIWithError, normalizeIntegerInput } from '@/utils/formatters';
 import { 
   Select,
   SelectContent,
@@ -28,7 +28,9 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
   };
 
   const handleDPIChange = (value: string) => {
-    const formatted = formatDPI(value);
+    // Only allow digits and limit to 13 characters
+    const digitsOnly = value.replace(/\D/g, '').slice(0, 13);
+    const formatted = formatDPI(digitsOnly);
     updateFormData('dpi', formatted);
   };
 
@@ -194,11 +196,15 @@ const PersonalIdentificationForm: React.FC<PersonalIdentificationFormProps> = ({
               value={formData.dpi || ''} 
               onChange={(e) => handleDPIChange(e.target.value)}
               placeholder="0000 00000 0000"
-              maxLength={16}
+              maxLength={15} // 13 digits + 2 spaces
+              inputMode="numeric"
+              pattern="[0-9]*"
               className={!validateDPIFormat(formData.dpi || '') && formData.dpi ? 'border-red-500' : ''}
             />
             {formData.dpi && !validateDPIFormat(formData.dpi) && (
-              <p className="text-xs text-red-500">Formato: 0000 00000 0000 (13 dígitos)</p>
+              <p className="text-xs text-red-500">
+                {validateDPIWithError(formData.dpi).error || 'Formato: 0000 00000 0000 (13 dígitos)'}
+              </p>
             )}
           </div>
 

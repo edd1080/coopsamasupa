@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -18,8 +18,9 @@ import CircularProgress from '@/components/requestForm/CircularProgress';
 
 import { NewGuarantorSheet } from '@/components/requestForm/guarantors/NewGuarantorSheet';
 import { useApplicationData } from '@/hooks/useApplicationData';
-import { getFirstNameAndLastName } from '@/lib/nameUtils';
+import { getFirstNameAndLastName, getNavBarName } from '@/lib/nameUtils';
 import { useToast } from '@/hooks/use-toast';
+import { formatApplicationId } from '@/utils/applicationIdGenerator';
 const ApplicationDetails = () => {
   const {
     id
@@ -27,6 +28,7 @@ const ApplicationDetails = () => {
     id: string;
   }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     toast
   } = useToast();
@@ -138,7 +140,7 @@ const ApplicationDetails = () => {
         state: {
           sectionId,
           stepIndex,
-          applicationId: id
+          applicationId: publicApplicationId  // Use publicApplicationId instead of internal id
         }
       });
     }
@@ -222,12 +224,26 @@ const ApplicationDetails = () => {
   const progress = applicationData.isDraft && 'last_step' in applicationData ? applicationData.last_step : 'progress_step' in applicationData ? applicationData.progress_step : 0;
   const progressPercentage = Math.round(progress / 6 * 100);
   const sections = getFormSections('legacy');
-  const personName = applicationData.client_name || `${formData.firstName || ''} ${formData.lastName || ''}`.trim() || 'Sin nombre';
+  // Get person name from location state (from cards) or fallback to application data
+  const personName = location.state?.clientName || 
+                    applicationData.client_name || 
+                    `${formData.firstName || ''} ${formData.lastName || ''}`.trim() || 
+                    'Sin nombre';
+  
+  // Get the public application ID from location state, formData, or generate it
+  const publicApplicationId = location.state?.applicationId || 
+                             formData?.applicationId || 
+                             formatApplicationId(applicationData.id || '');
+  
+  // Get external reference ID from location state or application data
+  const externalReferenceId = location.state?.externalReferenceId || 
+                             ('coopsama_external_reference_id' in applicationData ? applicationData.coopsama_external_reference_id : undefined);
+  
   return <div className="min-h-screen flex flex-col">
         <Header 
-          personName={getFirstNameAndLastName(personName)} 
-          applicationId={applicationData.id || ''} 
-          externalReferenceId={'coopsama_external_reference_id' in applicationData ? applicationData.coopsama_external_reference_id : undefined}
+          personName={getNavBarName(personName)} 
+          applicationId={publicApplicationId} 
+          externalReferenceId={externalReferenceId}
           applicationStatus={'status' in applicationData ? applicationData.status : 'draft'} 
           onExitFormClick={() => navigate('/applications')} 
         />
@@ -240,38 +256,61 @@ const ApplicationDetails = () => {
 
         {/* Application Header */}
         <div className="mb-6">
-          {/* Full-width name */}
+          {/* Full-width name, ID and status in single row */}
           <div className="mb-4">
-            <h1 className="text-xl font-medium text-foreground w-full">
-              {personName}
-            </h1>
-            {'coopsama_external_reference_id' in applicationData && applicationData.coopsama_external_reference_id && (
-              <p className="text-sm text-muted-foreground mt-1">
-                ID: <span className="font-mono font-medium text-primary">{applicationData.coopsama_external_reference_id}</span>
-              </p>
-            )}
-            {'status' in applicationData && applicationData.status === 'error' && (
-              <p className="text-sm text-muted-foreground mt-1">
-                Código de error: <span className="font-mono font-medium text-destructive">{applicationData.id}</span>
-              </p>
-            )}
-            {applicationData.isDraft && (
-              <p className="text-sm text-muted-foreground mt-1">
-                Estado: <span className="font-medium">Borrador</span>
-                {'status' in applicationData && applicationData.status === 'error' && 'coopsama_sync_status' in applicationData && applicationData.coopsama_sync_status === 'error' && (
-                  <span className="ml-4">
-                    Código de error: <span className="font-mono font-medium text-destructive">{applicationData.id}</span>
-                  </span>
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <h1 className="text-xl font-medium text-foreground">
+                  {personName}
+                </h1>
+                {publicApplicationId && publicApplicationId.startsWith('SCO_') ? (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    ID: <span className="font-mono font-medium text-primary">{publicApplicationId}</span>
+                  </p>
+                ) : externalReferenceId ? (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    ID: <span className="font-mono font-medium text-primary">{externalReferenceId}</span>
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    ID: <span className="font-mono font-medium text-primary">{publicApplicationId}</span>
+                  </p>
                 )}
-              </p>
-            )}
+              </div>
+              
+              {/* Status badges and tags aligned with name and ID */}
+              <div className="flex flex-col items-end gap-2">
+                {'status' in applicationData && applicationData.status === 'error' && (
+                  <p className="text-sm text-muted-foreground">
+                    Código de error: <span className="font-mono font-medium text-destructive">{applicationData.id}</span>
+                  </p>
+                )}
+                {applicationData.isDraft && (
+                  <p className="text-sm text-muted-foreground">
+                    Estado: <span className="font-medium">Borrador</span>
+                    {'status' in applicationData && applicationData.status === 'error' && 'coopsama_sync_status' in applicationData && applicationData.coopsama_sync_status === 'error' && (
+                      <span className="ml-4">
+                        Código de error: <span className="font-mono font-medium text-destructive">{applicationData.id}</span>
+                      </span>
+                    )}
+                  </p>
+                )}
+                {/* Tag de Solicitud Enviada en la misma fila */}
+                {!applicationData.isDraft && 'status' in applicationData && applicationData.status !== 'error' && (
+                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1 text-sm px-3 py-1">
+                    <CheckCircle className="h-4 w-4" />
+                    <span>Solicitud Enviada</span>
+                  </Badge>
+                )}
+              </div>
+            </div>
           </div>
           
-          {/* Buttons below name */}
-          <div className="flex items-center gap-2 mb-4">
+          {/* Buttons and status section */}
+          <div className="mb-4">
             {/* Draft applications or error applications */}
             {(applicationData.isDraft || ('status' in applicationData && applicationData.status === 'error')) && (
-              <>
+              <div className="flex items-center gap-2">
                 <Button variant="outline" size="md" onClick={() => navigate(`/request-form/${id}`)}>
                   <Edit className="h-4 w-4 mr-2" />
                   Editar
@@ -280,17 +319,12 @@ const ApplicationDetails = () => {
                   <Send className="h-4 w-4 mr-2" />
                   {'status' in applicationData && applicationData.status === 'error' ? 'Reintentar Envío' : 'Enviar Solicitud'}
                 </Button>
-              </>
+              </div>
             )}
+            
             {/* Successfully submitted applications */}
             {!applicationData.isDraft && 'status' in applicationData && applicationData.status !== 'error' && (
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1 text-sm px-3 py-1">
-                  <CheckCircle className="h-4 w-4" />
-                  <span>Solicitud Enviada</span>
-                </Badge>
-                <span className="text-sm text-muted-foreground">Esta solicitud ya fue enviada y está en modo de solo lectura</span>
-              </div>
+              <p className="text-sm text-muted-foreground">Esta solicitud ya fue enviada y está en modo de solo lectura</p>
             )}
           </div>
 
@@ -308,7 +342,7 @@ const ApplicationDetails = () => {
           {/* Quick Access Card */}
           <Card className="mb-6 border-primary/20 bg-primary/5">
             <CardHeader>
-              <CardTitle>Acceso Rápido</CardTitle>
+              <CardTitle className="text-base">Acceso Rápido</CardTitle>
             </CardHeader>
             <CardContent>
                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
@@ -341,7 +375,7 @@ const ApplicationDetails = () => {
           {/* Credit Summary Card */}
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle>Solicitud de Crédito</CardTitle>
+              <CardTitle className="text-base">Solicitud de Crédito</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -370,8 +404,7 @@ const ApplicationDetails = () => {
           <Card className="mb-6">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center">
-                  <Users className="h-5 w-5 mr-2" />
+                <CardTitle className="text-base">
                   Referencias Personales
                 </CardTitle>
                 
@@ -391,70 +424,67 @@ const ApplicationDetails = () => {
                     Agregar Referencias
                   </Button>
                 </div> : <div className="space-y-4">
-                  {references.map((reference: any, index: number) => <div key={reference.id || index} className="p-4 rounded-xl border bg-gradient-to-r from-primary/5 to-accent/5 hover:shadow-md transition-shadow">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                            <UserCheck className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <h4 className="font-medium">{reference.fullName}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              {reference.referenceType} • {reference.phone}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right flex items-center gap-3">
-                          <div>
-                            <p className="text-sm font-medium">{reference.relation || 'N/A'}</p>
-                            <p className="text-xs text-muted-foreground">{reference.rating || 'Sin calificar'}</p>
-                          </div>
-                          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                            <UserCheck className="h-5 w-5 text-green-600" />
+                  {references.map((reference: any, index: number) => {
+                    // Construir nombre completo desde campos individuales
+                    const fullName = `${reference.firstName || ''} ${reference.secondName || ''} ${reference.firstLastName || ''} ${reference.secondLastName || ''}`.trim() || reference.fullName || 'Sin nombre';
+                    
+                    // Mapear tipo de referencia (Personal o Comercial)
+                    const referenceType = reference.type?.value || reference.referenceType || 'Personal';
+                    
+                    // Mapear teléfono
+                    const phone = reference.mobile || reference.phone || 'Sin teléfono';
+                    
+                    // Mapear relación
+                    const relationship = reference.relationship || reference.relation || 'N/A';
+                    
+                    return (
+                      <div key={reference.id || index} className="p-4 rounded-lg border bg-white hover:shadow-md transition-shadow">
+                        <div className="space-y-2">
+                          {/* Nombre - Tipografía más pequeña y semibold */}
+                          <h4 className="text-sm font-semibold text-foreground">{fullName}</h4>
+                          
+                          {/* Información en filas */}
+                          <div className="space-y-1">
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs text-muted-foreground">Tipo:</span>
+                              <span className="text-xs font-medium text-foreground">{referenceType}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs text-muted-foreground">Relación:</span>
+                              <span className="text-xs font-medium text-foreground">{relationship}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs text-muted-foreground">Teléfono:</span>
+                              <span className="text-xs font-medium text-foreground">{phone}</span>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>)}
-                  <NewGuarantorSheet trigger={<Button className="w-full bg-green-600 hover:bg-green-700 text-white border-0">
+                    );
+                  })}
+                  {references.length < 3 && (
+                    <NewGuarantorSheet trigger={<Button className="w-full bg-green-600 hover:bg-green-700 text-white border-0">
                         <Plus className="h-4 w-4 mr-2" />
                         Agregar Otro Fiador
                       </Button>} onCreateGuarantor={handleAddGuarantor} onDiscard={() => {}} />
+                  )}
+                  {references.length >= 3 && (
+                    <div className="text-center py-4 text-sm text-muted-foreground">
+                      Máximo de 3 referencias alcanzado
+                    </div>
+                  )}
                 </div>}
             </CardContent>
           </Card>
 
-          {/* Testing Tools moved to form ReviewSection */}
-          <Card className="mb-6 bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-800">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                <Code2 className="h-5 w-5" />
-                Herramientas de Testing
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-6">
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                  Las herramientas de testing ahora están integradas en el formulario.
-                </p>
-                <Button
-                  onClick={() => navigate(`/request-form/${id}`)}
-                  variant="outline"
-                  className="border-blue-300 text-blue-700 hover:bg-blue-50"
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Ir al Formulario
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Testing Tools card removed - no longer needed */}
         </div>
 
         {/* Tabs */}
         <Tabs defaultValue="resumen" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="resumen">Resumen</TabsTrigger>
-            <TabsTrigger value="detalles">Detalles</TabsTrigger>
-            <TabsTrigger value="documentos">Documentos</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 bg-primary/10">
+            <TabsTrigger value="resumen" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Resumen</TabsTrigger>
+            <TabsTrigger value="detalles" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Detalles</TabsTrigger>
           </TabsList>
           
           <TabsContent value="resumen" className="space-y-4">
@@ -543,14 +573,11 @@ const ApplicationDetails = () => {
             </div>
 
             {/* Document Status Card */}
-            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigateToFormSection('documents')}>
+            <Card className="hover:shadow-md transition-shadow">
               <CardHeader>
-                <CardTitle className="flex items-center justify-between text-base">
-                  <span className="flex items-center">
-                    <FileCheck className="h-4 w-4 mr-2" />
-                    Estado de Documentos
-                  </span>
-                  <ChevronRight className="h-4 w-4" />
+                <CardTitle className="flex items-center text-base">
+                  <FileCheck className="h-4 w-4 mr-2" />
+                  Estado de Documentos
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -564,17 +591,62 @@ const ApplicationDetails = () => {
                 }).map(([key, label]) => {
                   const doc = documents[key];
                   const isComplete = doc?.status === 'complete';
-                  return <Card key={key} className={`p-3 border ${isComplete ? 'border-green-200 bg-green-50' : 'border-amber-200 bg-amber-50'}`}>
-                        <div className="text-center">
-                          <div className={`w-8 h-8 rounded-full mx-auto mb-2 flex items-center justify-center ${isComplete ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
-                            {isComplete ? <CheckCircle className="h-4 w-4" /> : <Clock className="h-4 w-4" />}
+                  
+                  const handleDocumentClick = () => {
+                    if (isComplete && doc?.url) {
+                      // Abrir vista previa del documento
+                      window.open(doc.url, '_blank');
+                    } else {
+                      // Navegar a la sección de documentos
+                      navigateToFormSection('documents');
+                    }
+                  };
+                  
+                  return (
+                    <Card 
+                      key={key} 
+                      className={`p-3 border cursor-pointer hover:shadow-md transition-shadow ${
+                        isComplete ? 'border-green-200 bg-green-50' : 'border-amber-200 bg-amber-50'
+                      }`}
+                      onClick={handleDocumentClick}
+                    >
+                      <div className="text-center">
+                        {/* Thumbnail del documento */}
+                        <div className="w-12 h-12 mx-auto mb-2 rounded-md overflow-hidden bg-muted flex items-center justify-center">
+                          {isComplete && doc?.url ? (
+                            <img 
+                              src={doc.url} 
+                              alt={label}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                // Fallback si la imagen no carga
+                                e.currentTarget.style.display = 'none';
+                                e.currentTarget.nextSibling.style.display = 'flex';
+                              }}
+                            />
+                          ) : null}
+                          <div className={`w-full h-full flex items-center justify-center ${
+                            isComplete ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'
+                          }`}>
+                            {isComplete ? <CheckCircle className="h-6 w-6" /> : <Clock className="h-6 w-6" />}
                           </div>
-                          <p className="text-xs font-medium mb-1">{label}</p>
-                          <Badge variant={isComplete ? "default" : "secondary"} className={`text-xs ${isComplete ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"}`}>
-                            {isComplete ? 'Completo' : 'Pendiente'}
-                          </Badge>
                         </div>
-                      </Card>;
+                        
+                        <p className="text-xs font-medium mb-1">{label}</p>
+                        <Badge 
+                          variant={isComplete ? "default" : "secondary"} 
+                          className={`text-xs ${isComplete ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"}`}
+                        >
+                          {isComplete ? 'Completo' : 'Pendiente'}
+                        </Badge>
+                        
+                        {/* Indicador de clickeable */}
+                        {isComplete && doc?.url && (
+                          <p className="text-xs text-muted-foreground mt-1">Tap para ver</p>
+                        )}
+                      </div>
+                    </Card>
+                  );
                 })}
                 </div>
               </CardContent>
@@ -585,169 +657,127 @@ const ApplicationDetails = () => {
             {/* Personal Information Detailed */}
             <Card>
               <CardHeader>
-                <CardTitle>Información Personal Detallada</CardTitle>
+                <CardTitle className="text-base">Información Personal Detallada</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-sm font-semibold text-muted-foreground">Agencia</Label>
-                    <p className="font-medium">{formData.agencia || 'Por ingresar'}</p>
+                    <Label className="text-xs text-muted-foreground font-semibold">Agencia</Label>
+                    <p className="text-sm font-medium">{formData.agencia || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-semibold text-muted-foreground">Tipo Socio</Label>
-                    <p className="font-medium">{formData.tipoSocio || 'Por ingresar'}</p>
+                    <Label className="text-xs text-muted-foreground font-semibold">Tipo Socio</Label>
+                    <p className="text-sm font-medium">{formData.tipoSocio || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-semibold text-muted-foreground">CUI</Label>
-                    <p className="font-medium">{formData.dpi || 'Por ingresar'}</p>
+                    <Label className="text-xs text-muted-foreground font-semibold">CUI</Label>
+                    <p className="text-sm font-medium">{formData.dpi || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-semibold text-muted-foreground">NIT</Label>
-                    <p className="font-medium">{formData.nit || 'Por ingresar'}</p>
+                    <Label className="text-xs text-muted-foreground font-semibold">NIT</Label>
+                    <p className="text-sm font-medium">{formData.nit || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-semibold text-muted-foreground">Nombre</Label>
-                    <p className="font-medium">{personName}</p>
+                    <Label className="text-xs text-muted-foreground font-semibold">Nombre</Label>
+                    <p className="text-sm font-medium">{personName}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-semibold text-muted-foreground">Estado Civil</Label>
-                    <p className="font-medium">{formData.estadoCivil || 'Por ingresar'}</p>
+                    <Label className="text-xs text-muted-foreground font-semibold">Estado Civil</Label>
+                    <p className="text-sm font-medium">{formData.estadoCivil || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-semibold text-muted-foreground">Fecha de Nacimiento</Label>
-                    <p className="font-medium">{formData.birthDate || 'Por ingresar'}</p>
+                    <Label className="text-xs text-muted-foreground font-semibold">Fecha de Nacimiento</Label>
+                    <p className="text-sm font-medium">{formData.birthDate || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-semibold text-muted-foreground">Nacionalidad</Label>
-                    <p className="font-medium">{formData.nacionalidad || 'Por ingresar'}</p>
+                    <Label className="text-xs text-muted-foreground font-semibold">Nacionalidad</Label>
+                    <p className="text-sm font-medium">{formData.nacionalidad || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-semibold text-muted-foreground">Género</Label>
-                    <p className="font-medium">{formData.genero || 'Por ingresar'}</p>
+                    <Label className="text-xs text-muted-foreground font-semibold">Género</Label>
+                    <p className="text-sm font-medium">{formData.genero || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-semibold text-muted-foreground">Profesión</Label>
-                    <p className="font-medium">{formData.profesion || 'Por ingresar'}</p>
+                    <Label className="text-xs text-muted-foreground font-semibold">Profesión</Label>
+                    <p className="text-sm font-medium">{formData.profesion || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-semibold text-muted-foreground">Nivel Educativo</Label>
-                    <p className="font-medium">{formData.educationLevel || 'Por ingresar'}</p>
+                    <Label className="text-xs text-muted-foreground font-semibold">Nivel Educativo</Label>
+                    <p className="text-sm font-medium">{formData.educationLevel || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-semibold text-muted-foreground">Tipo de Vivienda</Label>
-                    <p className="font-medium">{formData.housingType || 'Por ingresar'}</p>
+                    <Label className="text-xs text-muted-foreground font-semibold">Tipo de Vivienda</Label>
+                    <p className="text-sm font-medium">{formData.housingType || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-semibold text-muted-foreground">Años en Vivienda</Label>
-                    <p className="font-medium">{formData.housingYears || 'Por ingresar'}</p>
+                    <Label className="text-xs text-muted-foreground font-semibold">Años en Vivienda</Label>
+                    <p className="text-sm font-medium">{formData.housingYears || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-semibold text-muted-foreground">Dependientes</Label>
-                    <p className="font-medium">{formData.dependents || 'Por ingresar'}</p>
+                    <Label className="text-xs text-muted-foreground font-semibold">Dependientes</Label>
+                    <p className="text-sm font-medium">{formData.dependents || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-semibold text-muted-foreground">Email</Label>
-                    <p className="font-medium">{formData.email || 'Por ingresar'}</p>
+                    <Label className="text-xs text-muted-foreground font-semibold">Email</Label>
+                    <p className="text-sm font-medium">{formData.email || 'Por ingresar'}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-semibold text-muted-foreground">Teléfono</Label>
-                    <p className="font-medium">{formData.mobilePhone || 'Por ingresar'}</p>
+                    <Label className="text-xs text-muted-foreground font-semibold">Teléfono</Label>
+                    <p className="text-sm font-medium">{formData.mobilePhone || 'Por ingresar'}</p>
                   </div>
                   <div className="md:col-span-2">
-                    <Label className="text-sm font-semibold text-muted-foreground">Dirección</Label>
-                    <p className="font-medium">{formData.address || 'Por ingresar'}</p>
+                    <Label className="text-xs text-muted-foreground font-semibold">Dirección</Label>
+                    <p className="text-sm font-medium">{formData.address || 'Por ingresar'}</p>
                   </div>
                 </div>
 
                 {formData.conyuge && <>
                     <Separator className="my-6" />
-                    <h4 className="font-medium mb-4">Información del Cónyuge</h4>
+                    <h4 className="text-sm font-medium mb-4">Información del Cónyuge</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-sm font-semibold text-muted-foreground">Nombre</Label>
-                        <p className="font-medium">{formData.conyuge.nombre || 'Por ingresar'}</p>
+                        <Label className="text-xs text-muted-foreground font-semibold">Nombre</Label>
+                        <p className="text-sm font-medium">{formData.conyuge.nombre || 'Por ingresar'}</p>
                       </div>
                       <div>
-                        <Label className="text-sm font-semibold text-muted-foreground">DPI</Label>
-                        <p className="font-medium">{formData.conyuge.dpi || 'Por ingresar'}</p>
+                        <Label className="text-xs text-muted-foreground font-semibold">DPI</Label>
+                        <p className="text-sm font-medium">{formData.conyuge.dpi || 'Por ingresar'}</p>
                       </div>
                       <div>
-                        <Label className="text-sm font-semibold text-muted-foreground">Teléfono</Label>
-                        <p className="font-medium">{formData.conyuge.telefono || 'Por ingresar'}</p>
+                        <Label className="text-xs text-muted-foreground font-semibold">Teléfono</Label>
+                        <p className="text-sm font-medium">{formData.conyuge.telefono || 'Por ingresar'}</p>
                       </div>
                       <div>
-                        <Label className="text-sm font-semibold text-muted-foreground">Ocupación</Label>
-                        <p className="font-medium">{formData.conyuge.trabajo || 'Por ingresar'}</p>
+                        <Label className="text-xs text-muted-foreground font-semibold">Ocupación</Label>
+                        <p className="text-sm font-medium">{formData.conyuge.trabajo || 'Por ingresar'}</p>
                       </div>
                     </div>
                   </>}
               </CardContent>
             </Card>
 
-            {/* Work Information Detailed */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Información Laboral Detallada</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm font-semibold text-muted-foreground">Situación</Label>
-                    <p className="font-medium">{formData.employmentStatus || 'Por ingresar'}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-semibold text-muted-foreground">Empresa/Negocio</Label>
-                    <p className="font-medium">{formData.companyName || 'Por ingresar'}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-semibold text-muted-foreground">Puesto</Label>
-                    <p className="font-medium">{formData.position || 'Por ingresar'}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-semibold text-muted-foreground">Años de Experiencia</Label>
-                    <p className="font-medium">{formData.yearsEmployed || 0} años</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-semibold text-muted-foreground">Tipo de Trabajo</Label>
-                    <p className="font-medium">{formData.workType || 'Por ingresar'}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-semibold text-muted-foreground">Estabilidad de Ingresos</Label>
-                    <p className="font-medium">{formData.incomeStability || 'Por ingresar'}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-semibold text-muted-foreground">Teléfono Trabajo</Label>
-                    <p className="font-medium">{formData.workPhone || 'Por ingresar'}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-semibold text-muted-foreground">Dirección Trabajo</Label>
-                    <p className="font-medium">{formData.workAddress || 'Por ingresar'}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
 
             {/* Financial Analysis Detailed */}
             <Card>
               <CardHeader>
-                <CardTitle>Análisis Financiero Detallado</CardTitle>
+                <CardTitle className="text-base">Análisis Financiero Detallado</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Income */}
                 <div>
-                  <h4 className="font-medium mb-4">Ingresos</h4>
+                  <h4 className="text-sm font-medium mb-4">Ingresos</h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <Label className="text-sm font-semibold text-muted-foreground">Ingresos Principales</Label>
-                      <p className="font-medium">Q {Number(formData.ingresoPrincipal || 0).toLocaleString()}</p>
+                      <Label className="text-xs text-muted-foreground font-semibold">Ingresos Principales</Label>
+                      <p className="text-sm font-medium">Q {Number(formData.ingresoPrincipal || 0).toLocaleString()}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-semibold text-muted-foreground">Ingresos Secundarios</Label>
-                      <p className="font-medium">Q {Number(formData.ingresoSecundario || 0).toLocaleString()}</p>
+                      <Label className="text-xs text-muted-foreground font-semibold">Ingresos Secundarios</Label>
+                      <p className="text-sm font-medium">Q {Number(formData.ingresoSecundario || 0).toLocaleString()}</p>
                     </div>
                     <div className="md:col-span-2">
-                      <Label className="text-sm font-semibold text-muted-foreground">Fuente</Label>
-                      <p className="font-medium">{formData.incomeSource || 'Por ingresar'}</p>
+                      <Label className="text-xs text-muted-foreground font-semibold">Fuente</Label>
+                      <p className="text-sm font-medium">{formData.incomeSource || 'Por ingresar'}</p>
                     </div>
                   </div>
                 </div>
@@ -756,31 +786,31 @@ const ApplicationDetails = () => {
 
                 {/* Expenses */}
                 <div>
-                  <h4 className="font-medium mb-4">Gastos Mensuales</h4>
+                  <h4 className="text-sm font-medium mb-4">Gastos Mensuales</h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <Label className="text-sm font-semibold text-muted-foreground">Renta</Label>
-                      <p className="font-medium">Q {Number(formData.rent || 0).toLocaleString()}</p>
+                      <Label className="text-xs text-muted-foreground font-semibold">Renta</Label>
+                      <p className="text-sm font-medium">Q {Number(formData.rent || 0).toLocaleString()}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-semibold text-muted-foreground">Servicios</Label>
-                      <p className="font-medium">Q {Number(formData.utilities || 0).toLocaleString()}</p>
+                      <Label className="text-xs text-muted-foreground font-semibold">Servicios</Label>
+                      <p className="text-sm font-medium">Q {Number(formData.utilities || 0).toLocaleString()}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-semibold text-muted-foreground">Alimentación</Label>
-                      <p className="font-medium">Q {Number(formData.food || 0).toLocaleString()}</p>
+                      <Label className="text-xs text-muted-foreground font-semibold">Alimentación</Label>
+                      <p className="text-sm font-medium">Q {Number(formData.food || 0).toLocaleString()}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-semibold text-muted-foreground">Transporte</Label>
-                      <p className="font-medium">Q {Number(formData.transportation || 0).toLocaleString()}</p>
+                      <Label className="text-xs text-muted-foreground font-semibold">Transporte</Label>
+                      <p className="text-sm font-medium">Q {Number(formData.transportation || 0).toLocaleString()}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-semibold text-muted-foreground">Otros</Label>
-                      <p className="font-medium">Q {Number(formData.otherExpenses || 0).toLocaleString()}</p>
+                      <Label className="text-xs text-muted-foreground font-semibold">Otros</Label>
+                      <p className="text-sm font-medium">Q {Number(formData.otherExpenses || 0).toLocaleString()}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-semibold text-muted-foreground">Total Gastos</Label>
-                      <p className="font-bold">Q {Number(formData.totalExpenses || 0).toLocaleString()}</p>
+                      <Label className="text-xs text-muted-foreground font-semibold">Total Gastos</Label>
+                      <p className="text-sm font-bold">Q {Number(formData.totalExpenses || 0).toLocaleString()}</p>
                     </div>
                   </div>
                 </div>
@@ -789,15 +819,15 @@ const ApplicationDetails = () => {
 
                 {/* Current Debts */}
                 <div>
-                  <h4 className="font-medium mb-4">Deudas Actuales</h4>
+                  <h4 className="text-sm font-medium mb-4">Deudas Actuales</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-sm font-semibold text-muted-foreground">Préstamos</Label>
-                      <p className="font-medium">Q {Number(formData.currentLoans || 0).toLocaleString()}</p>
+                      <Label className="text-xs text-muted-foreground font-semibold">Préstamos</Label>
+                      <p className="text-sm font-medium">Q {Number(formData.currentLoans || 0).toLocaleString()}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-semibold text-muted-foreground">Tarjetas</Label>
-                      <p className="font-medium">Q {Number(formData.creditCards || 0).toLocaleString()}</p>
+                      <Label className="text-xs text-muted-foreground font-semibold">Tarjetas</Label>
+                      <p className="text-sm font-medium">Q {Number(formData.creditCards || 0).toLocaleString()}</p>
                     </div>
                   </div>
                 </div>
@@ -806,19 +836,19 @@ const ApplicationDetails = () => {
 
                 {/* Financial Evaluation */}
                 <div className="bg-purple-50 dark:bg-purple-950 p-4 rounded-md">
-                  <h4 className="font-medium mb-4">Evaluación Financiera</h4>
+                  <h4 className="text-sm font-medium mb-4">Evaluación Financiera</h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <Label className="text-sm font-semibold text-muted-foreground">Ingreso Neto</Label>
-                      <p className="text-green-600 font-bold">Q {Number(formData.netIncome || 0).toLocaleString()}</p>
+                      <Label className="text-xs text-muted-foreground font-semibold">Ingreso Neto</Label>
+                      <p className="text-sm text-green-600 font-bold">Q {Number(formData.netIncome || 0).toLocaleString()}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-semibold text-muted-foreground">Ratio Deuda/Ingreso</Label>
-                      <p className="font-bold">{Number(formData.debtToIncomeRatio || 0).toFixed(1)}%</p>
+                      <Label className="text-xs text-muted-foreground font-semibold">Ratio Deuda/Ingreso</Label>
+                      <p className="text-sm font-bold">{Number(formData.debtToIncomeRatio || 0).toFixed(1)}%</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-semibold text-muted-foreground">Capacidad de Pago</Label>
-                      <p className="text-purple-600 font-bold">Q {Number(formData.paymentCapacity || 0).toLocaleString()}</p>
+                      <Label className="text-xs text-muted-foreground font-semibold">Capacidad de Pago</Label>
+                      <p className="text-sm text-purple-600 font-bold">Q {Number(formData.paymentCapacity || 0).toLocaleString()}</p>
                     </div>
                   </div>
                 </div>
@@ -827,11 +857,11 @@ const ApplicationDetails = () => {
 
                 {/* Patrimony */}
                 <div>
-                  <h4 className="font-medium mb-4">Estado Patrimonial</h4>
+                  <h4 className="text-sm font-medium mb-4">Estado Patrimonial</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Assets */}
                     <div>
-                      <h5 className="font-medium text-green-600 mb-3">Activos</h5>
+                      <h5 className="text-sm font-medium text-green-600 mb-3">Activos</h5>
                       <div className="space-y-2">
                         <div className="flex justify-between">
                           <span className="text-sm">Efectivo</span>
@@ -862,7 +892,7 @@ const ApplicationDetails = () => {
 
                     {/* Liabilities */}
                     <div>
-                      <h5 className="font-medium text-red-600 mb-3">Pasivos</h5>
+                      <h5 className="text-sm font-medium text-red-600 mb-3">Pasivos</h5>
                       <div className="space-y-2">
                         <div className="flex justify-between">
                           <span className="text-sm">Préstamos</span>
@@ -892,35 +922,6 @@ const ApplicationDetails = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="documentos" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {Object.entries({
-              dpiFrontal: 'DPI Frontal',
-              dpiTrasero: 'DPI Trasero',
-              fotoSolicitante: 'Foto Solicitante',
-              recibosServicios: 'Recibos Servicios',
-              firmaCanvas: 'Firma Digital'
-            }).map(([key, label]) => {
-              const doc = documents[key];
-              const isComplete = doc?.status === 'complete';
-              return <Card key={key} className={`border-2 ${isComplete ? 'border-green-200' : 'border-amber-200'}`}>
-                    <CardContent className="p-4">
-                      <div className="aspect-square mb-3">
-                        {isComplete && doc.url ? <img src={doc.url} alt={label} className="w-full h-full object-cover rounded-md" /> : <div className="w-full h-full bg-muted rounded-md flex items-center justify-center">
-                            <Camera className="h-8 w-8 text-muted-foreground" />
-                          </div>}
-                      </div>
-                      <div className="text-center">
-                        <h4 className="font-medium text-sm mb-2">{label}</h4>
-                        <Badge variant={isComplete ? "default" : "secondary"} className={isComplete ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"}>
-                          {isComplete ? 'Completo' : 'Pendiente'}
-                        </Badge>
-                      </div>
-                    </CardContent>
-                  </Card>;
-            })}
-            </div>
-          </TabsContent>
         </Tabs>
       </main>
 

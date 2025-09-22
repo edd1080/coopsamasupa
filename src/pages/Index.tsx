@@ -80,7 +80,7 @@ const Index = () => {
                 </div>
                 <p className="text-sm text-muted-foreground">Enviadas</p>
                 <h2 className="text-2xl font-bold">
-                  {metricsLoading ? '...' : metrics?.approved || 0}
+                  {metricsLoading ? '...' : metrics?.sent || 0}
                 </h2>
               </div>
             </CardContent>
@@ -106,9 +106,9 @@ const Index = () => {
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500/10 mb-2">
                   <AlertCircle className="h-5 w-5 text-red-500" />
                 </div>
-                <p className="text-sm text-muted-foreground">Rechazadas</p>
+                <p className="text-sm text-muted-foreground">Falló envío</p>
                 <h2 className="text-2xl font-bold">
-                  {metricsLoading ? '...' : metrics?.rejected || 0}
+                  {metricsLoading ? '...' : metrics?.failed || 0}
                 </h2>
               </div>
             </CardContent>

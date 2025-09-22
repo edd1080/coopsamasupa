@@ -9,6 +9,7 @@ import { useFormContext } from './RequestFormProvider';
 import SubformHeader from '@/components/forms/SubformHeader';
 import { toast } from '@/hooks/use-toast';
 import TestingPanel from './testing/TestingPanel';
+import { useApplicationValidation } from '@/hooks/useDraftActions';
 
 interface ReviewSectionProps {
   formData: any;
@@ -17,6 +18,7 @@ interface ReviewSectionProps {
 
 const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData }) => {
   const { handleSubmit } = useFormContext();
+  const { validateMinimumRequiredData } = useApplicationValidation();
   
 
   const formatCurrency = (amount: number | string) => {
@@ -81,6 +83,18 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
 
 
   const handleSendApplication = () => {
+    // Validar datos mínimos requeridos antes del envío
+    const validation = validateMinimumRequiredData(formData);
+    
+    if (!validation.isValid) {
+      toast({
+        title: "Datos mínimos requeridos",
+        description: `Para enviar la solicitud, complete al menos: ${validation.missingFields.join(', ')}`,
+        variant: "destructive"
+      });
+      return;
+    }
+    
     // Marcar términos como aceptados antes del envío
     updateFormData('termsAccepted', true);
     updateFormData('dataProcessingAccepted', true);

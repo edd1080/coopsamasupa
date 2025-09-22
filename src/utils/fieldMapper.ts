@@ -524,15 +524,15 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
           personal: {
             references: (formData.references || []).map((ref: any, index: number) => ({
               type: mapToCatalog(referenceTypes, ref.referenceType || "", "1"),
-              firstName: ref.fullName ? splitFullName(ref.fullName).firstName : "",
-              secondName: ref.fullName ? splitFullName(ref.fullName).secondName : "",
-              firstLastName: ref.fullName ? splitFullName(ref.fullName).firstLastName : "",
-              secondLastName: ref.fullName ? splitFullName(ref.fullName).secondLastName : "",
-              fullAddress: ref.address || "",
-              relationship: ref.relation || "",
-              mobile: ref.phone || "",
-              score: mapToCatalog(referenceRatings, ref.rating || "", "3"),
-              comments: ref.comments || ref.comentarios || ""
+              firstName: ref.firstName || "",
+              secondName: ref.secondName || "",
+              firstLastName: ref.firstLastName || "",
+              secondLastName: ref.secondLastName || "",
+              fullAddress: ref.fullAddress || ref.address || "",
+              relationship: ref.relationship || ref.relation || "",
+              mobile: ref.mobile || ref.phone || "",
+              score: mapToCatalog(referenceRatings, ref.score || ref.rating || "", "3"),
+              comments: ref.comments || ref.comment || ref.comentarios || ""
             }))
           },
           business: formData.businessName ? {

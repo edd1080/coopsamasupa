@@ -11,7 +11,8 @@ export const useApplicationData = (applicationId: string) => {
   return useQuery({
     queryKey: ['application-data', applicationId, user?.id],
     queryFn: async () => {
-      if (!user?.id || !applicationId) throw new Error('Usuario no autenticado o ID inválido');
+      if (!user?.id) throw new Error('Usuario no autenticado');
+      if (!applicationId) return null; // Para nuevas aplicaciones, retornar null
       
       console.log('🔍 Fetching application data for ID:', sanitizeConsoleOutput({ applicationId, userId: user.id }));
       

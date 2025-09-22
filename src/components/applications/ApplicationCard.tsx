@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from '@/components/ui/progress';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, ContextMenuSeparator } from "@/components/ui/context-menu";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Calendar, FileText, Edit, Trash2, MoreVertical, CheckCircle, AlertCircle, BarChart3, Banknote, FileSignature, UserCheck, FileImage, Users, X, Clock, Eye } from 'lucide-react';
+import { Calendar, FileText, Edit, Trash2, MoreVertical, CheckCircle, AlertCircle, BarChart3, Banknote, FileSignature, UserCheck, FileImage, Users, X, Clock, Eye, CalendarDays, FileText as FileTextSolid } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { formatApplicationId } from '@/utils/applicationIdGenerator';
 import { getFirstNameAndLastName } from '@/lib/nameUtils';
@@ -44,7 +44,14 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
   } = useToast();
   const handleViewApplication = (id: string) => {
     // Para ambos (borradores y aplicaciones completas), ir a la página de detalles
-    navigate(`/applications/${id}`);
+    // Pasar el nombre completo como estado para que ApplicationDetails lo use
+    navigate(`/applications/${id}`, {
+      state: {
+        clientName: application.clientName,
+        applicationId: application.applicationId || formatApplicationId(application.id),
+        externalReferenceId: application.externalReferenceId
+      }
+    });
   };
   const handleEditApplication = (id: string, clientName: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -127,15 +134,13 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
                 <div className="flex-1 pr-4">
                   <h3 className="text-section-title font-semibold">{getFirstNameAndLastName(application.clientName)}</h3>
                   <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground whitespace-nowrap">
-                    <Calendar className="h-3 w-3" />
+                    <CalendarDays className="h-3 w-3 text-primary" />
                     <span>{formatDate(application.date)}</span>
-                    <FileText className="h-3 w-3 ml-2" />
+                    <FileTextSolid className="h-3 w-3 ml-2 text-primary" />
                     <span className="truncate">
                       {application.status === 'draft' 
-                        ? 'Borrador' 
-                        : application.status === 'error' 
-                          ? application.applicationId || formatApplicationId(application.id)
-                          : `ID: ${application.externalReferenceId || formatApplicationId(application.id)}`
+                        ? application.applicationId || formatApplicationId(application.id)
+                        : application.applicationId || formatApplicationId(application.id)
                       }
                     </span>
                   </div>

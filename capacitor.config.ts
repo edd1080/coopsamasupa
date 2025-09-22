@@ -24,6 +24,9 @@ const config: CapacitorConfig = {
       showSpinner: false,
       splashFullScreen: true,
       splashImmersive: true
+    },
+    Camera: {
+      permissions: ['camera', 'photos']
     }
   }
 };

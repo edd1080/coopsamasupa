@@ -19,7 +19,7 @@ const buildApplicationPayload = (formData: any, userId: string) => {
     'Sin nombre';
 
   // Extract amount with fallback logic
-  const amount = Number(formData?.requestedAmount ?? formData?.montoSolicitado ?? 0) || 0;
+  const amount = Number(formData?.loanAmount ?? formData?.requestedAmount ?? formData?.montoSolicitado ?? 0) || 0;
 
   return {
     // Remove id to let PostgreSQL generate UUID automatically
@@ -53,6 +53,9 @@ export const useFinalizeApplication = () => {
         (formData?.identification?.firstName && formData?.identification?.lastName ? `${formData.identification.firstName} ${formData.identification.lastName}` : '') ||
         formData?.firstName ||
         'Sin nombre';
+
+      // Extract amount with fallback logic
+      const amount = Number(formData?.loanAmount ?? formData?.requestedAmount ?? formData?.montoSolicitado ?? 0) || 0;
 
       console.log('📤 Finalizing application for user:', user.id);
 
@@ -133,6 +136,149 @@ export const useFinalizeApplication = () => {
       }
 
       console.log('✅ Application finalized successfully');
+
+      // Upload documents to Supabase Storage if they exist
+      let documentUploadResult = null;
+      if (formData?.documents) {
+        try {
+          console.log('📤 Starting document upload to Supabase Storage...');
+          
+          // Filter documents that have files and are successful
+          const documentsToUpload = Object.entries(formData.documents)
+            .filter(([key, doc]: [string, any]) => 
+              doc && doc.file && doc.status === 'success'
+            )
+            .map(([key, doc]) => ({ id: key, ...doc }));
+          
+          if (documentsToUpload.length > 0) {
+            console.log(`📤 Found ${documentsToUpload.length} documents to upload`);
+            
+            // Upload each document individually
+            const { supabase } = await import('@/integrations/supabase/client');
+            const { getBestStorageBucket } = await import('@/utils/storageUtils');
+            
+            const bucketName = await getBestStorageBucket();
+            if (bucketName) {
+              // Create folder structure: {applicationId}_{userEmail}
+              const userEmail = user?.email || 'unknown@email.com';
+              const applicationId = formData?.applicationId || result.id; // Use SCO_XXXXXX format
+              const folderName = `${applicationId}_${userEmail.replace('@', '_at_').replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+              
+              console.log(`📁 Creating folder structure: ${folderName}`);
+              console.log(`🆔 Using Application ID: ${applicationId}`);
+
+              // Create metadata file
+              const metadataContent = `SOLICITUD DE CRÉDITO - METADATA
+=====================================
+
+ID de Solicitud: ${applicationId}
+Email del Agente: ${userEmail}
+Fecha de Envío: ${new Date().toLocaleDateString('es-GT')}
+Hora de Envío: ${new Date().toLocaleTimeString('es-GT')}
+Nombre Completo del Solicitante: ${formData?.firstName || ''} ${formData?.lastName || ''}
+Monto Solicitado: Q${amount.toLocaleString('es-GT')}
+Estado: ${result.status}
+
+DOCUMENTOS ADJUNTOS:
+===================
+${documentsToUpload.map(doc => `- ${doc.id}: ${doc.file?.name || 'N/A'}`).join('\n')}
+
+INFORMACIÓN ADICIONAL:
+=====================
+Teléfono: ${formData?.phone || 'N/A'}
+Dirección: ${formData?.address || 'N/A'}
+Ocupación: ${formData?.occupation || 'N/A'}
+
+Generado automáticamente el ${new Date().toISOString()}
+`;
+
+              const metadataFile = new File([metadataContent], 'solicitud_metadata.txt', { 
+                type: 'text/plain' 
+              });
+
+              // Upload metadata file first
+              const metadataPath = `${folderName}/solicitud_metadata.txt`;
+              console.log(`📄 Uploading metadata file: ${metadataPath}`);
+
+              const { data: metadataUploadData, error: metadataError } = await supabase.storage
+                .from(bucketName)
+                .upload(metadataPath, metadataFile, { upsert: true });
+
+              if (metadataError) {
+                console.error(`❌ Failed to upload metadata:`, metadataError);
+              } else {
+                console.log(`✅ Metadata uploaded:`, metadataUploadData);
+              }
+
+              // Upload documents
+              const uploadPromises = documentsToUpload.map(async (doc: any) => {
+                if (!doc.file) return null;
+
+                const timestamp = Date.now();
+                const extension = doc.file.name.split('.').pop() || 'jpg';
+                const fileName = `${doc.id}-${timestamp}.${extension}`;
+                const filePath = `${folderName}/${fileName}`;
+
+                console.log(`📤 Uploading ${doc.id}:`, { filePath, fileSize: doc.file.size, fileType: doc.file.type });
+
+                const { data, error } = await supabase.storage
+                  .from(bucketName)
+                  .upload(filePath, doc.file, { upsert: true });
+
+                if (error) {
+                  console.error(`❌ Failed to upload ${doc.id}:`, error);
+                  return null;
+                }
+
+                // Get public URL
+                const { data: { publicUrl } } = supabase.storage
+                  .from(bucketName)
+                  .getPublicUrl(filePath);
+
+                console.log(`✅ Uploaded ${doc.id}:`, data);
+
+                return {
+                  documentId: doc.id,
+                  filePath,
+                  publicUrl,
+                  fileName
+                };
+              });
+
+              const uploadResults = await Promise.all(uploadPromises);
+              const successfulUploads = uploadResults.filter(result => result !== null);
+              
+              documentUploadResult = {
+                success: true,
+                uploadedCount: successfulUploads.length,
+                results: successfulUploads
+              };
+              
+              console.log(`✅ Successfully uploaded ${successfulUploads.length}/${documentsToUpload.length} documents`);
+            } else {
+              console.warn('⚠️ No storage bucket available for document upload');
+              documentUploadResult = {
+                success: false,
+                uploadedCount: 0,
+                error: 'No storage bucket available'
+              };
+            }
+          } else {
+            console.log('📭 No documents to upload');
+            documentUploadResult = {
+              success: true,
+              uploadedCount: 0
+            };
+          }
+        } catch (docError: any) {
+          console.error('❌ Document upload failed:', docError);
+          documentUploadResult = {
+            success: false,
+            uploadedCount: 0,
+            error: docError.message
+          };
+        }
+      }
 
       // Call Coopsama integration (non-blocking)
       let externalReferenceId = null;
@@ -287,7 +433,8 @@ export const useFinalizeApplication = () => {
       return {
         ...result,
         externalReferenceId,
-        operationId
+        operationId,
+        documentUploadResult
       };
     },
     onSuccess: () => {

@@ -51,7 +51,7 @@ const CreditInfoForm: React.FC<CreditInfoFormProps> = ({ formData, updateFormDat
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="requestedAmount">Monto Solicitado Q</Label>
+            <Label htmlFor="requestedAmount">Monto Solicitado</Label>
             <Input 
               id="requestedAmount"
               type="text"

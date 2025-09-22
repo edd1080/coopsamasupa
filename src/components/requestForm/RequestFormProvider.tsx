@@ -152,7 +152,20 @@ interface StepInfo {
 interface ReferenceData {
   id: string;
   referenceType: string;
+  // Campos separados para nombres (nuevos)
+  firstName: string;
+  secondName: string;
+  firstLastName: string;
+  secondLastName: string;
+  // Campo completo para compatibilidad temporal
   fullName: string;
+  // Campos actualizados con nombres correctos
+  fullAddress: string;
+  relationship: string;
+  mobile: string;
+  score: string;
+  comments: string;
+  // Campos legacy para compatibilidad
   address: string;
   relation: string;
   phone: string;
@@ -314,8 +327,8 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     dataProcessingAccepted: false,
     creditCheckAccepted: false,
     
-    // Generated fields
-    applicationId: generateApplicationId(),
+    // Generated fields - ID generated immediately for new applications
+    applicationId: applicationId || generateApplicationId(),
   }));
 
   // Navigation state
@@ -353,8 +366,8 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
       setFormData(prev => ({
         ...prev,
         ...draftData,
-        // Ensure applicationId is preserved
-        applicationId: draftData.applicationId || prev.applicationId
+        // Ensure applicationId is preserved from draft, or keep empty if new
+        applicationId: draftData.applicationId || ''
       }));
       
       // Set current step from draft (using any to access the draft properties)
@@ -374,6 +387,17 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
       }
     }
   }, [applicationData]);
+
+  // Update formData with generated applicationId after first save
+  useEffect(() => {
+    if (saveDraftMutation.isSuccess && saveDraftMutation.data?.applicationId && !formData.applicationId) {
+      console.log('🆔 Updating formData with generated applicationId:', saveDraftMutation.data.applicationId);
+      setFormData(prev => ({
+        ...prev,
+        applicationId: saveDraftMutation.data.applicationId
+      }));
+    }
+  }, [saveDraftMutation.isSuccess, saveDraftMutation.data?.applicationId, formData.applicationId]);
 
   // Handle navigation from ApplicationDetails
   useEffect(() => {
@@ -400,10 +424,29 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
 
   // Reference functions (formerly guarantor functions)
   const addReference = useCallback(() => {
+    // Validar límite máximo de 3 referencias
+    if (references.length >= 3) {
+      console.warn('Máximo 3 referencias permitidas');
+      return;
+    }
+    
     const newReference: ReferenceData = {
       id: `${references.length + 1}`,
       referenceType: '',
+      // Campos separados para nombres
+      firstName: '',
+      secondName: '',
+      firstLastName: '',
+      secondLastName: '',
+      // Campo completo para compatibilidad
       fullName: '',
+      // Campos actualizados
+      fullAddress: '',
+      relationship: '',
+      mobile: '',
+      score: '',
+      comments: '',
+      // Campos legacy para compatibilidad
       address: '',
       relation: '',
       phone: '',
@@ -411,17 +454,47 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
       comment: '',
       basicInfoCompleted: false
     };
-    setReferences(prev => [...prev, newReference]);
+    setReferences(prev => {
+      const updated = [...prev, newReference];
+      
+      // Sincronizar con formData
+      setFormData(prevFormData => ({
+        ...prevFormData,
+        references: updated
+      }));
+      
+      return updated;
+    });
   }, [references.length]);
 
   const removeReference = useCallback((index: number) => {
-    setReferences(prev => prev.filter((_, i) => i !== index));
+    setReferences(prev => {
+      const updated = prev.filter((_, i) => i !== index);
+      
+      // Sincronizar con formData
+      setFormData(prevFormData => ({
+        ...prevFormData,
+        references: updated
+      }));
+      
+      return updated;
+    });
   }, []);
 
   const updateReference = useCallback((index: number, field: string, value: any) => {
-    setReferences(prev => prev.map((reference, i) => 
-      i === index ? { ...reference, [field]: value } : reference
-    ));
+    setReferences(prev => {
+      const updated = prev.map((reference, i) => 
+        i === index ? { ...reference, [field]: value } : reference
+      );
+      
+      // Sincronizar con formData
+      setFormData(prevFormData => ({
+        ...prevFormData,
+        references: updated
+      }));
+      
+      return updated;
+    });
   }, []);
 
   // Get sub-steps for each section

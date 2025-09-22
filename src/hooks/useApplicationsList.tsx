@@ -11,6 +11,7 @@ interface Application {
   externalReferenceId?: string;
   processId?: string;
   clientName: string;
+  dpi: string;
   product: string;
   amount: string;
   status: string;
@@ -29,12 +30,12 @@ export const useApplicationsList = () => {
       
       console.log('🔍 Fetching applications list for user:', sanitizeConsoleOutput({ userId: user.id }));
       
-      // Fetch from applications table including Coopsama fields
+      // Fetch from applications table including Coopsama fields - MÁS RECIENTES PRIMERO
       const { data: applications, error: appError } = await supabase
         .from('applications')
         .select('*, coopsama_external_reference_id, coopsama_operation_id, coopsama_process_id, coopsama_sync_status, coopsama_sync_error')
         .eq('agent_id', user.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }); // Más recientes primero
         
       if (appError) {
         console.error('❌ Error fetching applications:', sanitizeConsoleOutput(appError));
@@ -84,6 +85,7 @@ export const useApplicationsList = () => {
 
           // Construct full name from draft_data if available, otherwise use client_name
           let fullName = app.client_name;
+          let dpi = '';
           if (app.draft_data && typeof app.draft_data === 'object') {
             const draftData = app.draft_data as any;
             if (draftData.firstName && draftData.lastName) {
@@ -93,6 +95,8 @@ export const useApplicationsList = () => {
             } else if (draftData.fullName) {
               fullName = draftData.fullName;
             }
+            // Extract DPI for search functionality
+            dpi = draftData.dpi || draftData.cedula || '';
           }
             
           return {
@@ -101,12 +105,14 @@ export const useApplicationsList = () => {
             externalReferenceId: app.coopsama_external_reference_id,
             processId: app.coopsama_process_id,
             clientName: getFirstNameAndLastName(fullName),
+            dpi: dpi,
             product: app.product || 'Crédito Personal',
             amount: app.amount_requested?.toString() || '0',
             status: app.status,
             date: new Date(app.created_at).toLocaleDateString(),
             progress: app.progress_step || 0,
-            stage: app.current_stage || 'En proceso'
+            stage: app.current_stage || 'En proceso',
+            timestamp: new Date(app.created_at).getTime() // Para ordenamiento
           };
         }),
         ...(drafts || []).map(draft => {
@@ -118,6 +124,7 @@ export const useApplicationsList = () => {
 
           // Construct full name from draft_data if available, otherwise use client_name
           let fullName = draft.client_name || 'Sin nombre';
+          let dpi = '';
           if (draft.draft_data && typeof draft.draft_data === 'object') {
             const draftData = draft.draft_data as any;
             if (draftData.firstName && draftData.lastName) {
@@ -127,6 +134,8 @@ export const useApplicationsList = () => {
             } else if (draftData.fullName) {
               fullName = draftData.fullName;
             }
+            // Extract DPI for search functionality
+            dpi = draftData.dpi || draftData.cedula || '';
           }
 
           // Map step number to stage name for drafts
@@ -148,24 +157,31 @@ export const useApplicationsList = () => {
             externalReferenceId: undefined, // Drafts don't have external reference
             processId: undefined, // Drafts don't have process ID
             clientName: getFirstNameAndLastName(fullName),
+            dpi: dpi,
             product: '', // Empty for drafts to hide in UI
             amount: '', // Empty for drafts to hide in UI
             status: 'draft',
             date: new Date(draft.updated_at).toLocaleDateString(),
             progress: draft.last_step || 0,
-            stage: getStageFromStep(draft.last_step || 1)
+            stage: getStageFromStep(draft.last_step || 1),
+            timestamp: new Date(draft.updated_at).getTime() // Para ordenamiento
           };
         })
       ];
       
-      console.log('✅ Final transformed applications list:', transformedApplications.length);
+      // Ordenar por timestamp (más recientes primero) y remover timestamp del resultado
+      const sortedApplications = transformedApplications
+        .sort((a, b) => b.timestamp - a.timestamp)
+        .map(({ timestamp, ...item }) => item);
+      
+      console.log('✅ Final transformed applications list:', sortedApplications.length);
       console.log('📊 Applications by type:', {
         fullApplications: (applications || []).length,
         drafts: (drafts || []).length,
-        total: transformedApplications.length
+        total: sortedApplications.length
       });
       
-      return transformedApplications;
+      return sortedApplications;
     },
     enabled: !!user?.id,
   });

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { normalizeDecimalInput } from '@/utils/formatters';
 import { Separator } from '@/components/ui/separator';
 import { PieChart, TrendingDown, TrendingUp } from 'lucide-react';
+import CurrencyInput from '@/components/ui/currency-input';
 
 interface PatrimonialStatementProps {
   formData: any;
@@ -183,19 +184,13 @@ const PatrimonialStatement: React.FC<PatrimonialStatementProps> = ({ formData, u
             </div>
             <div className="space-y-2">
               <Label htmlFor="montoSolicitado">Monto Solicitado</Label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">Q</span>
-                <Input 
-                  id="montoSolicitado"
-                  className="pl-7"
-                  type="text"
-                  inputMode="decimal"
-                  pattern="[0-9]*\.?[0-9]*"
-                  placeholder="0.00"
-                  value={formData.montoSolicitado || ''}
-                  onChange={(e) => updateFormData('montoSolicitado', normalizeDecimalInput(e.target.value))}
-                />
-              </div>
+              <CurrencyInput
+                id="montoSolicitado"
+                value={formData.montoSolicitado || ''}
+                onValueChange={(value) => updateFormData('montoSolicitado', value)}
+                placeholder="0.00"
+                currencySymbol="Q"
+              />
             </div>
           </div>
           

@@ -33,22 +33,29 @@ export const useApplicationMetrics = () => {
         reviewing: applications.filter(app => app.status === 'reviewing').length,
         rejected: applications.filter(app => app.status === 'rejected').length,
         cancelled: applications.filter(app => app.status === 'cancelled').length,
-        completed: applications.filter(app => app.status === 'pending').length,
+        pending: applications.filter(app => app.status === 'pending').length,
+        failed: applications.filter(app => app.status === 'error').length,
+        // Enviadas: todas las que no son borradores y no están en error
+        sent: applications.filter(app => app.status !== 'error' && app.status !== 'pending').length,
       };
       
       const metrics = {
         // Activas incluye borradores + aplicaciones pendientes
-        active: (drafts?.length || 0) + applicationMetrics.completed,
-        approved: applicationMetrics.approved,
+        active: (drafts?.length || 0) + applicationMetrics.pending,
+        // Enviadas: aplicaciones que se enviaron exitosamente (no error, no pending)
+        sent: applicationMetrics.sent,
         reviewing: applicationMetrics.reviewing,
-        rejected: applicationMetrics.rejected,
+        // Falló envío: aplicaciones con status 'error'
+        failed: applicationMetrics.failed,
         cancelled: applicationMetrics.cancelled,
         total: applications.length + (drafts?.length || 0)
       };
       
       console.log('📊 Application metrics calculated:', {
         drafts: drafts?.length || 0,
-        completedApplications: applicationMetrics.completed,
+        pendingApplications: applicationMetrics.pending,
+        sentApplications: applicationMetrics.sent,
+        failedApplications: applicationMetrics.failed,
         totalActive: metrics.active,
         totalOverall: metrics.total
       });

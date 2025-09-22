@@ -71,7 +71,10 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, externalRefe
   const getSubtitle = () => {
     // Solo mostrar subtítulo para formularios y detalles de aplicación
     if ((isFormPage || isApplicationDetails) && applicationId && location.pathname !== '/applications/new') {
-      // Priorizar externalReferenceId > "Borrador" para drafts > formatApplicationId como fallback
+      // Priorizar SCO_XXXXXX > externalReferenceId > "Borrador" para drafts
+      if (applicationId && applicationId.startsWith('SCO_')) {
+        return `ID: ${applicationId}`;
+      }
       if (externalReferenceId) {
         return `ID: ${externalReferenceId}`;
       }

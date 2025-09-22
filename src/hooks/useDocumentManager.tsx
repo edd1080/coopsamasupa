@@ -1,6 +1,7 @@
 
 import { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { getBestStorageBucket } from '@/utils/storageUtils';
 
 export interface DocumentItem {
   id: string;
@@ -82,93 +83,68 @@ export const useDocumentManager = (initialDocuments?: DocumentItem[]) => {
     setLoadingDocument(documentId);
     
     try {
+      console.log('📸 Starting document upload:', { documentId, fileName: file.name, fileSize: file.size, applicationId });
+      
       // Crear thumbnail URL local
       const thumbnailUrl = URL.createObjectURL(file);
       
-      if (navigator.onLine) {
-        // Online: Upload to Supabase Storage
-        const { supabase } = await import('@/integrations/supabase/client');
-        const { useAuth } = await import('@/hooks/useAuth');
-        
-        // Generate unique file path
-        const timestamp = Date.now();
-        const extension = file.name.split('.').pop() || 'jpg';
-        const fileName = `${documentId}-${timestamp}.${extension}`;
-        const filePath = applicationId 
-          ? `${applicationId}/${fileName}`
-          : `documents/${fileName}`;
-        
-        const { data, error } = await supabase.storage
-          .from('documents')
-          .upload(filePath, file, { upsert: true });
-          
-        if (error) throw error;
-        
-        // Get public URL for thumbnail
-        const { data: { publicUrl } } = supabase.storage
-          .from('documents')
-          .getPublicUrl(filePath);
-        
-        updateDocument(documentId, {
-          file,
-          status: 'success',
-          thumbnailUrl: publicUrl
-        });
-        
-        toast({
-          title: "Documento subido",
-          description: "El documento se ha cargado correctamente.",
-          duration: 3000,
-        });
-      } else {
-        // Offline: Store in localforage and queue for sync
-        const localforage = (await import('localforage')).default;
-        const { offlineQueue } = await import('@/utils/offlineQueue');
-        
-        const blobKey = `document-blob-${documentId}-${Date.now()}`;
-        await localforage.setItem(blobKey, file);
-        
-        const timestamp = Date.now();
-        const extension = file.name.split('.').pop() || 'jpg';
-        const fileName = `${documentId}-${timestamp}.${extension}`;
-        const filePath = applicationId 
-          ? `${applicationId}/${fileName}`
-          : `documents/${fileName}`;
-        
-        await offlineQueue.enqueue({
-          type: 'uploadDocument',
-          payload: {
-            path: filePath,
-            blobKey,
-            documentId,
-            applicationId
-          }
-        });
-        
-        updateDocument(documentId, {
-          file,
-          status: 'success',
-          thumbnailUrl // Use local blob URL for preview
-        });
-        
-        toast({
-          title: "Documento guardado",
-          description: "Se subirá automáticamente al reconectar.",
-          duration: 3000,
-        });
-      }
+      // Always store locally first - documents will be uploaded to Supabase when application is submitted
+      console.log('📱 Storing document locally (will upload to Supabase when application is submitted)');
       
+      updateDocument(documentId, {
+        file,
+        status: 'success',
+        thumbnailUrl // Use local blob URL for preview
+      });
+      
+      toast({
+        title: "Documento cargado",
+        description: "El documento se subirá a Supabase cuando envíes la solicitud.",
+        duration: 3000,
+      });
+      
+      // Always store in localforage for offline sync
+      const localforage = (await import('localforage')).default;
+      const { offlineQueue } = await import('@/utils/offlineQueue');
+      
+      const offlineTimestamp = Date.now();
+      const offlineExtension = file.name.split('.').pop() || 'jpg';
+      const offlineFileName = `${documentId}-${offlineTimestamp}.${offlineExtension}`;
+      const offlineFilePath = applicationId 
+        ? `${applicationId}/${offlineFileName}`
+        : `documents/${offlineFileName}`;
+      
+      const blobKey = `document-blob-${documentId}-${Date.now()}`;
+      await localforage.setItem(blobKey, file);
+      
+      await offlineQueue.enqueue({
+        type: 'uploadDocument',
+        payload: {
+          path: offlineFilePath,
+          blobKey,
+          documentId,
+          applicationId
+        }
+      });
+      
+      
+      console.log('✅ Document upload completed successfully');
       return true;
-    } catch (error) {
+    } catch (error: any) {
+      console.error('❌ Document upload failed:', error);
+      
       updateDocument(documentId, {
         status: 'error'
       });
       
+      const errorMessage = error?.message || 'Error desconocido';
+      console.error('🚨 Upload error details:', { documentId, error: errorMessage, stack: error?.stack });
+      
       toast({
         title: "Error al subir",
-        description: "No se pudo cargar el documento. Intente de nuevo.",
+        description: `No se pudo cargar el documento: ${errorMessage}`,
         variant: "destructive",
-        duration: 3000,
+        duration: 5000,
       });
       
       return false;
@@ -201,12 +177,102 @@ export const useDocumentManager = (initialDocuments?: DocumentItem[]) => {
     return documents.find(doc => doc.id === documentId);
   }, [documents]);
 
+  const uploadDocumentsToSupabase = useCallback(async (applicationId: string) => {
+    console.log('📤 Starting batch upload to Supabase Storage for application:', applicationId);
+    
+    const documentsToUpload = documents.filter(doc => doc.file && doc.status === 'success');
+    
+    if (documentsToUpload.length === 0) {
+      console.log('📭 No documents to upload');
+      return { success: true, uploadedCount: 0 };
+    }
+
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const bucketName = await getBestStorageBucket();
+      
+      if (!bucketName) {
+        throw new Error('No hay buckets de almacenamiento disponibles');
+      }
+
+      console.log(`📤 Uploading ${documentsToUpload.length} documents to ${bucketName} bucket`);
+
+      const uploadPromises = documentsToUpload.map(async (doc) => {
+        if (!doc.file) return null;
+
+        const timestamp = Date.now();
+        const extension = doc.file.name.split('.').pop() || 'jpg';
+        const fileName = `${doc.id}-${timestamp}.${extension}`;
+        const filePath = `${applicationId}/${fileName}`;
+
+        console.log(`📤 Uploading ${doc.id}:`, { filePath, fileSize: doc.file.size });
+
+        const { data, error } = await supabase.storage
+          .from(bucketName)
+          .upload(filePath, doc.file, { upsert: true });
+
+        if (error) {
+          console.error(`❌ Failed to upload ${doc.id}:`, error);
+          throw new Error(`Error uploading ${doc.id}: ${error.message}`);
+        }
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from(bucketName)
+          .getPublicUrl(filePath);
+
+        console.log(`✅ Uploaded ${doc.id}:`, data);
+
+        return {
+          documentId: doc.id,
+          filePath,
+          publicUrl,
+          fileName
+        };
+      });
+
+      const results = await Promise.all(uploadPromises);
+      const successfulUploads = results.filter(result => result !== null);
+
+      console.log(`✅ Successfully uploaded ${successfulUploads.length}/${documentsToUpload.length} documents`);
+
+      toast({
+        title: "Documentos subidos",
+        description: `${successfulUploads.length} documentos se han subido correctamente a Supabase.`,
+        duration: 3000,
+      });
+
+      return { 
+        success: true, 
+        uploadedCount: successfulUploads.length,
+        results: successfulUploads
+      };
+
+    } catch (error: any) {
+      console.error('❌ Batch upload failed:', error);
+      
+      toast({
+        title: "Error al subir documentos",
+        description: `No se pudieron subir los documentos: ${error.message}`,
+        variant: "destructive",
+        duration: 5000,
+      });
+
+      return { 
+        success: false, 
+        uploadedCount: 0,
+        error: error.message
+      };
+    }
+  }, [documents, toast]);
+
   return {
     documents,
     loadingDocument,
     updateDocument,
     uploadDocument,
     removeDocument,
-    getDocumentById
+    getDocumentById,
+    uploadDocumentsToSupabase
   };
 };

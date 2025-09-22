@@ -168,16 +168,27 @@ const InteractiveDocumentCard: React.FC<InteractiveDocumentCardProps> = ({
           )}
 
           {document.status === 'error' && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs"
-              onClick={() => console.log('Retry upload')}
-              disabled={isLoading}
-            >
-              <Upload className="h-3 w-3 mr-1" />
-              Reintentar
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                onClick={() => {
+                  // Trigger file input for retry
+                  const fileInput = document.querySelector(`#file-${document.id}`) as HTMLInputElement;
+                  if (fileInput) {
+                    fileInput.click();
+                  }
+                }}
+                disabled={isLoading}
+              >
+                <Upload className="h-3 w-3 mr-1" />
+                Reintentar
+              </Button>
+              <div className="text-xs text-red-600 mt-1">
+                Error al subir
+              </div>
+            </>
           )}
         </div>
       )}

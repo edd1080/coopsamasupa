@@ -1,7 +1,7 @@
 
 export const validateDPI = (dpi: string): { isValid: boolean; error?: string } => {
-  // Remover espacios y guiones
-  const cleanDPI = dpi.replace(/[\s-]/g, '');
+  // Remover espacios, guiones y otros caracteres no numéricos
+  const cleanDPI = dpi.replace(/[^\d]/g, '');
   
   // Verificar que tenga exactamente 13 dígitos
   if (!/^\d{13}$/.test(cleanDPI)) {

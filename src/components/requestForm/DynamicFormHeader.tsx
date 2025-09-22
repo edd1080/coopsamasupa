@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { ChevronDown, CheckCircle } from 'lucide-react';
 import { useFormContext } from './RequestFormProvider';
 import { steps } from './formSteps';
+import { useScrollLock } from '../../hooks/useScrollLock';
+import { useClickOutside } from '../../hooks/useClickOutside';
 
 const DynamicFormHeader: React.FC = () => {
   const {
@@ -12,6 +14,10 @@ const DynamicFormHeader: React.FC = () => {
   } = useFormContext();
 
   const [isExpanded, setIsExpanded] = useState(false);
+
+  // Usar hooks personalizados
+  useScrollLock(isExpanded);
+  const dropdownRef = useClickOutside(isExpanded, () => setIsExpanded(false));
 
   const currentStep = steps[activeStep] || steps[0]; // Fallback to first step if activeStep is invalid
   const totalSteps = steps.length;
@@ -51,7 +57,7 @@ const DynamicFormHeader: React.FC = () => {
     <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border">
       <div className="flex items-center">
         {/* Full width clickable title and step info - Removed X button */}
-        <div className="w-full relative">
+        <div className="w-full relative" ref={dropdownRef}>
           <button 
             onClick={toggleExpanded} 
             className="flex items-center gap-2 text-left w-full group hover:bg-primary/10 rounded-lg p-2 -m-2 transition-colors"
@@ -72,7 +78,10 @@ const DynamicFormHeader: React.FC = () => {
 
           {/* Dropdown menu */}
           {isExpanded && (
-             <div className="absolute top-full left-0 mt-2 w-full max-w-md bg-popover border rounded-lg shadow-lg z-30 py-2">
+             <div 
+               className="absolute top-full left-0 mt-2 w-full max-w-md bg-popover border rounded-lg shadow-lg z-50 py-2 max-h-80 overflow-y-auto"
+               onClick={(e) => e.stopPropagation()}
+             >
               {steps.map((step, index) => {
                 const isActive = activeStep === index;
                 const isCompleted = step?.id ? sectionStatus[step.id] === 'complete' : false;
@@ -119,11 +128,6 @@ const DynamicFormHeader: React.FC = () => {
           />
         </div>
       </div>
-
-      {/* Overlay to close dropdown when clicking outside */}
-      {isExpanded && (
-        <div className="fixed inset-0 z-10" onClick={() => setIsExpanded(false)} />
-      )}
     </div>
   );
 };

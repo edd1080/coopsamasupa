@@ -26,9 +26,11 @@ const GeolocationCapture: React.FC<GeolocationCaptureProps> = ({
 }) => {
   const [isCapturing, setIsCapturing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [captureProgress, setCaptureProgress] = useState<string>('');
+  const [attemptCount, setAttemptCount] = useState(0);
   const { toast } = useToast();
 
-  const captureLocation = () => {
+  const captureLocation = async () => {
     if (!navigator.geolocation) {
       const errorMsg = 'La geolocalización no está soportada en este navegador';
       setError(errorMsg);
@@ -42,57 +44,112 @@ const GeolocationCapture: React.FC<GeolocationCaptureProps> = ({
 
     setIsCapturing(true);
     setError(null);
+    setAttemptCount(0);
+    setCaptureProgress('Iniciando captura...');
 
-    const options = {
-      enableHighAccuracy: true,
-      timeout: 15000,
-      maximumAge: 60000 // 1 minute for better precision
-    };
+    const maxAttempts = 3;
+    const targetAccuracy = 50; // metros
+    let bestLocation: GeolocationData | null = null;
+    let bestAccuracy = Infinity;
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const locationData: GeolocationData = {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-          timestamp: Date.now()
-        };
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      setAttemptCount(attempt);
+      setCaptureProgress(`Intento ${attempt}/${maxAttempts} - Esperando estabilización del GPS...`);
+      
+      // Espera progresiva entre intentos para estabilización
+      if (attempt > 1) {
+        const waitTime = attempt * 2000; // 2s, 4s, 6s
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
 
-        onLocationCaptured(locationData);
-        setIsCapturing(false);
-        
-        toast({
-          title: "Ubicación Capturada",
-          description: `Precisión aproximada: ${Math.round(position.coords.accuracy)} metros`,
-          className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
+      try {
+        const locationData = await new Promise<GeolocationData>((resolve, reject) => {
+          const options = {
+            enableHighAccuracy: true,
+            timeout: 10000, // 10 segundos por intento
+            maximumAge: 0 // No usar cache, siempre obtener nueva ubicación
+          };
+
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const data: GeolocationData = {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                accuracy: position.coords.accuracy,
+                timestamp: Date.now()
+              };
+              resolve(data);
+            },
+            (error) => {
+              let errorMsg = 'Error desconocido al obtener la ubicación';
+              
+              switch (error.code) {
+                case error.PERMISSION_DENIED:
+                  errorMsg = 'Permiso de ubicación denegado. Por favor, habilite la ubicación en su navegador.';
+                  break;
+                case error.POSITION_UNAVAILABLE:
+                  errorMsg = 'Información de ubicación no disponible.';
+                  break;
+                case error.TIMEOUT:
+                  errorMsg = 'Tiempo de espera agotado al obtener la ubicación.';
+                  break;
+              }
+              reject(new Error(errorMsg));
+            },
+            options
+          );
         });
-      },
-      (error) => {
-        let errorMsg = 'Error desconocido al obtener la ubicación';
-        
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            errorMsg = 'Permiso de ubicación denegado. Por favor, habilite la ubicación en su navegador.';
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMsg = 'Información de ubicación no disponible.';
-            break;
-          case error.TIMEOUT:
-            errorMsg = 'Tiempo de espera agotado al obtener la ubicación.';
-            break;
+
+        // Verificar si esta es la mejor precisión encontrada
+        if (locationData.accuracy < bestAccuracy) {
+          bestLocation = locationData;
+          bestAccuracy = locationData.accuracy;
+          setCaptureProgress(`Mejor precisión encontrada: ±${Math.round(locationData.accuracy)}m`);
         }
-        
-        setError(errorMsg);
-        setIsCapturing(false);
-        
-        toast({
-          title: "Error de Geolocalización",
-          description: errorMsg,
-          variant: "destructive",
-        });
-      },
-      options
-    );
+
+        // Si alcanzamos la precisión objetivo, parar
+        if (locationData.accuracy <= targetAccuracy) {
+          setCaptureProgress(`Precisión objetivo alcanzada: ±${Math.round(locationData.accuracy)}m`);
+          break;
+        }
+
+      } catch (error) {
+        if (attempt === maxAttempts) {
+          // Solo mostrar error en el último intento
+          const errorMsg = error instanceof Error ? error.message : 'Error al obtener la ubicación';
+          setError(errorMsg);
+          setIsCapturing(false);
+          setCaptureProgress('');
+          
+          toast({
+            title: "Error de Geolocalización",
+            description: errorMsg,
+            variant: "destructive",
+          });
+          return;
+        }
+        // Continuar con el siguiente intento
+        setCaptureProgress(`Intento ${attempt} falló, continuando...`);
+      }
+    }
+
+    // Usar la mejor ubicación encontrada
+    if (bestLocation) {
+      onLocationCaptured(bestLocation);
+      setIsCapturing(false);
+      setCaptureProgress('');
+      
+      const accuracyText = bestAccuracy <= 10 ? 'GPS Preciso' : 'GPS Aprox.';
+      toast({
+        title: "Ubicación Capturada",
+        description: `${accuracyText} ±${Math.round(bestAccuracy)}m`,
+        className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
+      });
+    } else {
+      setError('No se pudo obtener una ubicación válida después de todos los intentos');
+      setIsCapturing(false);
+      setCaptureProgress('');
+    }
   };
 
   return (
@@ -117,7 +174,7 @@ const GeolocationCapture: React.FC<GeolocationCaptureProps> = ({
               {isCapturing ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Obteniendo ubicación...
+                  {captureProgress || 'Obteniendo ubicación...'}
                 </>
               ) : (
                 <>
@@ -126,11 +183,20 @@ const GeolocationCapture: React.FC<GeolocationCaptureProps> = ({
                 </>
               )}
             </Button>
+            
+            {/* Progress indicator */}
+            {isCapturing && captureProgress && (
+              <div className="text-xs text-center text-muted-foreground bg-blue-50 p-2 rounded">
+                {captureProgress}
+              </div>
+            )}
           </div>
         ) : (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-green-700">Ubicación Capturada (GPS Aprox.)</span>
+              <span className="text-sm font-medium text-green-700">
+                Ubicación Capturada ({currentLocation.accuracy <= 10 ? 'GPS Preciso' : 'GPS Aprox.'} ±{Math.round(currentLocation.accuracy)}m)
+              </span>
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-green-600" />
                 <LocationShare 

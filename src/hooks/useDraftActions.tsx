@@ -222,7 +222,11 @@ export const useSaveDraft = () => {
         idsMatch: data.agent_id === user.id
       });
       
-      return data;
+      // Return data with applicationId for form updates
+      return {
+        ...data,
+        applicationId: sanitizedFormData.applicationId
+      };
     },
     onSuccess: (data, variables) => {
       console.log('🎉 Draft save success, invalidating queries');

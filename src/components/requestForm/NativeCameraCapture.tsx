@@ -28,7 +28,10 @@ const NativeCameraCapture: React.FC<NativeCameraCaptureProps> = ({
 
   const takePicture = async () => {
     try {
+      console.log('📸 Starting camera capture...');
+      
       if (!isNativeAvailable()) {
+        console.warn('⚠️ Native camera not available, falling back to file upload');
         toast({
           title: "Cámara no disponible",
           description: "Use la función de subir archivo en su lugar.",
@@ -37,6 +40,8 @@ const NativeCameraCapture: React.FC<NativeCameraCaptureProps> = ({
         return;
       }
 
+      console.log('📷 Native camera available, taking picture...');
+      
       const image = await Camera.getPhoto({
         quality: 90,
         allowEditing: false,
@@ -44,11 +49,17 @@ const NativeCameraCapture: React.FC<NativeCameraCaptureProps> = ({
         source: CameraSource.Camera,
       });
 
+      console.log('📸 Camera response received:', { hasDataUrl: !!image.dataUrl, format: image.format });
+
       if (image.dataUrl) {
+        console.log('🔄 Converting data URL to File...');
+        
         // Convert data URL to File
         const response = await fetch(image.dataUrl);
         const blob = await response.blob();
         const file = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
+        
+        console.log('✅ File created successfully:', { fileName: file.name, fileSize: file.size, fileType: file.type });
         
         onPhotoCapture(file);
         
@@ -57,12 +68,19 @@ const NativeCameraCapture: React.FC<NativeCameraCaptureProps> = ({
           description: "La foto se ha tomado exitosamente.",
           variant: "success"
         });
+      } else {
+        console.error('❌ No data URL received from camera');
+        throw new Error('No se recibió imagen de la cámara');
       }
-    } catch (error) {
-      console.error('Error taking picture:', error);
+    } catch (error: any) {
+      console.error('❌ Error taking picture:', error);
+      
+      const errorMessage = error?.message || 'Error desconocido';
+      console.error('🚨 Camera error details:', { error: errorMessage, stack: error?.stack });
+      
       toast({
         title: "Error de cámara",
-        description: "No se pudo tomar la foto. Intente de nuevo.",
+        description: `No se pudo tomar la foto: ${errorMessage}`,
         variant: "destructive"
       });
     }

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Lock, User } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -11,6 +12,7 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
+  const navigate = useNavigate();
   const { toast } = useToast();
   const { signIn } = useAuth();
 
@@ -29,7 +31,11 @@ const LoginForm = () => {
     try {
       setIsLoading(true);
       await signIn(email, password);
-      console.log('🔄 Login successful - AuthRouter will handle navigation');
+      console.log('🔄 Login successful - redirecting to dashboard');
+      
+      // ✅ BUG-219 FIX: Redirección explícita al Dashboard después del login exitoso
+      navigate('/', { replace: true });
+      
     } catch (error) {
       console.error('Auth error:', error);
       toast({

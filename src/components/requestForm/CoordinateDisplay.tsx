@@ -81,7 +81,7 @@ const CoordinateDisplay: React.FC<CoordinateDisplayProps> = ({ latitude, longitu
 
         {/* Location Info */}
         <div className="text-xs text-center text-muted-foreground bg-gray-50 p-2 rounded">
-          📍 Ubicación capturada con precisión GPS
+          📍 {accuracy && accuracy <= 10 ? 'Ubicación capturada con precisión GPS' : 'Ubicación capturada con GPS aproximado'}
         </div>
       </CardContent>
     </Card>

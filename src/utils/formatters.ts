@@ -18,13 +18,16 @@ export const formatDPI = (value: string): string => {
   // Remove all non-digits
   const cleaned = value.replace(/\D/g, '');
   
+  // Limit to 13 digits maximum
+  const limited = cleaned.slice(0, 13);
+  
   // Apply format: 0000 00000 0000
-  if (cleaned.length <= 4) {
-    return cleaned;
-  } else if (cleaned.length <= 9) {
-    return `${cleaned.slice(0, 4)} ${cleaned.slice(4)}`;
+  if (limited.length <= 4) {
+    return limited;
+  } else if (limited.length <= 9) {
+    return `${limited.slice(0, 4)} ${limited.slice(4)}`;
   } else {
-    return `${cleaned.slice(0, 4)} ${cleaned.slice(4, 9)} ${cleaned.slice(9, 13)}`;
+    return `${limited.slice(0, 4)} ${limited.slice(4, 9)} ${limited.slice(9, 13)}`;
   }
 };
 
@@ -40,9 +43,18 @@ export const formatPhone = (value: string): string => {
   }
 };
 
+// Import the complete DPI validation function
+import { validateDPI as validateDPIComplete } from './dpiValidation';
+
 export const validateDPIFormat = (dpi: string): boolean => {
-  const cleaned = dpi.replace(/\s/g, '');
-  return /^\d{13}$/.test(cleaned);
+  // Use the complete DPI validation instead of just checking length
+  const result = validateDPIComplete(dpi);
+  return result.isValid;
+};
+
+// Export the complete validation function for error messages
+export const validateDPIWithError = (dpi: string): { isValid: boolean; error?: string } => {
+  return validateDPIComplete(dpi);
 };
 
 export const validatePhoneFormat = (phone: string): boolean => {
