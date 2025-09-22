@@ -764,8 +764,33 @@
 - ⚠️ **Verificar permisos de Capacitor** en dispositivos de prueba
 - ✅ **Monitoreo continuo** recomendado para optimizaciones futuras
 
+#### 🎯 **25. Configuración para Generación de APK**
+- **Archivos**: `APK_GENERATION_GUIDE.md`, `scripts/generate-apk.js`, `package.json`
+- **Problema**: Necesidad de generar APK para distribución móvil
+- **Solución implementada**:
+  - **Guía completa** para generación de APK con Capacitor
+  - **Script automatizado** para preparar proyecto Android
+  - **Scripts npm** para comandos de desarrollo móvil
+  - **Configuración Capacitor** ya existente y funcional
+- **Funcionalidades**:
+  ```bash
+  # Scripts disponibles
+  npm run build:android    # Build + sync con Android
+  npm run open:android     # Abrir en Android Studio
+  npm run run:android      # Ejecutar en dispositivo/emulador
+  npm run build:apk        # Build completo para release
+  npm run generate:apk     # Script automatizado completo
+  ```
+- **Configuración actual**:
+  - **App ID**: `app.lovable.c018926e40254894ae52122f75906f16`
+  - **App Name**: `coopsamasupa`
+  - **Tema**: Azul Coopsama (#19418A)
+  - **Plugins**: Cámara, Status Bar, Splash Screen
+- **Resultado**: Proyecto Android listo para compilar APK
+- **Estado**: ✅ Completado
+
 ---
 
 *Última actualización: 2025-01-09*
-*Total de cambios documentados: 24*
-*Estado del proyecto: Listo para producción con configuraciones pendientes*
+*Total de cambios documentados: 25*
+*Estado del proyecto: Listo para producción y generación de APK*
