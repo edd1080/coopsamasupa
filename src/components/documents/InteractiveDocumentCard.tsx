@@ -89,7 +89,7 @@ const InteractiveDocumentCard: React.FC<InteractiveDocumentCardProps> = ({
           </div>
           <p className="text-xs text-muted-foreground">{document.description}</p>
         </div>
-        {getStatusIcon()}
+        {/* {getStatusIcon()} */}
       </div>
 
       {document.thumbnailUrl && (
