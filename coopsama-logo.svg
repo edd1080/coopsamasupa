@@ -1,0 +1,30 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle with gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#19418A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e4a9a;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="240" fill="url(#bgGradient)" stroke="#00C851" stroke-width="8"/>
+  
+  <!-- Inner white circle -->
+  <circle cx="256" cy="256" r="200" fill="white" stroke="#19418A" stroke-width="4"/>
+  
+  <!-- Coopsama text container -->
+  <rect x="80" y="180" width="352" height="152" rx="20" ry="20" fill="white" stroke="#19418A" stroke-width="3"/>
+  
+  <!-- Green accent line -->
+  <rect x="80" y="250" width="352" height="4" fill="#00C851"/>
+  
+  <!-- COOP text (blue) -->
+  <text x="140" y="230" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#19418A">COOP</text>
+  
+  <!-- SAMA text (green) -->
+  <text x="140" y="280" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#00C851">SAMA</text>
+  
+  <!-- Registered trademark symbol -->
+  <text x="320" y="230" font-family="Arial, sans-serif" font-size="24" fill="#000000">®</text>
+</svg>

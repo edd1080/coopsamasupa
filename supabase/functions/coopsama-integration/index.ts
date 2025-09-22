@@ -90,7 +90,7 @@ serve(async (req) => {
         coopsama_sync_status: 'pending',
         coopsama_sync_error: null,
         coopsama_synced_at: new Date().toISOString(),
-        sco_id: applicationId // Store SCO ID for tracking
+        // sco_id: applicationId // Store SCO ID for tracking - temporarily disabled
       })
       .eq('id', applicationId);
 

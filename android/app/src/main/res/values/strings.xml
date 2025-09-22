@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">coopsamasupa</string>
-    <string name="title_activity_main">coopsamasupa</string>
+    <string name="app_name">Coopsama App</string>
+    <string name="title_activity_main">Coopsama App</string>
     <string name="package_name">app.lovable.c018926e40254894ae52122f75906f16</string>
     <string name="custom_url_scheme">app.lovable.c018926e40254894ae52122f75906f16</string>
 </resources>
