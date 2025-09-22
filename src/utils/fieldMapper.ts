@@ -222,6 +222,32 @@ const calculateAge = (birthDate: string): number => {
   return age > 0 ? age : 30;
 };
 
+// Helper function to format date to yyyy-mm-dd string
+const formatDateToString = (date: Date | string | null | undefined): string | null => {
+  if (!date) return null;
+  
+  let dateObj: Date;
+  if (date instanceof Date) {
+    dateObj = date;
+  } else if (typeof date === 'string') {
+    dateObj = new Date(date);
+  } else {
+    return null;
+  }
+  
+  // Check if date is valid
+  if (isNaN(dateObj.getTime())) {
+    return null;
+  }
+  
+  // Format to yyyy-mm-dd
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}`;
+};
+
 // Helper function to calculate total expenses
 const calculateTotalExpenses = (expenses: { name: string; amount: number }[]): number => {
   return expenses.reduce((total, expense) => total + expense.amount, 0);
@@ -346,7 +372,7 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             emissionCounty: { id: residenceMunicipalityMatch.id, value: residenceMunicipalityMatch.value },
             gender: mapToCatalog(genders, formData.gender || formData.genero || "", "1"),
             maritalStatus: mapToCatalog(civilStatuses, formData.civilStatus || formData.estadoCivil || "", "1"),
-            birthDate: formData.birthDate || formData.fechaNacimiento || null,
+            birthDate: formatDateToString(formData.birthDate || formData.fechaNacimiento),
             age: calculateAge(formData.birthDate || formData.fechaNacimiento),
             academicTitle: mapToCatalog(officialProfessions, formData.profession || formData.profesion || "", "1"),
             occupation: mapToCatalog(officialOccupations, formData.occupation || formData.ocupacion || "", "1"),
@@ -367,7 +393,7 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             spouseCompanyName: formData.spouseWorkplace || "",
             spouseJobStability: formData.spouseJobStability ? mapToCatalog(workStabilities, formData.spouseJobStability, "4") : { id: "1", value: "" },
             spouseMobile: formData.spouseMobilePhone || "",
-            spouseBirthDate: formData.spouseBirthDate || null
+            spouseBirthDate: formatDateToString(formData.spouseBirthDate) || ""
           },
           personData: {
             nit: formData.nit || "",
@@ -386,8 +412,8 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             idTypeProduct: productTypeId,
             idAgency: agencyId,
             requestedAmount: parseFloat(formData.requestedAmount || "0") || 0,
-            interestRate: parseFloat(formData.interestRate || "12.5") || 12.5,
-            startingTerm: parseInt(formData.termMonths || "36") || 36,
+            interestRate: parseFloat(formData.interestRate || formData.tasaInteres || "12.5") || 12.5,
+            startingTerm: parseInt(formData.termMonths || formData.plazoMeses || "36") || 36,
             principalAmortization: mapToCatalog(capitalAmortizations, formData.capitalAmortization || formData.amortizacionCapital || "", "1"),
             interestAmortization: mapToCatalog(interestAmortizations, formData.interestAmortization || formData.amortizacionInteres || "", "1"),
             partnerType: mapToCatalog(memberTypes, formData.memberType || formData.tipoSocio || "", "1"),
@@ -399,7 +425,7 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             fundsDestination: {
               investmentState: { id: investmentDepartmentMatch.id, value: investmentDepartmentMatch.value },
               investmentCounty: { id: investmentMunicipalityMatch.id, value: investmentMunicipalityMatch.value },
-              destinationCategory: { id: "22", value: formData.destinationCategory || "Comercial" },
+              destinationCategory: mapToCatalog(destinationCategories, formData.destinationCategory || "", "22"),
               otherDestination: formData.otherDestination || "",
               description: formData.destinationDescription || "",
               comments: formData.destinationComments || ""
@@ -468,8 +494,21 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
               { name: "commitments", amount: parseFloat(formData.compromisos || "0") || 0 },
               { name: "financial expenses", amount: parseFloat(formData.gastosFinancieros || "0") || 0 },
               { name: "payroll deductions", amount: parseFloat(formData.descuentosPlanilla || "0") || 0 },
-              { name: "other expenses", amount: parseFloat(formData.otros || "0") || 0 }
+              { name: "other expenses", amount: parseFloat(formData.otros || "0") || 0 },
+              { name: "references for other expenses", amount: parseFloat(formData.referenciasOtrosGastos || "0") || 0 }
             ];
+            
+            // Si hay gastos adicionales en formData, agregarlos
+            if (formData.additionalExpenses && Array.isArray(formData.additionalExpenses)) {
+              formData.additionalExpenses.forEach((expense: any) => {
+                if (expense.name && expense.amount) {
+                  expenses.push({
+                    name: expense.name,
+                    amount: parseFloat(expense.amount) || 0
+                  });
+                }
+              });
+            }
             
             console.log('💸 Mapeando gastos reales:', expenses);
             return expenses;
@@ -510,17 +549,17 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
                 total: totalLiabilities
               },
               equity: {
-                currentDebtRatio: totalAssets > 0 ? (totalLiabilities / totalAssets * 100) : 0,
-                projectedDebtRatio: 0, // Se calculará después
+                currentDebtRatio: totalAssets > 0 ? (totalLiabilities / totalAssets) : 0,
+                projectedDebtRatio: totalAssets > 0 ? ((totalLiabilities + parseFloat(formData.requestedAmount || "0")) / (totalAssets + parseFloat(formData.requestedAmount || "0"))) : 0,
                 total: totalEquity
               }
             };
           })(),
-          collateral: [{
-            name: "",
-            amount: 0,
-            percentage: 0
-          }],
+          collateral: (formData.collateral || []).map((collateral: any) => ({
+            name: collateral.name || "",
+            amount: parseFloat(collateral.amount || "0") || 0,
+            percentage: parseFloat(collateral.percentage || "0") || 0
+          })),
           personal: {
             references: (formData.references || []).map((ref: any, index: number) => ({
               type: mapToCatalog(referenceTypes, ref.referenceType || "", "1"),
@@ -535,14 +574,12 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
               comments: ref.comments || ref.comment || ref.comentarios || ""
             }))
           },
-          business: formData.businessName ? {
-            companyName: formData.businessName,
-            activityDescription: formData.businessActivity || "Actividad comercial",
-            grossProfit: parseFloat(formData.businessProfit || "0") || 0,
-            productType: formData.businessProductType || "Comercio",
-            startDate: formData.businessStartDate || "2020-01-01",
-            fullAddress: formData.businessAddress || ""
-          } : undefined,
+          business: {
+            companyName: formData.companyName || "",
+            activityDescription: formData.activityDescription || "",
+            productType: formData.productType || "",
+            fullAddress: formData.fullAddress || ""
+          },
           investmentPlan: (() => {
             console.log('📋 Mapeando plan de inversión:', formData.investmentPlan);
             // Si existe plan de inversión en formData, usarlo; si no, array vacío
@@ -559,7 +596,21 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             return [];
           })(),
           expenseSummary: {
-            totalExpenses: 0 // Will be calculated
+            totalExpenses: (() => {
+              const expenses = [
+                parseFloat(formData.alimentacion || "0") || 0,
+                parseFloat(formData.vestuario || "0") || 0,
+                parseFloat(formData.serviciosBasicos || "0") || 0,
+                parseFloat(formData.educacion || "0") || 0,
+                parseFloat(formData.vivienda || "0") || 0,
+                parseFloat(formData.transporte || "0") || 0,
+                parseFloat(formData.compromisos || "0") || 0,
+                parseFloat(formData.gastosFinancieros || "0") || 0,
+                parseFloat(formData.descuentosPlanilla || "0") || 0,
+                parseFloat(formData.otros || "0") || 0
+              ];
+              return expenses.reduce((total, expense) => total + expense, 0);
+            })()
           }
         }
       }
@@ -596,7 +647,13 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
   profile.financialStatus.equity.total = profile.financialStatus.assets.total - profile.financialStatus.liabilities.total;
   profile.financialStatus.equity.currentDebtRatio = profile.financialStatus.assets.total > 0 ? 
     profile.financialStatus.liabilities.total / profile.financialStatus.assets.total : 0;
-  profile.financialStatus.equity.projectedDebtRatio = profile.financialStatus.equity.currentDebtRatio + 0.1; // Example projection
+  
+  // Calculate projected debt ratio correctly
+  const totalAssets = profile.financialStatus.assets.total;
+  const totalLiabilities = profile.financialStatus.liabilities.total;
+  const requestedAmount = parseFloat(formData.requestedAmount || "0") || 0;
+  profile.financialStatus.equity.projectedDebtRatio = totalAssets > 0 ? 
+    ((totalLiabilities + requestedAmount) / (totalAssets + requestedAmount)) : 0;
   
   // Calculate total expenses
   profile.expenseSummary.totalExpenses = calculateTotalExpenses(profile.expense);

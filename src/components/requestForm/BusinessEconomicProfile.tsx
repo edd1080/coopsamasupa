@@ -654,6 +654,7 @@ const BusinessEconomicProfile: React.FC<BusinessEconomicProfileProps> = ({ formD
           </TooltipProvider>
         );
       }
+
     }
 
     // Default fallback

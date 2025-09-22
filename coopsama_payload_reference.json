@@ -1,0 +1,407 @@
+{
+    "data": {
+        "process": {
+            "profile": {
+                "processControl": {
+                    "processId": "PRC-000123",
+                    "ownerCounty": {
+                        "id": "0101",
+                        "value": "Guatemala"
+                    },
+                    "ownerState": {
+                        "id": "01",
+                        "value": "Guatemala"
+                    },
+                    "cuaT24": "2031045",
+                    "cif": "98622",
+                    "userEmail": "jose.garcia@coopsama.com.gt"
+                },
+                "personalDocument": {
+                    "firstName": "Juan",
+                    "secondName": "Carlos",
+                    "firstLastName": "Pérez",
+                    "secondLastName": "García",
+                    "marriedSurname": "de López",
+                    "personalDocumentId": "1234567890101",
+                    "emissionState": {
+                        "id": "01",
+                        "value": "Guatemala"
+                    },
+                    "emissionCounty": {
+                        "id": "0101",
+                        "value": "Guatemala"
+                    },
+                    "gender": {
+                        "id": "1",
+                        "value": "Masculino"
+                    },
+                    "maritalStatus": {
+                        "id": "1",
+                        "value": "CASADO"
+                    },
+                    "birthDate": "1990-05-15",
+                    "age": 35,
+                    "academicTitle": {
+                        "id": "10",
+                        "value": "Ingeniero"
+                    },
+                    "occupation": {
+                        "id": "8",
+                        "value": "Analista Programador"
+                    },
+                    "personalDocumentAddress": {
+                        "fullAddress": "6a Avenida 10-10, Zona 1, Guatemala",
+                        "otherIndications": "Casa azul, portón negro",
+                        "state": {
+                            "id": "01",
+                            "value": "Guatemala"
+                        },
+                        "county": {
+                            "id": "0101",
+                            "value": "Guatemala"
+                        }
+                    },
+                    "typeOfHousing": {
+                        "id": "1",
+                        "value": "Propia"
+                    },
+                    "housingStability": {
+                        "id": "4",
+                        "value": "3 años"
+                    },
+                    "geolocalization": "14.628434,-90.522713",
+                    "spouseFirstName": "María",
+                    "spouseSecondName": "José",
+                    "spouseThirdName": "Ana",
+                    "spouseFirstLastName": "López",
+                    "spouseSecondLastName": "Ramírez",
+                    "spouseCompanyName": "Comercial López",
+                    "spouseJobStability": {
+                        "id": "4",
+                        "value": "2 años"
+                    },
+                    "spouseMobile": "+50255556666",
+                    "spouseBirthDate": "1992-07-20"
+                },
+                "personData": {
+                    "nit": "1234567-8",
+                    "numberOfDependants": 2,
+                    "ethnicity": {
+                        "id": "4",
+                        "value": "Mestizo"
+                    },
+                    "academicDegree": {
+                        "id": "4",
+                        "value": "Universitario"
+                    },
+                    "mobile": "+50255551234",
+                    "telephone": "+50222223333",
+                    "email": [
+                        {
+                            "emailAddress": "juan.perez@example.com",
+                            "emailType": "personal",
+                            "emailId": "1"
+                        }
+                    ]
+                },
+                "productDetail": {
+                    "idTypeProduct": 1,
+                    "idAgency": 12,
+                    "requestedAmount": 50000.0,
+                    "interestRate": 12.5,
+                    "startingTerm": 36,
+                    "principalAmortization": {
+                        "id": "1",
+                        "value": "Mensual"
+                    },
+                    "interestAmortization": {
+                        "id": "1",
+                        "value": "Mensual"
+                    },
+                    "partnerType": {
+                        "id": "1",
+                        "value": "individual"
+                    },
+                    "requestType": {
+                        "id": "1",
+                        "value": "nuevo"
+                    },
+                    "sourceOfFunds": {
+                        "id": "2",
+                        "value": "ahorros"
+                    },
+                    "principalProject": {
+                        "id": "5",
+                        "value": "Comercio"
+                    },
+                    "secondaryProject": {
+                        "id": "5",
+                        "value": "Transporte"
+                    },
+                    "paymentMethod": {
+                        "id": "1",
+                        "value": "ventanilla"
+                    },
+                    "fundsDestination": {
+                        "investmentState": {
+                            "id": "01",
+                            "value": "Guatemala"
+                        },
+                        "investmentCounty": {
+                            "id": "0101",
+                            "value": "Guatemala"
+                        },
+                        "destinationCategory": {
+                            "id": "22",
+                            "value": "Comercial"
+                        },
+                        "otherDestination": "Compra de inventario",
+                        "description": "Compra de mercadería para tienda",
+                        "comments": "Urgente"
+                    }
+                },
+                "income": [
+                    {
+                        "incomeSource": {
+                            "id": "1",
+                            "value": "Salario"
+                        },
+                        "monthlyIncome": 8000.0,
+                        "comments": "Empleo formal",
+                        "mainIncomeSource": true
+                    },
+                    {
+                        "incomeSource": {
+                            "id": "2",
+                            "value": "Negocio"
+                        },
+                        "monthlyIncome": 4500.0,
+                        "comments": "Ventas fin de semana",
+                        "mainIncomeSource": false
+                    }
+                ],
+                "expense": [
+                    {
+                        "name": "food",
+                        "amount": 1954.34
+                    },
+                    {
+                        "name": "clothing",
+                        "amount": 172.53
+                    },
+                    {
+                        "name": "basic services",
+                        "amount": 897.59
+                    },
+                    {
+                        "name": "education",
+                        "amount": 747.31
+                    },
+                    {
+                        "name": "housing",
+                        "amount": 2235.77
+                    },
+                    {
+                        "name": "transportation",
+                        "amount": 2062.43
+                    },
+                    {
+                        "name": "commitments",
+                        "amount": 2687.32
+                    },
+                    {
+                        "name": "financial expenses",
+                        "amount": 352.12
+                    },
+                    {
+                        "name": "payroll deductions",
+                        "amount": 1323.57
+                    },
+                    {
+                        "name": "other expenses",
+                        "amount": 186.41
+                    },
+                    {
+                        "name": "references for other expenses",
+                        "amount": 734.05
+                    },
+                    {
+                        "name": "food",
+                        "amount": 1565.53
+                    },
+                    {
+                        "name": "clothing",
+                        "amount": 176.95
+                    },
+                    {
+                        "name": "basic services",
+                        "amount": 676.63
+                    },
+                    {
+                        "name": "education",
+                        "amount": 1984.66
+                    },
+                    {
+                        "name": "housing",
+                        "amount": 1680.33
+                    },
+                    {
+                        "name": "transportation",
+                        "amount": 739.28
+                    },
+                    {
+                        "name": "commitments",
+                        "amount": 1808.87
+                    },
+                    {
+                        "name": "financial expenses",
+                        "amount": 2447.35
+                    },
+                    {
+                        "name": "payroll deductions",
+                        "amount": 118.85
+                    },
+                    {
+                        "name": "other expenses",
+                        "amount": 2436.88
+                    },
+                    {
+                        "name": "references for other expenses",
+                        "amount": 2124.6
+                    }
+                ],
+                "financialStatus": {
+                    "assets": {
+                        "list": [
+                            {
+                                "name": "cashAndBanks",
+                                "amount": 41489.81
+                            },
+                            {
+                                "name": "accountReceivable",
+                                "amount": 19502.06
+                            },
+                            {
+                                "name": "merchandise",
+                                "amount": 114908.36
+                            },
+                            {
+                                "name": "vehicles",
+                                "amount": 41054.75
+                            },
+                            {
+                                "name": "realEstate",
+                                "amount": 12036.76
+                            },
+                            {
+                                "name": "otherAssets",
+                                "amount": 12509.25
+                            }
+                        ],
+                        "total": 241500.99
+                    },
+                    "liabilities": {
+                        "list": [
+                            {
+                                "name": "accountsPayable",
+                                "amount": 51002.17
+                            },
+                            {
+                                "name": "longTermCreditors",
+                                "amount": 36619.84
+                            },
+                            {
+                                "name": "longTermLoans",
+                                "amount": 48620.57
+                            }
+                        ],
+                        "total": 136242.58
+                    },
+                    "equity": {
+                        "currentDebtRatio": 0.31,
+                        "projectedDebtRatio": 0.45,
+                        "total": 105258.41
+                    }
+                },
+                "collateral": [
+                    {
+                        "name": "Hipoteca vivienda",
+                        "amount": 100000.0,
+                        "percentage": 80
+                    }
+                ],
+                "personal": {
+                    "references": [
+                        {
+                            "type": {
+                                "id": "1",
+                                "value": "personal"
+                            },
+                            "firstName": "Carlos",
+                            "secondName": "Alberto",
+                            "firstLastName": "Mendoza",
+                            "secondLastName": "Ruiz",
+                            "fullAddress": "Colonia Las Flores 5-10, Guatemala",
+                            "relationship": "Amigo",
+                            "mobile": "+50255557777",
+                            "score": {
+                                "id": "1",
+                                "value": "8"
+                            },
+                            "comments": "Confiable"
+                        },
+                        {
+                            "type": {
+                                "id": "2",
+                                "value": "comercial"
+                            },
+                            "firstName": "Lucía",
+                            "secondName": "María",
+                            "firstLastName": "Ramírez",
+                            "secondLastName": "Gómez",
+                            "fullAddress": "Barrio Centro 2-20, Guatemala",
+                            "relationship": "Conocida",
+                            "mobile": "+50255558888",
+                            "score": {
+                                "id": "2",
+                                "value": "9"
+                            },
+                            "comments": "Puntual"
+                        }
+                    ]
+                },
+                "business": {
+                    "companyName": "Abarrotería Pérez",
+                    "activityDescription": "Venta de abarrotes",
+                    "grossProfit": 3500.0,
+                    "productType": "Consumo",
+                    "startDate": "2018-03-01",
+                    "fullAddress": "4a calle 3-45 Zona 2, Guatemala"
+                },
+                "investmentPlan": [
+                    {
+                        "quantity": 2,
+                        "unitOfMeasurement": "unidad",
+                        "description": "Congelador comercial",
+                        "unitPrice": 6000.0,
+                        "total": 12000.0
+                    },
+                    {
+                        "quantity": 1,
+                        "unitOfMeasurement": "unidad",
+                        "description": "Bascula industrial",
+                        "unitPrice": 2500.0,
+                        "total": 2500.0
+                    }
+                ],
+                "expenseSummary": {
+                    "totalExpenses": 29113.37
+                }
+            }
+        }
+    },
+    "metadata": {
+        "processId": "TET123",
+        "user": "yordan"
+    }
+}

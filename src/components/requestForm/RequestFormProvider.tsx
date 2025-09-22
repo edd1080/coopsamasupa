@@ -327,6 +327,12 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     dataProcessingAccepted: false,
     creditCheckAccepted: false,
     
+    // Business information
+    companyName: '',
+    activityDescription: '',
+    productType: '',
+    fullAddress: '',
+    
     // Generated fields - ID generated immediately for new applications
     applicationId: applicationId || generateApplicationId(),
   }));

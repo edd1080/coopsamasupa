@@ -76,17 +76,21 @@ serve(async (req) => {
       }
     }
 
-    // Generate processId
+    // Log the SCO ID (applicationId)
+    console.log('🆔 SCO ID (applicationId):', applicationId);
+    
+    // Generate processId based on SCO ID
     const processId = generateProcessId(applicationId);
     console.log('🔄 Generated processId:', processId);
 
-    // Update application status to pending sync
+    // Update application status to pending sync and store SCO ID
     await supabase
       .from('applications')
       .update({ 
         coopsama_sync_status: 'pending',
         coopsama_sync_error: null,
-        coopsama_synced_at: new Date().toISOString()
+        coopsama_synced_at: new Date().toISOString(),
+        sco_id: applicationId // Store SCO ID for tracking
       })
       .eq('id', applicationId);
 
@@ -110,7 +114,7 @@ serve(async (req) => {
         }
       },
       metadata: {
-        processId: applicationId, // Use SCO_XXXXXX instead of PRC-XXXXXX
+        processId: applicationId, // Use SCO_XXXXXX as primary identifier
         user: agentEmail
       }
     };
