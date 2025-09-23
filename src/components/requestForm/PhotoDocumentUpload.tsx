@@ -33,10 +33,19 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
     loadingDocument,
     uploadDocument,
     removeDocument,
+    initializeFromFormData,
   } = useDocumentManager();
 
   // Get applicationId from formData
   const applicationId = formData?.applicationId || formData?.id;
+
+  // Initialize documents from persisted formData
+  React.useEffect(() => {
+    if (formData?.documents && Object.keys(formData.documents).length > 0) {
+      console.log('📸 Initializing documents from persisted formData');
+      initializeFromFormData(formData.documents);
+    }
+  }, [formData?.documents, initializeFromFormData]);
 
   // Update form data when documents change
   React.useEffect(() => {
