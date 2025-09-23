@@ -13,7 +13,8 @@
 | BUG-226 | 2025-01-09 | Geolocalización inconsistente y UI confusa | ✅ Resuelto | Alta | Dev Team |
 | BUG-231 | 2025-01-09 | Scroll bleed-through en picker de secciones | ✅ Resuelto | Alta | Dev Team |
 | BUG-233 | 2025-01-09 | Barra de navegación mal alineada y botones recortados | ✅ Resuelto | Alta | Dev Team |
-| BUG-236 | 2025-01-09 | Campo Monto Solicitado sin formato monetario | 🔍 Analizando | Alta | Dev Team |
+| BUG-236 | 2025-01-09 | Campo Monto Solicitado sin formato monetario | ✅ Resuelto | Alta | Dev Team |
+| BUG-254 | 2025-01-20 | Layout desordenado en diálogo de confirmación de eliminación | ✅ Resuelto | Media | Dev Team |
 
 ---
 
@@ -740,12 +741,77 @@ Tras enviar una solicitud, en la pantalla de **Detalles de solicitud** (navigati
 
 ---
 
+## 🐛 **BUG-254: Layout desordenado en diálogo de confirmación de eliminación**
+
+### **📅 Fecha de Reporte**
+2025-01-20
+
+### **📝 Descripción**
+La card para confirmar la eliminación de una solicitud tiene el layout desordenado y asimétrico. El título e icono están alineados hacia la izquierda cuando deberían estar centrados. Además, el texto "el borrador será eliminado permanentemente" debe ser eliminado del diálogo.
+
+### **🎯 Comportamiento Esperado**
+- **Título e icono centrados**: Alineados al centro del diálogo
+- **Descripción centrada**: Texto de confirmación centrado
+- **Texto simplificado**: Solo "Esta acción no se puede deshacer"
+- **Layout simétrico**: Diseño balanceado y profesional
+
+### **❌ Comportamiento Actual**
+- **Título e icono alineados a la izquierda**: No centrados
+- **Descripción alineada a la izquierda**: No centrada
+- **Texto redundante**: "El borrador será eliminado permanentemente" innecesario
+- **Layout asimétrico**: Diseño desbalanceado
+
+### **🔍 Análisis del Problema**
+- **Componente afectado**: Diálogo de confirmación de eliminación
+- **Archivos involucrados**: 
+  - `src/pages/Applications.tsx` - AlertDialog de confirmación
+- **Causa probable**: 
+  - Falta de clases de centrado en AlertDialogHeader
+  - Falta de justify-center en AlertDialogTitle
+  - Texto redundante en AlertDialogDescription
+
+### **🧪 Script de Testing**
+```javascript
+// scripts/test-delete-dialog-layout.js
+// Script para probar el layout del diálogo de eliminación
+```
+
+### **💡 Solución Propuesta**
+- [x] Centrar header con `text-center`
+- [x] Centrar título e icono con `justify-center`
+- [x] Centrar descripción con `text-center`
+- [x] Eliminar texto "será eliminado permanentemente"
+- [x] Mantener texto "Esta acción no se puede deshacer"
+- [x] Crear script de testing para validación
+
+### **✅ Solución Implementada**
+- [x] **Archivos modificados**:
+  - `src/pages/Applications.tsx` - Layout del diálogo corregido
+- [x] **Cambios realizados**:
+  - `AlertDialogHeader` con `className="text-center"`
+  - `AlertDialogTitle` con `className="flex items-center justify-center gap-2"`
+  - `AlertDialogDescription` con `className="text-center"`
+  - Texto "será eliminado permanentemente" eliminado
+  - Texto "Esta acción no se puede deshacer" mantenido
+  - Icono Trash2 preservado con color rojo
+- [x] **Script de testing**: `verify-delete-dialog-layout.sh`
+- [x] **Validación**: ✅ Bug corregido exitosamente
+
+### **📊 Estado**
+- **Status**: ✅ Resuelto
+- **Prioridad**: Media
+- **Complejidad**: Baja
+- **Tiempo estimado**: 30 minutos
+- **Tiempo real**: 15 minutos
+
+---
+
 ## 📈 **Estadísticas de Bugs**
 
-- **Total de bugs reportados**: 10
+- **Total de bugs reportados**: 11
 - **En análisis**: 0
 - **En desarrollo**: 0
-- **Resueltos**: 10
+- **Resueltos**: 11
 - **Rechazados**: 0
 
 ---
@@ -762,5 +828,5 @@ Tras enviar una solicitud, en la pantalla de **Detalles de solicitud** (navigati
 
 ---
 
-*Última actualización: 2025-01-09*
+*Última actualización: 2025-01-20*
 *Documento creado por: Dev Team*

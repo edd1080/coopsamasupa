@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { sanitizeObjectData } from '@/utils/inputValidation';
 import { toCoopsamaPayload } from '@/utils/fieldMapper';
+import { formatDateToGuatemalan } from '@/utils/dateUtils';
 
 // Build application payload with proper column mapping
 const buildApplicationPayload = (formData: any, userId: string) => {
@@ -173,7 +174,7 @@ export const useFinalizeApplication = () => {
 
 ID de Solicitud: ${applicationId}
 Email del Agente: ${userEmail}
-Fecha de Envío: ${new Date().toLocaleDateString('es-GT')}
+Fecha de Envío: ${formatDateToGuatemalan(new Date())}
 Hora de Envío: ${new Date().toLocaleTimeString('es-GT')}
 Nombre Completo del Solicitante: ${formData?.firstName || ''} ${formData?.lastName || ''}
 Monto Solicitado: Q${amount.toLocaleString('es-GT')}

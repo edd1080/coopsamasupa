@@ -155,22 +155,6 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem onClick={() => handleViewApplication(application.id)}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        <span>Ver detalles</span>
-                      </DropdownMenuItem>
-                      {isDraft || application.status === 'error' ? <DropdownMenuItem onClick={e => handleContinueApplication(application.id, application.clientName, e)}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          <span>{application.status === 'error' ? 'Reintentar' : 'Continuar'}</span>
-                        </DropdownMenuItem> : application.status !== 'submitted' && <DropdownMenuItem onClick={e => handleEditApplication(application.id, application.clientName, e)}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          <span>Editar</span>
-                        </DropdownMenuItem>}
-                      {application.status !== 'cancelled' && application.status !== 'approved' && <DropdownMenuItem onClick={e => onCancel(application.id, application.clientName, e)}>
-                          <X className="mr-2 h-4 w-4" />
-                          <span>Cancelar solicitud</span>
-                        </DropdownMenuItem>}
-                      <DropdownMenuSeparator />
                       <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={e => onDelete(application.id, application.clientName, e)}>
                         <Trash2 className="mr-2 h-4 w-4" />
                         <span>Eliminar</span>
@@ -192,33 +176,15 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
                 <Progress value={application.progress / 6 * 100} className="h-1.5" />
               </div>
               
-              {!isDraft && application.product && application.amount && (
-                <div className="flex justify-between items-center mt-2 text-sm">
-                  <div className="font-medium">{application.product}</div>
-                  <div className="text-primary">{formatCurrencyWithSymbol(application.amount)}</div>
-                </div>
-              )}
+              <div className="flex justify-between items-center mt-2 text-sm">
+                <div className="font-medium">Crédito</div>
+                <div className="text-primary">{application.amount ? formatCurrencyWithSymbol(application.amount) : 'Por agregar'}</div>
+              </div>
             </div>
           </CardContent>
         </Card>
       </ContextMenuTrigger>
       <ContextMenuContent className="w-48">
-        <ContextMenuItem onClick={() => handleViewApplication(application.id)}>
-          <Eye className="mr-2 h-4 w-4" />
-          <span>Ver detalles</span>
-        </ContextMenuItem>
-        {isDraft || application.status === 'error' ? <ContextMenuItem onClick={e => handleContinueApplication(application.id, application.clientName, e)}>
-            <Edit className="mr-2 h-4 w-4" />
-            <span>{application.status === 'error' ? 'Reintentar' : 'Continuar'}</span>
-          </ContextMenuItem> : application.status !== 'submitted' && <ContextMenuItem onClick={e => onEdit(application.id, application.clientName, e)}>
-            <Edit className="mr-2 h-4 w-4" />
-            <span>Editar</span>
-          </ContextMenuItem>}
-        {application.status !== 'cancelled' && application.status !== 'approved' && <ContextMenuItem onClick={e => onCancel(application.id, application.clientName, e)}>
-            <X className="mr-2 h-4 w-4" />
-            <span>Cancelar solicitud</span>
-          </ContextMenuItem>}
-        <ContextMenuSeparator />
         <ContextMenuItem className="text-destructive focus:text-destructive" onClick={e => onDelete(application.id, application.clientName, e)}>
           <Trash2 className="mr-2 h-4 w-4" />
           <span>Eliminar</span>

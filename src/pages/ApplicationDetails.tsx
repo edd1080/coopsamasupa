@@ -16,7 +16,6 @@ import BreadcrumbNavigation from '@/components/navigation/BreadcrumbNavigation';
 import CircularProgress from '@/components/requestForm/CircularProgress';
 // Removed old testing components - now integrated in ReviewSection
 
-import { NewGuarantorSheet } from '@/components/requestForm/guarantors/NewGuarantorSheet';
 import { useApplicationData } from '@/hooks/useApplicationData';
 import { getFirstNameAndLastName, getNavBarName } from '@/lib/nameUtils';
 import { useToast } from '@/hooks/use-toast';
@@ -145,24 +144,6 @@ const ApplicationDetails = () => {
       });
     }
   };
-  const handleAddGuarantor = async (guarantorData: any) => {
-    const newGuarantor = {
-      id: Date.now().toString(),
-      ...guarantorData,
-      porcentajeCobertura: 0,
-      status: 'draft',
-      progress: 0
-    };
-
-    // Update the draft data
-    const currentFormData = getFormData(applicationData);
-    const updatedGuarantors = [...(currentFormData.guarantors || []), newGuarantor];
-    toast({
-      title: "Fiador agregado",
-      description: `${guarantorData.nombre} ha sido agregado exitosamente.`,
-      variant: "success"
-    });
-  };
   const handleSubmitApplication = () => {
     if (!isApplicationReadyToSubmit()) {
       toast({
@@ -260,19 +241,19 @@ const ApplicationDetails = () => {
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
               <div>
-                <h1 className="text-xl font-medium text-foreground">
+                <h1 className="text-xl font-semibold text-foreground">
                   {personName}
                 </h1>
                 {publicApplicationId && publicApplicationId.startsWith('SCO_') ? (
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     ID: <span className="font-mono font-medium text-primary">{publicApplicationId}</span>
                   </p>
                 ) : externalReferenceId ? (
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     ID: <span className="font-mono font-medium text-primary">{externalReferenceId}</span>
                   </p>
                 ) : (
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     ID: <span className="font-mono font-medium text-primary">{publicApplicationId}</span>
                   </p>
                 )}
@@ -354,6 +335,11 @@ const ApplicationDetails = () => {
                   if (section.id === 'references') {
                     isCompleted = references.length >= 2; // Al menos 2 referencias completas
                   }
+                  
+                  // Lógica especial para la sección de revisión final
+                  if (section.id === 'review') {
+                    isCompleted = !applicationData.isDraft && applicationData.status !== 'error';
+                  }
                   return <Button key={section.id} variant="outline" className={`relative h-auto py-2 flex flex-col items-center text-xs gap-1 flex-1 min-h-[5rem] sm:min-h-[4.5rem] whitespace-normal break-words overflow-hidden ${
                     isCompleted ? 'bg-green-50 text-green-700 border-green-200' : ''
                   }`} onClick={() => navigateToFormSection(section.id)}>
@@ -394,7 +380,7 @@ const ApplicationDetails = () => {
                 </div>
                 <div className="text-center p-3 bg-background rounded-md border">
                   <p className="text-xs text-muted-foreground mb-1">Tipo de Crédito</p>
-                  <p className="font-bold">{formData.applicationType || formData.creditType || 'Por agregar'}</p>
+                  <p className="font-bold">{formData.productDetails?.productType?.value || formData.productType || 'Por agregar'}</p>
                 </div>
                 <div className="text-center p-3 bg-background rounded-md border">
                   <p className="text-xs text-muted-foreground mb-1">Propósito</p>
@@ -424,43 +410,37 @@ const ApplicationDetails = () => {
                   <p className="text-sm text-muted-foreground mb-4">
                     Agregue al menos dos referencias para continuar con la solicitud
                   </p>
-                  <Button onClick={() => navigate(`/request/${id}?step=4`)} className="bg-green-600 hover:bg-green-700 text-white border-0">
+                  <Button onClick={() => navigate(`/applications/${id}/edit?step=3`)} className="bg-green-600 hover:bg-green-700 text-white border-0">
                     <Plus className="h-4 w-4 mr-2" />
                     Agregar Referencias
                   </Button>
                 </div> : <div className="space-y-4">
                   {references.map((reference: any, index: number) => {
-                    // Construir nombre completo desde campos individuales
-                    const fullName = `${reference.firstName || ''} ${reference.secondName || ''} ${reference.firstLastName || ''} ${reference.secondLastName || ''}`.trim() || reference.fullName || 'Por agregar';
+                    // Construir nombre completo desde campos correctos de referencias
+                    const fullName = `${reference.firstName || ''} ${reference.firstLastName || ''}`.trim() || 'Por agregar';
                     
-                    // Mapear tipo de referencia (Personal o Comercial)
-                    const referenceType = reference.referenceType || reference.type?.value || 'Por agregar';
+                    // Mapear tipo de referencia
+                    const referenceType = reference.referenceType || 'Por agregar';
                     
                     // Mapear teléfono
-                    const phone = reference.mobile || reference.phone || 'Por agregar';
-                    
-                    // Mapear relación
-                    const relationship = reference.relationship || reference.relation || 'Por agregar';
+                    const phone = reference.mobile || 'Por agregar';
                     
                     return (
                       <div key={reference.id || index} className="p-4 rounded-lg border bg-white hover:shadow-md transition-shadow">
                         <div className="space-y-2">
-                          {/* Nombre - Tipografía más pequeña y semibold */}
-                          <h4 className="text-sm font-semibold text-foreground">{fullName}</h4>
-                          
-                          {/* Información en filas */}
+                          {/* Información en filas - Solo 3 campos esenciales */}
                           <div className="space-y-1">
                             <div className="flex justify-between items-center">
-                              <span className="text-xs text-muted-foreground">Tipo:</span>
-                              <span className="text-xs font-medium text-foreground">{referenceType}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-xs text-muted-foreground">Relación:</span>
-                              <span className="text-xs font-medium text-foreground">{relationship}</span>
+                              <span className="text-xs text-muted-foreground">Nombre:</span>
+                              <span className="text-xs font-medium text-foreground">{fullName}</span>
                             </div>
                             <div className="flex justify-between items-center">
                               <span className="text-xs text-muted-foreground">Teléfono:</span>
                               <span className="text-xs font-medium text-foreground">{phone}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs text-muted-foreground">Tipo:</span>
+                              <span className="text-xs font-medium text-foreground">{referenceType}</span>
                             </div>
                           </div>
                         </div>
@@ -468,10 +448,10 @@ const ApplicationDetails = () => {
                     );
                   })}
                   {references.length < 3 && (
-                    <NewGuarantorSheet trigger={<Button className="w-full bg-green-600 hover:bg-green-700 text-white border-0">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Agregar Otro Fiador
-                      </Button>} onCreateGuarantor={handleAddGuarantor} onDiscard={() => {}} />
+                    <Button onClick={() => navigate(`/applications/${id}/edit?step=3`)} className="w-full bg-green-600 hover:bg-green-700 text-white border-0">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Agregar Otro Fiador
+                    </Button>
                   )}
                   {references.length >= 3 && (
                     <div className="text-center py-4 text-sm text-muted-foreground">
@@ -487,7 +467,7 @@ const ApplicationDetails = () => {
 
         {/* Tabs */}
         <Tabs defaultValue="resumen" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-primary/10">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="resumen" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Resumen</TabsTrigger>
             <TabsTrigger value="detalles" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Detalles</TabsTrigger>
           </TabsList>

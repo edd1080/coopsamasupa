@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { sanitizeConsoleOutput } from '@/utils/securityUtils';
 import { getFirstNameAndLastName } from '@/lib/nameUtils';
+import { formatDateToGuatemalan } from '@/utils/dateUtils';
 
 interface Application {
   id: string;
@@ -109,7 +110,7 @@ export const useApplicationsList = () => {
             product: app.product || 'Crédito Personal',
             amount: app.amount_requested?.toString() || '0',
             status: app.status,
-            date: new Date(app.created_at).toLocaleDateString(),
+            date: formatDateToGuatemalan(app.created_at),
             progress: app.progress_step || 0,
             stage: app.current_stage || 'En proceso',
             timestamp: new Date(app.created_at).getTime() // Para ordenamiento
@@ -125,6 +126,7 @@ export const useApplicationsList = () => {
           // Construct full name from draft_data if available, otherwise use client_name
           let fullName = draft.client_name || 'Sin nombre';
           let dpi = '';
+          let requestedAmount = '';
           if (draft.draft_data && typeof draft.draft_data === 'object') {
             const draftData = draft.draft_data as any;
             if (draftData.firstName && draftData.lastName) {
@@ -136,6 +138,8 @@ export const useApplicationsList = () => {
             }
             // Extract DPI for search functionality
             dpi = draftData.dpi || draftData.cedula || '';
+            // Extract requested amount from draft_data
+            requestedAmount = draftData.requestedAmount?.toString() || '';
           }
 
           // Map step number to stage name for drafts
@@ -158,10 +162,10 @@ export const useApplicationsList = () => {
             processId: undefined, // Drafts don't have process ID
             clientName: getFirstNameAndLastName(fullName),
             dpi: dpi,
-            product: '', // Empty for drafts to hide in UI
-            amount: '', // Empty for drafts to hide in UI
+            product: 'Crédito', // Show "Crédito" for drafts
+            amount: requestedAmount, // Use requestedAmount from draft_data
             status: 'draft',
-            date: new Date(draft.updated_at).toLocaleDateString(),
+            date: formatDateToGuatemalan(draft.updated_at),
             progress: draft.last_step || 0,
             stage: getStageFromStep(draft.last_step || 1),
             timestamp: new Date(draft.updated_at).getTime() // Para ordenamiento

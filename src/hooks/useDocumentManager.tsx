@@ -44,7 +44,7 @@ export const guatemalanDocuments: DocumentItem[] = [
     id: 'recibosServicios',
     title: 'Recibos de Servicios',
     description: 'Luz, agua o teléfono (máximo 3 meses)',
-    type: 'document',
+    type: 'photo',
     required: true,
     status: 'empty'
   },
@@ -80,6 +80,31 @@ export const useDocumentManager = (initialDocuments?: DocumentItem[]) => {
   }, []);
 
   const uploadDocument = useCallback(async (documentId: string, file: File, applicationId?: string) => {
+    // Validar tamaño del archivo (máximo 10MB)
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB en bytes
+    if (file.size > MAX_FILE_SIZE) {
+      toast({
+        title: "Archivo muy grande",
+        description: `El archivo es demasiado grande. El tamaño máximo permitido es 10MB.`,
+        variant: "destructive",
+        duration: 5000,
+      });
+      return;
+    }
+    
+    // Validar extensión del archivo
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.pdf', '.txt'];
+    const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+    if (!allowedExtensions.includes(fileExtension)) {
+      toast({
+        title: "Tipo de archivo no permitido",
+        description: `Solo se permiten archivos: ${allowedExtensions.join(', ')}`,
+        variant: "destructive",
+        duration: 5000,
+      });
+      return;
+    }
+    
     setLoadingDocument(documentId);
     
     try {
@@ -99,7 +124,7 @@ export const useDocumentManager = (initialDocuments?: DocumentItem[]) => {
       
       toast({
         title: "Documento cargado",
-        description: "El documento se subirá a Supabase cuando envíes la solicitud.",
+        description: "El archivo se subirá definitivamente cuando envíes la solicitud de crédito.",
         duration: 3000,
       });
       

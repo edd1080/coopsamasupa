@@ -100,7 +100,6 @@ const ReferencesSection: React.FC<ReferencesSectionProps> = ({
   return (
     <div className="space-y-6">
       <div className="border-b pb-4">
-        <h2 className="text-xl font-semibold">Referencias Personales</h2>
         <p className="text-muted-foreground">
           Agregue las referencias personales del solicitante
         </p>

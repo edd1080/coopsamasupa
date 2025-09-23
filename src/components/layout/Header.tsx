@@ -88,11 +88,14 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, externalRefe
 
   const getStatusBadgeVariant = (status?: string) => {
     switch (status) {
-      case 'approved': return 'default';
-      case 'reviewing': return 'secondary';
-      case 'pending': return 'outline';
-      case 'rejected': return 'destructive';
-      case 'draft': return 'outline';
+      case 'approved': return 'default'; // Verde
+      case 'reviewing': return 'secondary'; // Azul
+      case 'pending': return 'outline'; // Blanco
+      case 'rejected': return 'destructive'; // Rojo
+      case 'draft': return 'outline'; // Blanco
+      case 'error': return 'destructive'; // Rojo
+      case 'sent': return 'default'; // Verde
+      case 'active': return 'secondary'; // Azul
       default: return 'outline';
     }
   };
@@ -104,6 +107,9 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, externalRefe
       case 'pending': return 'Pendiente';
       case 'rejected': return 'Rechazada';
       case 'draft': return 'Activa';
+      case 'error': return 'Falló envío';
+      case 'sent': return 'Enviada';
+      case 'active': return 'Activa';
       default: return 'Sin Estado';
     }
   };
@@ -138,7 +144,7 @@ const Header: React.FC<HeaderProps> = ({ personName, applicationId, externalRefe
         {/* Right side - Actions */}
         <div className="flex items-center gap-2">
           {/* Status badge para formularios y detalles de aplicación */}
-          {(isFormPage || isApplicationDetails) && applicationStatus && (
+          {(isFormPage || isApplicationDetails) && applicationStatus && getStatusLabel(applicationStatus) !== 'Sin Estado' && (
             <Badge 
               variant={getStatusBadgeVariant(applicationStatus)}
               className="text-xs"

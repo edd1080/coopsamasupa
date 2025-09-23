@@ -10,6 +10,7 @@ import SubformHeader from '@/components/forms/SubformHeader';
 import { toast } from '@/hooks/use-toast';
 import TestingPanel from './testing/TestingPanel';
 import { useApplicationValidation } from '@/hooks/useDraftActions';
+import { formatDateToGuatemalan } from '@/utils/dateUtils';
 
 interface ReviewSectionProps {
   formData: any;
@@ -33,7 +34,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
   const formatDate = (date: Date | string) => {
     if (!date) return 'No especificada';
     const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return dateObj.toLocaleDateString('es-GT');
+    return formatDateToGuatemalan(dateObj);
   };
 
   // Map of field names to user-friendly labels - updated with correct field names

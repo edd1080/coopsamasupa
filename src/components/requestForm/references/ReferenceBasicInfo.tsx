@@ -55,7 +55,7 @@ const ReferenceBasicInfo: React.FC<ReferenceBasicInfoProps> = ({ referenceIndex 
   return (
     <div className="space-y-6">
       <div className="border-b pb-4">
-        <h3 className="text-lg font-semibold">Información Básica de la Referencia {referenceIndex + 1}</h3>
+        <h3 className="text-base font-semibold">Información Básica de la Referencia {referenceIndex + 1}</h3>
         <p className="text-muted-foreground">
           Complete la información de la referencia personal
         </p>

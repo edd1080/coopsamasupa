@@ -52,10 +52,50 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
     updateFormData('documents', documentsData);
   }, [documents]);
 
+  const takePictureDirectly = async (documentId: string) => {
+    try {
+      console.log('📸 Taking picture directly for document:', documentId);
+      
+      // Import Camera dynamically to avoid issues
+      const { Camera, CameraResultType, CameraSource } = await import('@capacitor/camera');
+      
+            const image = await Camera.getPhoto({
+              quality: 90,
+              allowEditing: false,
+              resultType: CameraResultType.DataUrl,
+              source: CameraSource.Camera,
+            });
+
+      if (image.dataUrl) {
+        // Convert data URL to File
+        const response = await fetch(image.dataUrl);
+        const blob = await response.blob();
+        const file = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
+        
+        // Upload the document
+        await uploadDocument(documentId, file, applicationId);
+        
+        toast({
+          title: "Foto capturada",
+          description: "La foto se ha tomado exitosamente.",
+          variant: "default"
+        });
+      }
+    } catch (error: any) {
+      console.error('❌ Error taking picture directly:', error);
+      toast({
+        title: "Error de cámara",
+        description: `No se pudo tomar la foto: ${error?.message || 'Error desconocido'}`,
+        variant: "destructive"
+      });
+    }
+  };
+
   const startCamera = async (documentId: string) => {
     // Check if running in native app (Capacitor)
     if (typeof window !== 'undefined' && (window as any).Capacitor) {
-      setShowNativeCamera(documentId);
+      // Ejecutar directamente sin mostrar modal duplicado
+      await takePictureDirectly(documentId);
       return;
     }
     
@@ -69,7 +109,8 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
           width: { ideal: 1280 },
           height: { ideal: 720 },
           facingMode: 'environment'
-        }
+        },
+        audio: false
       });
       
       setStream(mediaStream);
@@ -195,7 +236,7 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
         ref={fileInputRef}
         type="file"
         className="hidden"
-        accept=".jpg,.jpeg,.png,.pdf"
+        accept=".jpg,.jpeg,.png,.pdf,.txt"
         onChange={(e) => {
           const documentId = fileInputRef.current?.getAttribute('data-document-id') || '';
           handleFileSelection(e, documentId);

@@ -89,16 +89,37 @@ const InteractiveDocumentCard: React.FC<InteractiveDocumentCardProps> = ({
           </div>
           <p className="text-xs text-muted-foreground">{document.description}</p>
         </div>
-        {/* {getStatusIcon()} */}
       </div>
 
       {document.thumbnailUrl && (
         <div className="mb-3">
-          <img
-            src={document.thumbnailUrl}
-            alt={document.title}
-            className="w-full h-24 object-cover rounded border"
-          />
+          {document.file?.type === 'application/pdf' ? (
+            <div className="w-full h-24 bg-gray-100 rounded border flex items-center justify-center">
+              <div className="text-center">
+                <FileText className="h-6 w-6 text-red-500 mx-auto mb-1" />
+                <p className="text-xs text-gray-600">PDF</p>
+                <p className="text-xs text-gray-500">Toca para ver</p>
+              </div>
+            </div>
+          ) : document.file?.type === 'text/plain' ? (
+            <div className="w-full h-24 bg-gray-100 rounded border flex items-center justify-center">
+              <div className="text-center">
+                <FileText className="h-6 w-6 text-blue-500 mx-auto mb-1" />
+                <p className="text-xs text-gray-600">TXT</p>
+                <p className="text-xs text-gray-500">Toca para ver</p>
+              </div>
+            </div>
+          ) : (
+            <img
+              src={document.thumbnailUrl}
+              alt={document.title}
+              className="w-full h-24 object-cover rounded border"
+              onError={(e) => {
+                console.log('Error loading thumbnail:', e);
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          )}
         </div>
       )}
 
@@ -129,18 +150,16 @@ const InteractiveDocumentCard: React.FC<InteractiveDocumentCardProps> = ({
                 </Button>
               </label>
               
-              {document.type === 'photo' && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs"
-                  onClick={handleCameraCapture}
-                  disabled={isLoading}
-                >
-                  <Camera className="h-3 w-3 mr-1" />
-                  Cámara
-                </Button>
-              )}
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                onClick={handleCameraCapture}
+                disabled={isLoading}
+              >
+                <Camera className="h-3 w-3 mr-1" />
+                Cámara
+              </Button>
             </>
           )}
 
@@ -175,7 +194,7 @@ const InteractiveDocumentCard: React.FC<InteractiveDocumentCardProps> = ({
                 className="text-xs"
                 onClick={() => {
                   // Trigger file input for retry
-                  const fileInput = document.querySelector(`#file-${document.id}`) as HTMLInputElement;
+                  const fileInput = window.document.querySelector(`#file-${document.id}`) as HTMLInputElement;
                   if (fileInput) {
                     fileInput.click();
                   }

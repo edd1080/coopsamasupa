@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { CreditCard } from 'lucide-react';
 import SubformHeader from '@/components/forms/SubformHeader';
+import CurrencyInput from '@/components/ui/currency-input';
 import { 
   Select,
   SelectContent,
@@ -52,13 +53,12 @@ const CreditInfoForm: React.FC<CreditInfoFormProps> = ({ formData, updateFormDat
 
           <div className="space-y-2">
             <Label htmlFor="requestedAmount">Monto Solicitado</Label>
-            <Input 
+            <CurrencyInput
               id="requestedAmount"
-              type="text"
-              inputMode="decimal"
-              value={formData.requestedAmount || ''} 
-              onChange={(e) => updateFormData('requestedAmount', e.target.value)}
+              value={formData.requestedAmount || ''}
+              onValueChange={(value) => updateFormData('requestedAmount', value)}
               placeholder="0.00"
+              currencySymbol="Q"
             />
           </div>
 

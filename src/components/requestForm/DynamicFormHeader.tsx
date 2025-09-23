@@ -79,7 +79,7 @@ const DynamicFormHeader: React.FC = () => {
           {/* Dropdown menu */}
           {isExpanded && (
              <div 
-               className="absolute top-full left-0 mt-2 w-full max-w-md bg-popover border rounded-lg shadow-lg z-50 py-2 max-h-80 overflow-y-auto"
+               className="absolute top-full left-0 mt-2 w-full max-w-md bg-popover border rounded-lg shadow-lg z-50 py-2 max-h-96 overflow-y-auto"
                onClick={(e) => e.stopPropagation()}
              >
               {steps.map((step, index) => {

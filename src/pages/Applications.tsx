@@ -189,16 +189,16 @@ const Applications = () => {
       {/* Diálogo de confirmación de eliminación */}
       <AlertDialog open={deleteDialog.open} onOpenChange={open => !open && cancelDelete()}>
         <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
+          <AlertDialogHeader className="text-center">
+            <AlertDialogTitle className="flex items-center justify-center gap-2">
               <Trash2 className="h-5 w-5 text-red-500" />
               Eliminar {deleteDialog.isDraft ? 'borrador' : 'solicitud'}
             </AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogDescription className="text-center">
               ¿Estás seguro de que quieres eliminar {deleteDialog.isDraft ? 'el borrador' : 'la solicitud'} de <strong>{deleteDialog.clientName}</strong>?
               <br />
               <br />
-              Esta acción no se puede deshacer. {deleteDialog.isDraft ? 'El borrador' : 'La solicitud'} será eliminado permanentemente.
+              Esta acción no se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
