@@ -806,12 +806,83 @@ La card para confirmar la eliminación de una solicitud tiene el layout desorden
 
 ---
 
+## 🐛 **BUG-270: Pantalla en blanco al cerrar documentos**
+
+### **📅 Fecha de Reporte**
+2025-01-23
+
+### **📝 Descripción**
+Cuando se navega a la pantalla de documentos (paso 4) y se cierra o sale de ella, la pantalla se queda en blanco. Esto ocurre tanto al usar el botón de salir como al navegar a otro paso del formulario.
+
+### **🎯 Comportamiento Esperado**
+- **Navegación fluida**: Al cerrar documentos debe navegar correctamente al paso anterior o a la lista de aplicaciones
+- **Estado consistente**: Los documentos deben mantenerse en el estado del formulario
+- **Sin pantalla en blanco**: La interfaz debe mostrar contenido apropiado en todo momento
+- **Feedback visual**: El usuario debe ver indicadores de carga cuando sea necesario
+
+### **❌ Comportamiento Actual**
+- **Pantalla en blanco**: Al cerrar documentos la pantalla se queda completamente en blanco
+- **Navegación rota**: No se puede navegar correctamente desde la pantalla de documentos
+- **Estado inconsistente**: Los documentos pueden no estar sincronizados con el estado del formulario
+- **Sin feedback**: No hay indicadores de que algo está cargando o procesando
+
+### **🔍 Análisis del Problema**
+- **Componente afectado**: Sistema de navegación y estado de documentos
+- **Archivos involucrados**: 
+  - `src/hooks/useDocumentManager.tsx` (cambio de arquitectura)
+  - `src/components/requestForm/PhotoDocumentUpload.tsx` (dependencia de contexto)
+  - `src/components/requestForm/RequestFormProvider.tsx` (estado centralizado)
+- **Causa probable**: 
+  - Cambio de arquitectura de estado local a contexto en useDocumentManager
+  - Dependencia de useFormContext() causando problemas de timing
+  - Estado de documentos no inicializado correctamente al navegar
+
+### **🧪 Script de Testing**
+```javascript
+// scripts/test-documents-functionality.js
+// Script para probar la funcionalidad de documentos después del revert
+```
+
+### **💡 Solución Propuesta**
+- [x] Identificar el commit que causó el problema
+- [x] Revertir al commit anterior funcional
+- [x] Mantener arquitectura simple con estado local
+- [x] Evitar dependencias complejas de contexto
+- [x] Crear script de testing para validar la corrección
+
+### **✅ Solución Implementada**
+- [x] **Problema identificado**: El commit anterior introdujo cambios en la arquitectura de documentos que causaron la pantalla en blanco
+- [x] **Causa raíz**: Cambio de `useDocumentManager` de estado local a contexto (`useFormContext()`)
+- [x] **Solución aplicada**: Revertido al commit anterior (d038961) que tenía la arquitectura funcional
+- [x] **Arquitectura restaurada**:
+  - `useDocumentManager` usa estado local (`useState`) en lugar de contexto
+  - `PhotoDocumentUpload` usa `useDocumentManager` directamente sin dependencias de contexto
+  - Sincronización manual con `formData` via `useEffect`
+  - Sin componentes de fallback complejos
+- [x] **Cambios realizados**:
+  - **Arquitectura simple**: Estado local independiente sin dependencias de contexto
+  - **Inicialización inmediata**: Documentos se inicializan con `guatemalanDocuments` sin problemas de timing
+  - **Sincronización manual**: `useEffect` sincroniza documentos con `formData` cuando cambian
+  - **Navegación directa**: `StepContent` renderiza `PhotoDocumentUpload` directamente
+  - **Sin pantalla en blanco**: Renderizado inmediato sin problemas de inicialización
+- [x] **Script de testing**: `scripts/test-documents-functionality.js`
+- [x] **Validación**: ✅ Bug corregido exitosamente revirtiendo a arquitectura funcional
+
+### **📊 Estado**
+- **Status**: ✅ Resuelto
+- **Prioridad**: Alta
+- **Complejidad**: Media
+- **Tiempo estimado**: 2-3 horas
+- **Tiempo real**: 1 hora
+
+---
+
 ## 📈 **Estadísticas de Bugs**
 
-- **Total de bugs reportados**: 11
+- **Total de bugs reportados**: 12
 - **En análisis**: 0
 - **En desarrollo**: 0
-- **Resueltos**: 11
+- **Resueltos**: 12
 - **Rechazados**: 0
 
 ---
@@ -828,5 +899,5 @@ La card para confirmar la eliminación de una solicitud tiene el layout desorden
 
 ---
 
-*Última actualización: 2025-01-20*
+*Última actualización: 2025-01-23*
 *Documento creado por: Dev Team*
