@@ -29,28 +29,17 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
   const [showNativeCamera, setShowNativeCamera] = useState<string | null>(null);
 
   const {
+    documents,
     loadingDocument,
     uploadDocument,
     removeDocument,
-    initializeFromFormData,
-  } = useDocumentManager(undefined); // Remove updateFormData to avoid auto-sync
-  
-  // Get documents from context
-  const { documents, updateDocuments } = useFormContext();
+  } = useDocumentManager();
 
   // Get applicationId from formData
   const applicationId = formData?.applicationId || formData?.id;
 
-  // Initialize documents from persisted formData
+  // Update form data when documents change
   React.useEffect(() => {
-    if (formData?.documents && Object.keys(formData.documents).length > 0) {
-      console.log('📸 Initializing documents from persisted formData');
-      initializeFromFormData(formData.documents);
-    }
-  }, [formData?.documents, initializeFromFormData]);
-
-  // Sync documents to formData when needed (for saving)
-  const syncDocumentsToFormData = useCallback(() => {
     const documentsData = documents.reduce((acc, doc) => {
       acc[doc.id] = {
         file: doc.file,
@@ -59,15 +48,9 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
       };
       return acc;
     }, {} as Record<string, any>);
-    
     updateFormData('documents', documentsData);
-    console.log('📸 Documents synced to formData for saving:', documentsData);
-  }, [documents, updateFormData]);
+  }, [documents]);
 
-  // Expose sync function for external use
-  React.useImperativeHandle(React.useRef(), () => ({
-    syncDocumentsToFormData
-  }));
 
   const takePictureDirectly = async (documentId: string) => {
     try {

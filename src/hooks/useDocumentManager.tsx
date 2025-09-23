@@ -66,21 +66,18 @@ export const guatemalanDocuments: DocumentItem[] = [
   }
 ];
 
-export const useDocumentManager = (initialDocuments?: DocumentItem[], updateFormData?: (field: string, value: any) => void) => {
+export const useDocumentManager = (initialDocuments?: DocumentItem[]) => {
   const { toast } = useToast();
+  const [documents, setDocuments] = useState<DocumentItem[]>(
+    initialDocuments || guatemalanDocuments
+  );
   const [loadingDocument, setLoadingDocument] = useState<string | null>(null);
-  
-  // Use documents from context instead of local state
-  const { documents, updateDocuments } = useFormContext();
 
   const updateDocument = useCallback((documentId: string, updates: Partial<DocumentItem>) => {
-    const updated = documents.map(doc => 
+    setDocuments(prev => prev.map(doc => 
       doc.id === documentId ? { ...doc, ...updates } : doc
-    );
-    
-    // Update documents in context
-    updateDocuments(updated);
-  }, [documents, updateDocuments]);
+    ));
+  }, []);
 
   const uploadDocument = useCallback(async (documentId: string, file: File, applicationId?: string) => {
     // Validar tamaño del archivo (máximo 10MB)
