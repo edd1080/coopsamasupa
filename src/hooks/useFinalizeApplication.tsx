@@ -32,7 +32,6 @@ const buildApplicationPayload = (formData: any, userId: string) => {
     progress_step: 5,
     draft_data: formData, // Store complete form data as JSON
     official_data: null as any, // Will be set later
-    // sco_id: formData?.applicationId || null, // Store SCO ID for tracking - temporarily disabled
   };
 };
 

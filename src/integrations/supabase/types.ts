@@ -65,7 +65,6 @@ export type Database = {
           official_data: Json | null
           product: string | null
           progress_step: number | null
-          sco_id: string | null
           status: string | null
           updated_at: string
         }
@@ -86,7 +85,6 @@ export type Database = {
           official_data?: Json | null
           product?: string | null
           progress_step?: number | null
-          sco_id?: string | null
           status?: string | null
           updated_at?: string
         }
@@ -107,7 +105,6 @@ export type Database = {
           official_data?: Json | null
           product?: string | null
           progress_step?: number | null
-          sco_id?: string | null
           status?: string | null
           updated_at?: string
         }

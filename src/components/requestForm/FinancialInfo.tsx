@@ -19,8 +19,8 @@ const FinancialInfo: React.FC<FinancialInfoProps> = ({ formData, updateFormData 
   
   const tabs = [
     { id: 0, name: 'Análisis Financiero' },
-    { id: 1, name: 'Estado Patrimonial' },
-    { id: 2, name: 'Negocio' }
+    { id: 1, name: 'Estado Patrimonial' }
+    // { id: 2, name: 'Negocio' } - Oculto pero mantiene mapeo en payload
   ];
 
   const handleTabChange = (tabValue: string) => {
@@ -38,7 +38,7 @@ const FinancialInfo: React.FC<FinancialInfoProps> = ({ formData, updateFormData 
       />
       
       <Tabs value={subStep.toString()} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 gap-1 h-auto">
+        <TabsList className="grid w-full grid-cols-2 gap-1 h-auto">
           {tabs.map((tab) => (
             <TabsTrigger 
               key={tab.id} 
@@ -58,9 +58,10 @@ const FinancialInfo: React.FC<FinancialInfoProps> = ({ formData, updateFormData 
           <PatrimonialStatement formData={formData} updateFormData={updateFormData} />
         </TabsContent>
 
-        <TabsContent value="2">
+        {/* TabsContent de Negocio oculto - mantiene mapeo en payload */}
+        {/* <TabsContent value="2">
           <BusinessInfoForm formData={formData} updateFormData={updateFormData} />
-        </TabsContent>
+        </TabsContent> */}
       </Tabs>
     </div>
   );

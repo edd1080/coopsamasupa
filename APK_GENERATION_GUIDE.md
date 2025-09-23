@@ -40,21 +40,53 @@ npx cap sync android
 # Esto crea/actualiza la carpeta 'android/' con el proyecto Android
 ```
 
-### **Paso 3: Configurar Android Studio**
-1. **Abrir Android Studio**
-2. **Importar proyecto**: Seleccionar carpeta `android/`
-3. **Instalar SDK**: Asegurar que Android SDK esté instalado
-4. **Configurar dispositivo**: Emulador o dispositivo físico
+### **Paso 3: Generar APK (3 Opciones)**
 
-### **Paso 4: Generar APK**
+#### **Opción A: Script Automatizado (Recomendado)**
 ```bash
-# Opción 1: Desde terminal (más rápido)
-npx cap run android
+# Ejecutar script automatizado
+./generate-apk.sh
 
-# Opción 2: Desde Android Studio
-# 1. Abrir proyecto en Android Studio
-# 2. Build > Build Bundle(s) / APK(s) > Build APK(s)
-# 3. APK se genera en: android/app/build/outputs/apk/
+# El script hace todo automáticamente:
+# 1. Build de la aplicación
+# 2. Sincronización con Capacitor
+# 3. Generación de APK de debug
+# 4. Opción de generar APK de release
+```
+
+#### **Opción B: Desde Terminal con Gradle**
+```bash
+# Ir al directorio Android
+cd android
+
+# Limpiar build anterior
+./gradlew clean
+
+# Generar APK de debug
+./gradlew assembleDebug
+
+# Generar APK de release (opcional)
+./gradlew assembleRelease
+
+# Los APKs se generan en: android/app/build/outputs/apk/
+```
+
+#### **Opción C: Desde Android Studio**
+1. **Abrir Android Studio**: `npx cap open android`
+2. **Esperar sincronización**: Gradle se sincroniza automáticamente
+3. **Generar APK**: Build > Build Bundle(s) / APK(s) > Build APK(s)
+4. **Ubicación**: `android/app/build/outputs/apk/`
+
+### **Paso 4: Instalar APK en Dispositivo**
+```bash
+# Conectar dispositivo Android via USB
+# Habilitar "Depuración USB" en el dispositivo
+
+# Instalar APK de debug
+adb install android/app/build/outputs/apk/debug/app-debug.apk
+
+# Instalar APK de release
+adb install android/app/build/outputs/apk/release/app-release.apk
 ```
 
 ## ⚙️ **Configuración Actual del Proyecto**

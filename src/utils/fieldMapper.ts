@@ -393,7 +393,7 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             spouseCompanyName: formData.spouseWorkplace || "",
             spouseJobStability: formData.spouseJobStability ? mapToCatalog(workStabilities, formData.spouseJobStability, "4") : { id: "1", value: "" },
             spouseMobile: formData.spouseMobilePhone || "",
-            spouseBirthDate: formatDateToString(formData.spouseBirthDate) || ""
+            spouseBirthDate: formatDateToString(formData.spouseBirthDate) || null
           },
           personData: {
             nit: formData.nit || "",
