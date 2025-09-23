@@ -348,7 +348,12 @@ const ApplicationDetails = () => {
                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
                  {sections.map((section, index) => {
                   const Icon = section.icon;
-                  const isCompleted = progress > index;
+                  let isCompleted = progress > index;
+                  
+                  // Lógica especial para la sección de referencias
+                  if (section.id === 'references') {
+                    isCompleted = references.length >= 2; // Al menos 2 referencias completas
+                  }
                   return <Button key={section.id} variant="outline" className={`relative h-auto py-2 flex flex-col items-center text-xs gap-1 flex-1 min-h-[5rem] sm:min-h-[4.5rem] whitespace-normal break-words overflow-hidden ${
                     isCompleted ? 'bg-green-50 text-green-700 border-green-200' : ''
                   }`} onClick={() => navigateToFormSection(section.id)}>
@@ -381,19 +386,19 @@ const ApplicationDetails = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center p-3 bg-background rounded-md border">
                   <p className="text-xs text-muted-foreground mb-1">Monto Solicitado</p>
-                  <p className="font-bold">Q {Number(formData.requestedAmount || 0).toLocaleString()}</p>
+                  <p className="font-bold">{formData.requestedAmount ? `Q ${Number(formData.requestedAmount).toLocaleString()}` : 'Por agregar'}</p>
                 </div>
                 <div className="text-center p-3 bg-background rounded-md border">
                   <p className="text-xs text-muted-foreground mb-1">Plazo</p>
-                  <p className="font-bold">{formData.termMonths || 0} meses</p>
+                  <p className="font-bold">{formData.termMonths ? `${formData.termMonths} meses` : 'Por agregar'}</p>
                 </div>
                 <div className="text-center p-3 bg-background rounded-md border">
                   <p className="text-xs text-muted-foreground mb-1">Tipo de Crédito</p>
-                  <p className="font-bold">{formData.creditType || 'Por definir'}</p>
+                  <p className="font-bold">{formData.applicationType || formData.creditType || 'Por agregar'}</p>
                 </div>
                 <div className="text-center p-3 bg-background rounded-md border">
                   <p className="text-xs text-muted-foreground mb-1">Propósito</p>
-                  <p className="font-bold">{formData.purpose || 'Por definir'}</p>
+                  <p className="font-bold">{formData.creditPurpose || formData.purpose || 'Por agregar'}</p>
                 </div>
               </div>
             </CardContent>
@@ -426,16 +431,16 @@ const ApplicationDetails = () => {
                 </div> : <div className="space-y-4">
                   {references.map((reference: any, index: number) => {
                     // Construir nombre completo desde campos individuales
-                    const fullName = `${reference.firstName || ''} ${reference.secondName || ''} ${reference.firstLastName || ''} ${reference.secondLastName || ''}`.trim() || reference.fullName || 'Sin nombre';
+                    const fullName = `${reference.firstName || ''} ${reference.secondName || ''} ${reference.firstLastName || ''} ${reference.secondLastName || ''}`.trim() || reference.fullName || 'Por agregar';
                     
                     // Mapear tipo de referencia (Personal o Comercial)
-                    const referenceType = reference.type?.value || reference.referenceType || 'Personal';
+                    const referenceType = reference.referenceType || reference.type?.value || 'Por agregar';
                     
                     // Mapear teléfono
-                    const phone = reference.mobile || reference.phone || 'Sin teléfono';
+                    const phone = reference.mobile || reference.phone || 'Por agregar';
                     
                     // Mapear relación
-                    const relationship = reference.relationship || reference.relation || 'N/A';
+                    const relationship = reference.relationship || reference.relation || 'Por agregar';
                     
                     return (
                       <div key={reference.id || index} className="p-4 rounded-lg border bg-white hover:shadow-md transition-shadow">
