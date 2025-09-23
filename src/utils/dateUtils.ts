@@ -1,8 +1,18 @@
 // Utility functions for standardized date formatting
 
-export const formatDateToGuatemalan = (date: Date | string | number): string => {
+export const formatDateToGuatemalan = (date: Date | string | number | null | undefined): string => {
   try {
+    // Handle null/undefined cases
+    if (!date) {
+      return 'Sin fecha';
+    }
+    
     const dateObj = new Date(date);
+    
+    // Check if date is valid
+    if (isNaN(dateObj.getTime())) {
+      return 'Sin fecha';
+    }
     
     // Force Guatemala format DD/MM/YYYY
     const day = dateObj.getDate().toString().padStart(2, '0');
@@ -11,7 +21,7 @@ export const formatDateToGuatemalan = (date: Date | string | number): string => 
     
     return `${day}/${month}/${year}`;
   } catch (error) {
-    return 'Fecha inválida';
+    return 'Sin fecha';
   }
 };
 

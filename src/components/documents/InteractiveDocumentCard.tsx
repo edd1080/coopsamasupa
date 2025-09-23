@@ -3,7 +3,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Upload, Camera, FileText, Eye, Trash2, Loader2 } from 'lucide-react';
+import { Upload, Camera, FileText, Trash2, Loader2 } from 'lucide-react';
 import { DocumentItem } from '@/hooks/useDocumentManager';
 
 interface InteractiveDocumentCardProps {
@@ -12,7 +12,6 @@ interface InteractiveDocumentCardProps {
   onUploadFile?: (file: File) => void | Promise<void> | Promise<boolean>;
   onTakePhoto?: () => void | Promise<void>;
   onRemove: () => void;
-  onView?: () => void;
   isLoading?: boolean;
   showActions?: boolean;
 }
@@ -23,7 +22,6 @@ const InteractiveDocumentCard: React.FC<InteractiveDocumentCardProps> = ({
   onUploadFile,
   onTakePhoto,
   onRemove,
-  onView,
   isLoading = false,
   showActions = true
 }) => {
@@ -46,13 +44,6 @@ const InteractiveDocumentCard: React.FC<InteractiveDocumentCardProps> = ({
     }
   };
 
-  const handleView = () => {
-    if (onView) {
-      onView();
-    } else {
-      console.log('View document:', document.id);
-    }
-  };
 
   const getStatusColor = () => {
     switch (document.status) {
@@ -91,34 +82,41 @@ const InteractiveDocumentCard: React.FC<InteractiveDocumentCardProps> = ({
         </div>
       </div>
 
-      {document.thumbnailUrl && (
+      {document.file && (
         <div className="mb-3">
-          {document.file?.type === 'application/pdf' ? (
+          {document.file.type === 'application/pdf' ? (
             <div className="w-full h-24 bg-gray-100 rounded border flex items-center justify-center">
               <div className="text-center">
                 <FileText className="h-6 w-6 text-red-500 mx-auto mb-1" />
-                <p className="text-xs text-gray-600">PDF</p>
-                <p className="text-xs text-gray-500">Toca para ver</p>
+                <p className="text-xs text-gray-600 font-medium">PDF</p>
+                <p className="text-xs text-gray-400 mt-1 truncate max-w-[120px]">{document.file.name}</p>
               </div>
             </div>
-          ) : document.file?.type === 'text/plain' ? (
-            <div className="w-full h-24 bg-gray-100 rounded border flex items-center justify-center">
-              <div className="text-center">
-                <FileText className="h-6 w-6 text-blue-500 mx-auto mb-1" />
-                <p className="text-xs text-gray-600">TXT</p>
-                <p className="text-xs text-gray-500">Toca para ver</p>
+          ) : document.file.type.startsWith('image/') ? (
+            <div className="relative">
+              <img
+                src={document.thumbnailUrl}
+                alt={document.title}
+                className="w-full h-24 object-cover rounded border"
+                onError={(e) => {
+                  console.log('Error loading thumbnail:', e);
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+              <div className="absolute bottom-1 right-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
+                {document.file.name.split('.').pop()?.toUpperCase()}
               </div>
             </div>
           ) : (
-            <img
-              src={document.thumbnailUrl}
-              alt={document.title}
-              className="w-full h-24 object-cover rounded border"
-              onError={(e) => {
-                console.log('Error loading thumbnail:', e);
-                e.currentTarget.style.display = 'none';
-              }}
-            />
+            <div className="w-full h-24 bg-gray-100 rounded border flex items-center justify-center">
+              <div className="text-center">
+                <FileText className="h-6 w-6 text-blue-500 mx-auto mb-1" />
+                <p className="text-xs text-gray-600 font-medium">
+                  {document.file.name.split('.').pop()?.toUpperCase() || 'ARCHIVO'}
+                </p>
+                <p className="text-xs text-gray-400 mt-1 truncate max-w-[120px]">{document.file.name}</p>
+              </div>
+            </div>
           )}
         </div>
       )}
@@ -131,7 +129,7 @@ const InteractiveDocumentCard: React.FC<InteractiveDocumentCardProps> = ({
                 type="file"
                 id={`file-${document.id}`}
                 className="hidden"
-                accept={document.type === 'photo' ? 'image/*' : '*'}
+                accept=".jpg,.jpeg,.png,.pdf"
                 onChange={handleFileSelect}
                 disabled={isLoading}
               />
@@ -165,15 +163,6 @@ const InteractiveDocumentCard: React.FC<InteractiveDocumentCardProps> = ({
 
           {document.status === 'success' && (
             <>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs"
-                onClick={handleView}
-              >
-                <Eye className="h-3 w-3 mr-1" />
-                Ver
-              </Button>
               <Button
                 variant="outline"
                 size="sm"

@@ -66,18 +66,21 @@ export const guatemalanDocuments: DocumentItem[] = [
   }
 ];
 
-export const useDocumentManager = (initialDocuments?: DocumentItem[]) => {
+export const useDocumentManager = (initialDocuments?: DocumentItem[], updateFormData?: (field: string, value: any) => void) => {
   const { toast } = useToast();
-  const [documents, setDocuments] = useState<DocumentItem[]>(
-    initialDocuments || guatemalanDocuments
-  );
   const [loadingDocument, setLoadingDocument] = useState<string | null>(null);
+  
+  // Use documents from context instead of local state
+  const { documents, updateDocuments } = useFormContext();
 
   const updateDocument = useCallback((documentId: string, updates: Partial<DocumentItem>) => {
-    setDocuments(prev => prev.map(doc => 
+    const updated = documents.map(doc => 
       doc.id === documentId ? { ...doc, ...updates } : doc
-    ));
-  }, []);
+    );
+    
+    // Update documents in context
+    updateDocuments(updated);
+  }, [documents, updateDocuments]);
 
   const uploadDocument = useCallback(async (documentId: string, file: File, applicationId?: string) => {
     // Validar tamaño del archivo (máximo 10MB)
@@ -93,7 +96,7 @@ export const useDocumentManager = (initialDocuments?: DocumentItem[]) => {
     }
     
     // Validar extensión del archivo
-    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.pdf', '.txt'];
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.pdf'];
     const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
     if (!allowedExtensions.includes(fileExtension)) {
       toast({
@@ -110,17 +113,27 @@ export const useDocumentManager = (initialDocuments?: DocumentItem[]) => {
     try {
       console.log('📸 Starting document upload:', { documentId, fileName: file.name, fileSize: file.size, applicationId });
       
-      // Crear thumbnail URL local
+      // Crear thumbnail URL local para vista previa
       const thumbnailUrl = URL.createObjectURL(file);
       
       // Always store locally first - documents will be uploaded to Supabase when application is submitted
       console.log('📱 Storing document locally (will upload to Supabase when application is submitted)');
       
+      // Actualizar estado del documento inmediatamente para reflejar cambios en UI
       updateDocument(documentId, {
         file,
         status: 'success',
         thumbnailUrl // Use local blob URL for preview
       });
+      
+      // Forzar re-render del componente para asegurar que la UI se actualice
+      setTimeout(() => {
+        updateDocument(documentId, {
+          file,
+          status: 'success',
+          thumbnailUrl
+        });
+      }, 100);
       
       toast({
         title: "Documento cargado",
@@ -197,6 +210,26 @@ export const useDocumentManager = (initialDocuments?: DocumentItem[]) => {
       duration: 3000,
     });
   }, [documents, updateDocument, toast]);
+
+  // Función para inicializar documentos desde formData persistido
+  const initializeFromFormData = useCallback((formDataDocuments: Record<string, any>) => {
+    if (!formDataDocuments) return;
+    
+    console.log('📸 Initializing documents from formData:', formDataDocuments);
+    
+    setDocuments(prev => prev.map(doc => {
+      const persistedData = formDataDocuments[doc.id];
+      if (persistedData && persistedData.status === 'success') {
+        return {
+          ...doc,
+          status: persistedData.status,
+          thumbnailUrl: persistedData.thumbnailUrl
+          // Note: No podemos restaurar el File object directamente, pero podemos restaurar el estado
+        };
+      }
+      return doc;
+    }));
+  }, []);
 
   const getDocumentById = useCallback((documentId: string) => {
     return documents.find(doc => doc.id === documentId);
@@ -298,6 +331,7 @@ export const useDocumentManager = (initialDocuments?: DocumentItem[]) => {
     uploadDocument,
     removeDocument,
     getDocumentById,
-    uploadDocumentsToSupabase
+    uploadDocumentsToSupabase,
+    initializeFromFormData
   };
 };

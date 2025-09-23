@@ -867,6 +867,347 @@
 
 ---
 
-*Última actualización: 2025-01-20*
-*Total de cambios documentados: 28*
+### **2025-01-23** - Corrección de Geolocalización - Texto Truncado y Precisión
+
+#### 🔧 **29. Corrección de Texto Truncado y Precisión en Geolocalización**
+- **Archivo**: `src/components/requestForm/GeolocationCapture.tsx`
+- **Problema**: Texto del botón verde se truncaba mostrando "ntento 3/3 - Esperando estabilización del" y precisión inconsistente (100m → 39m → 20m)
+- **Causa**: 
+  - Texto muy largo para el ancho del botón
+  - Algoritmo de retry subóptimo con tiempos insuficientes
+  - Falta de definición clara de rangos GPS
+- **Solución implementada**:
+  ```typescript
+  // Texto corregido - formato conciso
+  setCaptureProgress(`Captura - Intento ${attempt} de ${maxAttempts}`);
+  
+  // Rangos GPS definidos
+  const precisionType = locationData.accuracy <= 10 ? 'Preciso' : 
+                       locationData.accuracy <= 30 ? 'Aprox.' : 'Impreciso';
+  
+  // Target accuracy mejorado
+  const targetAccuracy = 20; // metros (antes 50m)
+  
+  // Tiempos de espera optimizados
+  const waitTime = attempt * 3000; // 3s, 6s, 9s (antes 2s, 4s, 6s)
+  ```
+- **Cambios realizados**:
+  - Texto del botón: Formato conciso "Captura - Intento X de 3"
+  - Rangos GPS: Preciso ≤10m (Verde), Aprox. ≤30m (Amarillo), Impreciso >30m (Naranja)
+  - Target accuracy: Reducido de 50m a 20m para mejor precisión
+  - Tiempos de espera: Aumentados para mejor estabilización del GPS
+  - Mensajes específicos: "Mejor precisión: GPS Preciso ±8m"
+  - Toast con colores según tipo de precisión
+  - UI coherente con indicadores específicos
+- **Script de validación**: `scripts/test-geolocation-text-precision-fix.js`
+- **Resultados**: Texto no truncado, precisión mejorada, rangos definidos
+- **Estado**: ✅ Completado
+
+#### 📋 **30. Actualización de Documentación de Bugs**
+- **Archivo**: `bugs.md`
+- **Cambio**: Actualización del BUG-226 con nueva información
+- **Contenido agregado**:
+  - Descripción específica del problema con texto truncado
+  - Análisis de causa raíz: algoritmo subóptimo y rangos indefinidos
+  - Solución implementada con detalles técnicos
+  - Script de validación actualizado
+- **Estado**: ✅ Completado
+
+#### 📋 **31. Actualización de Cursor Implemented**
+- **Archivo**: `cursor_implemented.md`
+- **Cambio**: Documentación del trabajo realizado hoy
+- **Contenido agregado**:
+  - Nuevo cambio #29: Corrección de geolocalización
+  - Nuevo cambio #30: Actualización de documentación de bugs
+  - Nuevo cambio #31: Actualización de este archivo
+  - Fecha actualizada a 2025-01-23
+  - Total de cambios: 31
+- **Estado**: ✅ Completado
+
+---
+
+### **2025-01-23** - Corrección de Permisos de Android APK
+
+#### 🔧 **32. Corrección de Permisos de Android APK - BUG-263**
+- **Archivos modificados**:
+  - `android/app/src/main/AndroidManifest.xml` - Permisos agregados
+  - `capacitor.config.ts` - Configuración de permisos mejorada
+  - `src/hooks/useAndroidPermissions.tsx` - Hook para manejo de permisos
+  - `src/components/requestForm/NativeCameraCapture.tsx` - Solicitud automática de permisos
+- **Problema**: Los permisos no se solicitan en Android APK, no se pueden habilitar manualmente
+- **Causa**: Permisos faltantes en AndroidManifest.xml, falta de solicitud en tiempo de ejecución
+- **Solución implementada**:
+  - **Permisos agregados**: CAMERA, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, ACCESS_NETWORK_STATE
+  - **Hook de permisos**: Verificación automática y solicitud en tiempo de ejecución
+  - **Solicitud automática**: Permisos se solicitan antes de usar cámara
+  - **Indicador visual**: Alerta cuando faltan permisos
+  - **Mensajes informativos**: Instrucciones claras para el usuario
+  - **Detección de plataforma**: Solo aplica en Android
+  - **Manejo de errores**: Fallbacks y mensajes de error específicos
+- **Script de validación**: `scripts/test-android-permissions-fix.js`
+- **Estado**: ✅ Completado
+
+#### 📋 **33. Actualización de Documentación de Bugs**
+- **Archivo**: `bugs.md`
+- **Cambio**: Agregado BUG-263 para permisos de Android APK
+- **Contenido agregado**:
+  - Descripción completa del problema
+  - Análisis de causa raíz
+  - Solución implementada con detalles técnicos
+  - Script de validación
+  - Estadísticas actualizadas (12 bugs total)
+- **Estado**: ✅ Completado
+
+#### 📋 **34. Actualización de Cursor Implemented**
+- **Archivo**: `cursor_implemented.md`
+- **Cambio**: Documentación del trabajo realizado hoy
+- **Contenido agregado**:
+  - Nuevo cambio #32: Corrección de permisos de Android APK
+  - Nuevo cambio #33: Actualización de documentación de bugs
+  - Nuevo cambio #34: Actualización de este archivo
+  - Fecha actualizada a 2025-01-23
+  - Total de cambios: 34
+- **Estado**: ✅ Completado
+
+---
+
+### **2025-01-23** - Corrección de Iconos de Android
+
+#### 🔧 **35. Corrección de Iconos de Android - BUG-262**
+- **Archivos modificados**:
+  - `android/app/src/main/res/mipmap-*/` - Iconos oficiales copiados
+  - `android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml` - Configuración actualizada
+  - Archivos XML antiguos eliminados
+- **Problema**: App icon no se mostraba correctamente en Android, iconos básicos generados automáticamente
+- **Causa**: Iconos generados automáticamente en lugar de usar los oficiales de appIcons/android/
+- **Solución implementada**:
+  - **Iconos oficiales**: Copiados desde appIcons/android/res/ con todas las densidades
+  - **Adaptive icons**: Configuración con foreground/background separados
+  - **Iconos monocromáticos**: Soporte para Android 13+ con ic_launcher_monochrome.png
+  - **Configuración XML**: Actualizada para usar iconos oficiales
+  - **Archivos antiguos**: Eliminados para evitar conflictos
+  - **Splash screen**: Mantenida como está (solo color azul)
+  - **Calidad profesional**: Iconos nítidos en todas las densidades
+- **Script de validación**: `scripts/test-android-icons-fix.js`
+- **Estado**: ✅ Completado
+
+#### 📋 **36. Actualización de Documentación de Bugs**
+- **Archivo**: `bugs.md`
+- **Cambio**: Agregado BUG-262 para iconos de Android
+- **Contenido agregado**:
+  - Descripción completa del problema
+  - Análisis de causa raíz
+  - Solución implementada con detalles técnicos
+  - Script de validación
+  - Estadísticas actualizadas (13 bugs total)
+- **Estado**: ✅ Completado
+
+#### 📋 **37. Actualización de Cursor Implemented**
+- **Archivo**: `cursor_implemented.md`
+- **Cambio**: Documentación del trabajo realizado hoy
+- **Contenido agregado**:
+  - Nuevo cambio #35: Corrección de iconos de Android
+  - Nuevo cambio #36: Actualización de documentación de bugs
+  - Nuevo cambio #37: Actualización de este archivo
+  - Fecha actualizada a 2025-01-23
+  - Total de cambios: 37
+- **Estado**: ✅ Completado
+
+---
+
+### **2025-01-23** - Corrección Completa de BUG-238 - Documentos
+
+#### 🔧 **38. Corrección Completa de BUG-238 - Documentos**
+- **Archivos modificados**:
+  - `src/hooks/useDocumentManager.tsx` - Estado de galería y formatos
+  - `src/components/documents/InteractiveDocumentCard.tsx` - Vista previa mejorada
+  - `src/components/requestForm/NativeCameraCapture.tsx` - Mensajes en español
+  - `src/components/requestForm/PhotoDocumentUpload.tsx` - Limpieza de estado
+- **Problema**: Múltiples problemas en sistema de documentos detectados en pruebas
+- **Causa**: 
+  - Galería no se refleja en el card del documento
+  - Vista previa faltante para todos los documentos
+  - Botones quedan seleccionados al retroceder
+  - Mensajes de error en inglés
+  - Formato .txt incluido incorrectamente
+- **Solución implementada**:
+  - **Galería se refleja**: setTimeout para forzar re-render del UI
+  - **Vista previa completa**: Todos los documentos muestran vista previa con indicadores
+  - **Botones limpios**: Limpieza automática de estado al cerrar diálogos
+  - **Mensajes en español**: Traducción de "user cancelled photos app" y otros errores
+  - **Formatos correctos**: Eliminado .txt de allowedExtensions y accept attributes
+  - **Interactividad mejorada**: Click para ver documentos con hover effects
+  - **Indicadores de tipo**: Muestra tipo de archivo en vista previa
+- **Script de validación**: `scripts/test-bug238-document-fixes.js`
+- **Estado**: ✅ Completado
+
+#### 📋 **39. Actualización de Documentación de Bugs**
+- **Archivo**: `bugs.md`
+- **Cambio**: Actualización completa del BUG-238 con problemas adicionales detectados
+- **Contenido agregado**:
+  - Problemas adicionales detectados en pruebas
+  - Análisis detallado de causa raíz
+  - Solución implementada con detalles técnicos
+  - Script de validación actualizado
+  - Estadísticas actualizadas (13 bugs total)
+- **Estado**: ✅ Completado
+
+#### 📋 **40. Actualización de Cursor Implemented**
+- **Archivo**: `cursor_implemented.md`
+- **Cambio**: Documentación del trabajo realizado hoy
+- **Contenido agregado**:
+  - Nuevo cambio #38: Corrección completa de BUG-238
+  - Nuevo cambio #39: Actualización de documentación de bugs
+  - Nuevo cambio #40: Actualización de este archivo
+  - Fecha actualizada a 2025-01-23
+  - Total de cambios: 40
+- **Estado**: ✅ Completado
+
+---
+
+### **2025-01-23** - Corrección de BUG-256 - Solicitudes Fallidas
+
+#### 🔧 **41. Corrección de BUG-256 - Solicitudes Fallidas**
+- **Archivos modificados**:
+  - `src/pages/ApplicationDetails.tsx` - Navigation bar, acceso rápido, porcentaje, texto
+  - `src/components/requestForm/RequestFormProvider.tsx` - Persistencia de datos
+- **Problema**: Múltiples problemas en solicitudes fallidas detectados en pruebas
+- **Causa**: 
+  - Navigation bar mostraba ID largo en lugar de nombre del cliente
+  - Acceso rápido de referencias no funcionaba
+  - Porcentaje de completitud se reseteaba en solicitudes fallidas
+  - Datos se perdían al cambiar estado de solicitud
+  - Texto incorrecto en botón de referencias
+  - Mensaje de error de sincronización confuso
+- **Solución implementada**:
+  - **Navigation bar**: Agregado `navBarName` para mostrar nombre del cliente
+  - **Acceso rápido**: Corregido mapeo de 'references' a paso 3
+  - **Porcentaje**: Preservado progress para solicitudes fallidas
+  - **Datos persistentes**: Carga de `draft_data` también para `status === 'error'`
+  - **Texto correcto**: Cambiado "Agregar Otro Fiador" a "Agregar Otra Referencia"
+  - **Error claro**: Mensaje "Sincronización fallida" en lugar de código técnico
+- **Script de validación**: `scripts/test-bug256-failed-application-fixes.js`
+- **Estado**: ✅ Completado
+
+#### 📋 **42. Actualización de Documentación de Bugs**
+- **Archivo**: `bugs.md`
+- **Cambio**: Agregado BUG-256 para solicitudes fallidas
+- **Contenido agregado**:
+  - Descripción completa del problema
+  - Análisis de causa raíz
+  - Solución implementada con detalles técnicos
+  - Script de validación
+  - Estadísticas actualizadas (14 bugs total)
+- **Estado**: ✅ Completado
+
+#### 📋 **43. Actualización de Cursor Implemented**
+- **Archivo**: `cursor_implemented.md`
+- **Cambio**: Documentación del trabajo realizado hoy
+- **Contenido agregado**:
+  - Nuevo cambio #41: Corrección de BUG-256
+  - Nuevo cambio #42: Actualización de documentación de bugs
+  - Nuevo cambio #43: Actualización de este archivo
+  - Fecha actualizada a 2025-01-23
+  - Total de cambios: 43
+- **Estado**: ✅ Completado
+
+---
+
+### **2025-01-23** - Corrección de BUG-268: Persistencia de Datos
+
+#### 🔄 **44. Corrección de BUG-268 - Persistencia de Datos**
+- **Archivos modificados**:
+  - `src/hooks/useDocumentManager.tsx`
+  - `src/components/requestForm/PhotoDocumentUpload.tsx`
+  - `src/components/requestForm/RequestFormProvider.tsx`
+- **Problema**: Datos no persistían al navegar entre formularios
+  - Documentos/imágenes se perdían en paso 5
+  - Fecha de nacimiento no se mantenía
+  - Referencias personales no persistían
+- **Solución implementada**:
+  - **Sincronización automática**: Documentos se sincronizan con formData automáticamente
+  - **Función initializeFromFormData**: Restaura documentos desde formData persistido
+  - **Restauración explícita**: Fecha de nacimiento y referencias se restauran desde draft_data
+  - **Auto-save crítico**: Campos críticos se guardan automáticamente
+  - **Logging detallado**: Para debugging de sincronización
+- **Scripts de testing creados**:
+  - `scripts/test-bug268-documents-persistence.js`
+  - `scripts/test-bug268-birthdate-persistence.js`
+  - `scripts/test-bug268-references-persistence.js`
+  - `scripts/test-bug268-complete-persistence.js`
+- **Estado**: ✅ Completado
+
+#### 📋 **45. Actualización de Documentación de Bugs**
+- **Archivo**: `bugs.md`
+- **Cambio**: Documentación completa de BUG-268
+- **Contenido agregado**:
+  - Descripción detallada del problema
+  - Comportamiento esperado vs actual
+  - Análisis técnico del problema
+  - Solución propuesta e implementada
+  - Scripts de testing
+  - Estadísticas actualizadas (15 bugs total)
+- **Estado**: ✅ Completado
+
+#### 📋 **46. Actualización de Cursor Implemented**
+- **Archivo**: `cursor_implemented.md`
+- **Cambio**: Documentación del trabajo realizado hoy
+- **Contenido agregado**:
+  - Nuevo cambio #44: Corrección de BUG-268
+  - Nuevo cambio #45: Actualización de documentación de bugs
+  - Nuevo cambio #46: Actualización de este archivo
+  - Fecha actualizada a 2025-01-23
+  - Total de cambios: 46
+- **Estado**: ✅ Completado
+
+---
+
+### **2025-01-23** - Corrección de Sincronización Excesiva y Persistencia
+
+#### 🔧 **47. Corrección de Sincronización Excesiva y Persistencia - BUG-269**
+- **Archivos modificados**:
+  - `src/components/requestForm/RequestFormProvider.tsx` - Eliminado auto-save, agregado estado de documentos y progreso máximo
+  - `src/hooks/useDocumentManager.tsx` - Eliminada sincronización automática, uso de contexto
+  - `src/components/requestForm/PhotoDocumentUpload.tsx` - Uso de contexto en lugar de estado local
+- **Problema**: Después de BUG-268, se detectaron nuevos problemas
+  - Sincronización excesiva causando mensaje de "demasiados intentos"
+  - Solo documentos persistían, otros campos se perdían
+  - Barra de progreso se reseteaba al navegar entre pasos
+- **Solución implementada**:
+  - **Auto-save eliminado**: No más sincronización automática en updateFormData
+  - **Estado centralizado**: Documentos manejados desde RequestFormProvider
+  - **Progreso máximo**: Barra de progreso mantiene el máximo alcanzado
+  - **Timing restaurado**: Guardado solo manual como antes
+  - **Sincronización controlada**: Documentos se sincronizan solo al guardar
+  - **Persistencia completa**: Todos los campos persisten correctamente
+  - **Inicialización robusta**: Documentos se restauran desde draft_data
+- **Script de validación**: `scripts/test-sync-and-persistence-fixes.js`
+- **Estado**: ✅ Completado
+
+#### 📋 **48. Actualización de Documentación de Bugs**
+- **Archivo**: `bugs.md`
+- **Cambio**: Agregado BUG-269 para sincronización excesiva y persistencia
+- **Contenido agregado**:
+  - Descripción completa del problema
+  - Análisis de causa raíz
+  - Solución implementada con detalles técnicos
+  - Script de validación
+  - Estadísticas actualizadas (16 bugs total)
+- **Estado**: ✅ Completado
+
+#### 📋 **49. Actualización de Cursor Implemented**
+- **Archivo**: `cursor_implemented.md`
+- **Cambio**: Documentación del trabajo realizado hoy
+- **Contenido agregado**:
+  - Nuevo cambio #47: Corrección de sincronización excesiva y persistencia
+  - Nuevo cambio #48: Actualización de documentación de bugs
+  - Nuevo cambio #49: Actualización de este archivo
+  - Fecha actualizada a 2025-01-23
+  - Total de cambios: 49
+- **Estado**: ✅ Completado
+
+---
+
+*Última actualización: 2025-01-23*
+*Total de cambios documentados: 49*
 *Estado del proyecto: Listo para producción y generación de APK*
