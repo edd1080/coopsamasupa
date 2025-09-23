@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { sanitizeConsoleOutput } from '@/utils/securityUtils';
 import { getFirstNameAndLastName } from '@/lib/nameUtils';
-import { formatDateToGuatemalan } from '@/utils/dateUtils';
 
 interface Application {
   id: string;
@@ -110,7 +109,20 @@ export const useApplicationsList = () => {
             product: app.product || 'Crédito Personal',
             amount: app.amount_requested?.toString() || '0',
             status: app.status,
-            date: formatDateToGuatemalan(app.created_at),
+            date: (() => {
+              // Handle null/undefined cases
+              if (!app.created_at) {
+                return new Date().toLocaleDateString();
+              }
+              
+              const dateObj = new Date(app.created_at);
+              
+              if (isNaN(dateObj.getTime())) {
+                return new Date().toLocaleDateString();
+              }
+              
+              return dateObj.toLocaleDateString();
+            })(),
             progress: app.progress_step || 0,
             stage: app.current_stage || 'En proceso',
             timestamp: new Date(app.created_at).getTime() // Para ordenamiento
@@ -165,7 +177,20 @@ export const useApplicationsList = () => {
             product: 'Crédito', // Show "Crédito" for drafts
             amount: requestedAmount, // Use requestedAmount from draft_data
             status: 'draft',
-            date: formatDateToGuatemalan(draft.updated_at),
+            date: (() => {
+              // Handle null/undefined cases
+              if (!draft.updated_at) {
+                return new Date().toLocaleDateString();
+              }
+              
+              const dateObj = new Date(draft.updated_at);
+              
+              if (isNaN(dateObj.getTime())) {
+                return new Date().toLocaleDateString();
+              }
+              
+              return dateObj.toLocaleDateString();
+            })(),
             progress: draft.last_step || 0,
             stage: getStageFromStep(draft.last_step || 1),
             timestamp: new Date(draft.updated_at).getTime() // Para ordenamiento

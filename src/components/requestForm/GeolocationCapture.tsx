@@ -48,17 +48,17 @@ const GeolocationCapture: React.FC<GeolocationCaptureProps> = ({
     setCaptureProgress('Iniciando captura...');
 
     const maxAttempts = 3;
-    const targetAccuracy = 50; // metros
+    const targetAccuracy = 20; // metros - más estricto para mejor precisión
     let bestLocation: GeolocationData | null = null;
     let bestAccuracy = Infinity;
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       setAttemptCount(attempt);
-      setCaptureProgress(`Intento ${attempt}/${maxAttempts} - Esperando estabilización del GPS...`);
+      setCaptureProgress(`Captura - Intento ${attempt} de ${maxAttempts}`);
       
-      // Espera progresiva entre intentos para estabilización
+      // Espera progresiva entre intentos para estabilización (mejorada)
       if (attempt > 1) {
-        const waitTime = attempt * 2000; // 2s, 4s, 6s
+        const waitTime = attempt * 3000; // 3s, 6s, 9s - más tiempo para estabilización
         await new Promise(resolve => setTimeout(resolve, waitTime));
       }
 
@@ -104,12 +104,14 @@ const GeolocationCapture: React.FC<GeolocationCaptureProps> = ({
         if (locationData.accuracy < bestAccuracy) {
           bestLocation = locationData;
           bestAccuracy = locationData.accuracy;
-          setCaptureProgress(`Mejor precisión encontrada: ±${Math.round(locationData.accuracy)}m`);
+          const precisionType = locationData.accuracy <= 10 ? 'Preciso' : locationData.accuracy <= 30 ? 'Aprox.' : 'Impreciso';
+          setCaptureProgress(`Mejor precisión: GPS ${precisionType} ±${Math.round(locationData.accuracy)}m`);
         }
 
         // Si alcanzamos la precisión objetivo, parar
         if (locationData.accuracy <= targetAccuracy) {
-          setCaptureProgress(`Precisión objetivo alcanzada: ±${Math.round(locationData.accuracy)}m`);
+          const precisionType = locationData.accuracy <= 10 ? 'Preciso' : 'Aprox.';
+          setCaptureProgress(`GPS ${precisionType} alcanzado: ±${Math.round(locationData.accuracy)}m`);
           break;
         }
 
@@ -139,11 +141,25 @@ const GeolocationCapture: React.FC<GeolocationCaptureProps> = ({
       setIsCapturing(false);
       setCaptureProgress('');
       
-      const accuracyText = bestAccuracy <= 10 ? 'GPS Preciso' : 'GPS Aprox.';
+      // Definir tipo de precisión según rangos mejorados
+      let accuracyText: string;
+      let toastClass: string;
+      
+      if (bestAccuracy <= 10) {
+        accuracyText = 'GPS Preciso';
+        toastClass = "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100";
+      } else if (bestAccuracy <= 30) {
+        accuracyText = 'GPS Aprox.';
+        toastClass = "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100";
+      } else {
+        accuracyText = 'GPS Impreciso';
+        toastClass = "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100";
+      }
+      
       toast({
         title: "Ubicación Capturada",
         description: `${accuracyText} ±${Math.round(bestAccuracy)}m`,
-        className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
+        className: toastClass,
       });
     } else {
       setError('No se pudo obtener una ubicación válida después de todos los intentos');
@@ -194,16 +210,16 @@ const GeolocationCapture: React.FC<GeolocationCaptureProps> = ({
         ) : (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-green-700">
-                Ubicación Capturada ({currentLocation.accuracy <= 10 ? 'GPS Preciso' : 'GPS Aprox.'} ±{Math.round(currentLocation.accuracy)}m)
-              </span>
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-green-600" />
-                <LocationShare 
-                  latitude={currentLocation.latitude} 
-                  longitude={currentLocation.longitude} 
-                />
+                <span className="text-sm font-bold text-green-700">
+                  Ubicación Capturada
+                </span>
               </div>
+              <LocationShare 
+                latitude={currentLocation.latitude} 
+                longitude={currentLocation.longitude} 
+              />
             </div>
 
             {/* Coordinate Display */}

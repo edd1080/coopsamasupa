@@ -24,23 +24,33 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [activeCameraId, setActiveCameraId] = useState<string | null>(null);
-  const [showPreview, setShowPreview] = useState<any>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [showNativeCamera, setShowNativeCamera] = useState<string | null>(null);
 
   const {
-    documents,
     loadingDocument,
     uploadDocument,
     removeDocument,
-  } = useDocumentManager();
+    initializeFromFormData,
+  } = useDocumentManager(undefined); // Remove updateFormData to avoid auto-sync
+  
+  // Get documents from context
+  const { documents, updateDocuments } = useFormContext();
 
   // Get applicationId from formData
   const applicationId = formData?.applicationId || formData?.id;
 
-  // Update form data when documents change
+  // Initialize documents from persisted formData
   React.useEffect(() => {
+    if (formData?.documents && Object.keys(formData.documents).length > 0) {
+      console.log('📸 Initializing documents from persisted formData');
+      initializeFromFormData(formData.documents);
+    }
+  }, [formData?.documents, initializeFromFormData]);
+
+  // Sync documents to formData when needed (for saving)
+  const syncDocumentsToFormData = useCallback(() => {
     const documentsData = documents.reduce((acc, doc) => {
       acc[doc.id] = {
         file: doc.file,
@@ -49,8 +59,15 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
       };
       return acc;
     }, {} as Record<string, any>);
+    
     updateFormData('documents', documentsData);
-  }, [documents]);
+    console.log('📸 Documents synced to formData for saving:', documentsData);
+  }, [documents, updateFormData]);
+
+  // Expose sync function for external use
+  React.useImperativeHandle(React.useRef(), () => ({
+    syncDocumentsToFormData
+  }));
 
   const takePictureDirectly = async (documentId: string) => {
     try {
@@ -176,9 +193,6 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
     }
   };
 
-  const handleOpenPreview = (document: any) => {
-    setShowPreview(document);
-  };
 
   // Agrupar documentos en filas de 2
   const documentRows = [];
@@ -224,7 +238,6 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
               onUploadFile={(file) => uploadDocument(document.id, file, applicationId)}
               onTakePhoto={() => startCamera(document.id)}
               onRemove={() => removeDocument(document.id)}
-              onView={() => handleOpenPreview(document)}
               showActions={true}
             />
           ))}
@@ -236,7 +249,7 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
         ref={fileInputRef}
         type="file"
         className="hidden"
-        accept=".jpg,.jpeg,.png,.pdf,.txt"
+        accept=".jpg,.jpeg,.png,.pdf"
         onChange={(e) => {
           const documentId = fileInputRef.current?.getAttribute('data-document-id') || '';
           handleFileSelection(e, documentId);
@@ -244,7 +257,16 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
       />
       
       {/* Native Camera Dialog */}
-      <Dialog open={showNativeCamera !== null} onOpenChange={(open) => !open && setShowNativeCamera(null)}>
+      <Dialog open={showNativeCamera !== null} onOpenChange={(open) => {
+        if (!open) {
+          setShowNativeCamera(null);
+          // Limpiar estado de botones al cerrar
+          setTimeout(() => {
+            setActiveCameraId(null);
+            setIsCameraReady(false);
+          }, 100);
+        }
+      }}>
         <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
             <DialogTitle>Capturar Documento</DialogTitle>
@@ -256,12 +278,29 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
               onPhotoCapture={(file) => {
                 uploadDocument(showNativeCamera, file, applicationId);
                 setShowNativeCamera(null);
+                // Limpiar estado de botones
+                setTimeout(() => {
+                  setActiveCameraId(null);
+                  setIsCameraReady(false);
+                }, 100);
               }}
               onFileUpload={() => {
                 handleFileUpload(showNativeCamera);
                 setShowNativeCamera(null);
+                // Limpiar estado de botones
+                setTimeout(() => {
+                  setActiveCameraId(null);
+                  setIsCameraReady(false);
+                }, 100);
               }}
-              onCancel={() => setShowNativeCamera(null)}
+              onCancel={() => {
+                setShowNativeCamera(null);
+                // Limpiar estado de botones
+                setTimeout(() => {
+                  setActiveCameraId(null);
+                  setIsCameraReady(false);
+                }, 100);
+              }}
             />
           )}
         </DialogContent>
@@ -315,44 +354,6 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
         </DialogContent>
       </Dialog>
       
-      {/* Preview dialog */}
-      <Dialog open={showPreview !== null} onOpenChange={() => setShowPreview(null)}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>{showPreview?.title}</DialogTitle>
-          </DialogHeader>
-          
-          {showPreview?.thumbnailUrl && (
-            <div className="flex justify-center p-4">
-              <img
-                src={showPreview.thumbnailUrl}
-                alt={showPreview.title}
-                className="max-h-[500px] max-w-full object-contain rounded-md"
-              />
-            </div>
-          )}
-          
-          <div className="flex justify-end gap-3">
-            <Button variant="ghost" onClick={() => setShowPreview(null)}>
-              <X className="mr-2 h-4 w-4" />
-              Cerrar
-            </Button>
-            <Button
-              variant="outline"
-              className="text-destructive hover:text-destructive hover:bg-destructive/10"
-              onClick={() => {
-                if (showPreview) {
-                  removeDocument(showPreview.id);
-                  setShowPreview(null);
-                }
-              }}
-            >
-              <X className="mr-2 h-4 w-4" />
-              Eliminar
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

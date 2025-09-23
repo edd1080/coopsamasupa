@@ -38,7 +38,7 @@ const LocationShare: React.FC<LocationShareProps> = ({ latitude, longitude }) =>
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="flex items-center gap-2">
+        <Button variant="outline" size="sm" className="flex items-center gap-1 h-6 px-2 text-xs">
           <Share className="h-3 w-3" />
           Compartir
         </Button>

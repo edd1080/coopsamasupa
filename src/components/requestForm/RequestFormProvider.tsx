@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useSaveDraft } from '@/hooks/useDraftActions';
 import { useFinalizeApplication } from '@/hooks/useFinalizeApplication';
 import { useApplicationData } from '@/hooks/useApplicationData';
+import { guatemalanDocuments } from '@/hooks/useDocumentManager';
 
 interface FormContextType {
   // Form state
@@ -52,6 +53,10 @@ interface FormContextType {
   removeReference: (index: number) => void;
   updateReference: (index: number, field: string, value: any) => void;
   isInReferenceForm: boolean;
+  
+  // Documents
+  documents: any[];
+  updateDocuments: (documents: any[]) => void;
   setIsInReferenceForm: (inForm: boolean) => void;
   
   // Person name
@@ -350,6 +355,12 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   const [referenceFormStep, setReferenceFormStep] = useState(0);
   const [isInReferenceForm, setIsInReferenceForm] = useState(false);
   
+  // Documents state
+  const [documents, setDocuments] = useState<any[]>([]);
+  
+  // Progress tracking
+  const [maxProgressReached, setMaxProgressReached] = useState(0);
+  
   // Exit dialog state
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -362,10 +373,10 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   const saveDraftMutation = useSaveDraft();
   const finalizeApplicationMutation = useFinalizeApplication();
 
-  // Load existing data when editing
+  // Load existing data when editing - Fixed: Also load data for failed applications
   useEffect(() => {
-    if (applicationData && applicationData.isDraft && applicationData.draft_data) {
-      console.log('📥 Loading existing draft data:', applicationData.draft_data);
+    if (applicationData && (applicationData.isDraft || ('status' in applicationData && applicationData.status === 'error')) && applicationData.draft_data) {
+      console.log('📥 Loading existing data (draft or failed):', applicationData.draft_data);
       const draftData = applicationData.draft_data as any;
       
       // Merge draft data with current form data
@@ -373,8 +384,36 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
         ...prev,
         ...draftData,
         // Ensure applicationId is preserved from draft, or keep empty if new
-        applicationId: draftData.applicationId || ''
+        applicationId: draftData.applicationId || '',
+        // Ensure birthDate is properly restored
+        birthDate: draftData.birthDate || null
       }));
+      
+      // Restore references if they exist
+      if (draftData.references && Array.isArray(draftData.references)) {
+        console.log('👥 Restoring references from draft data:', draftData.references);
+        setReferences(draftData.references);
+      }
+      
+      // Restore documents if they exist
+      if (draftData.documents && typeof draftData.documents === 'object') {
+        console.log('📸 Restoring documents from draft data:', draftData.documents);
+        // Convert documents object to array format
+        const documentsArray = Object.values(draftData.documents).map((doc: any) => ({
+          id: doc.id || '',
+          title: doc.title || '',
+          description: doc.description || '',
+          required: doc.required || false,
+          file: doc.file || null,
+          status: doc.status || 'empty',
+          thumbnailUrl: doc.thumbnailUrl || undefined,
+          type: doc.type || 'document'
+        }));
+        setDocuments(documentsArray);
+      } else {
+        // Initialize with default documents if no saved documents
+        setDocuments(guatemalanDocuments);
+      }
       
       // Set current step from draft (using any to access the draft properties)
       const draftInfo = applicationData as any;
@@ -387,12 +426,26 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
             setSectionStatus(prev => ({ ...prev, [steps[i].id]: 'complete' }));
           }
         }
+        
+        // Set max progress reached based on last step
+        const totalSubSteps = steps.reduce((acc, _, index) => acc + getSubStepsForSection(index), 0);
+        const lastSubSteps = steps.slice(0, draftInfo.last_step).reduce((acc, _, index) => acc + getSubStepsForSection(index), 0) + (draftInfo.last_sub_step || 0) + 1;
+        const progressPercentage = Math.round((lastSubSteps / totalSubSteps) * 100);
+        setMaxProgressReached(progressPercentage);
       }
       if (draftInfo.last_sub_step !== undefined) {
         setSubStep(draftInfo.last_sub_step);
       }
     }
   }, [applicationData]);
+
+  // Initialize documents with default values if not loaded from draft
+  useEffect(() => {
+    if (documents.length === 0) {
+      console.log('📸 Initializing documents with default values');
+      setDocuments(guatemalanDocuments);
+    }
+  }, [documents.length]);
 
   // Update formData with generated applicationId after first save
   useEffect(() => {
@@ -421,6 +474,9 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     console.log('📝 Form data updated:', { field, value });
     setFormData(prev => ({ ...prev, [field]: value }));
     setHasUnsavedChanges(true);
+    
+    // No auto-save - return to previous behavior
+    // All fields are now critical and will be saved when user explicitly saves
   }, []);
 
   // Update section status
@@ -503,6 +559,11 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     });
   }, []);
 
+  // Document functions
+  const updateDocuments = useCallback((newDocuments: any[]) => {
+    setDocuments(newDocuments);
+  }, []);
+
   // Get sub-steps for each section
   const getSubStepsForSection = useCallback((sectionIndex: number): number => {
     switch (sectionIndex) {
@@ -534,12 +595,21 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     return steps[currentStep] || { id: '', title: '', icon: null };
   }, [currentStep, steps]);
 
-  // Get progress percentage
+  // Get progress percentage - use max progress reached to prevent reset
   const getProgressPercentage = useCallback((): number => {
     const totalSubSteps = steps.reduce((acc, _, index) => acc + getSubStepsForSection(index), 0);
     const currentSubSteps = steps.slice(0, currentStep).reduce((acc, _, index) => acc + getSubStepsForSection(index), 0) + subStep + 1;
-    return Math.round((currentSubSteps / totalSubSteps) * 100);
-  }, [currentStep, subStep, steps, getSubStepsForSection]);
+    const currentProgress = Math.round((currentSubSteps / totalSubSteps) * 100);
+    
+    // Update max progress if current is higher
+    if (currentProgress > maxProgressReached) {
+      setMaxProgressReached(currentProgress);
+      return currentProgress;
+    }
+    
+    // Return max progress reached to prevent reset
+    return maxProgressReached;
+  }, [currentStep, subStep, steps, getSubStepsForSection, maxProgressReached]);
 
   // Navigation functions
   const handleNext = useCallback(() => {
@@ -617,14 +687,29 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
 
   // Form actions
   const handleSaveDraft = useCallback(() => {
+    // Sync documents before saving
+    const documentsData = documents.reduce((acc, doc) => {
+      acc[doc.id] = {
+        file: doc.file,
+        status: doc.status,
+        thumbnailUrl: doc.thumbnailUrl
+      };
+      return acc;
+    }, {} as Record<string, any>);
+    
+    const formDataWithDocuments = {
+      ...formData,
+      documents: documentsData
+    };
+    
     saveDraftMutation.mutate({
-      formData,
+      formData: formDataWithDocuments,
       currentStep,
       currentSubStep: subStep,
       isIncremental: false
     });
     setHasUnsavedChanges(false);
-  }, [formData, currentStep, subStep, saveDraftMutation]);
+  }, [formData, currentStep, subStep, saveDraftMutation, documents]);
 
   const handleSubmit = useCallback(() => {
     console.log('📤 Submitting form with data:', formData);
@@ -763,6 +848,10 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     updateReference,
     isInReferenceForm,
     setIsInReferenceForm,
+    
+    // Documents
+    documents,
+    updateDocuments,
     
     // Person name
     personName,

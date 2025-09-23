@@ -129,7 +129,7 @@ const ApplicationDetails = () => {
       'identification': 0,
       'credit': 1,
       'finances': 2,
-      'guarantors': 3,
+      'references': 3,  // Fixed: references instead of guarantors
       'documents': 4,
       'review': 5
     };
@@ -202,7 +202,11 @@ const ApplicationDetails = () => {
   const formData = getFormData(applicationData);
   const references = formData.references || [];
   const documents = formData.documents || {};
-  const progress = applicationData.isDraft && 'last_step' in applicationData ? applicationData.last_step : 'progress_step' in applicationData ? applicationData.progress_step : 0;
+  // Fixed: Preserve progress for failed applications - don't reset to 0
+  const progress = applicationData.isDraft && 'last_step' in applicationData ? applicationData.last_step : 
+                  'progress_step' in applicationData ? applicationData.progress_step : 
+                  ('status' in applicationData && applicationData.status === 'error') ? 
+                    (applicationData.last_step || applicationData.progress_step || 0) : 0;
   const progressPercentage = Math.round(progress / 6 * 100);
   const sections = getFormSections('legacy');
   // Get person name from location state (from cards) or fallback to application data
@@ -210,6 +214,10 @@ const ApplicationDetails = () => {
                     applicationData.client_name || 
                     `${formData.firstName || ''} ${formData.lastName || ''}`.trim() || 
                     'Sin nombre';
+  
+  // Ensure we always have a proper name for the navigation bar
+  const navBarName = personName && personName !== 'Sin nombre' ? personName : 
+                    (formData.firstName && formData.lastName ? `${formData.firstName} ${formData.lastName}` : 'Cliente');
   
   // Get the public application ID from location state, formData, or generate it
   const publicApplicationId = location.state?.applicationId || 
@@ -222,7 +230,7 @@ const ApplicationDetails = () => {
   
   return <div className="min-h-screen flex flex-col">
         <Header 
-          personName={getNavBarName(personName)} 
+          personName={getNavBarName(navBarName)} 
           applicationId={publicApplicationId} 
           externalReferenceId={externalReferenceId}
           applicationStatus={'status' in applicationData ? applicationData.status : 'draft'} 
@@ -271,7 +279,7 @@ const ApplicationDetails = () => {
                     Estado: <span className="font-medium">Borrador</span>
                     {'status' in applicationData && applicationData.status === 'error' && 'coopsama_sync_status' in applicationData && applicationData.coopsama_sync_status === 'error' && (
                       <span className="ml-4">
-                        Código de error: <span className="font-mono font-medium text-destructive">{applicationData.id}</span>
+                        Error de sincronización: <span className="font-mono font-medium text-destructive">Sincronización fallida</span>
                       </span>
                     )}
                   </p>
@@ -338,7 +346,9 @@ const ApplicationDetails = () => {
                   
                   // Lógica especial para la sección de revisión final
                   if (section.id === 'review') {
-                    isCompleted = !applicationData.isDraft && applicationData.status !== 'error';
+                    // Fixed: For failed applications, show as completed if progress was high
+                    isCompleted = !applicationData.isDraft && applicationData.status !== 'error' ? true :
+                                 ('status' in applicationData && applicationData.status === 'error') ? progress >= 5 : false;
                   }
                   return <Button key={section.id} variant="outline" className={`relative h-auto py-2 flex flex-col items-center text-xs gap-1 flex-1 min-h-[5rem] sm:min-h-[4.5rem] whitespace-normal break-words overflow-hidden ${
                     isCompleted ? 'bg-green-50 text-green-700 border-green-200' : ''
@@ -450,7 +460,7 @@ const ApplicationDetails = () => {
                   {references.length < 3 && (
                     <Button onClick={() => navigate(`/applications/${id}/edit?step=3`)} className="w-full bg-green-600 hover:bg-green-700 text-white border-0">
                       <Plus className="h-4 w-4 mr-2" />
-                      Agregar Otro Fiador
+                      Agregar Otra Referencia
                     </Button>
                   )}
                   {references.length >= 3 && (
