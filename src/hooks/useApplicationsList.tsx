@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { sanitizeConsoleOutput } from '@/utils/securityUtils';
 import { getFirstNameAndLastName } from '@/lib/nameUtils';
 import { formatDateToGuatemalan } from '@/utils/dateUtils';
+import { formatApplicationId } from '@/utils/applicationIdGenerator';
 
 interface Application {
   id: string;
@@ -80,11 +81,11 @@ export const useApplicationsList = () => {
       // Transform data to match Application interface
       const transformedApplications: Application[] = [
         ...(applications || []).map(app => {
-          // Extract applicationId from draft_data if available
+          // Extract applicationId from draft_data if available, otherwise format the UUID
           const applicationId = app.draft_data && typeof app.draft_data === 'object' && 
             (app.draft_data as any).applicationId ? 
             (app.draft_data as any).applicationId : 
-            app.id;
+            formatApplicationId(app.id);
 
           // Construct full name from draft_data if available, otherwise use client_name
           let fullName = app.client_name;
@@ -119,11 +120,11 @@ export const useApplicationsList = () => {
           };
         }),
         ...(drafts || []).map(draft => {
-          // Extract applicationId from draft_data
+          // Extract applicationId from draft_data, otherwise format the UUID
           const applicationId = draft.draft_data && typeof draft.draft_data === 'object' && 
             (draft.draft_data as any).applicationId ? 
             (draft.draft_data as any).applicationId : 
-            draft.id;
+            formatApplicationId(draft.id);
 
           // Construct full name from draft_data if available, otherwise use client_name
           let fullName = draft.client_name || 'Sin nombre';
