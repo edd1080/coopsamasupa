@@ -338,7 +338,7 @@ const ApplicationDetails = () => {
                   
                   // Lógica especial para la sección de revisión final
                   if (section.id === 'review') {
-                    isCompleted = !applicationData.isDraft && applicationData.status !== 'error';
+                    isCompleted = !applicationData.isDraft && ('status' in applicationData ? applicationData.status !== 'error' : true);
                   }
                   return <Button key={section.id} variant="outline" className={`relative h-auto py-2 flex flex-col items-center text-xs gap-1 flex-1 min-h-[5rem] sm:min-h-[4.5rem] whitespace-normal break-words overflow-hidden ${
                     isCompleted ? 'bg-green-50 text-green-700 border-green-200' : ''
@@ -536,7 +536,8 @@ const ApplicationDetails = () => {
                               onError={(e) => {
                                 // Fallback si la imagen no carga
                                 e.currentTarget.style.display = 'none';
-                                e.currentTarget.nextSibling.style.display = 'flex';
+                                const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                                if (nextElement) nextElement.style.display = 'flex';
                               }}
                             />
                           ) : null}

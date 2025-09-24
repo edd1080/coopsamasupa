@@ -20,6 +20,7 @@ interface Application {
   date: string;
   progress: number;
   stage: string;
+  timestamp?: number;
 }
 
 export const useApplicationsList = () => {
@@ -35,7 +36,7 @@ export const useApplicationsList = () => {
       // Fetch from applications table including Coopsama fields - MÁS RECIENTES PRIMERO
       const { data: applications, error: appError } = await supabase
         .from('applications')
-        .select('id, agent_id, client_name, product, amount_requested, status, current_stage, progress_step, created_at, updated_at, coopsama_external_reference_id, coopsama_operation_id, coopsama_process_id, coopsama_sync_status, coopsama_sync_error')
+        .select('id, agent_id, client_name, product, amount_requested, status, current_stage, progress_step, created_at, updated_at, coopsama_external_reference_id, coopsama_operation_id, coopsama_process_id, coopsama_sync_status, coopsama_sync_error, draft_data')
         .eq('agent_id', user.id)
         .order('created_at', { ascending: false }); // Más recientes primero
         

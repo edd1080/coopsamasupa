@@ -577,7 +577,9 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
           business: {
             companyName: formData.companyName || "",
             activityDescription: formData.activityDescription || "",
+            grossProfit: formData.grossProfit || 0,
             productType: formData.productType || "",
+            startDate: formData.startDate || "",
             fullAddress: formData.fullAddress || ""
           },
           investmentPlan: (() => {

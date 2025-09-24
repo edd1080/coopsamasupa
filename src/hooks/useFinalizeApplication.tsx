@@ -149,7 +149,10 @@ export const useFinalizeApplication = () => {
             .filter(([key, doc]: [string, any]) => 
               doc && doc.file && doc.status === 'success'
             )
-            .map(([key, doc]) => ({ id: key, ...doc }));
+            .map(([key, doc]) => {
+              const docObj = doc as any;
+              return { id: key, file: docObj?.file, status: docObj?.status, ...docObj };
+            });
           
           if (documentsToUpload.length > 0) {
             console.log(`📤 Found ${documentsToUpload.length} documents to upload`);

@@ -373,7 +373,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
 
   // Load existing data when editing
   useEffect(() => {
-    if (applicationData && (applicationData.isDraft || applicationData.status === 'error') && applicationData.draft_data) {
+    if (applicationData && (applicationData.isDraft || ('status' in applicationData && applicationData.status === 'error')) && ('draft_data' in applicationData && applicationData.draft_data)) {
       console.log('📥 Loading existing draft data:', applicationData.draft_data);
       const draftData = applicationData.draft_data as any;
       
@@ -416,14 +416,14 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
 
   // Update formData with generated applicationId after first save
   useEffect(() => {
-    if (saveDraftMutation.isSuccess && saveDraftMutation.data?.applicationId && !formData.applicationId) {
+    if (saveDraftMutation.isSuccess && saveDraftMutation.data && 'applicationId' in saveDraftMutation.data && saveDraftMutation.data.applicationId && !formData.applicationId) {
       console.log('🆔 Updating formData with generated applicationId:', saveDraftMutation.data.applicationId);
       setFormData(prev => ({
         ...prev,
-        applicationId: saveDraftMutation.data.applicationId
+        applicationId: 'applicationId' in saveDraftMutation.data ? saveDraftMutation.data.applicationId : ''
       }));
     }
-  }, [saveDraftMutation.isSuccess, saveDraftMutation.data?.applicationId, formData.applicationId]);
+  }, [saveDraftMutation.isSuccess, saveDraftMutation.data && 'applicationId' in saveDraftMutation.data ? saveDraftMutation.data.applicationId : null, formData.applicationId]);
 
   // Handle navigation from ApplicationDetails
   useEffect(() => {
