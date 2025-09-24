@@ -1005,6 +1005,6 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
       {children}
     </FormContext.Provider>
   );
-};
+}
 
 export default RequestFormProvider;
