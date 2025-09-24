@@ -214,25 +214,6 @@ export const useDocumentManager = (initialDocuments?: DocumentItem[]) => {
     });
   }, [documents, updateDocument, toast]);
 
-  // Función para inicializar documentos desde formData persistido
-  const initializeFromFormData = useCallback((formDataDocuments: Record<string, any>) => {
-    if (!formDataDocuments) return;
-    
-    console.log('📸 Initializing documents from formData:', formDataDocuments);
-    
-    setDocuments(prev => prev.map(doc => {
-      const persistedData = formDataDocuments[doc.id];
-      if (persistedData && persistedData.status === 'success') {
-        return {
-          ...doc,
-          status: persistedData.status,
-          thumbnailUrl: persistedData.thumbnailUrl
-          // Note: No podemos restaurar el File object directamente, pero podemos restaurar el estado
-        };
-      }
-      return doc;
-    }));
-  }, []);
 
   const getDocumentById = useCallback((documentId: string) => {
     return documents.find(doc => doc.id === documentId);
