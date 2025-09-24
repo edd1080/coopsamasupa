@@ -28,6 +28,14 @@ const config: CapacitorConfig = {
         enableTapToFocus: true,
         enableZoom: true
       }
+    },
+    Geolocation: {
+      permissions: ['location'],
+      android: {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0
+      }
     }
   }
 };

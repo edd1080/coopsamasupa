@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from "@/hooks/use-toast";
 import { sanitizeObjectData, validateTextInput } from '@/utils/inputValidation';
 import { sanitizeConsoleOutput, formRateLimit } from '@/utils/securityUtils';
+import { calculateRobustProgress } from '@/utils/progressTracker';
 import { generateApplicationId } from '@/utils/applicationIdGenerator';
 import { useOfflineStorage } from '@/hooks/useOfflineStorage';
 
@@ -21,13 +22,15 @@ export const useSaveDraft = () => {
       currentStep, 
       currentSubStep, 
       isIncremental = false, 
-      changedData = null 
+      changedData = null,
+      lastEditedField = ''
     }: { 
       formData: any; 
       currentStep: number; 
       currentSubStep?: number;
       isIncremental?: boolean;
       changedData?: any;
+      lastEditedField?: string;
     }) => {
       console.log('💾 useSaveDraft: Starting save process', sanitizeConsoleOutput({ 
         isIncremental, 
@@ -72,6 +75,15 @@ export const useSaveDraft = () => {
                         (sanitizedFormData?.identification?.firstName && sanitizedFormData?.identification?.lastName ? `${sanitizedFormData.identification.firstName} ${sanitizedFormData.identification.lastName}` : '') ||
                         sanitizedFormData?.firstName || 
                         'Sin nombre';
+
+      // Calcular progreso robusto basado en el último campo editado
+      const robustProgress = calculateRobustProgress(lastEditedField, sanitizedFormData);
+      console.log('📊 Progreso calculado:', {
+        lastEditedField,
+        progressStep: robustProgress.progressStep,
+        progressPercentage: robustProgress.progressPercentage,
+        currentSection: robustProgress.currentSection
+      });
 
       // Save offline immediately for instant feedback
       const offlineKey = `draft_${sanitizedFormData.applicationId}`;
@@ -167,6 +179,7 @@ export const useSaveDraft = () => {
         console.log('📝 Creating new draft with UUID:', draftId);
       }
       
+      // Crear payload base
       const draftPayload = {
         id: draftId,
         agent_id: user.id, // CRITICAL: Asegurar que coincida con auth.uid()
@@ -186,11 +199,49 @@ export const useSaveDraft = () => {
         agent_id_matches_user: draftPayload.agent_id === user.id
       }));
       
-      const { data, error } = await supabase
-        .from('application_drafts')
-        .upsert(draftPayload)
-        .select()
-        .single();
+      // Intentar primero con progress_step
+      let data, error;
+      try {
+        const payloadWithProgress = {
+          ...draftPayload,
+          progress_step: robustProgress.progressStep
+        };
+        
+        console.log('📊 Intentando guardar con progress_step:', robustProgress.progressStep);
+        
+        const result = await supabase
+          .from('application_drafts')
+          .upsert(payloadWithProgress)
+          .select()
+          .single();
+        
+        data = result.data;
+        error = result.error;
+        
+        if (error && error.message.includes('progress_step')) {
+          console.log('⚠️ Columna progress_step no existe, intentando sin ella...');
+          // Si falla por progress_step, intentar sin esa columna
+          const resultWithoutProgress = await supabase
+            .from('application_drafts')
+            .upsert(draftPayload)
+            .select()
+            .single();
+          
+          data = resultWithoutProgress.data;
+          error = resultWithoutProgress.error;
+        }
+      } catch (err) {
+        console.log('⚠️ Error inesperado, intentando sin progress_step...');
+        // Fallback: intentar sin progress_step
+        const resultWithoutProgress = await supabase
+          .from('application_drafts')
+          .upsert(draftPayload)
+          .select()
+          .single();
+        
+        data = resultWithoutProgress.data;
+        error = resultWithoutProgress.error;
+      }
         
       if (error) {
         console.error('❌ Supabase error:', sanitizeConsoleOutput({

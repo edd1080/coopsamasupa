@@ -1240,8 +1240,45 @@
 - **Verificación**: Script ejecutado exitosamente confirmando mitigación
 - **Estado**: ✅ Completado
 
+#### 📋 **55. BUG-272: Corrección de Barra de Progreso (Actualización)**
+- **Archivo**: `src/utils/fieldProgressTracker.ts`
+- **Cambio**: Validación estricta en función `isFieldCompleted`
+- **Problema**: Barra de progreso se elevaba demasiado al saltar secciones y adjuntar documentos
+- **Causa**: Validación débil que contaba campos vacíos o con valores por defecto como "completos"
+- **Solución**: 
+  - **VALIDACIÓN ESTRICTA**: Solo contar campos con datos válidos del usuario
+  - **EXCLUSIÓN DE VACÍOS**: Campos vacíos, nulos o undefined no cuentan
+  - **VALIDACIÓN POR TIPO**: Validaciones específicas para cada tipo de campo
+  - **NÚMEROS VÁLIDOS**: Solo contar números > 0
+  - **FECHAS VÁLIDAS**: Solo contar fechas válidas y no vacías
+  - **SELECTS VÁLIDOS**: Excluir valores vacíos y "0"
+  - **CHECKBOXES VÁLIDOS**: Solo contar cuando son true
+  - **ARCHIVOS VÁLIDOS**: Solo contar archivos con status 'complete' o URL
+- **Fórmula**: (Campos Completados / Total de Campos) × 100
+- **Total de campos**: 97 (todos los campos del formulario)
+- **Verificación**: Script de prueba ejecutado exitosamente confirmando corrección
+- **Estado**: ✅ Completado
+
+#### 📋 **56. BUG-282: Corrección de Cards Mostrando 0% de Progreso**
+- **Archivos**: 
+  - `src/hooks/useApplicationsList.tsx` - Incluir `draft_data` en borradores
+  - `src/utils/progressTracker.ts` - Restaurar fallback inteligente
+- **Cambio**: Incluir `draft_data` en transformación de borradores y restaurar fallback
+- **Problema**: Después de corregir BUG-272, todas las cards mostraban 0% de progreso
+- **Causa**: 
+  - `draft_data` no se incluía en la transformación de borradores
+  - Fallback demasiado agresivo retornaba 0% sin datos
+- **Solución**: 
+  - **BORRADORES**: `draft_data: draft.draft_data` incluido en transformación
+  - **FALLBACK INTELIGENTE**: Aplicaciones sin `draft_data` usan `progressStep`
+  - **PROGRESO REAL**: Borradores muestran progreso basado en campos completados
+  - **COMPATIBILIDAD**: Aplicaciones enviadas mantienen progreso aproximado
+- **Resultado**: Cards muestran progreso correcto según tipo de aplicación
+- **Verificación**: Script de prueba ejecutado exitosamente confirmando corrección
+- **Estado**: ✅ Completado
+
 ---
 
 *Última actualización: 2025-01-23*
-*Total de cambios documentados: 54*
+*Total de cambios documentados: 56*
 *Estado del proyecto: Listo para producción con funcionalidad de documentos, navegación, subida de archivos, validación de campos y geolocalización completamente funcional y adaptada a dark mode. Persistencia de documentos completamente funcional al navegar entre secciones y al salir/regresar a solicitudes. Consola limpia sin logs de debugging innecesarios. Accesos rápidos en ApplicationDetails funcionando correctamente para todas las secciones. Guardado offline de borradores funcionando sin errores de sesión expirada. Vulnerabilidades de seguridad de Android mitigadas con configuraciones de debug deshabilitadas en producción.*

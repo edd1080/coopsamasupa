@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { Camera, CameraPermissionType } from '@capacitor/camera';
+import { Geolocation } from '@capacitor/geolocation';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 
 export interface PermissionStatus {
   camera: boolean;
   storage: boolean;
+  location: boolean;
   allGranted: boolean;
 }
 
@@ -13,6 +15,7 @@ export const useAndroidPermissions = () => {
   const [permissions, setPermissions] = useState<PermissionStatus>({
     camera: false,
     storage: false,
+    location: false,
     allGranted: false
   });
   const [isChecking, setIsChecking] = useState(false);
@@ -23,6 +26,7 @@ export const useAndroidPermissions = () => {
       setPermissions({
         camera: true,
         storage: true,
+        location: true,
         allGranted: true
       });
       return;
@@ -34,21 +38,27 @@ export const useAndroidPermissions = () => {
       const cameraPermission = await Camera.checkPermissions();
       const cameraGranted = cameraPermission.camera === 'granted';
 
+      // Verificar permisos de ubicación
+      const locationPermission = await Geolocation.checkPermissions();
+      const locationGranted = locationPermission.location === 'granted';
+
       // Verificar permisos de almacenamiento (simulado)
       // En Android, los permisos de almacenamiento se manejan automáticamente
       const storageGranted = true;
 
-      const allGranted = cameraGranted && storageGranted;
+      const allGranted = cameraGranted && storageGranted && locationGranted;
 
       setPermissions({
         camera: cameraGranted,
         storage: storageGranted,
+        location: locationGranted,
         allGranted
       });
 
       console.log('📱 Permisos verificados:', {
         camera: cameraGranted,
         storage: storageGranted,
+        location: locationGranted,
         allGranted
       });
 
@@ -57,6 +67,7 @@ export const useAndroidPermissions = () => {
       setPermissions({
         camera: false,
         storage: false,
+        location: false,
         allGranted: false
       });
     } finally {
@@ -76,20 +87,26 @@ export const useAndroidPermissions = () => {
       const cameraPermission = await Camera.requestPermissions();
       const cameraGranted = cameraPermission.camera === 'granted';
 
+      // Solicitar permisos de ubicación
+      const locationPermission = await Geolocation.requestPermissions();
+      const locationGranted = locationPermission.location === 'granted';
+
       // Los permisos de almacenamiento se manejan automáticamente en Android
       const storageGranted = true;
 
-      const allGranted = cameraGranted && storageGranted;
+      const allGranted = cameraGranted && storageGranted && locationGranted;
 
       setPermissions({
         camera: cameraGranted,
         storage: storageGranted,
+        location: locationGranted,
         allGranted
       });
 
       console.log('📱 Permisos solicitados:', {
         camera: cameraGranted,
         storage: storageGranted,
+        location: locationGranted,
         allGranted
       });
 
@@ -113,12 +130,34 @@ export const useAndroidPermissions = () => {
       setPermissions(prev => ({
         ...prev,
         camera: granted,
-        allGranted: granted && prev.storage
+        allGranted: granted && prev.storage && prev.location
       }));
 
       return granted;
     } catch (error) {
       console.error('❌ Error solicitando permiso de cámara:', error);
+      return false;
+    }
+  };
+
+  const requestLocationPermission = async () => {
+    if (!Capacitor.isNativePlatform()) {
+      return true;
+    }
+
+    try {
+      const permission = await Geolocation.requestPermissions();
+      const granted = permission.location === 'granted';
+      
+      setPermissions(prev => ({
+        ...prev,
+        location: granted,
+        allGranted: granted && prev.storage && prev.camera
+      }));
+
+      return granted;
+    } catch (error) {
+      console.error('❌ Error solicitando permiso de ubicación:', error);
       return false;
     }
   };
@@ -133,6 +172,7 @@ export const useAndroidPermissions = () => {
     isChecking,
     checkPermissions,
     requestPermissions,
-    requestCameraPermission
+    requestCameraPermission,
+    requestLocationPermission
   };
 };

@@ -5,11 +5,13 @@ import { useToast } from '@/hooks/use-toast';
 import { useSaveDraft } from '@/hooks/useDraftActions';
 import { useFinalizeApplication } from '@/hooks/useFinalizeApplication';
 import { useApplicationData } from '@/hooks/useApplicationData';
+import { calculateRobustProgress } from '@/utils/progressTracker';
 
 interface FormContextType {
   // Form state
   formData: FormData;
   updateFormData: (field: string, value: any) => void;
+  lastEditedField: string;
   
   // Navigation state
   currentStep: number;
@@ -213,7 +215,153 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   }, [applicationData, onRedirectSubmittedApplication]);
   
   // Initialize form data with application ID
-  const [formData, setFormData] = useState<FormData>(() => ({
+  const [formData, setFormData] = useState<FormData>(() => {
+    // Si tenemos applicationData con draft_data, inicializar con esos datos
+    if (applicationData && (applicationData.isDraft || applicationData.status === 'error') && applicationData.draft_data) {
+      console.log('📥 Initializing formData with existing draft data:', applicationData.draft_data);
+      const draftData = applicationData.draft_data as any;
+      return {
+        // Valores por defecto
+        // Basic identification
+        firstName: '',
+        secondName: '',
+        thirdName: '',
+        firstLastName: '',
+        secondLastName: '',
+        marriedLastName: '',
+        dpi: '',
+        nit: '',
+        dpiExtendedIn: '',
+        cua: '',
+        
+        // Birth Demographics and Disability Information
+        birthDate: null,
+        age: '',
+        dependents: '',
+        ethnicity: '',
+        educationLevel: '',
+        profession: '',
+        occupation: '',
+        hasDisability: false,
+        disabilityDescription: '',
+        
+        // Spouse information
+        spouseFirstName: '',
+        spouseSecondName: '',
+        spouseFirstLastName: '',
+        spouseSecondLastName: '',
+        spouseWorkplace: '',
+        spouseJobStability: '',
+        spouseMobilePhone: '',
+        spouseBirthDate: null,
+        
+        // Contact and Housing
+        mobilePhone: '',
+        homePhone: '',
+        email: '',
+        address: '',
+        addressReference: '',
+        geolocation: null,
+        residenceDepartment: '',
+        residenceMunicipality: '',
+        housingType: '',
+        residenceStability: '',
+        
+        // Credit Information
+        creditPurpose: '',
+        requestedAmount: '',
+        termMonths: '',
+        capitalPayment: '',
+        interestPayment: '',
+        paymentPlan: '',
+        capitalAmortization: '',
+        memberType: '',
+        interestRate: '',
+        interestAmortization: '',
+        applicationType: '',
+        obtainedCreditsCount: '',
+        fundsOrigin: '',
+        characterObservations: '',
+        
+        // Investment destination
+        investmentPlaceDepartment: '',
+        investmentPlaceMunicipality: '',
+        destinationGroup: '',
+        creditDestination: '',
+        destinationCategory: '',
+        sowingLatitude: '',
+        sowingLongitude: '',
+        destinationDescription: '',
+        destinationObservations: '',
+        sourceTypes: '',
+        sourceQuantity: '',
+        sourceObservations: '',
+        
+        // Financial Analysis
+        incomeSource: '',
+        ingresoPrincipal: '',
+        ingresoSecundario: '',
+        comentarioIngreso: '',
+        incomeSources: [],
+        
+        // Expenses
+        alimentacion: '',
+        vestuario: '',
+        serviciosBasicos: '',
+        educacion: '',
+        vivienda: '',
+        transporte: '',
+        compromisos: '',
+        gastosFinancieros: '',
+        descuentosPlanilla: '',
+        otros: '',
+        cuotaSolicitada: '',
+        
+        // Patrimonial Statement
+        efectivoSaldoBancos: '',
+        cuentasPorCobrar: '',
+        mercaderias: '',
+        bienesMuebles: '',
+        vehiculos: '',
+        bienesInmuebles: '',
+        otrosActivos: '',
+        cuentasPorPagar: '',
+        deudasCortoPlazo: '',
+        prestamosLargoPlazo: '',
+        montoSolicitado: '',
+        
+        // Business Information
+        companyName: '',
+        activityDescription: '',
+        productType: '',
+        fullAddress: '',
+        
+        // References
+        references: [],
+        
+        // Documents
+        dpiFrontal: null,
+        dpiTrasero: null,
+        fotoSolicitante: null,
+        location: null,
+        
+        // Consent
+        termsAccepted: false,
+        dataProcessingAccepted: false,
+        creditCheckAccepted: false,
+        
+        // Application ID
+        applicationId: '',
+        
+        // Merge with draft data
+        ...draftData,
+        // Ensure applicationId is preserved from draft, or keep empty if new
+        applicationId: draftData.applicationId || ''
+      };
+    }
+    
+    // Si no hay datos del borrador, usar valores por defecto
+    return {
     // Basic identification
     firstName: '',
     secondName: '',
@@ -333,9 +481,18 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     productType: '',
     fullAddress: '',
     
+    // References
+    references: [],
+    
+    // Documents
+    dpiFrontal: null,
+    dpiTrasero: null,
+    fotoSolicitante: null,
+    location: null,
+    
     // Generated fields - ID generated immediately for new applications
-    applicationId: applicationId || generateApplicationId(),
-  }));
+    applicationId: applicationId || generateApplicationId()
+  });
 
   // Navigation state
   const [currentStep, setCurrentStep] = useState(0);
@@ -366,6 +523,9 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   const [submissionResult, setSubmissionResult] = useState<any>(null);
   const [showErrorScreen, setShowErrorScreen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  
+  // Progress tracking state
+  const [lastEditedField, setLastEditedField] = useState<string>('');
 
   // Add save draft mutation
   const saveDraftMutation = useSaveDraft();
@@ -464,6 +624,8 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   const updateFormData = useCallback((field: string, value: any) => {
     console.log('📝 Form data updated:', { field, value });
     setFormData(prev => ({ ...prev, [field]: value }));
+    setLastEditedField(field); // Rastrear el último campo editado
+    console.log('🎯 Último campo editado actualizado a:', field);
     setHasUnsavedChanges(true);
   }, []);
 
@@ -584,12 +746,17 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     return steps[currentStep] || { id: '', title: '', icon: null };
   }, [currentStep, steps]);
 
-  // Get progress percentage
+  // Get progress percentage using robust progress tracking
   const getProgressPercentage = useCallback((): number => {
-    const totalSubSteps = steps.reduce((acc, _, index) => acc + getSubStepsForSection(index), 0);
-    const currentSubSteps = steps.slice(0, currentStep).reduce((acc, _, index) => acc + getSubStepsForSection(index), 0) + subStep + 1;
-    return Math.round((currentSubSteps / totalSubSteps) * 100);
-  }, [currentStep, subStep, steps, getSubStepsForSection]);
+    const robustProgress = calculateRobustProgress(lastEditedField, formData);
+    console.log('📊 Progreso calculado:', {
+      lastEditedField,
+      progressStep: robustProgress.progressStep,
+      progressPercentage: robustProgress.progressPercentage,
+      currentSection: robustProgress.currentSection
+    });
+    return robustProgress.progressPercentage;
+  }, [lastEditedField, formData]);
 
   // Navigation functions
   const handleNext = useCallback(() => {
@@ -671,10 +838,11 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
       formData,
       currentStep,
       currentSubStep: subStep,
-      isIncremental: false
+      isIncremental: false,
+      lastEditedField
     });
     setHasUnsavedChanges(false);
-  }, [formData, currentStep, subStep, saveDraftMutation]);
+  }, [formData, currentStep, subStep, lastEditedField, saveDraftMutation]);
 
   const handleSubmit = useCallback(() => {
     console.log('📤 Submitting form with data:', formData);
@@ -770,6 +938,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     // Form state
     formData,
     updateFormData,
+    lastEditedField,
     
     // Navigation state
     currentStep,

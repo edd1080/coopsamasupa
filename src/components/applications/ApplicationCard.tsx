@@ -4,6 +4,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from "@/components/ui/badge";
 import { Progress } from '@/components/ui/progress';
+import { getCardProgressPercentage } from '@/utils/progressTracker';
+import { getFieldProgressPercentage } from '@/utils/fieldProgressTracker';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, ContextMenuSeparator } from "@/components/ui/context-menu";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Calendar, FileText, Edit, Trash2, MoreVertical, CheckCircle, AlertCircle, BarChart3, Banknote, FileSignature, UserCheck, FileImage, Users, X, Clock, Eye, CalendarDays, FileText as FileTextSolid } from 'lucide-react';
@@ -24,6 +26,7 @@ interface Application {
   progress: number;
   stage: string;
   isDraft?: boolean;
+  draft_data?: any; // Agregar draft_data para cálculo de progreso
 }
 interface ApplicationCardProps {
   application: Application;
@@ -167,9 +170,20 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
                 </div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-muted-foreground">Progreso</span>
-                  <span className="font-medium">{Math.round(application.progress / 6 * 100)}%</span>
+                  <span className="font-medium">
+                    {application.draft_data ? 
+                      getFieldProgressPercentage(application.draft_data) : 
+                      getCardProgressPercentage(application.progress)
+                    }%
+                  </span>
                 </div>
-                <Progress value={application.progress / 6 * 100} className="h-1.5" />
+                <Progress 
+                  value={application.draft_data ? 
+                    getFieldProgressPercentage(application.draft_data) : 
+                    getCardProgressPercentage(application.progress)
+                  } 
+                  className="h-1.5" 
+                />
               </div>
               
               <div className="flex justify-between items-center mt-2 text-sm">

@@ -930,55 +930,61 @@ En el paso 5 (Documentos) de la solicitud de crédito, el botón "Salir sin guar
 
 ---
 
-## 🐛 **BUG-272: File picker no permite seleccionar archivos PDF**
+## 🐛 **BUG-272: Barra de progreso se eleva demasiado al saltar secciones**
 
 ### **📅 Fecha de Reporte**
 2025-01-23
 
 ### **📝 Descripción**
-El file picker en la pantalla de subir documentos no permite seleccionar archivos PDF. El usuario no puede elegir archivos PDF desde el selector de archivos del dispositivo.
+Al iniciar una nueva solicitud, el avance va en orden, pero si se salta a una sección adelante (por ejemplo, documentos), se agrega un documento y se guarda la solicitud, el progreso se eleva demasiado a pesar de que no se llenaron más campos que los iniciales y se adjuntó una imagen.
 
 ### **🎯 Comportamiento Esperado**
-- **Selección de PDFs**: El file picker debe permitir seleccionar archivos PDF
-- **Múltiples formatos**: Debe permitir imágenes y PDFs según el tipo de documento
-- **UX consistente**: Comportamiento estándar de file picker
+- **Progreso realista**: La barra de progreso debe reflejar el porcentaje real de campos completados
+- **Fórmula simple**: (Campos Completados / Total de Campos) × 100
+- **Validación estricta**: Solo contar campos que realmente tienen datos válidos del usuario
+- **Progreso consistente**: Mismo cálculo independientemente de la navegación entre secciones
 
 ### **❌ Comportamiento Actual**
-- **PDFs bloqueados**: El file picker no muestra archivos PDF como opción
-- **Solo imágenes**: Solo permite seleccionar archivos de imagen
-- **UX limitada**: Usuario no puede subir documentos PDF
+- **Progreso excesivo**: La barra de progreso se eleva demasiado al saltar secciones
+- **Validación débil**: Cuenta campos vacíos o con valores por defecto como "completos"
+- **Inconsistencia**: Diferente progreso según la navegación del usuario
+- **Cálculo incorrecto**: No refleja el porcentaje real de campos llenados
 
 ### **🔍 Análisis del Problema**
-- **Componente afectado**: File picker de documentos
+- **Componente afectado**: Sistema de cálculo de progreso por campos
 - **Archivos involucrados**: 
-  - `src/components/requestForm/PhotoDocumentUpload.tsx` (atributo accept)
-  - `src/hooks/useDocumentManager.tsx` (tipos de documento)
+  - `src/utils/fieldProgressTracker.ts` (función isFieldCompleted)
 - **Causa probable**: 
-  - Atributo `accept` usaba extensiones (`.pdf`) en lugar de MIME types (`application/pdf`)
-  - Todos los documentos definidos como `type: 'photo'` causaba `accept="image/*"`
+  - Validación débil en `isFieldCompleted` que contaba campos vacíos como completos
+  - Campos con valores por defecto (false, "", etc.) se consideraban completos
+  - No se validaba correctamente si un campo tenía datos reales del usuario
 
 ### **🧪 Script de Testing**
 ```javascript
-// scripts/test-pdf-file-picker-fix.js
-// Script para probar la selección de PDFs
+// scripts/test-progress-debug.js
+// Script para probar el cálculo de progreso en diferentes escenarios
 ```
 
 ### **💡 Solución Propuesta**
-- [x] Cambiar atributo `accept` de extensiones a MIME types
-- [x] Cambiar `recibosServicios` de tipo `'photo'` a `'document'`
-- [x] Permitir `accept="*"` para documentos de tipo `'document'`
-- [x] Mantener `accept="image/*"` para documentos de tipo `'photo'`
+- [x] Implementar validación estricta en `isFieldCompleted`
+- [x] Solo contar campos que realmente tienen datos válidos del usuario
+- [x] Excluir campos vacíos o con valores por defecto
+- [x] Mantener fórmula simple: (campos_completos / total_campos) * 100
+- [x] Contar TODOS los campos del formulario (97 campos total)
 
 ### **✅ Solución Implementada**
 - [x] **Archivos modificados**:
-  - `src/components/requestForm/PhotoDocumentUpload.tsx` - MIME types correctos
-  - `src/hooks/useDocumentManager.tsx` - Tipo de documento corregido
+  - `src/utils/fieldProgressTracker.ts` - Validación estricta en isFieldCompleted
 - [x] **Cambios realizados**:
-  - `accept="image/*,application/pdf"` en lugar de extensiones
-  - `recibosServicios` cambiado a `type: 'document'`
-  - `InteractiveDocumentCard` usa `accept="*"` para documentos
-  - Soporte completo para PDFs, imágenes y fotos
-- [x] **Script de testing**: `verify-pdf-file-picker-fix.sh`
+  - **VALIDACIÓN ESTRICTA**: Solo contar campos con datos válidos del usuario
+  - **EXCLUSIÓN DE VACÍOS**: Campos vacíos, nulos o undefined no cuentan
+  - **VALIDACIÓN POR TIPO**: Validaciones específicas para cada tipo de campo
+  - **NÚMEROS VÁLIDOS**: Solo contar números > 0
+  - **FECHAS VÁLIDAS**: Solo contar fechas válidas y no vacías
+  - **SELECTS VÁLIDOS**: Excluir valores vacíos y "0"
+  - **CHECKBOXES VÁLIDOS**: Solo contar cuando son true
+  - **ARCHIVOS VÁLIDOS**: Solo contar archivos con status 'complete' o URL
+- [x] **Script de testing**: `test-progress-fix.js`
 - [x] **Validación**: ✅ Bug corregido exitosamente
 
 ### **📊 Estado**
@@ -987,6 +993,53 @@ El file picker en la pantalla de subir documentos no permite seleccionar archivo
 - **Complejidad**: Media
 - **Tiempo estimado**: 1-2 horas
 - **Tiempo real**: 1 hora
+
+---
+
+## 🐛 **BUG-282: Cards muestran 0% de progreso después de corrección BUG-272**
+
+### **📅 Fecha de Reporte**
+2025-01-23
+
+### **📝 Descripción**
+Después de corregir BUG-272, todas las cards de aplicaciones mostraban 0% de progreso. El problema era que `draft_data` no estaba siendo incluido en la transformación de borradores en `useApplicationsList.tsx`.
+
+### **🎯 Comportamiento Esperado**
+- **Borradores**: Mostrar progreso real basado en campos completados
+- **Aplicaciones enviadas**: Mostrar progreso aproximado basado en `progressStep`
+- **Sin datos**: Mostrar 0% apropiadamente
+
+### **❌ Comportamiento Actual**
+- **Todas las cards**: Mostraban 0% de progreso
+- **Borradores**: No tenían `draft_data` disponible para cálculo
+- **Aplicaciones enviadas**: Fallback incorrecto retornaba 0%
+
+### **🔍 Análisis del Problema**
+- **Componente afectado**: Sistema de progreso en cards de aplicaciones
+- **Archivos involucrados**: 
+  - `src/hooks/useApplicationsList.tsx` (transformación de borradores)
+  - `src/utils/progressTracker.ts` (fallback en getCardProgressPercentage)
+- **Causa probable**: 
+  - `draft_data` no se incluía en la transformación de borradores
+  - Fallback demasiado agresivo retornaba 0% sin datos
+
+### **✅ Solución Implementada**
+- [x] **Archivos modificados**:
+  - `src/hooks/useApplicationsList.tsx` - Incluir `draft_data` en borradores
+  - `src/utils/progressTracker.ts` - Restaurar fallback inteligente
+- [x] **Cambios realizados**:
+  - **BORRADORES**: `draft_data: draft.draft_data` incluido en transformación
+  - **FALLBACK INTELIGENTE**: Aplicaciones sin `draft_data` usan `progressStep`
+  - **PROGRESO REAL**: Borradores muestran progreso basado en campos completados
+  - **COMPATIBILIDAD**: Aplicaciones enviadas mantienen progreso aproximado
+- [x] **Validación**: ✅ Bug corregido exitosamente
+
+### **📊 Estado**
+- **Status**: ✅ Resuelto
+- **Prioridad**: Alta
+- **Complejidad**: Baja
+- **Tiempo estimado**: 30 minutos
+- **Tiempo real**: 30 minutos
 
 ---
 

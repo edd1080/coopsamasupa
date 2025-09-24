@@ -10,7 +10,8 @@ const DynamicFormHeader: React.FC = () => {
   const {
     activeStep,
     handleChangeSection,
-    sectionStatus
+    sectionStatus,
+    getProgressPercentage
   } = useFormContext();
 
   const [isExpanded, setIsExpanded] = useState(false);
@@ -22,7 +23,9 @@ const DynamicFormHeader: React.FC = () => {
   const currentStep = steps[activeStep] || steps[0]; // Fallback to first step if activeStep is invalid
   const totalSteps = steps.length;
   const currentStepNumber = Math.min(activeStep + 1, totalSteps); // Ensure within bounds
-  const progress = currentStepNumber / totalSteps * 100;
+  
+  // Usar el sistema robusto de progreso basado en el último campo editado
+  const progress = getProgressPercentage();
 
   // Define step contexts for each section
   const getStepContext = (stepId: string) => {

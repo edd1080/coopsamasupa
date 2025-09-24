@@ -20,6 +20,7 @@ interface Application {
   date: string;
   progress: number;
   stage: string;
+  draft_data?: any; // Agregar draft_data para cálculo de progreso
 }
 
 export const useApplicationsList = () => {
@@ -35,7 +36,7 @@ export const useApplicationsList = () => {
       // Fetch from applications table including Coopsama fields - MÁS RECIENTES PRIMERO
       const { data: applications, error: appError } = await supabase
         .from('applications')
-        .select('id, agent_id, client_name, product, amount_requested, status, current_stage, progress_step, created_at, updated_at, coopsama_external_reference_id, coopsama_operation_id, coopsama_process_id, coopsama_sync_status, coopsama_sync_error')
+        .select('id, agent_id, client_name, product, amount_requested, status, current_stage, progress_step, created_at, updated_at, coopsama_external_reference_id, coopsama_operation_id, coopsama_process_id, coopsama_sync_status, coopsama_sync_error, draft_data')
         .eq('agent_id', user.id)
         .order('created_at', { ascending: false }); // Más recientes primero
         
@@ -100,7 +101,10 @@ export const useApplicationsList = () => {
             status: app.status,
             date: formatDateToGuatemalan(app.created_at || app.updated_at || new Date().toISOString()),
             progress: app.progress_step || 0,
-            stage: app.current_stage || 'En proceso'
+<<<<<<< Updated upstream
+            stage: app.current_stage || 'En proceso',
+            draft_data: app.draft_data, // Incluir draft_data para cálculo de progreso
+            timestamp: new Date(app.created_at || app.updated_at || new Date().toISOString()).getTime() // Para ordenamiento
           };
         }),
         ...(drafts || []).map(draft => {
@@ -137,7 +141,10 @@ export const useApplicationsList = () => {
             status: 'draft',
             date: formatDateToGuatemalan(draft.updated_at || draft.created_at || new Date().toISOString()),
             progress: draft.last_step || 0,
-            stage: getStageFromStep(draft.last_step || 1)
+<<<<<<< Updated upstream
+            stage: getStageFromStep(draft.last_step || 1),
+            draft_data: draft.draft_data, // Incluir draft_data para cálculo de progreso
+            timestamp: new Date(draft.updated_at || draft.created_at || new Date().toISOString()).getTime() // Para ordenamiento
           };
         })
       ];
