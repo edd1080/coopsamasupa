@@ -4,6 +4,10 @@ android {
     namespace "app.lovable.c018926e40254894ae52122f75906f16"
     compileSdk rootProject.ext.compileSdkVersion
     
+    buildFeatures {
+        buildConfig true
+    }
+    
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
