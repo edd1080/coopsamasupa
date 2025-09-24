@@ -329,17 +329,17 @@ const ApplicationDetails = () => {
                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
                  {sections.map((section, index) => {
                   const Icon = section.icon;
-                  let isCompleted = progress > index;
-                  
-                  // Lógica especial para la sección de referencias
-                  if (section.id === 'references') {
-                    isCompleted = references.length >= 2; // Al menos 2 referencias completas
-                  }
-                  
-                  // Lógica especial para la sección de revisión final
-                  if (section.id === 'review') {
-                    isCompleted = !applicationData.isDraft && ('status' in applicationData ? applicationData.status !== 'error' : true);
-                  }
+                     let isCompleted = progress > index;
+                   
+                   // Lógica especial para la sección de referencias
+                   if (section.id === 'references') {
+                     isCompleted = references.length >= 2; // Al menos 2 referencias completas
+                   }
+                   
+                   // Lógica especial para la sección de revisión final
+                   if (section.id === 'review') {
+                     isCompleted = !applicationData.isDraft;
+                   }
                   return <Button key={section.id} variant="outline" className={`relative h-auto py-2 flex flex-col items-center text-xs gap-1 flex-1 min-h-[5rem] sm:min-h-[4.5rem] whitespace-normal break-words overflow-hidden ${
                     isCompleted ? 'bg-green-50 text-green-700 border-green-200' : ''
                   }`} onClick={() => navigateToFormSection(section.id)}>

@@ -20,7 +20,6 @@ interface Application {
   date: string;
   progress: number;
   stage: string;
-  timestamp?: number;
 }
 
 export const useApplicationsList = () => {
@@ -36,7 +35,7 @@ export const useApplicationsList = () => {
       // Fetch from applications table including Coopsama fields - MÁS RECIENTES PRIMERO
       const { data: applications, error: appError } = await supabase
         .from('applications')
-        .select('id, agent_id, client_name, product, amount_requested, status, current_stage, progress_step, created_at, updated_at, coopsama_external_reference_id, coopsama_operation_id, coopsama_process_id, coopsama_sync_status, coopsama_sync_error, draft_data')
+        .select('id, agent_id, client_name, product, amount_requested, status, current_stage, progress_step, created_at, updated_at, coopsama_external_reference_id, coopsama_operation_id, coopsama_process_id, coopsama_sync_status, coopsama_sync_error')
         .eq('agent_id', user.id)
         .order('created_at', { ascending: false }); // Más recientes primero
         
@@ -82,27 +81,12 @@ export const useApplicationsList = () => {
       // Transform data to match Application interface
       const transformedApplications: Application[] = [
         ...(applications || []).map(app => {
-          // Extract applicationId from draft_data if available, otherwise format the UUID
-          const applicationId = app.draft_data && typeof app.draft_data === 'object' && 
-            (app.draft_data as any).applicationId ? 
-            (app.draft_data as any).applicationId : 
-            formatApplicationId(app.id);
+          // Extract applicationId, otherwise format the UUID
+          const applicationId = formatApplicationId(app.id);
 
-          // Construct full name from draft_data if available, otherwise use client_name
+          // Use client_name directly
           let fullName = app.client_name;
           let dpi = '';
-          if (app.draft_data && typeof app.draft_data === 'object') {
-            const draftData = app.draft_data as any;
-            if (draftData.firstName && draftData.lastName) {
-              fullName = `${draftData.firstName} ${draftData.lastName}`;
-            } else if (draftData.firstLastName) {
-              fullName = `${draftData.firstName || ''} ${draftData.firstLastName}`.trim();
-            } else if (draftData.fullName) {
-              fullName = draftData.fullName;
-            }
-            // Extract DPI for search functionality
-            dpi = draftData.dpi || draftData.cedula || '';
-          }
             
           return {
             id: app.id,
@@ -116,35 +100,17 @@ export const useApplicationsList = () => {
             status: app.status,
             date: formatDateToGuatemalan(app.created_at || app.updated_at || new Date().toISOString()),
             progress: app.progress_step || 0,
-            stage: app.current_stage || 'En proceso',
-            timestamp: new Date(app.created_at || app.updated_at || new Date().toISOString()).getTime() // Para ordenamiento
+            stage: app.current_stage || 'En proceso'
           };
         }),
         ...(drafts || []).map(draft => {
-          // Extract applicationId from draft_data, otherwise format the UUID
-          const applicationId = draft.draft_data && typeof draft.draft_data === 'object' && 
-            (draft.draft_data as any).applicationId ? 
-            (draft.draft_data as any).applicationId : 
-            formatApplicationId(draft.id);
+          // Extract applicationId, otherwise format the UUID
+          const applicationId = formatApplicationId(draft.id);
 
-          // Construct full name from draft_data if available, otherwise use client_name
+          // Use client_name directly or 'Sin nombre'
           let fullName = draft.client_name || 'Sin nombre';
           let dpi = '';
           let requestedAmount = '';
-          if (draft.draft_data && typeof draft.draft_data === 'object') {
-            const draftData = draft.draft_data as any;
-            if (draftData.firstName && draftData.lastName) {
-              fullName = `${draftData.firstName} ${draftData.lastName}`;
-            } else if (draftData.firstName && draftData.firstLastName) {
-              fullName = `${draftData.firstName} ${draftData.firstLastName}`;
-            } else if (draftData.fullName) {
-              fullName = draftData.fullName;
-            }
-            // Extract DPI for search functionality
-            dpi = draftData.dpi || draftData.cedula || '';
-            // Extract requested amount from draft_data
-            requestedAmount = draftData.requestedAmount?.toString() || '';
-          }
 
           // Map step number to stage name for drafts
           const getStageFromStep = (step: number): string => {
@@ -167,20 +133,17 @@ export const useApplicationsList = () => {
             clientName: getFirstNameAndLastName(fullName),
             dpi: dpi,
             product: 'Crédito', // Show "Crédito" for drafts
-            amount: requestedAmount, // Use requestedAmount from draft_data
+            amount: requestedAmount,
             status: 'draft',
             date: formatDateToGuatemalan(draft.updated_at || draft.created_at || new Date().toISOString()),
             progress: draft.last_step || 0,
-            stage: getStageFromStep(draft.last_step || 1),
-            timestamp: new Date(draft.updated_at || draft.created_at || new Date().toISOString()).getTime() // Para ordenamiento
+            stage: getStageFromStep(draft.last_step || 1)
           };
         })
       ];
       
-      // Ordenar por timestamp (más recientes primero) y remover timestamp del resultado
-      const sortedApplications = transformedApplications
-        .sort((a, b) => b.timestamp - a.timestamp)
-        .map(({ timestamp, ...item }) => item);
+      // Return the transformed applications
+      const sortedApplications = transformedApplications;
       
       console.log('✅ Final transformed applications list:', sortedApplications.length);
       console.log('📊 Applications by type:', {

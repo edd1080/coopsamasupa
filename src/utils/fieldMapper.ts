@@ -574,14 +574,6 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
               comments: ref.comments || ref.comment || ref.comentarios || ""
             }))
           },
-          business: {
-            companyName: formData.companyName || "",
-            activityDescription: formData.activityDescription || "",
-            grossProfit: formData.grossProfit || 0,
-            productType: formData.productType || "",
-            startDate: formData.startDate || "",
-            fullAddress: formData.fullAddress || ""
-          },
           investmentPlan: (() => {
             console.log('📋 Mapeando plan de inversión:', formData.investmentPlan);
             // Si existe plan de inversión en formData, usarlo; si no, array vacío
