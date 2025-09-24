@@ -82,12 +82,27 @@ export const useApplicationsList = () => {
       // Transform data to match Application interface
       const transformedApplications: Application[] = [
         ...(applications || []).map(app => {
-          // Extract applicationId, otherwise format the UUID
-          const applicationId = formatApplicationId(app.id);
+          // Extract applicationId from draft_data if available, otherwise format the UUID
+          const applicationId = app.draft_data && typeof app.draft_data === 'object' && 
+            (app.draft_data as any).applicationId ? 
+            (app.draft_data as any).applicationId : 
+            formatApplicationId(app.id);
 
-          // Use client_name directly
+          // Construct full name from draft_data if available, otherwise use client_name
           let fullName = app.client_name;
           let dpi = '';
+          if (app.draft_data && typeof app.draft_data === 'object') {
+            const draftData = app.draft_data as any;
+            if (draftData.firstName && draftData.lastName) {
+              fullName = `${draftData.firstName} ${draftData.lastName}`;
+            } else if (draftData.firstLastName) {
+              fullName = `${draftData.firstName || ''} ${draftData.firstLastName}`.trim();
+            } else if (draftData.fullName) {
+              fullName = draftData.fullName;
+            }
+            // Extract DPI for search functionality
+            dpi = draftData.dpi || draftData.cedula || '';
+          }
             
           return {
             id: app.id,
@@ -107,13 +122,30 @@ export const useApplicationsList = () => {
           };
         }),
         ...(drafts || []).map(draft => {
-          // Extract applicationId, otherwise format the UUID
-          const applicationId = formatApplicationId(draft.id);
+          // Extract applicationId from draft_data, otherwise format the UUID
+          const applicationId = draft.draft_data && typeof draft.draft_data === 'object' && 
+            (draft.draft_data as any).applicationId ? 
+            (draft.draft_data as any).applicationId : 
+            formatApplicationId(draft.id);
 
-          // Use client_name directly or 'Sin nombre'
+          // Construct full name from draft_data if available, otherwise use client_name
           let fullName = draft.client_name || 'Sin nombre';
           let dpi = '';
           let requestedAmount = '';
+          if (draft.draft_data && typeof draft.draft_data === 'object') {
+            const draftData = draft.draft_data as any;
+            if (draftData.firstName && draftData.lastName) {
+              fullName = `${draftData.firstName} ${draftData.lastName}`;
+            } else if (draftData.firstLastName) {
+              fullName = `${draftData.firstName || ''} ${draftData.firstLastName}`.trim();
+            } else if (draftData.fullName) {
+              fullName = draftData.fullName;
+            }
+            // Extract DPI for search functionality
+            dpi = draftData.dpi || draftData.cedula || '';
+            // Extract requested amount
+            requestedAmount = draftData.requestedAmount?.toString() || draftData.montoSolicitado?.toString() || '0';
+          }
 
           // Map step number to stage name for drafts
           const getStageFromStep = (step: number): string => {
@@ -146,19 +178,28 @@ export const useApplicationsList = () => {
           };
         })
       ];
-      
-      // Return the transformed applications
-      const sortedApplications = transformedApplications;
-      
-      console.log('✅ Final transformed applications list:', sortedApplications.length);
-      console.log('📊 Applications by type:', {
-        fullApplications: (applications || []).length,
-        drafts: (drafts || []).length,
-        total: sortedApplications.length
-      });
-      
+
+      // Sort by timestamp (most recent first)
+      const sortedApplications = transformedApplications
+        .sort((a, b) => b.timestamp - a.timestamp)
+        .map(({ timestamp, ...item }) => item); // Remove timestamp from final objects
+
+      console.log('✅ Transformed and sorted applications:', sanitizeConsoleOutput(sortedApplications.map(app => ({
+        id: app.id,
+        applicationId: app.applicationId,
+        clientName: app.clientName,
+        status: app.status,
+        progress: app.progress,
+        stage: app.stage,
+        isDraft: app.isDraft,
+        date: app.date,
+        hasDraftData: !!app.draft_data // Indicate if draft_data is present
+      }))));
+
       return sortedApplications;
     },
-    enabled: !!user?.id,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: true,
+    refetchInterval: 1000 * 60 * 1 // 1 minute
   });
 };
