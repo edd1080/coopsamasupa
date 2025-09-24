@@ -101,7 +101,6 @@ export const useApplicationsList = () => {
             status: app.status,
             date: formatDateToGuatemalan(app.created_at || app.updated_at || new Date().toISOString()),
             progress: app.progress_step || 0,
-<<<<<<< Updated upstream
             stage: app.current_stage || 'En proceso',
             draft_data: app.draft_data, // Incluir draft_data para cálculo de progreso
             timestamp: new Date(app.created_at || app.updated_at || new Date().toISOString()).getTime() // Para ordenamiento
@@ -141,7 +140,6 @@ export const useApplicationsList = () => {
             status: 'draft',
             date: formatDateToGuatemalan(draft.updated_at || draft.created_at || new Date().toISOString()),
             progress: draft.last_step || 0,
-<<<<<<< Updated upstream
             stage: getStageFromStep(draft.last_step || 1),
             draft_data: draft.draft_data, // Incluir draft_data para cálculo de progreso
             timestamp: new Date(draft.updated_at || draft.created_at || new Date().toISOString()).getTime() // Para ordenamiento

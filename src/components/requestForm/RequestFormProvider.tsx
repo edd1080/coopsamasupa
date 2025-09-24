@@ -492,7 +492,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     
     // Generated fields - ID generated immediately for new applications
     applicationId: applicationId || generateApplicationId()
-  });
+  };
 
   // Navigation state
   const [currentStep, setCurrentStep] = useState(0);
