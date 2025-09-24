@@ -50,3 +50,4 @@ async function checkLCP() {
 }
 
 checkLCP().catch(console.error);
+

@@ -1,0 +1,15 @@
+// Fix for capacitor-android R class generation
+project(':capacitor-android') {
+    afterEvaluate { project ->
+        if (project.hasProperty('android')) {
+            project.android {
+                // Ensure R class is generated correctly
+                sourceSets {
+                    main {
+                        manifest.srcFile '../node_modules/@capacitor/android/capacitor/src/main/AndroidManifest.xml'
+                    }
+                }
+            }
+        }
+    }
+}
