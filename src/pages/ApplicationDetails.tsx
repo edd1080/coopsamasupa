@@ -129,7 +129,7 @@ const ApplicationDetails = () => {
       'identification': 0,
       'credit': 1,
       'finances': 2,
-      'guarantors': 3,
+      'references': 3,
       'documents': 4,
       'review': 5
     };
@@ -271,7 +271,7 @@ const ApplicationDetails = () => {
                     Estado: <span className="font-medium">Borrador</span>
                     {'status' in applicationData && applicationData.status === 'error' && 'coopsama_sync_status' in applicationData && applicationData.coopsama_sync_status === 'error' && (
                       <span className="ml-4">
-                        Código de error: <span className="font-mono font-medium text-destructive">{applicationData.id}</span>
+                        Error: <span className="font-medium text-destructive">Sincronización fallida</span>
                       </span>
                     )}
                   </p>
@@ -391,76 +391,6 @@ const ApplicationDetails = () => {
           </Card>
 
 
-          {/* Guarantors Card */}
-          <Card className="mb-6">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base">
-                  Referencias Personales
-                </CardTitle>
-                
-              </div>
-            </CardHeader>
-            <CardContent>
-              {references.length === 0 ? <div className="text-center py-8">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-                    <Users className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                  <h3 className="font-medium mb-2">No hay referencias agregadas</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Agregue al menos dos referencias para continuar con la solicitud
-                  </p>
-                  <Button onClick={() => navigate(`/applications/${id}/edit?step=3`)} className="bg-green-600 hover:bg-green-700 text-white border-0">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Agregar Referencias
-                  </Button>
-                </div> : <div className="space-y-4">
-                  {references.map((reference: any, index: number) => {
-                    // Construir nombre completo desde campos correctos de referencias
-                    const fullName = `${reference.firstName || ''} ${reference.firstLastName || ''}`.trim() || 'Por agregar';
-                    
-                    // Mapear tipo de referencia
-                    const referenceType = reference.referenceType || 'Por agregar';
-                    
-                    // Mapear teléfono
-                    const phone = reference.mobile || 'Por agregar';
-                    
-                    return (
-                      <div key={reference.id || index} className="p-4 rounded-lg border bg-white hover:shadow-md transition-shadow">
-                        <div className="space-y-2">
-                          {/* Información en filas - Solo 3 campos esenciales */}
-                          <div className="space-y-1">
-                            <div className="flex justify-between items-center">
-                              <span className="text-xs text-muted-foreground">Nombre:</span>
-                              <span className="text-xs font-medium text-foreground">{fullName}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-xs text-muted-foreground">Teléfono:</span>
-                              <span className="text-xs font-medium text-foreground">{phone}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-xs text-muted-foreground">Tipo:</span>
-                              <span className="text-xs font-medium text-foreground">{referenceType}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  {references.length < 3 && (
-                    <Button onClick={() => navigate(`/applications/${id}/edit?step=3`)} className="w-full bg-green-600 hover:bg-green-700 text-white border-0">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Agregar Otro Fiador
-                    </Button>
-                  )}
-                  {references.length >= 3 && (
-                    <div className="text-center py-4 text-sm text-muted-foreground">
-                      Máximo de 3 referencias alcanzado
-                    </div>
-                  )}
-                </div>}
-            </CardContent>
-          </Card>
 
           {/* Testing Tools card removed - no longer needed */}
         </div>

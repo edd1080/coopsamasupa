@@ -133,45 +133,58 @@ const ReferencesSection: React.FC<ReferencesSectionProps> = ({
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5 text-primary" />
                     Referencia {index + 1}
-                    {reference.fullName && (
-                      <span className="text-base font-normal text-muted-foreground">
-                        - {reference.fullName}
-                      </span>
-                    )}
                   </CardTitle>
-                   <div className="flex items-center gap-2">
-                     <Button
-                       variant="ghost"
-                       size="sm"
-                       onClick={() => removeReference(index)}
-                       className="text-red-600 hover:text-red-800"
-                     >
-                       <Trash2 className="h-4 w-4" />
-                     </Button>
-                   </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeReference(index)}
+                    className="text-red-600 hover:text-red-800"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {reference.fullName ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="font-medium">Tipo:</span> {reference.referenceType || 'No proporcionado'}
-                      </div>
-                      <div>
-                        <span className="font-medium">Teléfono:</span> {reference.phone || 'No proporcionado'}
-                      </div>
-                      <div>
-                        <span className="font-medium">Relación:</span> {reference.relation || 'No proporcionado'}
-                      </div>
-                      <div>
-                        <span className="font-medium">Calificación:</span> {reference.rating || 'No proporcionado'}
-                      </div>
+                  {/* Nombre completo */}
+                  {reference.fullName && (
+                    <div className="text-base font-medium text-foreground">
+                      {reference.fullName}
                     </div>
-                  ) : (
-                    <p className="text-muted-foreground">Sin información completada</p>
                   )}
                   
+                  {/* Tipo de referencia */}
+                  {reference.referenceType && (
+                    <div className="text-sm text-muted-foreground">
+                      Tipo: {reference.referenceType === 'PERSONAL' ? 'Personal' : 'Comercial'}
+                    </div>
+                  )}
+                  
+                  {/* Número de teléfono */}
+                  {reference.mobile && (
+                    <div className="text-sm text-muted-foreground">
+                      Teléfono: {reference.mobile}
+                    </div>
+                  )}
+                  
+                  {/* Relación */}
+                  {reference.relationship && (
+                    <div className="text-sm text-muted-foreground">
+                      Relación: {reference.relationship}
+                    </div>
+                  )}
+                  
+                  {/* Calificación */}
+                  {reference.score && (
+                    <div className="text-sm text-muted-foreground">
+                      Calificación: {reference.score === 'EXCELENTE' ? 'Excelente' : 
+                                    reference.score === 'BUENO' ? 'Bueno' :
+                                    reference.score === 'REGULAR' ? 'Regular' :
+                                    reference.score === 'MALO' ? 'Malo' : reference.score}
+                    </div>
+                  )}
+                  
+                  {/* Botón de editar */}
                   <div className="flex gap-2 pt-2">
                     <Button
                       variant="outline"

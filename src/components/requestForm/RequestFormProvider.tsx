@@ -344,8 +344,17 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   // Section status
   const [sectionStatus, setSectionStatus] = useState<Record<string, 'pending' | 'complete'>>({});
   
-  // References state (formerly guarantors)
-  const [references, setReferences] = useState<ReferenceData[]>([]);
+  // References state (formerly guarantors) - Initialize with formData.references if available
+  const [references, setReferences] = useState<ReferenceData[]>(() => {
+    // Try to get references from formData if available (for draft loading)
+    const initialFormData = formData;
+    if (initialFormData?.references && Array.isArray(initialFormData.references)) {
+      console.log('📝 Initializing references from formData:', initialFormData.references);
+      return initialFormData.references;
+    }
+    console.log('📝 Initializing references as empty array');
+    return [];
+  });
   const [currentReferenceIndex, setCurrentReferenceIndex] = useState(0);
   const [referenceFormStep, setReferenceFormStep] = useState(0);
   const [isInReferenceForm, setIsInReferenceForm] = useState(false);
@@ -364,9 +373,20 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
 
   // Load existing data when editing
   useEffect(() => {
-    if (applicationData && applicationData.isDraft && applicationData.draft_data) {
+    if (applicationData && (applicationData.isDraft || applicationData.status === 'error') && applicationData.draft_data) {
       console.log('📥 Loading existing draft data:', applicationData.draft_data);
       const draftData = applicationData.draft_data as any;
+      
+      
+      // Log references specifically
+      if (draftData.references) {
+        console.log('📝 Draft data contains references:', draftData.references);
+        console.log('📝 References type:', typeof draftData.references);
+        console.log('📝 References is array:', Array.isArray(draftData.references));
+        console.log('📝 References length:', draftData.references.length);
+      } else {
+        console.log('📝 Draft data does NOT contain references');
+      }
       
       // Merge draft data with current form data
       setFormData(prev => ({
@@ -416,6 +436,30 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     }
   }, [location.state, steps.length]);
 
+  // Restaurar referencias desde formData cuando se carga un borrador
+  useEffect(() => {
+    if (formData.references && Array.isArray(formData.references) && formData.references.length > 0) {
+      console.log('📝 Restaurando referencias desde formData:', formData.references);
+      console.log('📝 Referencias actuales antes de restaurar:', references);
+      
+      // Solo actualizar si las referencias son diferentes
+      const currentReferencesString = JSON.stringify(references);
+      const newReferencesString = JSON.stringify(formData.references);
+      
+      if (currentReferencesString !== newReferencesString) {
+        console.log('📝 Referencias diferentes, actualizando...');
+        setReferences(formData.references);
+      } else {
+        console.log('📝 Referencias ya están sincronizadas');
+      }
+    } else if (formData.references && Array.isArray(formData.references) && formData.references.length === 0) {
+      console.log('📝 FormData tiene referencias vacías, limpiando referencias locales');
+      if (references.length > 0) {
+        setReferences([]);
+      }
+    }
+  }, [formData.references, references]);
+
   // Update form data function
   const updateFormData = useCallback((field: string, value: any) => {
     console.log('📝 Form data updated:', { field, value });
@@ -463,11 +507,14 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     setReferences(prev => {
       const updated = [...prev, newReference];
       
-      // Sincronizar con formData
+      // Sincronizar con formData inmediatamente
       setFormData(prevFormData => ({
         ...prevFormData,
         references: updated
       }));
+      
+      console.log('📝 Nueva referencia agregada:', newReference);
+      console.log('📝 Referencias actualizadas:', updated);
       
       return updated;
     });
@@ -493,11 +540,14 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
         i === index ? { ...reference, [field]: value } : reference
       );
       
-      // Sincronizar con formData
+      // Sincronizar con formData inmediatamente
       setFormData(prevFormData => ({
         ...prevFormData,
         references: updated
       }));
+      
+      console.log('📝 Referencia actualizada:', { index, field, value });
+      console.log('📝 Referencias actualizadas:', updated);
       
       return updated;
     });
@@ -686,8 +736,8 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
         console.log('✅ Save completed, proceeding with exit');
       } catch (error) {
         console.error('❌ Exit with save failed:', error);
-        // Don't exit if save failed - let the user see the error toast
-        return;
+        // Re-throw the error so ExitDialog can handle it
+        throw error;
       }
     }
     

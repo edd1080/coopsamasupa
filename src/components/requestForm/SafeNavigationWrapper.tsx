@@ -9,7 +9,7 @@ interface SafeNavigationWrapperProps {
 const SafeNavigationWrapper: React.FC<SafeNavigationWrapperProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { formData, handleExit } = useFormContext();
+  const { formData, handleExit, showExitDialog } = useFormContext();
 
   useEffect(() => {
     const preventBlankPage = () => {
@@ -37,6 +37,12 @@ const SafeNavigationWrapper: React.FC<SafeNavigationWrapperProps> = ({ children 
   // Handle browser back button
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
+      // Don't interfere if exit dialog is already showing
+      if (showExitDialog) {
+        console.log('🚫 SafeNavigationWrapper: Exit dialog is showing, not interfering');
+        return;
+      }
+      
       event.preventDefault();
       
       // Show exit confirmation if user tries to navigate away
@@ -45,6 +51,7 @@ const SafeNavigationWrapper: React.FC<SafeNavigationWrapperProps> = ({ children 
       );
       
       if (confirmExit) {
+        console.log('🔄 SafeNavigationWrapper: User confirmed exit via back button');
         handleExit(false); // Exit without saving
       } else {
         // Push current state back to prevent navigation
@@ -60,7 +67,7 @@ const SafeNavigationWrapper: React.FC<SafeNavigationWrapperProps> = ({ children 
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [handleExit, location.pathname]);
+  }, [handleExit, location.pathname, showExitDialog]);
 
   return <>{children}</>;
 };

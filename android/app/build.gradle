@@ -23,9 +23,17 @@ android {
         }
     }
     buildTypes {
+        debug {
+            debuggable true
+            minifyEnabled false
+        }
         release {
+            debuggable false
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            // Security configurations for production
+            buildConfigField "boolean", "DEBUG_MODE", "false"
+            buildConfigField "boolean", "ENABLE_LOGGING", "false"
         }
     }
 }

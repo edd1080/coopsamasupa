@@ -87,7 +87,7 @@ export const useSaveDraft = () => {
 
       await saveOfflineData(offlineKey, offlineData);
 
-      // Check if offline - enqueue if no connection
+      // Check if offline - enqueue if no connection and return early
       if (isOffline) {
         const { offlineQueue } = await import('@/utils/offlineQueue');
         await offlineQueue.enqueue({
@@ -95,9 +95,26 @@ export const useSaveDraft = () => {
           payload: offlineData
         });
         
-        // Return optimistic result for offline
+        // Return optimistic result for offline - no need to verify session
         return offlineData;
       }
+      
+      // Session verification only when online
+      console.log('🔒 Verifying session before online save...');
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser || currentUser.id !== user.id) {
+        console.error('❌ Session verification failed:', {
+          expected: user.id,
+          actual: currentUser?.id,
+          sessionValid: !!currentUser
+        });
+        throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente.');
+      }
+      
+      console.log('🔒 Session verified before save:', {
+        userId: currentUser.id,
+        matches: currentUser.id === user.id
+      });
       
       console.log('🆔 Using existing application ID:', sanitizedFormData.applicationId);
       
@@ -168,22 +185,6 @@ export const useSaveDraft = () => {
         expected_user_id: user.id,
         agent_id_matches_user: draftPayload.agent_id === user.id
       }));
-      
-      // Debug: Double-check user authentication before upsert
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      if (!currentUser || currentUser.id !== user.id) {
-        console.error('❌ Session verification failed:', {
-          expected: user.id,
-          actual: currentUser?.id,
-          sessionValid: !!currentUser
-        });
-        throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente.');
-      }
-      
-      console.log('🔒 Session verified before save:', {
-        userId: currentUser.id,
-        matches: currentUser.id === user.id
-      });
       
       const { data, error } = await supabase
         .from('application_drafts')

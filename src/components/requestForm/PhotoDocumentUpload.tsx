@@ -9,6 +9,7 @@ import { useDocumentManager, guatemalanDocuments } from '@/hooks/useDocumentMana
 import InteractiveDocumentCard from '@/components/documents/InteractiveDocumentCard';
 import SubformHeader from '@/components/forms/SubformHeader';
 import NativeCameraCapture from './NativeCameraCapture';
+import { useFormContext } from './RequestFormProvider';
 
 interface PhotoDocumentUploadProps {
   formData: any;
@@ -29,28 +30,52 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [showNativeCamera, setShowNativeCamera] = useState<string | null>(null);
 
+  // Get showExitDialog from context to avoid interference
+  const { showExitDialog } = useFormContext();
+
   const {
     documents,
     loadingDocument,
     uploadDocument,
     removeDocument,
-  } = useDocumentManager();
+    initializeFromFormData,
+  } = useDocumentManager(guatemalanDocuments);
 
   // Get applicationId from formData
   const applicationId = formData?.applicationId || formData?.id;
 
-  // Update form data when documents change
+  // Initialize documents from formData when component mounts
   React.useEffect(() => {
-    const documentsData = documents.reduce((acc, doc) => {
-      acc[doc.id] = {
-        file: doc.file,
-        status: doc.status,
-        thumbnailUrl: doc.thumbnailUrl
-      };
-      return acc;
-    }, {} as Record<string, any>);
-    updateFormData('documents', documentsData);
-  }, [documents]);
+    if (formData?.documents && Object.keys(formData.documents).length > 0) {
+      initializeFromFormData(formData.documents);
+    }
+  }, [formData?.documents, initializeFromFormData]);
+
+  // Update form data when documents change
+  // Sync documents with formData (avoid interference with exit dialog)
+  React.useEffect(() => {
+    // Don't update formData if exit dialog is showing to avoid interference
+    if (showExitDialog) {
+      console.log('🚫 PhotoDocumentUpload: Exit dialog is showing, skipping formData update');
+      return;
+    }
+
+    // Debounce to avoid excessive updates
+    const timeoutId = setTimeout(() => {
+      const documentsData = documents.reduce((acc, doc) => {
+        acc[doc.id] = {
+          file: doc.file,
+          status: doc.status,
+          thumbnailUrl: doc.thumbnailUrl
+        };
+        return acc;
+      }, {} as Record<string, any>);
+      
+      updateFormData('documents', documentsData);
+    }, 100); // 100ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [documents, updateFormData, showExitDialog]);
 
   const takePictureDirectly = async (documentId: string) => {
     try {
@@ -83,9 +108,23 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
       }
     } catch (error: any) {
       console.error('❌ Error taking picture directly:', error);
+      
+      let errorMessage = error?.message || 'Error desconocido';
+      
+      // Translate specific Capacitor error messages to Spanish
+      if (errorMessage.includes('user canceled photos app')) {
+        errorMessage = 'No se pudo tomar la foto, el usuario canceló la acción';
+      } else if (errorMessage.includes('user canceled')) {
+        errorMessage = 'No se pudo tomar la foto, el usuario canceló la acción';
+      } else if (errorMessage.includes('camera not available')) {
+        errorMessage = 'Cámara no disponible';
+      } else if (errorMessage.includes('permission denied')) {
+        errorMessage = 'Permiso de cámara denegado';
+      }
+      
       toast({
         title: "Error de cámara",
-        description: `No se pudo tomar la foto: ${error?.message || 'Error desconocido'}`,
+        description: errorMessage,
         variant: "destructive"
       });
     }
@@ -122,7 +161,7 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
         };
       }
     } catch (error) {
-      console.error('Error accessing camera:', error);
+      console.error('❌ Error accediendo a la cámara:', error);
       toast({
         title: "Error de cámara",
         description: "No se pudo acceder a la cámara. Verifica los permisos.",
@@ -236,7 +275,7 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
         ref={fileInputRef}
         type="file"
         className="hidden"
-        accept=".jpg,.jpeg,.png,.pdf,.txt"
+        accept="image/*,application/pdf"
         onChange={(e) => {
           const documentId = fileInputRef.current?.getAttribute('data-document-id') || '';
           handleFileSelection(e, documentId);

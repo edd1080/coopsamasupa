@@ -22,7 +22,12 @@ const config: CapacitorConfig = {
       splashImmersive: true
     },
     Camera: {
-      permissions: ['camera', 'photos']
+      permissions: ['camera', 'photos'],
+      android: {
+        enableAutoFocus: true,
+        enableTapToFocus: true,
+        enableZoom: true
+      }
     }
   }
 };

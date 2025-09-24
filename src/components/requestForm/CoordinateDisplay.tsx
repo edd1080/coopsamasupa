@@ -1,8 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, Target, Clock } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { MapPin, Clock } from 'lucide-react';
 
 interface CoordinateDisplayProps {
   latitude: number;
@@ -20,17 +19,12 @@ const CoordinateDisplay: React.FC<CoordinateDisplayProps> = ({ latitude, longitu
 
   if (!isValidCoordinate(latitude, longitude)) {
     return (
-      <div className="h-32 w-full border rounded-lg flex items-center justify-center bg-gray-50">
+      <div className="h-32 w-full border rounded-lg flex items-center justify-center bg-muted">
         <p className="text-sm text-muted-foreground">Coordenadas inválidas</p>
       </div>
     );
   }
 
-  const getAccuracyStatus = (accuracy: number) => {
-    if (accuracy <= 10) return { label: 'Excelente', color: 'bg-green-100 text-green-800' };
-    if (accuracy <= 50) return { label: 'Buena', color: 'bg-yellow-100 text-yellow-800' };
-    return { label: 'Regular', color: 'bg-orange-100 text-orange-800' };
-  };
 
   return (
     <Card className="w-full border border-gray-200">
@@ -44,20 +38,18 @@ const CoordinateDisplay: React.FC<CoordinateDisplayProps> = ({ latitude, longitu
         {/* Coordinates Grid */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-1">
-              <Target className="h-3 w-3 text-blue-500" />
-              <span className="text-xs font-medium text-gray-600">Latitud</span>
+            <div>
+              <span className="text-xs font-medium text-muted-foreground">Latitud</span>
             </div>
-            <p className="font-mono text-sm bg-gray-50 p-2 rounded border">
+            <p className="font-mono text-sm bg-muted text-foreground p-2 rounded border">
               {latitude.toFixed(6)}
             </p>
           </div>
           <div className="space-y-1">
-            <div className="flex items-center gap-1">
-              <Target className="h-3 w-3 text-blue-500" />
-              <span className="text-xs font-medium text-gray-600">Longitud</span>
+            <div>
+              <span className="text-xs font-medium text-muted-foreground">Longitud</span>
             </div>
-            <p className="font-mono text-sm bg-gray-50 p-2 rounded border">
+            <p className="font-mono text-sm bg-muted text-foreground p-2 rounded border">
               {longitude.toFixed(6)}
             </p>
           </div>
@@ -65,24 +57,17 @@ const CoordinateDisplay: React.FC<CoordinateDisplayProps> = ({ latitude, longitu
 
         {/* Accuracy Information */}
         {accuracy && (
-          <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-800">Precisión</span>
+              <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <span className="text-sm font-medium text-blue-800 dark:text-blue-300">Precisión</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-mono text-blue-800">{Math.round(accuracy)}m</span>
-              <Badge variant="secondary" className={getAccuracyStatus(accuracy).color}>
-                {getAccuracyStatus(accuracy).label}
-              </Badge>
+              <span className="text-sm font-mono text-blue-800 dark:text-blue-300">{Math.round(accuracy)}m</span>
             </div>
           </div>
         )}
 
-        {/* Location Info */}
-        <div className="text-xs text-center text-muted-foreground bg-gray-50 p-2 rounded">
-          📍 {accuracy && accuracy <= 10 ? 'Ubicación capturada con precisión GPS' : 'Ubicación capturada con GPS aproximado'}
-        </div>
       </CardContent>
     </Card>
   );

@@ -59,13 +59,13 @@ const ContactHousingForm: React.FC<ContactHousingFormProps> = ({ formData, updat
   const getStabilityBadge = (stability: string) => {
     switch (stability) {
       case 'mayor_3':
-        return <Badge variant="default" className="bg-green-100 text-green-800 ml-2">Excelente</Badge>;
+        return <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200 ml-2">Excelente</Badge>;
       case '2_3':
-        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 ml-2">Buena</Badge>;
+        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200 ml-2">Buena</Badge>;
       case '1_2':
-        return <Badge variant="outline" className="bg-orange-100 text-orange-800 ml-2">Regular</Badge>;
+        return <Badge variant="outline" className="bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-200 ml-2">Regular</Badge>;
       case 'menor_1':
-        return <Badge variant="outline" className="bg-red-100 text-red-800 ml-2">Bajo</Badge>;
+        return <Badge variant="outline" className="bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-200 ml-2">Bajo</Badge>;
       default:
         return null;
     }

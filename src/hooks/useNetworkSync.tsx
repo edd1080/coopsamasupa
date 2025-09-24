@@ -96,16 +96,18 @@ export const useNetworkSync = () => {
             // Handle document upload from offline queue
             const { payload: uploadPayload } = task;
             if (uploadPayload.blobKey) {
-              // Retrieve blob from localforage and upload
-              const blob = await localforage.getItem(uploadPayload.blobKey);
-              if (blob && blob instanceof Blob) {
+              // Retrieve ArrayBuffer from localforage and convert to Blob for upload
+              const arrayBuffer = await localforage.getItem(uploadPayload.blobKey);
+              if (arrayBuffer && arrayBuffer instanceof ArrayBuffer) {
+                // Convert ArrayBuffer to Blob for Supabase Storage
+                const blob = new Blob([arrayBuffer], { type: 'application/octet-stream' });
                 const { data: uploadData, error: uploadError } = await supabase.storage
                   .from('documents')
                   .upload(uploadPayload.path, blob, { upsert: true });
                 success = !uploadError;
                 
                 if (success) {
-                  // Clean up blob from localforage
+                  // Clean up ArrayBuffer from localforage
                   await localforage.removeItem(uploadPayload.blobKey);
                 }
               }

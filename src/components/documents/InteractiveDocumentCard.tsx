@@ -57,26 +57,26 @@ const InteractiveDocumentCard: React.FC<InteractiveDocumentCardProps> = ({
   const getStatusColor = () => {
     switch (document.status) {
       case 'success':
-        return 'bg-green-100 border-green-300';
+        return 'bg-green-100 border-green-300 dark:bg-green-900/20 dark:border-green-700';
       case 'error':
-        return 'bg-red-100 border-red-300';
+        return 'bg-red-100 border-red-300 dark:bg-red-900/20 dark:border-red-700';
       case 'loading':
-        return 'bg-yellow-100 border-yellow-300';
+        return 'bg-yellow-100 border-yellow-300 dark:bg-yellow-900/20 dark:border-yellow-700';
       default:
-        return 'bg-gray-50 border-gray-200';
+        return 'bg-gray-50 border-gray-200 dark:bg-card dark:border-border';
     }
   };
 
   const getStatusIcon = () => {
     switch (document.status) {
       case 'success':
-        return <FileText className="h-4 w-4 text-green-600" />;
+        return <FileText className="h-4 w-4 text-green-600 dark:text-green-400" />;
       case 'error':
-        return <Upload className="h-4 w-4 text-red-600" />;
+        return <Upload className="h-4 w-4 text-red-600 dark:text-red-400" />;
       case 'loading':
-        return <Loader2 className="h-4 w-4 text-yellow-600 animate-spin" />;
+        return <Loader2 className="h-4 w-4 text-yellow-600 dark:text-yellow-400 animate-spin" />;
       default:
-        return <Upload className="h-4 w-4 text-gray-400" />;
+        return <Upload className="h-4 w-4 text-gray-400 dark:text-muted-foreground" />;
     }
   };
 
@@ -94,19 +94,21 @@ const InteractiveDocumentCard: React.FC<InteractiveDocumentCardProps> = ({
       {document.thumbnailUrl && (
         <div className="mb-3">
           {document.file?.type === 'application/pdf' ? (
-            <div className="w-full h-24 bg-gray-100 rounded border flex items-center justify-center">
+            <div className="w-full h-24 bg-gray-100 dark:bg-muted rounded border border-border flex items-center justify-center">
               <div className="text-center">
-                <FileText className="h-6 w-6 text-red-500 mx-auto mb-1" />
-                <p className="text-xs text-gray-600">PDF</p>
-                <p className="text-xs text-gray-500">Toca para ver</p>
+                <FileText className="h-6 w-6 text-red-500 dark:text-red-400 mx-auto mb-1" />
+                <p className="text-xs text-gray-600 dark:text-muted-foreground">PDF</p>
+                <p className="text-xs text-gray-500 dark:text-muted-foreground truncate max-w-full px-2" title={document.file?.name}>
+                  {document.file?.name || 'Archivo PDF'}
+                </p>
               </div>
             </div>
           ) : document.file?.type === 'text/plain' ? (
-            <div className="w-full h-24 bg-gray-100 rounded border flex items-center justify-center">
+            <div className="w-full h-24 bg-gray-100 dark:bg-muted rounded border border-border flex items-center justify-center">
               <div className="text-center">
-                <FileText className="h-6 w-6 text-blue-500 mx-auto mb-1" />
-                <p className="text-xs text-gray-600">TXT</p>
-                <p className="text-xs text-gray-500">Toca para ver</p>
+                <FileText className="h-6 w-6 text-blue-500 dark:text-blue-400 mx-auto mb-1" />
+                <p className="text-xs text-gray-600 dark:text-muted-foreground">TXT</p>
+                <p className="text-xs text-gray-500 dark:text-muted-foreground">Toca para ver</p>
               </div>
             </div>
           ) : (
@@ -165,19 +167,21 @@ const InteractiveDocumentCard: React.FC<InteractiveDocumentCardProps> = ({
 
           {document.status === 'success' && (
             <>
+              {document.file?.type !== 'application/pdf' && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs"
+                  onClick={handleView}
+                >
+                  <Eye className="h-3 w-3 mr-1" />
+                  Ver
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="sm"
-                className="text-xs"
-                onClick={handleView}
-              >
-                <Eye className="h-3 w-3 mr-1" />
-                Ver
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs text-red-600 hover:text-red-700"
+                className="text-xs text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                 onClick={onRemove}
               >
                 <Trash2 className="h-3 w-3 mr-1" />
@@ -204,7 +208,7 @@ const InteractiveDocumentCard: React.FC<InteractiveDocumentCardProps> = ({
                 <Upload className="h-3 w-3 mr-1" />
                 Reintentar
               </Button>
-              <div className="text-xs text-red-600 mt-1">
+              <div className="text-xs text-red-600 dark:text-red-400 mt-1">
                 Error al subir
               </div>
             </>

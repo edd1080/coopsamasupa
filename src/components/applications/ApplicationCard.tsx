@@ -10,7 +10,6 @@ import { Calendar, FileText, Edit, Trash2, MoreVertical, CheckCircle, AlertCircl
 import { useToast } from "@/hooks/use-toast";
 import { formatApplicationId } from '@/utils/applicationIdGenerator';
 import { getFirstNameAndLastName } from '@/lib/nameUtils';
-import { formatDateToGuatemalan } from '@/utils/dateUtils';
 import { formatCurrencyWithSymbol } from '@/utils/formatters';
 interface Application {
   id: string;
@@ -105,9 +104,6 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
         return null;
     }
   };
-  const formatDate = (dateString: string) => {
-    return formatDateToGuatemalan(dateString);
-  };
   const getStageIcon = (stage: string) => {
     switch (stage) {
       case 'Información Financiera':
@@ -135,7 +131,7 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
                   <h3 className="text-section-title font-semibold">{getFirstNameAndLastName(application.clientName)}</h3>
                   <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground whitespace-nowrap">
                     <CalendarDays className="h-3 w-3 text-primary" />
-                    <span>{formatDate(application.date)}</span>
+                    <span>{application.date}</span>
                     <FileTextSolid className="h-3 w-3 ml-2 text-primary" />
                     <span className="truncate">
                       {application.status === 'draft' 

@@ -50,6 +50,7 @@ const ExitDialog: React.FC<ExitDialogProps> = ({
       console.log('✅ Exit with save completed');
     } catch (error) {
       console.error('❌ Error during exit with save:', error);
+    } finally {
       setIsExiting(false);
     }
   };

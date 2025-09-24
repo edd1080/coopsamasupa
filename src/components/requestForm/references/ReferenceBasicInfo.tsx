@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select';
 import { User, Mail, Phone, MapPin, Star } from 'lucide-react';
 import { useFormContext } from '../RequestFormProvider';
+import { formatPhone, validatePhoneFormat } from '@/utils/formatters';
 
 interface ReferenceBasicInfoProps {
   referenceIndex: number;
@@ -50,6 +51,11 @@ const ReferenceBasicInfo: React.FC<ReferenceBasicInfoProps> = ({ referenceIndex 
     if (isCompleted !== reference.basicInfoCompleted) {
       updateReference(referenceIndex, 'basicInfoCompleted', isCompleted);
     }
+  };
+
+  const handlePhoneChange = (value: string) => {
+    const formatted = formatPhone(value);
+    handleInputChange('mobile', formatted);
   };
 
   return (
@@ -176,13 +182,18 @@ const ReferenceBasicInfo: React.FC<ReferenceBasicInfoProps> = ({ referenceIndex 
                 <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   id={`mobile-${referenceIndex}`}
-                  value={reference.mobile}
-                  onChange={(e) => handleInputChange('mobile', e.target.value)}
-                  placeholder="5555-1234"
-                  className="pl-10"
-                  pattern="[0-9\-\s]*"
+                  type="tel"
+                  inputMode="numeric"
+                  value={reference.mobile || ''}
+                  onChange={(e) => handlePhoneChange(e.target.value)}
+                  placeholder="0000 0000"
+                  maxLength={9}
+                  className={`pl-10 ${!validatePhoneFormat(reference.mobile || '') && reference.mobile ? 'border-red-500' : ''}`}
                 />
               </div>
+              {reference.mobile && !validatePhoneFormat(reference.mobile) && (
+                <p className="text-xs text-red-500">Formato: 0000 0000 (8 dígitos)</p>
+              )}
             </div>
             
             <div className="space-y-2">

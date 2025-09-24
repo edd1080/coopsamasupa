@@ -867,6 +867,381 @@
 
 ---
 
-*Última actualización: 2025-01-20*
-*Total de cambios documentados: 28*
-*Estado del proyecto: Listo para producción y generación de APK*
+### **2025-01-23** - Sesión de Corrección de Documentos y Restauración
+
+#### 🔧 **29. Corrección de Pantalla en Blanco en Documentos (BUG-270)**
+- **Archivos modificados**:
+  - `src/hooks/useDocumentManager.tsx` - Arquitectura restaurada
+  - `src/components/requestForm/PhotoDocumentUpload.tsx` - Inicialización simplificada
+- **Problema**: Pantalla en blanco al navegar al paso 5 (Documentos)
+- **Causa**: Arquitectura basada en contexto causaba problemas de timing
+- **Solución implementada**:
+  - Restauración de commit `d038961` que funcionaba correctamente
+  - `useDocumentManager` usa `useState` con `guatemalanDocuments` como valor inicial
+  - `PhotoDocumentUpload` usa `useDocumentManager()` directamente sin dependencias de contexto
+  - `useEffect` simple para sincronización con `formData`
+  - Eliminación de dependencias complejas de contexto
+- **Script de verificación**: `verify-blank-screen-fix.sh`
+- **Estado**: ✅ Completado
+
+#### 🔧 **30. Corrección de Botón "Salir sin guardar" (BUG-271)**
+- **Archivos modificados**:
+  - `src/hooks/useDocumentManager.tsx` - Arquitectura restaurada
+  - `src/components/requestForm/PhotoDocumentUpload.tsx` - Eventos simplificados
+- **Problema**: Botón "Salir sin guardar" no funcionaba en step 5
+- **Causa**: Conflictos entre event listeners y diálogos anidados
+- **Solución implementada**:
+  - Restauración de commit `d038961` que funcionaba correctamente
+  - Eliminación de conflictos de event listeners
+  - Simplificación de manejo de diálogos
+  - Navegación libre sin interferencias
+- **Script de verificación**: `verify-exit-without-save-fix.sh`
+- **Estado**: ✅ Completado
+
+#### 🔧 **31. Corrección de File Picker para PDFs (BUG-272)**
+- **Archivos modificados**:
+  - `src/components/requestForm/PhotoDocumentUpload.tsx` - MIME types correctos
+  - `src/hooks/useDocumentManager.tsx` - Tipo de documento corregido
+- **Problema**: File picker no permitía seleccionar archivos PDF
+- **Causa**: 
+  - Atributo `accept` usaba extensiones (`.pdf`) en lugar de MIME types (`application/pdf`)
+  - Todos los documentos definidos como `type: 'photo'` causaba `accept="image/*"`
+- **Solución implementada**:
+  - `accept="image/*,application/pdf"` en lugar de extensiones
+  - `recibosServicios` cambiado a `type: 'document'`
+  - `InteractiveDocumentCard` usa `accept="*"` para documentos
+  - Soporte completo para PDFs, imágenes y fotos
+- **Script de verificación**: `verify-pdf-file-picker-fix.sh`
+- **Estado**: ✅ Completado
+
+#### 🔧 **32. Corrección de Visualización de PDFs (BUG-273)**
+- **Archivos modificados**:
+  - `src/components/documents/InteractiveDocumentCard.tsx` - UI de PDFs corregida
+- **Problema**: PDFs mostraban "Toca para ver" y botón "Ver" innecesario
+- **Causa**: Lógica de visualización no diferenciaba entre PDFs e imágenes
+- **Solución implementada**:
+  - PDFs muestran `{document.file?.name || 'Archivo PDF'}` en lugar de "Toca para ver"
+  - Botón "Ver" condicionado: `{document.file?.type !== 'application/pdf' && ...}`
+  - Botón "Eliminar" mantenido para PDFs
+  - Vista previa preservada para imágenes
+- **Script de verificación**: `verify-pdf-display-fix.sh`
+- **Estado**: ✅ Completado
+
+#### 🔧 **33. Restauración de Iconos de Android (BUG-274)**
+- **Archivos modificados**:
+  - `android/app/src/main/res/mipmap-*/` - Todas las densidades restauradas
+  - `android/app/src/main/res/mipmap-anydpi-v26/` - Adaptive icons restaurados
+- **Problema**: Iconos oficiales de Coopsama perdidos después de rollback
+- **Causa**: Rollback eliminó iconos implementados en commit de71f8f
+- **Solución implementada**:
+  - Comando: `cp -r appIcons/android/res/mipmap-* android/app/src/main/res/`
+  - 26 iconos instalados en todas las densidades
+  - Adaptive icons configurados correctamente
+  - Branding oficial de Coopsama restaurado
+- **Script de verificación**: `verify-app-icons-restoration.sh`
+- **Estado**: ✅ Completado
+
+#### 📋 **34. Actualización de Documentación de Bugs**
+- **Archivo**: `bugs.md`
+- **Cambio**: Agregados 4 nuevos bugs resueltos (BUG-270 a BUG-274)
+- **Contenido agregado**:
+  - BUG-270: Pantalla en blanco al navegar a documentos
+  - BUG-271: Botón "Salir sin guardar" no funciona en step 5
+  - BUG-272: File picker no permite seleccionar archivos PDF
+  - BUG-273: Visualización incorrecta de PDFs en cards de documentos
+  - BUG-274: Iconos de aplicación Android perdidos después de rollback
+  - Estadísticas actualizadas (15 bugs total)
+- **Estado**: ✅ Completado
+
+#### 📋 **35. Actualización de Cursor Implemented**
+- **Archivo**: `cursor_implemented.md`
+- **Cambio**: Documentación del trabajo realizado hoy
+- **Contenido agregado**:
+  - Nuevo cambio #29: Corrección de pantalla en blanco en documentos
+  - Nuevo cambio #30: Corrección de botón "Salir sin guardar"
+  - Nuevo cambio #31: Corrección de file picker para PDFs
+  - Nuevo cambio #32: Corrección de visualización de PDFs
+  - Nuevo cambio #33: Restauración de iconos de Android
+  - Nuevo cambio #34: Actualización de documentación de bugs
+  - Nuevo cambio #35: Actualización de este archivo
+  - Fecha actualizada a 2025-01-23
+  - Total de cambios: 35
+- **Estado**: ✅ Completado
+
+---
+
+#### 🔧 **36. Corrección de Navegación de Salida (BUG-275)**
+- **Archivos modificados**:
+  - `src/components/requestForm/SafeNavigationWrapper.tsx` - No interferir con diálogo
+  - `src/components/requestForm/PhotoDocumentUpload.tsx` - No actualizar formData durante diálogo
+- **Problema**: Diálogo de salida se queda en estado de carga, botones no funcionan
+- **Causa**: 
+  - `SafeNavigationWrapper` interfería con la navegación normal del diálogo
+  - **NUEVA CAUSA**: `PhotoDocumentUpload` actualizaba `formData` durante subida de documentos, causando re-renders que interferían con el diálogo
+- **Solución implementada**:
+  - `SafeNavigationWrapper` verifica `showExitDialog` antes de interferir
+  - Solo intercepta el botón "atrás" del navegador cuando el diálogo no está activo
+  - **NUEVO**: `PhotoDocumentUpload` verifica `showExitDialog` antes de actualizar `formData`
+  - **NUEVO**: Debounce de 100ms para evitar actualizaciones excesivas
+  - **NUEVO**: Cleanup de timeout para prevenir memory leaks
+  - Permite que `onNavigateAfterExit` funcione correctamente
+  - Navegación de salida restaurada completamente sin interferencia de documentos
+- **Script de verificación**: `verify-document-interference-fix.sh`
+- **Estado**: ✅ Completado
+
+#### 📋 **37. Actualización de Documentación de Bugs**
+- **Archivo**: `bugs.md`
+- **Cambio**: Agregado BUG-275 para navegación de salida
+- **Contenido agregado**:
+  - BUG-275: Diálogo de salida se queda en estado de carga
+  - Análisis completo del problema
+  - Solución implementada con SafeNavigationWrapper
+  - Script de verificación
+  - Estadísticas actualizadas (16 bugs total)
+- **Estado**: ✅ Completado
+
+#### 📋 **38. Actualización de Cursor Implemented**
+- **Archivo**: `cursor_implemented.md`
+- **Cambio**: Documentación del trabajo realizado hoy
+- **Contenido agregado**:
+  - Nuevo cambio #36: Corrección de navegación de salida
+  - Nuevo cambio #37: Actualización de documentación de bugs
+  - Nuevo cambio #38: Actualización de este archivo
+  - Fecha actualizada a 2025-01-23
+  - Total de cambios: 38
+- **Estado**: ✅ Completado
+
+---
+
+#### 🔧 **39. Corrección de Error de Subida de Archivos (BUG-276)**
+- **Archivos modificados**:
+  - `src/hooks/useDocumentManager.tsx` - Conversión File ↔ ArrayBuffer
+  - `src/hooks/useNetworkSync.tsx` - Conversión ArrayBuffer ↔ Blob
+- **Problema**: Error "failed to write blobs (invalidblob)" al subir archivos
+- **Causa**: Los blobs no se serializan correctamente en localforage
+- **Solución implementada**:
+  - Conversión de `File` a `ArrayBuffer` antes de almacenar en localforage
+  - Conversión de `ArrayBuffer` a `Blob` para Supabase Storage
+  - Conversión de `ArrayBuffer` a `File` para restauración
+  - Validación de tipos antes de conversión
+  - Manejo robusto de conversiones en ambos hooks
+- **Script de verificación**: `verify-blob-upload-fix.sh`
+- **Estado**: ✅ Completado
+
+#### 📋 **40. Actualización de Documentación de Bugs**
+- **Archivo**: `bugs.md`
+- **Cambio**: Agregado BUG-276 para error de subida de archivos
+- **Contenido agregado**:
+  - BUG-276: Error al subir archivos con opción "subir"
+  - Análisis completo del problema de serialización de blobs
+  - Solución implementada con conversiones ArrayBuffer
+  - Script de verificación
+  - Estadísticas actualizadas (17 bugs total)
+- **Estado**: ✅ Completado
+
+#### 📋 **41. Actualización de Cursor Implemented**
+- **Archivo**: `cursor_implemented.md`
+- **Cambio**: Documentación del trabajo realizado hoy
+- **Contenido agregado**:
+  - Nuevo cambio #39: Corrección de error de subida de archivos
+  - Nuevo cambio #40: Actualización de documentación de bugs
+  - Nuevo cambio #41: Actualización de este archivo
+  - Fecha actualizada a 2025-01-23
+  - Total de cambios: 41
+- **Estado**: ✅ Completado
+
+---
+
+#### 🔧 **42. Corrección de Campo de Teléfono en Referencias (BUG-264)**
+- **Archivos modificados**:
+  - `src/components/requestForm/references/ReferenceBasicInfo.tsx` - Campo de teléfono corregido
+- **Problema**: Campo de teléfono en referencias permitía caracteres especiales, letras y espacios
+- **Causa**: Campo usaba `pattern="[0-9\-\s]*"` y no usaba funciones de formateo existentes
+- **Solución implementada**:
+  - Importación de `formatPhone` y `validatePhoneFormat` existentes
+  - Función `handlePhoneChange` para formateo automático
+  - `type="tel"` y `inputMode="numeric"` para restricción
+  - `maxLength={9}` para límite de caracteres
+  - Eliminación de `pattern="[0-9\-\s]*"` problemático
+  - Validación visual con borde rojo para formato incorrecto
+  - Mensaje de error "Formato: 0000 0000 (8 dígitos)"
+  - Placeholder actualizado a "0000 0000"
+  - Consistencia con otros campos de teléfono en la aplicación
+- **Script de verificación**: `verify-phone-field-restriction-fix.sh`
+- **Estado**: ✅ Completado
+
+#### 📋 **43. Actualización de Documentación de Bugs**
+- **Archivo**: `bugs.md`
+- **Cambio**: Agregado BUG-264 para campo de teléfono en referencias
+- **Contenido agregado**:
+  - BUG-264: Campo de teléfono en referencias permite caracteres especiales
+  - Análisis completo del problema de validación
+  - Solución implementada con funciones de formateo existentes
+  - Script de verificación
+  - Estadísticas actualizadas (18 bugs total)
+- **Estado**: ✅ Completado
+
+#### 📋 **44. Actualización de Cursor Implemented**
+- **Archivo**: `cursor_implemented.md`
+- **Cambio**: Documentación del trabajo realizado hoy
+- **Contenido agregado**:
+  - Nuevo cambio #42: Corrección de campo de teléfono en referencias
+  - Nuevo cambio #43: Actualización de documentación de bugs
+  - Nuevo cambio #44: Actualización de este archivo
+  - Fecha actualizada a 2025-01-23
+  - Total de cambios: 44
+- **Estado**: ✅ Completado
+
+---
+
+#### 🔧 **45. Corrección de Dark Mode y UX en Geolocalización (BUG-277)**
+- **Archivos modificados**:
+  - `src/components/requestForm/CoordinateDisplay.tsx` - Dark mode completo, badge GPS eliminado
+  - `src/components/requestForm/GeolocationCapture.tsx` - Título duplicado eliminado, loader agregado, precisión mejorada
+- **Problema**: Componentes de geolocalización no adaptados a dark mode, badge GPS innecesario, título duplicado, sin feedback visual en recaptura, precisión limitada
+- **Solución implementada**:
+  - **Dark Mode**: Inputs usan `bg-muted text-foreground`, labels usan `text-muted-foreground`
+  - **Sección de precisión**: `dark:bg-blue-950/20`, `dark:border-blue-800`, `dark:text-blue-300`
+  - **Badge GPS**: Eliminado completamente, solo muestra distancia (ej: "35m")
+  - **Función getAccuracyStatus**: Eliminada completamente
+  - **Título duplicado**: Eliminado del botón, solo en indicador de progreso
+  - **Loader de recaptura**: Agregado con texto "Recapturando..." y spinner
+  - **Precisión mejorada**: Objetivo de 10m (vs 20m anterior)
+  - **Timeout aumentado**: 15 segundos (vs 10s anterior)
+  - **Imports limpios**: Badge y Target eliminados
+- **Script de verificación**: `verify-geolocation-darkmode-ux-fix.sh`
+- **Estado**: ✅ Completado
+
+#### 📋 **46. Actualización de Documentación de Bugs**
+- **Archivo**: `bugs.md`
+- **Cambio**: Agregado BUG-277 para problemas de dark mode y UX en geolocalización
+- **Contenido agregado**:
+  - BUG-277: Problemas de Dark Mode y UX en Geolocalización
+  - Análisis completo de problemas de dark mode y UX
+  - Solución implementada con mejoras técnicas
+  - Script de verificación
+  - Estadísticas actualizadas (19 bugs total)
+- **Estado**: ✅ Completado
+
+#### 📋 **47. Actualización de Cursor Implemented**
+- **Archivo**: `cursor_implemented.md`
+- **Cambio**: Documentación del trabajo realizado hoy
+- **Contenido agregado**:
+  - Nuevo cambio #45: Corrección de dark mode y UX en geolocalización
+  - Nuevo cambio #46: Actualización de documentación de bugs
+  - Nuevo cambio #47: Actualización de este archivo
+  - Fecha actualizada a 2025-01-23
+  - Total de cambios: 47
+- **Estado**: ✅ Completado
+
+---
+
+#### 🔧 **48. Corrección de Persistencia de Documentos al Salir y Regresar (BUG-279)**
+- **Archivos modificados**:
+  - `src/hooks/useDocumentManager.tsx` - Dependencias de initializeFromFormData corregidas
+- **Problema**: Persistencia de documentos no funcionaba al salir completamente de la solicitud y regresar
+- **Causa**: `initializeFromFormData` dependía de `documents` en las dependencias del `useCallback`, causando problema de timing
+- **Solución implementada**:
+  - Dependencias cambiadas de `[documents, toast]` a `[toast]`
+  - Función puede funcionar independientemente del estado actual de `documents`
+  - Restauración correcta desde localforage al re-entrar a la solicitud
+  - Preservación de toda la funcionalidad existente
+- **Script de verificación**: `verify-document-persistence-exit-fix.sh`
+- **Estado**: ✅ Completado
+
+#### 📋 **49. Actualización de Documentación de Bugs**
+- **Archivo**: `bugs.md`
+- **Cambio**: Agregado BUG-279 para persistencia de documentos al salir y regresar
+- **Contenido agregado**:
+  - BUG-279: Persistencia de documentos no funciona al salir y regresar a solicitud
+  - Análisis completo del problema de timing y dependencias
+  - Solución implementada con corrección de dependencias
+  - Script de verificación
+  - Estadísticas actualizadas (20 bugs total)
+- **Estado**: ✅ Completado
+
+#### 📋 **50. Actualización de Cursor Implemented**
+- **Archivo**: `cursor_implemented.md`
+- **Cambio**: Documentación del trabajo realizado hoy
+- **Contenido agregado**:
+  - Nuevo cambio #48: Corrección de persistencia de documentos al salir y regresar
+  - Nuevo cambio #49: Actualización de documentación de bugs
+  - Nuevo cambio #50: Actualización de este archivo
+  - Fecha actualizada a 2025-01-23
+  - Total de cambios: 50
+- **Estado**: ✅ Completado
+
+#### 📋 **51. Limpieza de Logs de Debugging**
+- **Archivos**: 
+  - `src/hooks/useDocumentManager.tsx`
+  - `src/components/requestForm/PhotoDocumentUpload.tsx`
+  - `src/components/requestForm/RequestFormProvider.tsx`
+- **Cambio**: Removidos logs de debugging que causaban loops en consola
+- **Contenido removido**:
+  - Logs detallados de inicialización de documentos
+  - Logs de procesamiento de documentos en useDocumentManager
+  - Logs de carga de draft_data en RequestFormProvider
+  - Logs de actualización de formData en PhotoDocumentUpload
+- **Resultado**: Consola limpia sin loops de logs, funcionalidad preservada
+- **Estado**: ✅ Completado
+
+#### 📋 **52. BUG-280: Corrección de Acceso Rápido a Referencias**
+- **Archivo**: `src/pages/ApplicationDetails.tsx`
+- **Cambio**: Corregido mapeo de secciones en `sectionToStepMap`
+- **Problema**: El acceso rápido a "Referencias Personales" no funcionaba
+- **Causa**: Mapeo incorrecto `'guarantors': 3` en lugar de `'references': 3`
+- **Solución**: Cambiado `'guarantors': 3` por `'references': 3` en línea 132
+- **Verificación**: Todos los accesos rápidos ahora funcionan correctamente:
+  - Identificación y Contacto -> Paso 0 ✅
+  - Información del Crédito -> Paso 1 ✅
+  - Finanzas y Patrimonio -> Paso 2 ✅
+  - Referencias Personales -> Paso 3 ✅ (corregido)
+  - Documentos -> Paso 4 ✅
+  - Revisión Final -> Paso 5 ✅
+- **Estado**: ✅ Completado
+
+#### 📋 **53. BUG-267: Corrección de Guardado Offline de Borradores**
+- **Archivo**: `src/hooks/useDraftActions.tsx`
+- **Cambio**: Reorganizado flujo de verificación de sesión para soporte offline
+- **Problema**: Error "sesión expirada" al guardar borradores sin internet
+- **Causa**: Verificación de sesión (`supabase.auth.getUser()`) se ejecutaba incluso offline
+- **Solución**: 
+  - Agregado `useOfflineStorage` hook para acceder a `isOffline`
+  - Movida verificación de sesión después del bloque offline (líneas 102-117)
+  - Agregado return temprano para offline sin verificación de sesión
+  - Agregado comentario explicativo "no need to verify session" para offline
+- **Flujo Corregido**:
+  1. 📱 Usuario autenticado localmente
+  2. 💾 Datos guardados offline inmediatamente
+  3. 🔍 Si está offline: se encola y retorna éxito (sin verificación de sesión)
+  4. 🌐 Si está online: verifica sesión y guarda en Supabase
+- **Verificación**: Script ejecutado exitosamente confirmando corrección
+- **Estado**: ✅ Completado
+
+#### 📋 **54. BUG-281: Mitigación de Vulnerabilidad android:debuggable**
+- **Archivos**: 
+  - `android/app/build.gradle`
+  - `android/app/src/main/AndroidManifest.xml`
+- **Cambio**: Configuraciones de seguridad para mitigar vulnerabilidades de debug
+- **Problema**: Vulnerabilidad crítica "Debug habilitado para la aplicación [android:debuggable=true]"
+- **Causa**: Flag de debug habilitado en producción permite a atacantes debuggear la aplicación
+- **Solución**: 
+  - Agregado `debuggable false` en build de release
+  - Agregado `debuggable true` en build de debug (para desarrollo)
+  - Agregado `extractNativeLibs="false"` (previene extracción de librerías nativas)
+  - Agregado `usesCleartextTraffic="false"` (previene tráfico HTTP no cifrado)
+  - Agregado `DEBUG_MODE=false` y `ENABLE_LOGGING=false` en release
+- **Vulnerabilidades Mitigadas**:
+  - 🚫 Debug habilitado en producción
+  - 🚫 Extracción de librerías nativas
+  - 🚫 Tráfico HTTP no cifrado
+  - 🚫 Logging en producción
+  - 🚫 Modo debug en producción
+- **Verificación**: Script ejecutado exitosamente confirmando mitigación
+- **Estado**: ✅ Completado
+
+---
+
+*Última actualización: 2025-01-23*
+*Total de cambios documentados: 54*
+*Estado del proyecto: Listo para producción con funcionalidad de documentos, navegación, subida de archivos, validación de campos y geolocalización completamente funcional y adaptada a dark mode. Persistencia de documentos completamente funcional al navegar entre secciones y al salir/regresar a solicitudes. Consola limpia sin logs de debugging innecesarios. Accesos rápidos en ApplicationDetails funcionando correctamente para todas las secciones. Guardado offline de borradores funcionando sin errores de sesión expirada. Vulnerabilidades de seguridad de Android mitigadas con configuraciones de debug deshabilitadas en producción.*

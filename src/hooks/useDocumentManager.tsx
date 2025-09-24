@@ -44,7 +44,7 @@ export const guatemalanDocuments: DocumentItem[] = [
     id: 'recibosServicios',
     title: 'Recibos de Servicios',
     description: 'Luz, agua o teléfono (máximo 3 meses)',
-    type: 'photo',
+    type: 'document',
     required: true,
     status: 'empty'
   },
@@ -93,7 +93,7 @@ export const useDocumentManager = (initialDocuments?: DocumentItem[]) => {
     }
     
     // Validar extensión del archivo
-    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.pdf', '.txt'];
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.pdf'];
     const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
     if (!allowedExtensions.includes(fileExtension)) {
       toast({
@@ -139,8 +139,14 @@ export const useDocumentManager = (initialDocuments?: DocumentItem[]) => {
         ? `${applicationId}/${offlineFileName}`
         : `documents/${offlineFileName}`;
       
+      // Convert File to ArrayBuffer for proper localforage storage
+      const arrayBuffer = await file.arrayBuffer();
       const blobKey = `document-blob-${documentId}-${Date.now()}`;
-      await localforage.setItem(blobKey, file);
+      await localforage.setItem(blobKey, arrayBuffer);
+      
+      // Also store with the key that initializeFromFormData expects
+      const fileKey = `document-file-${documentId}`;
+      await localforage.setItem(fileKey, arrayBuffer);
       
       await offlineQueue.enqueue({
         type: 'uploadDocument',
@@ -291,6 +297,51 @@ export const useDocumentManager = (initialDocuments?: DocumentItem[]) => {
     }
   }, [documents, toast]);
 
+  const initializeFromFormData = useCallback(async (formDataDocuments: Record<string, any>) => {
+    if (!formDataDocuments) return;
+    
+    const localforage = (await import('localforage')).default;
+    const updatedDocuments = await Promise.all(
+      documents.map(async (doc) => {
+        const persistedData = formDataDocuments[doc.id];
+        
+        if (persistedData && persistedData.status === 'success') {
+          try {
+            const fileKey = `document-file-${doc.id}`;
+            const restoredArrayBuffer = await localforage.getItem(fileKey);
+            
+            if (restoredArrayBuffer && restoredArrayBuffer instanceof ArrayBuffer) {
+              // Convert ArrayBuffer back to File
+              const blob = new Blob([restoredArrayBuffer], { type: persistedData.file?.type || 'application/octet-stream' });
+              const restoredFile = new File([blob], persistedData.file?.name || `document-${doc.id}`, { 
+                type: persistedData.file?.type || 'application/octet-stream' 
+              });
+              const thumbnailUrl = URL.createObjectURL(restoredFile);
+              return {
+                ...doc,
+                file: restoredFile,
+                status: persistedData.status,
+                thumbnailUrl: thumbnailUrl
+              };
+            } else {
+              return {
+                ...doc,
+                status: persistedData.status,
+                thumbnailUrl: persistedData.thumbnailUrl
+              };
+            }
+          } catch (error) {
+            console.error(`❌ Error restoring file for document ${doc.id}:`, error);
+            return doc;
+          }
+        }
+        return doc;
+      })
+    );
+    
+    setDocuments(updatedDocuments);
+  }, [toast]);
+
   return {
     documents,
     loadingDocument,
@@ -298,6 +349,7 @@ export const useDocumentManager = (initialDocuments?: DocumentItem[]) => {
     uploadDocument,
     removeDocument,
     getDocumentById,
-    uploadDocumentsToSupabase
+    uploadDocumentsToSupabase,
+    initializeFromFormData
   };
 };

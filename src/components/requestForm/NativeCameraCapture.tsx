@@ -3,6 +3,7 @@ import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Button } from '@/components/ui/button';
 import { Camera as CameraIcon, Upload, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAndroidPermissions } from '@/hooks/useAndroidPermissions';
 
 interface NativeCameraCaptureProps {
   onPhotoCapture: (file: File) => void;
@@ -18,6 +19,7 @@ const NativeCameraCapture: React.FC<NativeCameraCaptureProps> = ({
   documentTitle
 }) => {
   const { toast } = useToast();
+  const { permissions, requestCameraPermission } = useAndroidPermissions();
 
   const isNativeAvailable = () => {
     return typeof window !== 'undefined' && 
@@ -38,6 +40,20 @@ const NativeCameraCapture: React.FC<NativeCameraCaptureProps> = ({
           variant: "destructive"
         });
         return;
+      }
+
+      // Verificar y solicitar permisos de cámara
+      if (!permissions.camera) {
+        console.log('📱 Soliciting camera permission...');
+        const granted = await requestCameraPermission();
+        if (!granted) {
+          toast({
+            title: "Permiso de cámara requerido",
+            description: "Necesita permitir el acceso a la cámara para tomar fotos.",
+            variant: "destructive"
+          });
+          return;
+        }
       }
 
       console.log('📷 Native camera available, taking picture...');
@@ -75,12 +91,24 @@ const NativeCameraCapture: React.FC<NativeCameraCaptureProps> = ({
     } catch (error: any) {
       console.error('❌ Error taking picture:', error);
       
-      const errorMessage = error?.message || 'Error desconocido';
+      let errorMessage = error?.message || 'Error desconocido';
+      
+      // Translate specific Capacitor error messages to Spanish
+      if (errorMessage.includes('user canceled photos app')) {
+        errorMessage = 'No se pudo tomar la foto, el usuario canceló la acción';
+      } else if (errorMessage.includes('user canceled')) {
+        errorMessage = 'No se pudo tomar la foto, el usuario canceló la acción';
+      } else if (errorMessage.includes('camera not available')) {
+        errorMessage = 'Cámara no disponible';
+      } else if (errorMessage.includes('permission denied')) {
+        errorMessage = 'Permiso de cámara denegado';
+      }
+      
       console.error('🚨 Camera error details:', { error: errorMessage, stack: error?.stack });
       
       toast({
         title: "Error de cámara",
-        description: `No se pudo tomar la foto: ${errorMessage}`,
+        description: errorMessage,
         variant: "destructive"
       });
     }

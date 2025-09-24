@@ -7,8 +7,8 @@ const subformHeaderVariants = cva(
   {
     variants: {
       variant: {
-        applicant: "bg-gradient-to-r from-primary to-primary/90 text-primary-foreground",
-        reference: "bg-gradient-to-r from-accent to-accent/90 text-accent-foreground"
+        applicant: "bg-gradient-to-r from-primary to-primary/90 text-primary-foreground dark:from-primary dark:to-primary/80",
+        reference: "bg-gradient-to-r from-accent to-accent/90 text-accent-foreground dark:from-accent dark:to-accent/80"
       }
     },
     defaultVariants: {
@@ -48,7 +48,7 @@ const SubformHeader: React.FC<SubformHeaderProps> = ({
           )}
         </div>
         {icon && (
-          <div className="flex-shrink-0 p-1 bg-white/20 rounded-sm ml-2">
+          <div className="flex-shrink-0 p-1 bg-white/20 dark:bg-black/20 rounded-sm ml-2">
             {icon}
           </div>
         )}

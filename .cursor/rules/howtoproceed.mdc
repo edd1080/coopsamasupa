@@ -1,0 +1,6 @@
+---
+description: siempre tener un flujo de autorizacion para realiar cambios
+globs: para todos los issues, bugs, errores, mejoras, implementaciones, etc  nunca procedas a realizar cambios de codigo o modificar o actualiazar o cambiar algo, sin antes obtener mi aprobacion explicita, ademas cuando yo comparta un bug o problema en el app, procederas con encontrar el problema en el codigo o app, intentar replicar el problema, proveer la mejor solucion posible para proceder con la tarea y de ultimo procederas a evaluar o crear scripts de prueba que confirme que la tarea se resolvio efectivamente, si fue asi elimina el script de prueba previamente generado. 
+
+alwaysApply: true
+---

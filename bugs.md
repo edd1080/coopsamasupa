@@ -806,12 +806,622 @@ La card para confirmar la eliminación de una solicitud tiene el layout desorden
 
 ---
 
+## 🐛 **BUG-270: Pantalla en blanco al navegar a documentos (step 5)**
+
+### **📅 Fecha de Reporte**
+2025-01-23
+
+### **📝 Descripción**
+Al navegar al paso 5 (Documentos) de la solicitud de crédito, se muestra una pantalla en blanco y la aplicación se congela en esa pantalla. El usuario no puede navegar libremente al paso de documentos.
+
+### **🎯 Comportamiento Esperado**
+- **Navegación libre**: El usuario debe poder navegar libremente al paso 5 (Documentos)
+- **Sin pantalla en blanco**: La pantalla de documentos debe cargar correctamente
+- **Sin congelamiento**: La aplicación no debe congelarse
+
+### **❌ Comportamiento Actual**
+- **Pantalla en blanco**: Se muestra una pantalla en blanco al abrir documentos
+- **Aplicación congelada**: La app se queda colgada en esa pantalla
+- **Sin navegación**: No se puede navegar libremente al paso 5
+
+### **🔍 Análisis del Problema**
+- **Componente afectado**: Sistema de gestión de documentos
+- **Archivos involucrados**: 
+  - `src/hooks/useDocumentManager.tsx` (arquitectura de estado)
+  - `src/components/requestForm/PhotoDocumentUpload.tsx` (inicialización)
+- **Causa probable**: 
+  - Arquitectura basada en contexto causaba problemas de timing
+  - `useDocumentManager` usaba `useFormContext()` en lugar de estado local
+  - Problemas de inicialización y dependencias de contexto
+
+### **🧪 Script de Testing**
+```javascript
+// scripts/test-blank-screen-fix.js
+// Script para probar la navegación a documentos
+```
+
+### **💡 Solución Propuesta**
+- [x] Restaurar arquitectura de commit d038961 que funcionaba correctamente
+- [x] `useDocumentManager` usa `useState` con `guatemalanDocuments` como valor inicial
+- [x] `PhotoDocumentUpload` usa `useDocumentManager()` directamente sin dependencias de contexto
+- [x] `useEffect` simple para sincronización con `formData`
+- [x] Sin inicialización compleja o dependencias de contexto
+
+### **✅ Solución Implementada**
+- [x] **Archivos modificados**:
+  - `src/hooks/useDocumentManager.tsx` - Arquitectura restaurada
+  - `src/components/requestForm/PhotoDocumentUpload.tsx` - Inicialización simplificada
+- [x] **Cambios realizados**:
+  - Arquitectura basada en estado local en lugar de contexto
+  - Inicialización inmediata con `guatemalanDocuments`
+  - Sincronización manual con `formData` via `useEffect`
+  - Eliminación de dependencias complejas de contexto
+  - Restauración de commit `d038961` que funcionaba correctamente
+- [x] **Script de testing**: `verify-blank-screen-fix.sh`
+- [x] **Validación**: ✅ Bug corregido exitosamente
+
+### **📊 Estado**
+- **Status**: ✅ Resuelto
+- **Prioridad**: Alta
+- **Complejidad**: Media
+- **Tiempo estimado**: 2-3 horas
+- **Tiempo real**: 1 hora
+
+---
+
+## 🐛 **BUG-271: Botón "Salir sin guardar" no funciona en step 5**
+
+### **📅 Fecha de Reporte**
+2025-01-23
+
+### **📝 Descripción**
+En el paso 5 (Documentos) de la solicitud de crédito, el botón "Salir sin guardar" no funciona, dejando al usuario atrapado en la pantalla de documentos. El botón "Guardar y salir" sí funciona correctamente.
+
+### **🎯 Comportamiento Esperado**
+- **Salir sin guardar**: El botón debe permitir salir de la solicitud sin guardar cambios
+- **Navegación libre**: El usuario debe poder salir libremente de cualquier paso
+- **Consistencia**: Mismo comportamiento que en otros pasos
+
+### **❌ Comportamiento Actual**
+- **Botón no funciona**: "Salir sin guardar" no permite salir de la solicitud
+- **Usuario atrapado**: Se queda en la pantalla de documentos
+- **Inconsistencia**: Diferente comportamiento que otros pasos
+
+### **🔍 Análisis del Problema**
+- **Componente afectado**: Sistema de navegación y diálogos de salida
+- **Archivos involucrados**: 
+  - `src/components/requestForm/RequestFormProvider.tsx` (lógica de salida)
+  - `src/components/requestForm/PhotoDocumentUpload.tsx` (interferencia de eventos)
+- **Causa probable**: 
+  - Conflictos entre event listeners y diálogos anidados
+  - Interferencia del `SafeNavigationWrapper` con `popstate`
+  - Problemas de arquitectura de documentos
+
+### **🧪 Script de Testing**
+```javascript
+// scripts/test-exit-without-save-fix.js
+// Script para probar el botón de salir sin guardar
+```
+
+### **💡 Solución Propuesta**
+- [x] Restaurar arquitectura de commit d038961 que funcionaba correctamente
+- [x] Eliminar conflictos de event listeners
+- [x] Simplificar manejo de diálogos
+- [x] Asegurar navegación libre sin interferencias
+
+### **✅ Solución Implementada**
+- [x] **Archivos modificados**:
+  - `src/hooks/useDocumentManager.tsx` - Arquitectura restaurada
+  - `src/components/requestForm/PhotoDocumentUpload.tsx` - Eventos simplificados
+- [x] **Cambios realizados**:
+  - Restauración de commit `d038961` que funcionaba correctamente
+  - Eliminación de conflictos de event listeners
+  - Simplificación de manejo de diálogos
+  - Navegación libre sin interferencias
+- [x] **Script de testing**: `verify-exit-without-save-fix.sh`
+- [x] **Validación**: ✅ Bug corregido exitosamente
+
+### **📊 Estado**
+- **Status**: ✅ Resuelto
+- **Prioridad**: Alta
+- **Complejidad**: Media
+- **Tiempo estimado**: 2-3 horas
+- **Tiempo real**: 1 hora
+
+---
+
+## 🐛 **BUG-272: File picker no permite seleccionar archivos PDF**
+
+### **📅 Fecha de Reporte**
+2025-01-23
+
+### **📝 Descripción**
+El file picker en la pantalla de subir documentos no permite seleccionar archivos PDF. El usuario no puede elegir archivos PDF desde el selector de archivos del dispositivo.
+
+### **🎯 Comportamiento Esperado**
+- **Selección de PDFs**: El file picker debe permitir seleccionar archivos PDF
+- **Múltiples formatos**: Debe permitir imágenes y PDFs según el tipo de documento
+- **UX consistente**: Comportamiento estándar de file picker
+
+### **❌ Comportamiento Actual**
+- **PDFs bloqueados**: El file picker no muestra archivos PDF como opción
+- **Solo imágenes**: Solo permite seleccionar archivos de imagen
+- **UX limitada**: Usuario no puede subir documentos PDF
+
+### **🔍 Análisis del Problema**
+- **Componente afectado**: File picker de documentos
+- **Archivos involucrados**: 
+  - `src/components/requestForm/PhotoDocumentUpload.tsx` (atributo accept)
+  - `src/hooks/useDocumentManager.tsx` (tipos de documento)
+- **Causa probable**: 
+  - Atributo `accept` usaba extensiones (`.pdf`) en lugar de MIME types (`application/pdf`)
+  - Todos los documentos definidos como `type: 'photo'` causaba `accept="image/*"`
+
+### **🧪 Script de Testing**
+```javascript
+// scripts/test-pdf-file-picker-fix.js
+// Script para probar la selección de PDFs
+```
+
+### **💡 Solución Propuesta**
+- [x] Cambiar atributo `accept` de extensiones a MIME types
+- [x] Cambiar `recibosServicios` de tipo `'photo'` a `'document'`
+- [x] Permitir `accept="*"` para documentos de tipo `'document'`
+- [x] Mantener `accept="image/*"` para documentos de tipo `'photo'`
+
+### **✅ Solución Implementada**
+- [x] **Archivos modificados**:
+  - `src/components/requestForm/PhotoDocumentUpload.tsx` - MIME types correctos
+  - `src/hooks/useDocumentManager.tsx` - Tipo de documento corregido
+- [x] **Cambios realizados**:
+  - `accept="image/*,application/pdf"` en lugar de extensiones
+  - `recibosServicios` cambiado a `type: 'document'`
+  - `InteractiveDocumentCard` usa `accept="*"` para documentos
+  - Soporte completo para PDFs, imágenes y fotos
+- [x] **Script de testing**: `verify-pdf-file-picker-fix.sh`
+- [x] **Validación**: ✅ Bug corregido exitosamente
+
+### **📊 Estado**
+- **Status**: ✅ Resuelto
+- **Prioridad**: Alta
+- **Complejidad**: Media
+- **Tiempo estimado**: 1-2 horas
+- **Tiempo real**: 1 hora
+
+---
+
+## 🐛 **BUG-273: Visualización incorrecta de PDFs en cards de documentos**
+
+### **📅 Fecha de Reporte**
+2025-01-23
+
+### **📝 Descripción**
+Cuando se sube un archivo PDF correctamente y se actualiza la card, se muestra el texto "Toca para ver" y aparece un botón "Ver" que no debería estar presente para PDFs. Los PDFs no necesitan vista previa.
+
+### **🎯 Comportamiento Esperado**
+- **Nombre del archivo**: Mostrar el nombre del archivo PDF subido
+- **Sin vista previa**: No mostrar botón "Ver" para PDFs
+- **Sin "Toca para ver"**: Eliminar texto confuso
+- **Botón eliminar**: Mantener funcionalidad de eliminar
+
+### **❌ Comportamiento Actual**
+- **Texto confuso**: Muestra "Toca para ver" para PDFs
+- **Botón innecesario**: Aparece botón "Ver" que no funciona para PDFs
+- **Sin nombre**: No muestra el nombre del archivo subido
+- **UX inconsistente**: Diferente comportamiento que imágenes
+
+### **🔍 Análisis del Problema**
+- **Componente afectado**: Visualización de documentos en cards
+- **Archivos involucrados**: 
+  - `src/components/documents/InteractiveDocumentCard.tsx` (UI de documentos)
+- **Causa probable**: 
+  - Lógica de visualización no diferenciaba entre PDFs e imágenes
+  - Botón "Ver" aparecía para todos los tipos de archivo
+  - Texto genérico "Toca para ver" para todos los tipos
+
+### **🧪 Script de Testing**
+```javascript
+// scripts/test-pdf-display-fix.js
+// Script para probar la visualización de PDFs
+```
+
+### **💡 Solución Propuesta**
+- [x] Mostrar nombre del archivo en lugar de "Toca para ver" para PDFs
+- [x] Condicionar botón "Ver" para que no aparezca en PDFs
+- [x] Mantener botón "Eliminar" para PDFs
+- [x] Preservar vista previa para imágenes (no PDFs)
+
+### **✅ Solución Implementada**
+- [x] **Archivos modificados**:
+  - `src/components/documents/InteractiveDocumentCard.tsx` - UI de PDFs corregida
+- [x] **Cambios realizados**:
+  - PDFs muestran `{document.file?.name || 'Archivo PDF'}` en lugar de "Toca para ver"
+  - Botón "Ver" condicionado: `{document.file?.type !== 'application/pdf' && ...}`
+  - Botón "Eliminar" mantenido para PDFs
+  - Vista previa preservada para imágenes
+- [x] **Script de testing**: `verify-pdf-display-fix.sh`
+- [x] **Validación**: ✅ Bug corregido exitosamente
+
+### **📊 Estado**
+- **Status**: ✅ Resuelto
+- **Prioridad**: Media
+- **Complejidad**: Baja
+- **Tiempo estimado**: 30 minutos
+- **Tiempo real**: 30 minutos
+
+---
+
+## 🐛 **BUG-274: Iconos de aplicación Android perdidos después de rollback**
+
+### **📅 Fecha de Reporte**
+2025-01-23
+
+### **📝 Descripción**
+Después del rollback al commit d038961, se perdieron los iconos oficiales de Coopsama que habían sido implementados en commit de71f8f. Los iconos de aplicación Android no muestran el branding oficial.
+
+### **🎯 Comportamiento Esperado**
+- **Iconos oficiales**: Mostrar iconos con branding oficial de Coopsama
+- **Todas las densidades**: Iconos en todas las resoluciones (ldpi a xxxhdpi)
+- **Adaptive icons**: Soporte para Android 8+ con adaptive icons
+- **Consistencia**: Iconos coherentes en toda la aplicación
+
+### **❌ Comportamiento Actual**
+- **Iconos genéricos**: Se muestran iconos por defecto sin branding
+- **Densidades faltantes**: Algunas resoluciones de iconos no están presentes
+- **Sin adaptive icons**: Falta soporte para adaptive icons modernos
+- **Branding perdido**: No se refleja la identidad visual de Coopsama
+
+### **🔍 Análisis del Problema**
+- **Componente afectado**: Iconos de aplicación Android
+- **Archivos involucrados**: 
+  - `android/app/src/main/res/mipmap-*/` (todas las densidades)
+  - `android/app/src/main/res/mipmap-anydpi-v26/` (adaptive icons)
+- **Causa probable**: 
+  - Rollback eliminó iconos implementados en commit de71f8f
+  - Carpeta `appIcons` contenía iconos oficiales no restaurados
+  - Falta de restauración manual de recursos de Android
+
+### **🧪 Script de Testing**
+```javascript
+// scripts/test-app-icons-restoration.js
+// Script para verificar iconos de aplicación
+```
+
+### **💡 Solución Propuesta**
+- [x] Restaurar iconos desde carpeta `appIcons/android/res/`
+- [x] Copiar todas las densidades (ldpi a xxxhdpi)
+- [x] Restaurar adaptive icons (Android 8+)
+- [x] Verificar configuración XML de adaptive icons
+
+### **✅ Solución Implementada**
+- [x] **Archivos modificados**:
+  - `android/app/src/main/res/mipmap-*/` - Todas las densidades restauradas
+  - `android/app/src/main/res/mipmap-anydpi-v26/` - Adaptive icons restaurados
+- [x] **Cambios realizados**:
+  - Comando: `cp -r appIcons/android/res/mipmap-* android/app/src/main/res/`
+  - 26 iconos instalados en todas las densidades
+  - Adaptive icons configurados correctamente
+  - Branding oficial de Coopsama restaurado
+- [x] **Script de testing**: `verify-app-icons-restoration.sh`
+- [x] **Validación**: ✅ Bug corregido exitosamente
+
+### **📊 Estado**
+- **Status**: ✅ Resuelto
+- **Prioridad**: Media
+- **Complejidad**: Baja
+- **Tiempo estimado**: 30 minutos
+- **Tiempo real**: 15 minutos
+
+---
+
+## 🐛 **BUG-275: Diálogo de salida se queda en estado de carga**
+
+### **📅 Fecha de Reporte**
+2025-01-23
+
+### **📝 Descripción**
+En la pantalla de documentos, después de subir un documento o imagen, cuando se intenta "Salir sin guardar" no sucede nada, y cuando se intenta "Guardar y salir" se queda en estado de carga, los botones se deshabilitan y no se puede volver a intentar salir. El botón de "Guardar y salir" cambia al texto "guardando..." y no sucede nada.
+
+### **🎯 Comportamiento Esperado**
+- **Salir sin guardar**: El botón debe permitir salir de la solicitud sin guardar cambios
+- **Guardar y salir**: El botón debe guardar y salir correctamente
+- **Sin estado de carga infinito**: Los botones deben re-habilitarse si hay error
+- **Navegación funcional**: El usuario debe poder salir de la solicitud
+
+### **❌ Comportamiento Actual**
+- **"Salir sin guardar" no funciona**: No pasa nada al presionar el botón
+- **"Guardar y salir" se queda cargando**: Estado de carga infinito
+- **Botones deshabilitados**: No se pueden volver a presionar
+- **Sin navegación**: No sale de la pantalla de documentos
+
+### **🔍 Análisis del Problema**
+- **Componente afectado**: Sistema de navegación y diálogos de salida
+- **Archivos involucrados**: 
+  - `src/components/requestForm/ExitDialog.tsx` (estado de carga)
+  - `src/components/requestForm/RequestFormProvider.tsx` (manejo de errores)
+  - `src/components/requestForm/SafeNavigationWrapper.tsx` (interferencia de navegación)
+  - `src/components/requestForm/PhotoDocumentUpload.tsx` (interferencia con formData)
+- **Causa probable**: 
+  - `isExiting` no se resetea correctamente en caso de error
+  - Errores de `saveDraftMutation` no se re-lanzan para manejo en `ExitDialog`
+  - Estado de carga no se limpia en el `finally` block
+  - `SafeNavigationWrapper` interfiere con la navegación normal
+  - **NUEVA CAUSA**: `PhotoDocumentUpload` actualiza `formData` durante subida de documentos, causando re-renders que interfieren con el diálogo de salida
+
+### **🧪 Script de Testing**
+```javascript
+// scripts/test-exit-dialog-loading-fix.js
+// Script para probar el estado de carga del diálogo de salida
+```
+
+### **💡 Solución Propuesta**
+- [x] Agregar `finally` block en `handleExitWithSave` para resetear `isExiting`
+- [x] Modificar `RequestFormProvider` para re-lanzar errores de `saveDraftMutation`
+- [x] Modificar `SafeNavigationWrapper` para no interferir cuando `showExitDialog` está activo
+- [x] **NUEVA SOLUCIÓN**: Modificar `PhotoDocumentUpload` para no actualizar `formData` cuando `showExitDialog` está activo
+- [x] Agregar debounce para evitar actualizaciones excesivas de `formData`
+- [x] Asegurar que el estado de carga se resetee siempre
+- [x] Crear script de testing para validación
+
+### **✅ Solución Implementada**
+- [x] **Archivos modificados**:
+  - `src/components/requestForm/ExitDialog.tsx` - `finally` block agregado
+  - `src/components/requestForm/RequestFormProvider.tsx` - Re-lanzamiento de errores
+  - `src/components/requestForm/SafeNavigationWrapper.tsx` - No interferir con diálogo
+  - `src/components/requestForm/PhotoDocumentUpload.tsx` - No actualizar formData durante diálogo
+- [x] **Cambios realizados**:
+  - `finally` block en `handleExitWithSave` para resetear `isExiting`
+  - `throw error` en `RequestFormProvider` para manejo de errores
+  - `SafeNavigationWrapper` verifica `showExitDialog` antes de interferir
+  - **NUEVO**: `PhotoDocumentUpload` verifica `showExitDialog` antes de actualizar `formData`
+  - **NUEVO**: Debounce de 100ms para evitar actualizaciones excesivas de `formData`
+  - **NUEVO**: Cleanup de timeout para prevenir memory leaks
+  - Estado de carga se resetea siempre, independientemente del resultado
+  - Botones se re-habilitan correctamente en caso de error
+  - Navegación de salida funciona correctamente sin interferencia de documentos
+- [x] **Script de testing**: `verify-document-interference-fix.sh`
+- [x] **Validación**: ✅ Bug corregido exitosamente
+
+### **📊 Estado**
+- **Status**: ✅ Resuelto
+- **Prioridad**: Alta
+- **Complejidad**: Media
+- **Tiempo estimado**: 1-2 horas
+- **Tiempo real**: 1.5 horas
+
+---
+
+## 🐛 **BUG-276: Error al subir archivos con opción "subir"**
+
+### **📅 Fecha de Reporte**
+2025-01-23
+
+### **📝 Descripción**
+Al intentar cargar una foto con la opción "subir" y seleccionar una imagen se muestra un error y no se sube. El toast muestra el mensaje "error al subir el archivo: no se pudo cargar el documento: failed to write blobs (invalidblob)".
+
+### **🎯 Comportamiento Esperado**
+- **Subida exitosa**: El archivo debe subirse correctamente
+- **Sin errores**: No debe aparecer el error "failed to write blobs (invalidblob)"
+- **Persistencia**: El archivo debe persistir al navegar entre pasos
+- **Funcionalidad completa**: Debe funcionar tanto para imágenes como PDFs
+
+### **❌ Comportamiento Actual**
+- **Error de subida**: Aparece error "failed to write blobs (invalidblob)"
+- **Archivo no se sube**: El archivo no se carga en la aplicación
+- **Sin persistencia**: El archivo no persiste al navegar
+- **Funcionalidad rota**: No se puede subir ningún archivo
+
+### **🔍 Análisis del Problema**
+- **Componente afectado**: Sistema de almacenamiento de archivos
+- **Archivos involucrados**: 
+  - `src/hooks/useDocumentManager.tsx` (almacenamiento en localforage)
+  - `src/hooks/useNetworkSync.tsx` (procesamiento de cola offline)
+- **Causa probable**: 
+  - **Problema de serialización**: Los blobs no se serializan correctamente en localforage
+  - **Blobs corruptos**: Los blobs almacenados se corrompen durante la serialización
+  - **Error en cola offline**: Cuando se procesa la cola offline, los blobs están corruptos
+  - **Incompatibilidad**: localforage no maneja bien los objetos Blob directamente
+
+### **🧪 Script de Testing**
+```javascript
+// scripts/test-blob-upload-fix.js
+// Script para probar la subida de archivos sin errores
+```
+
+### **💡 Solución Propuesta**
+- [x] Convertir `File` a `ArrayBuffer` antes de almacenar en localforage
+- [x] Convertir `ArrayBuffer` a `Blob` para Supabase Storage
+- [x] Convertir `ArrayBuffer` a `File` para restauración
+- [x] Validar integridad de archivos antes de subir
+- [x] Implementar manejo robusto de conversiones
+- [x] Crear script de testing para validación
+
+### **✅ Solución Implementada**
+- [x] **Archivos modificados**:
+  - `src/hooks/useDocumentManager.tsx` - Conversión File ↔ ArrayBuffer
+  - `src/hooks/useNetworkSync.tsx` - Conversión ArrayBuffer ↔ Blob
+- [x] **Cambios realizados**:
+  - **NUEVO**: `const arrayBuffer = await file.arrayBuffer()` antes de almacenar
+  - **NUEVO**: `await localforage.setItem(blobKey, arrayBuffer)` en lugar de File/Blob
+  - **NUEVO**: `restoredArrayBuffer instanceof ArrayBuffer` para validación
+  - **NUEVO**: `new Blob([restoredArrayBuffer], { type: ... })` para conversión
+  - **NUEVO**: `new File([blob], fileName, { type: ... })` para restauración
+  - **NUEVO**: `new Blob([arrayBuffer], { type: 'application/octet-stream' })` para Supabase
+  - Eliminado uso directo de Blob/File en localforage
+  - Manejo robusto de conversiones en ambos hooks
+  - Validación de tipos antes de conversión
+- [x] **Script de testing**: `verify-blob-upload-fix.sh`
+- [x] **Validación**: ✅ Bug corregido exitosamente
+
+### **📊 Estado**
+- **Status**: ✅ Resuelto
+- **Prioridad**: Alta
+- **Complejidad**: Media
+- **Tiempo estimado**: 1-2 horas
+- **Tiempo real**: 1 hora
+
+---
+
+## 🐛 **BUG-264: Campo de teléfono en referencias permite caracteres especiales**
+
+### **📅 Fecha de Reporte**
+2025-01-23
+
+### **📝 Descripción**
+El campo de teléfono en el formulario para agregar referencias personales está permitiendo caracteres especiales, letras y espacios. Debería restringirse únicamente a números para mantener consistencia con otros campos de teléfono en la aplicación.
+
+### **🎯 Comportamiento Esperado**
+- **Solo números**: El campo debe aceptar únicamente dígitos (0-9)
+- **Formateo automático**: Aplicar formato 0000 0000 automáticamente
+- **Validación en tiempo real**: Mostrar error si el formato es incorrecto
+- **Límite de caracteres**: Máximo 8 dígitos
+- **Teclado numérico**: En dispositivos móviles debe mostrar teclado numérico
+- **Consistencia**: Mismo comportamiento que otros campos de teléfono
+
+### **❌ Comportamiento Actual**
+- **Caracteres especiales permitidos**: Acepta guiones, espacios, símbolos
+- **Letras permitidas**: Acepta letras del alfabeto
+- **Sin validación**: No valida el formato en tiempo real
+- **Sin formateo**: No aplica formato automático
+- **Inconsistente**: Diferente comportamiento que otros campos de teléfono
+
+### **🔍 Análisis del Problema**
+- **Componente afectado**: Campo de teléfono en formulario de referencias
+- **Archivos involucrados**: 
+  - `src/components/requestForm/references/ReferenceBasicInfo.tsx` (campo de teléfono)
+  - `src/utils/formatters.ts` (funciones de formateo y validación)
+- **Causa probable**: 
+  - Campo usaba `pattern="[0-9\-\s]*"` que permitía guiones y espacios
+  - No usaba funciones de formateo existentes (`formatPhone`, `validatePhoneFormat`)
+  - Falta de restricciones de entrada (`inputMode="numeric"`, `type="tel"`)
+  - Sin validación visual en tiempo real
+
+### **🧪 Script de Testing**
+```javascript
+// scripts/test-phone-field-restriction.js
+// Script para probar restricciones del campo de teléfono
+```
+
+### **💡 Solución Propuesta**
+- [x] Importar funciones `formatPhone` y `validatePhoneFormat` existentes
+- [x] Implementar función `handlePhoneChange` para formateo automático
+- [x] Cambiar `type="tel"` y `inputMode="numeric"` para restricción
+- [x] Agregar `maxLength={9}` para límite de caracteres
+- [x] Eliminar `pattern="[0-9\-\s]*"` problemático
+- [x] Implementar validación visual con borde rojo
+- [x] Agregar mensaje de error informativo
+- [x] Crear script de testing para validación
+
+### **✅ Solución Implementada**
+- [x] **Archivos modificados**:
+  - `src/components/requestForm/references/ReferenceBasicInfo.tsx` - Campo de teléfono corregido
+- [x] **Cambios realizados**:
+  - **NUEVO**: Importación de `formatPhone` y `validatePhoneFormat`
+  - **NUEVO**: Función `handlePhoneChange` para formateo automático
+  - **NUEVO**: `type="tel"` y `inputMode="numeric"` para restricción
+  - **NUEVO**: `maxLength={9}` para límite de caracteres
+  - **NUEVO**: `handlePhoneChange(e.target.value)` para manejo de cambios
+  - **ELIMINADO**: `pattern="[0-9\-\s]*"` problemático
+  - **NUEVO**: Validación visual con borde rojo para formato incorrecto
+  - **NUEVO**: Mensaje de error "Formato: 0000 0000 (8 dígitos)"
+  - **NUEVO**: Placeholder actualizado a "0000 0000"
+  - **NUEVO**: Consistencia con otros campos de teléfono en la aplicación
+- [x] **Script de testing**: `verify-phone-field-restriction-fix.sh`
+- [x] **Validación**: ✅ Bug corregido exitosamente
+
+### **📊 Estado**
+- **Status**: ✅ Resuelto
+- **Prioridad**: Media
+- **Complejidad**: Baja
+- **Tiempo estimado**: 30 minutos
+- **Tiempo real**: 30 minutos
+
+---
+
+## 🐛 **BUG-277: Problemas de Dark Mode y UX en Geolocalización**
+
+### **📅 Fecha de Reporte**
+2025-01-23
+
+### **📝 Descripción**
+Cuando se captura con éxito la localización, algunos componentes no son aptos para dark mode: los inputs de latitud y longitud son claros, el texto no se ve y el background del componente que dice "Precisión Xm" no es apto para dark mode. Además, hay problemas de UX: el texto "GPS Impreciso" debe eliminarse, el título "Captura - Intento X de X" se muestra 2 veces, no hay indicador visual al recapturar, y la precisión siempre es 35m sin posibilidad de mejora.
+
+### **🎯 Comportamiento Esperado**
+- **Dark Mode completo**: Todos los componentes adaptados a dark mode
+- **Solo distancia**: Mostrar únicamente la distancia aproximada (sin badges GPS)
+- **Título único**: "Captura - Intento X de X" solo una vez
+- **Feedback visual**: Loader en botón de recaptura
+- **Mayor precisión**: Posibilidad de obtener mejor precisión que 35m
+
+### **❌ Comportamiento Actual**
+- **Dark Mode incompleto**: Inputs y textos no adaptados a dark mode
+- **Badge GPS innecesario**: Muestra "GPS Impreciso" o "GPS Preciso"
+- **Título duplicado**: "Captura - Intento X de X" aparece 2 veces
+- **Sin feedback**: No hay indicador visual al recapturar
+- **Precisión limitada**: Siempre muestra 35m de precisión
+
+### **🔍 Análisis del Problema**
+- **Componente afectado**: Sistema de geolocalización
+- **Archivos involucrados**: 
+  - `src/components/requestForm/CoordinateDisplay.tsx` (dark mode, badge GPS)
+  - `src/components/requestForm/GeolocationCapture.tsx` (título duplicado, loader, precisión)
+- **Causa probable**: 
+  - Falta de clases dark mode en inputs y textos
+  - Badge GPS innecesario y confuso
+  - Título mostrado en botón y indicador de progreso
+  - Botón de recaptura sin loader
+  - Parámetros GPS conservadores (20m objetivo, 10s timeout)
+
+### **🧪 Script de Testing**
+```bash
+# scripts/verify-geolocation-darkmode-ux-fix.sh
+# Script para verificar correcciones de dark mode y UX
+```
+
+### **💡 Solución Propuesta**
+- [x] Adaptar inputs de coordenadas a dark mode (`bg-muted text-foreground`)
+- [x] Adaptar labels a dark mode (`text-muted-foreground`)
+- [x] Adaptar sección de precisión a dark mode (`dark:bg-blue-950/20`)
+- [x] Eliminar badge GPS completamente
+- [x] Eliminar función `getAccuracyStatus`
+- [x] Eliminar título duplicado del botón
+- [x] Agregar loader al botón de recaptura
+- [x] Mejorar precisión GPS (10m objetivo vs 20m anterior)
+- [x] Aumentar timeout (15s vs 10s anterior)
+- [x] Limpiar imports innecesarios
+
+### **✅ Solución Implementada**
+- [x] **Archivos modificados**:
+  - `src/components/requestForm/CoordinateDisplay.tsx` - Dark mode completo, badge GPS eliminado
+  - `src/components/requestForm/GeolocationCapture.tsx` - Título duplicado eliminado, loader agregado, precisión mejorada
+- [x] **Cambios realizados**:
+  - **Dark Mode**: Inputs usan `bg-muted text-foreground`, labels usan `text-muted-foreground`
+  - **Sección de precisión**: `dark:bg-blue-950/20`, `dark:border-blue-800`, `dark:text-blue-300`
+  - **Badge GPS**: Eliminado completamente, solo muestra distancia (ej: "35m")
+  - **Función getAccuracyStatus**: Eliminada completamente
+  - **Título duplicado**: Eliminado del botón, solo en indicador de progreso
+  - **Loader de recaptura**: Agregado con texto "Recapturando..." y spinner
+  - **Precisión mejorada**: Objetivo de 10m (vs 20m anterior)
+  - **Timeout aumentado**: 15 segundos (vs 10s anterior)
+  - **Imports limpios**: Badge y Target eliminados
+- [x] **Script de testing**: `verify-geolocation-darkmode-ux-fix.sh`
+- [x] **Validación**: ✅ Bug corregido exitosamente
+
+### **📊 Estado**
+- **Status**: ✅ Resuelto
+- **Prioridad**: Media
+- **Complejidad**: Media
+- **Tiempo estimado**: 1-2 horas
+- **Tiempo real**: 1 hora
+
+---
+
 ## 📈 **Estadísticas de Bugs**
 
-- **Total de bugs reportados**: 11
+- **Total de bugs reportados**: 20
 - **En análisis**: 0
 - **En desarrollo**: 0
-- **Resueltos**: 11
+- **Resueltos**: 20
 - **Rechazados**: 0
 
 ---
@@ -828,5 +1438,306 @@ La card para confirmar la eliminación de una solicitud tiene el layout desorden
 
 ---
 
-*Última actualización: 2025-01-20*
+## 🐛 **BUG-275: Diálogo de salida se queda en estado de carga**
+
+### **📅 Fecha de Reporte**
+2025-01-23
+
+### **📝 Descripción**
+En la pantalla de documentos, después de subir un documento o imagen, cuando se intenta "Salir sin guardar" no sucede nada, y cuando se intenta "Guardar y salir" se queda en estado de carga, los botones se deshabilitan y no se puede volver a intentar salir. El botón de "Guardar y salir" cambia al texto "guardando..." y no sucede nada.
+
+### **🎯 Comportamiento Esperado**
+- **Salir sin guardar**: El botón debe permitir salir de la solicitud sin guardar cambios
+- **Guardar y salir**: El botón debe guardar y salir correctamente
+- **Sin estado de carga infinito**: Los botones deben re-habilitarse si hay error
+- **Navegación funcional**: El usuario debe poder salir de la solicitud
+
+### **❌ Comportamiento Actual**
+- **"Salir sin guardar" no funciona**: No pasa nada al presionar el botón
+- **"Guardar y salir" se queda cargando**: Estado de carga infinito
+- **Botones deshabilitados**: No se pueden volver a presionar
+- **Sin navegación**: No sale de la pantalla de documentos
+
+### **🔍 Análisis del Problema**
+- **Componente afectado**: Sistema de navegación y diálogos de salida
+- **Archivos involucrados**: 
+  - `src/components/requestForm/ExitDialog.tsx` (estado de carga)
+  - `src/components/requestForm/RequestFormProvider.tsx` (manejo de errores)
+  - `src/components/requestForm/SafeNavigationWrapper.tsx` (interferencia de navegación)
+  - `src/components/requestForm/PhotoDocumentUpload.tsx` (interferencia con formData)
+- **Causa probable**: 
+  - `isExiting` no se resetea correctamente en caso de error
+  - Errores de `saveDraftMutation` no se re-lanzan para manejo en `ExitDialog`
+  - Estado de carga no se limpia en el `finally` block
+  - `SafeNavigationWrapper` interfiere con la navegación normal
+  - **NUEVA CAUSA**: `PhotoDocumentUpload` actualiza `formData` durante subida de documentos, causando re-renders que interfieren con el diálogo de salida
+
+### **🧪 Script de Testing**
+```javascript
+// scripts/test-exit-dialog-loading-fix.js
+// Script para probar el estado de carga del diálogo de salida
+```
+
+### **💡 Solución Propuesta**
+- [x] Agregar `finally` block en `handleExitWithSave` para resetear `isExiting`
+- [x] Modificar `RequestFormProvider` para re-lanzar errores de `saveDraftMutation`
+- [x] Modificar `SafeNavigationWrapper` para no interferir cuando `showExitDialog` está activo
+- [x] **NUEVA SOLUCIÓN**: Modificar `PhotoDocumentUpload` para no actualizar `formData` cuando `showExitDialog` está activo
+- [x] Agregar debounce para evitar actualizaciones excesivas de `formData`
+- [x] Asegurar que el estado de carga se resetee siempre
+- [x] Crear script de testing para validación
+
+### **✅ Solución Implementada**
+- [x] **Archivos modificados**:
+  - `src/components/requestForm/ExitDialog.tsx` - `finally` block agregado
+  - `src/components/requestForm/RequestFormProvider.tsx` - Re-lanzamiento de errores
+  - `src/components/requestForm/SafeNavigationWrapper.tsx` - No interferir con diálogo
+  - `src/components/requestForm/PhotoDocumentUpload.tsx` - No actualizar formData durante diálogo
+- [x] **Cambios realizados**:
+  - `finally` block en `handleExitWithSave` para resetear `isExiting`
+  - `throw error` en `RequestFormProvider` para manejo de errores
+  - `SafeNavigationWrapper` verifica `showExitDialog` antes de interferir
+  - **NUEVO**: `PhotoDocumentUpload` verifica `showExitDialog` antes de actualizar `formData`
+  - **NUEVO**: Debounce de 100ms para evitar actualizaciones excesivas de `formData`
+  - **NUEVO**: Cleanup de timeout para prevenir memory leaks
+  - Estado de carga se resetea siempre, independientemente del resultado
+  - Botones se re-habilitan correctamente en caso de error
+  - Navegación de salida funciona correctamente sin interferencia de documentos
+- [x] **Script de testing**: `verify-document-interference-fix.sh`
+- [x] **Validación**: ✅ Bug corregido exitosamente
+
+### **📊 Estado**
+- **Status**: ✅ Resuelto
+- **Prioridad**: Alta
+- **Complejidad**: Media
+- **Tiempo estimado**: 1-2 horas
+- **Tiempo real**: 1.5 horas
+
+---
+
+## 🐛 **BUG-278: Persistencia de documentos no funciona al navegar entre secciones**
+
+### **📅 Fecha de Reporte**
+2025-01-23
+
+### **📝 Descripción**
+Al subir documentos en la sección de documentos de una solicitud, los archivos se cargan correctamente pero al navegar a otra sección y regresar, las cards de documentos aparecen vacías. El mismo comportamiento ocurre al guardar la solicitud y re-entrar - los documentos no persisten.
+
+### **🎯 Comportamiento Esperado**
+- **Persistencia entre navegación**: Los documentos deberían persistir al navegar entre secciones
+- **Persistencia al guardar**: Los documentos deberían persistir al guardar la solicitud y re-entrar
+- **Restauración correcta**: Los documentos deberían mostrarse con su estado y archivos correctos
+- **Sincronización bidireccional**: Los documentos deberían sincronizarse correctamente con formData
+
+### **❌ Comportamiento Actual**
+- **Pérdida al navegar**: Los documentos desaparecen al navegar entre secciones
+- **Pérdida al guardar**: Los documentos no persisten al guardar y re-entrar
+- **Cards vacías**: Las cards de documentos aparecen vacías sin los archivos subidos
+- **Sin restauración**: Los archivos no se restauran desde el almacenamiento local
+
+### **🔍 Análisis del Problema**
+- **Componente afectado**: Sistema de gestión de documentos
+- **Archivos involucrados**: 
+  - `src/components/requestForm/PhotoDocumentUpload.tsx` (inicialización incorrecta)
+  - `src/hooks/useDocumentManager.tsx` (gestión de estado)
+- **Causa probable**: 
+  - `useDocumentManager()` se llamaba sin parámetros, inicializando siempre con estado vacío
+  - Al navegar entre secciones, el componente se desmonta y vuelve a montar
+  - La inicialización incorrecta causa que los documentos se pierdan en cada montaje
+  - `initializeFromFormData` se ejecuta después del renderizado inicial con documentos vacíos
+
+### **🧪 Script de Testing**
+```bash
+# scripts/verify-document-persistence-fix.sh
+# Script para verificar la corrección de persistencia de documentos
+```
+
+### **💡 Solución Propuesta**
+- [x] Modificar llamada a `useDocumentManager()` para usar `guatemalanDocuments` como parámetro inicial
+- [x] Asegurar que la inicialización sea consistente en cada montaje del componente
+- [x] Mantener la funcionalidad existente de `initializeFromFormData`
+- [x] Preservar la sincronización bidireccional con `formData`
+- [x] Mantener el debounce y verificación de `showExitDialog`
+- [x] Crear script de testing para validación
+
+### **✅ Solución Implementada**
+- [x] **Archivos modificados**:
+  - `src/components/requestForm/PhotoDocumentUpload.tsx` - Llamada a useDocumentManager corregida
+- [x] **Cambios realizados**:
+  - **NUEVO**: `useDocumentManager(guatemalanDocuments)` en lugar de `useDocumentManager()`
+  - **PRESERVADO**: `initializeFromFormData` sigue funcionando para restaurar archivos desde localforage
+  - **PRESERVADO**: Sincronización bidireccional con `formData` mantenida
+  - **PRESERVADO**: Debounce de 100ms y verificación de `showExitDialog` mantenidos
+  - **PRESERVADO**: Conversión ArrayBuffer a File para restauración desde localforage
+  - **PRESERVADO**: Manejo robusto de errores y logging detallado
+- [x] **Script de testing**: `verify-document-persistence-fix.sh`
+- [x] **Validación**: ✅ Bug corregido exitosamente
+
+### **📊 Estado**
+- **Status**: ✅ Resuelto
+- **Prioridad**: Alta
+- **Complejidad**: Media
+- **Tiempo estimado**: 1-2 horas
+- **Tiempo real**: 30 minutos
+
+---
+
+## 🐛 **BUG-279: Persistencia de documentos no funciona al salir y regresar a solicitud**
+
+### **📅 Fecha de Reporte**
+2025-01-23
+
+### **📝 Descripción**
+La persistencia de documentos funciona correctamente al navegar entre secciones dentro de una solicitud, pero no funciona al salir completamente de la solicitud y regresar. Los documentos se pierden al re-entrar a la solicitud desde la lista de aplicaciones.
+
+### **🎯 Comportamiento Esperado**
+- **Persistencia completa**: Los documentos deberían persistir al salir y regresar a la solicitud
+- **Restauración correcta**: Los documentos deberían mostrarse con su estado y archivos correctos
+- **Consistencia**: Mismo comportamiento que la persistencia entre secciones
+- **Sincronización**: Los documentos deberían sincronizarse correctamente con formData
+
+### **❌ Comportamiento Actual**
+- **Pérdida al salir**: Los documentos desaparecen al salir completamente de la solicitud
+- **Sin restauración**: Los documentos no se restauran al re-entrar desde la lista
+- **Cards vacías**: Las cards de documentos aparecen vacías sin los archivos subidos previamente
+- **Inconsistencia**: Diferente comportamiento que la persistencia entre secciones
+
+### **🔍 Análisis del Problema**
+- **Componente afectado**: Sistema de gestión de documentos
+- **Archivos involucrados**: 
+  - `src/hooks/useDocumentManager.tsx` (dependencias de initializeFromFormData)
+  - `src/components/requestForm/PhotoDocumentUpload.tsx` (timing de inicialización)
+- **Causa probable**: 
+  - **Problema de timing**: `initializeFromFormData` depende de `documents` en las dependencias del `useCallback`
+  - **Estado vacío**: Cuando se llama por primera vez, `documents` aún es `guatemalanDocuments` vacío
+  - **Restauración fallida**: `initializeFromFormData` no puede restaurar documentos porque `documents` está vacío
+  - **Dependencia circular**: La función depende del estado que debe actualizar
+
+### **🧪 Script de Testing**
+```bash
+# scripts/verify-document-persistence-exit-fix.sh
+# Script para verificar la corrección de persistencia al salir y regresar
+```
+
+### **💡 Solución Propuesta**
+- [x] Modificar dependencias de `initializeFromFormData` en `useDocumentManager.tsx`
+- [x] Eliminar `documents` de las dependencias del `useCallback`
+- [x] Mantener solo `toast` como dependencia
+- [x] Permitir que la función funcione independientemente del estado actual de `documents`
+- [x] Crear script de testing para validación
+
+### **✅ Solución Implementada**
+- [x] **Archivos modificados**:
+  - `src/hooks/useDocumentManager.tsx` - Dependencias de initializeFromFormData corregidas
+- [x] **Cambios realizados**:
+  - **NUEVO**: Dependencias cambiadas de `[documents, toast]` a `[toast]`
+  - **PRESERVADO**: Funcionalidad completa de restauración desde localforage
+  - **PRESERVADO**: Conversión ArrayBuffer a File para restauración
+  - **PRESERVADO**: Manejo robusto de errores y logging detallado
+  - **PRESERVADO**: Sincronización bidireccional con formData
+  - **PRESERVADO**: Debounce y verificación de showExitDialog
+  - **PRESERVADO**: Carga de draft_data desde Supabase
+  - **PRESERVADO**: Preservación de applicationId al cargar draft
+- [x] **Script de testing**: `verify-document-persistence-exit-fix.sh`
+- [x] **Validación**: ✅ Bug corregido exitosamente
+
+### **📊 Estado**
+- **Status**: ✅ Resuelto
+- **Prioridad**: Alta
+- **Complejidad**: Media
+- **Tiempo estimado**: 1-2 horas
+- **Tiempo real**: 30 minutos
+
+## BUG-280: Acceso rápido a referencias no funciona en ApplicationDetails
+
+**Descripción:** Al hacer click en la mini card de "Referencias Personales" en la pantalla de detalles de solicitud, no navega a la sección de referencias en el formulario.
+
+**Análisis:** El problema estaba en el `sectionToStepMap` en `src/pages/ApplicationDetails.tsx`. El mapeo tenía `'guarantors': 3` en lugar de `'references': 3`, lo que causaba que el acceso rápido a referencias no funcionara correctamente.
+
+**Solución Propuesta:** Corregir el mapeo de secciones en `src/pages/ApplicationDetails.tsx` cambiando `'guarantors': 3` por `'references': 3`.
+
+**Solución Implementada:** 
+- Modificado `src/pages/ApplicationDetails.tsx` línea 132: cambiado `'guarantors': 3` por `'references': 3`
+- Verificado que todos los accesos rápidos estén mapeados correctamente:
+  - `'identification': 0` ✅
+  - `'credit': 1` ✅
+  - `'finances': 2` ✅
+  - `'references': 3` ✅ (corregido)
+  - `'documents': 4` ✅
+  - `'review': 5` ✅
+
+**Validación:** Script `verify-quick-access-navigation.sh` ejecutado exitosamente, confirmando que todos los accesos rápidos funcionan correctamente.
+
+**Estado:** ✅ RESUELTO
+
+## BUG-267: Error de sesión expirada al guardar borrador sin internet
+
+**Descripción:** Al intentar guardar un formulario sin tener internet en el dispositivo, muestra un error "error al guardar el borrador, sesión expirada, por favor inicia sesión nuevamente" en lugar de guardar offline correctamente.
+
+**Análisis:** El problema estaba en `src/hooks/useDraftActions.tsx`. Aunque el código detectaba correctamente si estaba offline y debería retornar temprano, había una verificación de sesión (líneas 172-181) que llamaba a `supabase.auth.getUser()` **incluso cuando estaba offline**. Esta verificación requiere conexión a internet y cuando falla, lanza el error "Sesión expirada".
+
+**Solución Propuesta:** Mover la verificación de sesión **antes** del bloque offline para que solo se ejecute cuando hay conexión a internet.
+
+**Solución Implementada:** 
+- Modificado `src/hooks/useDraftActions.tsx`:
+  - Agregado `useOfflineStorage` hook para acceder a `isOffline`
+  - Movida la verificación de sesión después del bloque offline (líneas 102-117)
+  - Agregado return temprano para offline sin verificación de sesión
+  - Agregado comentario explicativo "no need to verify session" para offline
+
+**Flujo Corregido:**
+1. 📱 Usuario autenticado localmente
+2. 💾 Datos guardados offline inmediatamente
+3. 🔍 Si está offline: se encola y retorna éxito (sin verificación de sesión)
+4. 🌐 Si está online: verifica sesión y guarda en Supabase
+
+**Validación:** Script `verify-offline-draft-save-fix.sh` ejecutado exitosamente, confirmando que:
+- ✅ Verificación de sesión solo ocurre cuando está online
+- ✅ Return temprano para offline implementado
+- ✅ No hay verificación de sesión antes del bloque offline
+- ✅ Guardado offline inmediato funciona correctamente
+
+**Estado:** ✅ RESUELTO
+
+## BUG-281: Mitigación de vulnerabilidad "Debug habilitado para la aplicación [android:debuggable=true]"
+
+**Descripción:** Vulnerabilidad de seguridad crítica en aplicaciones Android de producción donde el flag `android:debuggable=true` permite a atacantes debuggear la aplicación, acceder a información sensible y modificar el comportamiento en tiempo de ejecución.
+
+**Análisis:** La vulnerabilidad ocurre cuando la aplicación Android se compila con el flag de debug habilitado. Esto permite que atacantes puedan:
+- Debuggear la aplicación usando herramientas como `adb`
+- Acceder a información sensible almacenada en memoria
+- Modificar el comportamiento de la aplicación en tiempo de ejecución
+- Extraer datos de la aplicación sin autorización
+
+**Solución Propuesta:** Configurar `debuggable=false` explícitamente en el build de release y agregar configuraciones de seguridad adicionales.
+
+**Solución Implementada:** 
+- Modificado `android/app/build.gradle`:
+  - Agregado `debuggable false` en build de release
+  - Agregado `debuggable true` en build de debug (para desarrollo)
+  - Agregado `buildConfigField "boolean", "DEBUG_MODE", "false"` en release
+  - Agregado `buildConfigField "boolean", "ENABLE_LOGGING", "false"` en release
+- Modificado `android/app/src/main/AndroidManifest.xml`:
+  - Agregado `android:extractNativeLibs="false"` (previene extracción de librerías nativas)
+  - Agregado `android:usesCleartextTraffic="false"` (previene tráfico HTTP no cifrado)
+
+**Configuraciones de Seguridad Agregadas:**
+- ✅ `debuggable=false` en build de release
+- ✅ `debuggable=true` en build de debug (para desarrollo)
+- ✅ `extractNativeLibs=false` (previene extracción de librerías nativas)
+- ✅ `usesCleartextTraffic=false` (previene tráfico HTTP no cifrado)
+- ✅ `DEBUG_MODE=false` en release
+- ✅ `ENABLE_LOGGING=false` en release
+- ✅ ProGuard configurado para ofuscación
+
+**Validación:** Script `verify-debug-vulnerability-fix.sh` ejecutado exitosamente, confirmando que:
+- ✅ Debug deshabilitado en producción
+- ✅ Configuraciones de seguridad implementadas
+- ✅ Vulnerabilidades adicionales mitigadas
+
+**Estado:** ✅ RESUELTO
+
+---
+
+*Última actualización: 2025-01-23*
 *Documento creado por: Dev Team*

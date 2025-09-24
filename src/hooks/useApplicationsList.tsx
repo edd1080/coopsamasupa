@@ -34,7 +34,7 @@ export const useApplicationsList = () => {
       // Fetch from applications table including Coopsama fields - MÁS RECIENTES PRIMERO
       const { data: applications, error: appError } = await supabase
         .from('applications')
-        .select('*, coopsama_external_reference_id, coopsama_operation_id, coopsama_process_id, coopsama_sync_status, coopsama_sync_error')
+        .select('id, agent_id, client_name, product, amount_requested, status, current_stage, progress_step, created_at, updated_at, coopsama_external_reference_id, coopsama_operation_id, coopsama_process_id, coopsama_sync_status, coopsama_sync_error')
         .eq('agent_id', user.id)
         .order('created_at', { ascending: false }); // Más recientes primero
         
@@ -45,10 +45,11 @@ export const useApplicationsList = () => {
       
       console.log('📋 Raw applications fetched:', applications?.length || 0);
       
+      
       // Also fetch drafts - ordenar por updated_at para mostrar los más recientes primero
       const { data: drafts, error: draftError } = await supabase
         .from('application_drafts')
-        .select('*')
+        .select('id, agent_id, client_name, draft_data, last_step, last_sub_step, created_at, updated_at')
         .eq('agent_id', user.id)
         .order('updated_at', { ascending: false });
         
@@ -58,6 +59,7 @@ export const useApplicationsList = () => {
       }
       
       console.log('📝 Raw drafts fetched:', drafts?.length || 0);
+      
       console.log('📝 Draft details:', sanitizeConsoleOutput(drafts?.map(d => ({
         id: d.id,
         client_name: d.client_name,
@@ -110,10 +112,10 @@ export const useApplicationsList = () => {
             product: app.product || 'Crédito Personal',
             amount: app.amount_requested?.toString() || '0',
             status: app.status,
-            date: formatDateToGuatemalan(app.created_at),
+            date: formatDateToGuatemalan(app.created_at || app.updated_at || new Date().toISOString()),
             progress: app.progress_step || 0,
             stage: app.current_stage || 'En proceso',
-            timestamp: new Date(app.created_at).getTime() // Para ordenamiento
+            timestamp: new Date(app.created_at || app.updated_at || new Date().toISOString()).getTime() // Para ordenamiento
           };
         }),
         ...(drafts || []).map(draft => {
@@ -165,10 +167,10 @@ export const useApplicationsList = () => {
             product: 'Crédito', // Show "Crédito" for drafts
             amount: requestedAmount, // Use requestedAmount from draft_data
             status: 'draft',
-            date: formatDateToGuatemalan(draft.updated_at),
+            date: formatDateToGuatemalan(draft.updated_at || draft.created_at || new Date().toISOString()),
             progress: draft.last_step || 0,
             stage: getStageFromStep(draft.last_step || 1),
-            timestamp: new Date(draft.updated_at).getTime() // Para ordenamiento
+            timestamp: new Date(draft.updated_at || draft.created_at || new Date().toISOString()).getTime() // Para ordenamiento
           };
         })
       ];

@@ -84,10 +84,10 @@ const BirthDemographicsForm: React.FC<BirthDemographicsFormProps> = ({ formData,
             value={calculatedAge || formData.age || ''} 
             readOnly
             placeholder="Se calcula automáticamente"
-            className="bg-gray-100"
+            className="bg-background text-foreground"
           />
           {calculatedAge && calculatedAge < 18 && (
-            <p className="text-sm text-red-500">La edad debe ser mayor a 18 años</p>
+            <p className="text-sm text-red-500 dark:text-red-400">La edad debe ser mayor a 18 años</p>
           )}
         </div>
       </div>
