@@ -57,9 +57,16 @@ export const useSaveDraft = () => {
       
       console.log('✅ User authenticated, proceeding with save');
       
-      // Sanitize all input data
+      // Sanitize all input data, but preserve documents structure
       const sanitizedFormData = sanitizeObjectData(formData);
       const sanitizedChangedData = changedData ? sanitizeObjectData(changedData) : null;
+      
+      // CORREGIDO: Preservar estructura de documentos para persistencia
+      if (sanitizedFormData.documents) {
+        console.log('📄 Preserving documents structure for persistence:', Object.keys(sanitizedFormData.documents));
+        // Los documentos ya están en el formato correcto desde PhotoDocumentUpload
+        // No necesitamos modificar la estructura, solo asegurar que se preserve
+      }
       
       // Generate or use existing application display ID (SCO_######)
       if (!sanitizedFormData.applicationId) {

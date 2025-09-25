@@ -356,14 +356,22 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
 
         <Separator className="my-8" />
 
-        {/* Panel de Testing - Solo visible en desarrollo cuando VITE_ENABLE_TESTING_TOOLS=true */}
-        {!import.meta.env.PROD && import.meta.env.VITE_ENABLE_TESTING_TOOLS === 'true' && (
+        {/* Panel de Testing - Habilitado cuando VITE_ENABLE_TESTING_TOOLS=true */}
+        {import.meta.env.VITE_ENABLE_TESTING_TOOLS === 'true' && (
           <TestingPanel 
             formData={formData}
             updateFormData={updateFormData}
             onGenerateTestData={handleTestDataGenerated}
           />
         )}
+        
+        {/* Debug: Mostrar siempre para verificar */}
+        <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
+          <h3 className="font-bold text-yellow-800">🔧 Debug Info:</h3>
+          <p>VITE_ENABLE_TESTING_TOOLS: {String(import.meta.env.VITE_ENABLE_TESTING_TOOLS)}</p>
+          <p>Type: {typeof import.meta.env.VITE_ENABLE_TESTING_TOOLS}</p>
+          <p>Should show: {String(import.meta.env.VITE_ENABLE_TESTING_TOOLS === 'true')}</p>
+        </div>
 
       </CardContent>
     </Card>

@@ -41,18 +41,30 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
     initializeFromFormData,
   } = useDocumentManager(guatemalanDocuments);
 
+  // CORREGIDO: Debug para verificar que documents sea un array
+  console.log('🔍 PhotoDocumentUpload: documents type:', typeof documents, 'isArray:', Array.isArray(documents), 'length:', documents?.length);
+
   // Get applicationId from formData
   const applicationId = formData?.applicationId || formData?.id;
 
-  // Initialize documents from formData when component mounts
+  // Use ref to track if documents have been initialized to prevent loops
+  const hasInitializedRef = React.useRef(false);
+  const lastFormDataDocumentsRef = React.useRef<string>('');
+
+  // Initialize documents from formData when component mounts - SOLO UNA VEZ
   React.useEffect(() => {
-    if (formData?.documents && Object.keys(formData.documents).length > 0) {
-      console.log('📥 Initializing documents from formData:', formData.documents);
+    // SOLO inicializar si no se ha inicializado antes y hay documentos en formData
+    if (!hasInitializedRef.current && formData?.documents && Object.keys(formData.documents).length > 0) {
+      console.log('📥 Initializing documents from formData (ONE TIME ONLY):', formData.documents);
       initializeFromFormData(formData.documents);
-    } else {
+      hasInitializedRef.current = true;
+    } else if (!hasInitializedRef.current) {
       console.log('📥 No documents found in formData, using default documents');
+      hasInitializedRef.current = true;
+    } else {
+      console.log('📥 Documents already initialized, skipping to prevent loop');
     }
-  }, [formData?.documents, initializeFromFormData]);
+  }, []); // CORREGIDO: Solo ejecutar una vez al montar el componente
 
   // Update form data when documents change
   // Sync documents with formData (avoid interference with exit dialog)
@@ -65,6 +77,12 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
 
     // Debounce to avoid excessive updates
     const timeoutId = setTimeout(() => {
+      // CORREGIDO: Validar que documents sea un array antes de usar reduce
+      if (!Array.isArray(documents)) {
+        console.warn('⚠️ PhotoDocumentUpload: documents is not an array:', documents);
+        return;
+      }
+      
       const documentsData = documents.reduce((acc, doc) => {
         acc[doc.id] = {
           file: doc.file,
@@ -116,14 +134,21 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
       let errorMessage = error?.message || 'Error desconocido';
       
       // Translate specific Capacitor error messages to Spanish
-      if (errorMessage.includes('user canceled photos app')) {
-        errorMessage = 'No se pudo tomar la foto, el usuario canceló la acción';
-      } else if (errorMessage.includes('user canceled')) {
-        errorMessage = 'No se pudo tomar la foto, el usuario canceló la acción';
+      if (errorMessage.includes('user canceled photos app') || 
+          errorMessage.includes('user canceled') ||
+          errorMessage.includes('user cancelled') ||
+          errorMessage.includes('cancelled') ||
+          errorMessage.includes('aborted') ||
+          errorMessage.includes('dismissed')) {
+        errorMessage = 'Error al tomar la foto: el usuario canceló la acción';
       } else if (errorMessage.includes('camera not available')) {
         errorMessage = 'Cámara no disponible';
       } else if (errorMessage.includes('permission denied')) {
         errorMessage = 'Permiso de cámara denegado';
+      } else if (errorMessage.includes('no camera') || errorMessage.includes('camera unavailable')) {
+        errorMessage = 'Cámara no disponible en este dispositivo';
+      } else if (errorMessage.includes('timeout')) {
+        errorMessage = 'Tiempo de espera agotado al tomar la foto';
       }
       
       toast({

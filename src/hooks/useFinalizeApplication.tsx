@@ -308,6 +308,14 @@ Generado automáticamente el ${new Date().toISOString()}
             const errorData = JSON.parse(coopsamaResult.error.message);
             if (errorData.message) {
               actualErrorMessage = errorData.message;
+              
+              // Si hay errores de validación específicos, agregarlos al mensaje
+              if (errorData.errors && typeof errorData.errors === 'object') {
+                const validationErrors = Object.values(errorData.errors).flat();
+                if (validationErrors.length > 0) {
+                  actualErrorMessage += ': ' + validationErrors.join(', ');
+                }
+              }
             }
           } catch {
             // If not JSON, check if it contains the actual message after certain patterns
@@ -316,6 +324,10 @@ Generado automáticamente el ${new Date().toISOString()}
               if (match) {
                 actualErrorMessage = match[1];
               }
+            } else if (actualErrorMessage.includes('edge function returned a non 2xx status code')) {
+              actualErrorMessage = 'Error en el servidor: la solicitud no pudo ser procesada correctamente';
+            } else if (actualErrorMessage.includes('COOPSAMA_ERROR:')) {
+              actualErrorMessage = actualErrorMessage.replace('COOPSAMA_ERROR:', '');
             }
           }
           
@@ -342,18 +354,29 @@ Generado automáticamente el ${new Date().toISOString()}
             if (data.code === 1 || data.success === false) {
               console.error('❌ Coopsama microservice returned error:', data);
               
+              // Construir mensaje de error más descriptivo
+              let errorMessage = data.message || 'Error en el envío de la solicitud';
+              
+              // Si hay errores de validación específicos, agregarlos al mensaje
+              if (data.errors && typeof data.errors === 'object') {
+                const validationErrors = Object.values(data.errors).flat();
+                if (validationErrors.length > 0) {
+                  errorMessage += ': ' + validationErrors.join(', ');
+                }
+              }
+              
               // Update application with error status
               await supabase
                 .from('applications')
                 .update({
                   status: 'error',
                   coopsama_sync_status: 'error',
-                  coopsama_sync_error: data.message || 'Error en el microservicio'
+                  coopsama_sync_error: errorMessage
                 })
                 .eq('id', result.id);
               
               // Throw error to show error screen
-              throw new Error(`COOPSAMA_ERROR:${data.message || 'Error en el envío de la solicitud'}`);
+              throw new Error(`COOPSAMA_ERROR:${errorMessage}`);
             }
             
             // Success case (code: 0, success: true)

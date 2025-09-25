@@ -82,7 +82,7 @@ export const mapToCatalog = <T extends { id: string; value: string }>(
   
   // Si no encuentra nada, mantener el valor original con fallback ID
   console.log('⚠️ No encontrado, manteniendo valor original:', stringValue);
-  return { id: fallbackId, value: stringValue };
+  return { id: fallbackId, value: stringValue || "" };
 };
 
 // Re-export all catalogs

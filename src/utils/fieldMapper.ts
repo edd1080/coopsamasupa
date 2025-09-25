@@ -259,6 +259,11 @@ const mapMunicipality = (departmentId: string, municipalityName: string): { id: 
   
   if (!municipalityName) {
     console.log('🏘️ No municipality name provided');
+    // Usar el primer municipio del departamento como fallback
+    const firstMunicipality = municipalities.find(m => m.departmentId === departmentId);
+    if (firstMunicipality) {
+      return { id: departmentId + firstMunicipality.id, value: firstMunicipality.value };
+    }
     return { id: departmentId + "01", value: "" };
   }
   
@@ -278,12 +283,34 @@ const mapMunicipality = (departmentId: string, municipalityName: string): { id: 
     return result;
   }
   
+  // Buscar por coincidencia parcial (case-insensitive)
+  const partialMatch = municipalities.find(m => {
+    const match = m.departmentId === departmentId && 
+                  m.value.toLowerCase().includes(municipalityName.toLowerCase());
+    if (match) {
+      console.log('✅ Partial municipality match:', m);
+    }
+    return match;
+  });
+  
+  if (partialMatch) {
+    const result = { id: departmentId + partialMatch.id, value: partialMatch.value };
+    console.log('✅ Municipality mapped (partial):', { input: municipalityName, result });
+    return result;
+  }
+  
   // Log available municipalities for debugging
   console.log('🏘️ Municipality not found. Available for dept ' + departmentId + ':', 
     municipalities
       .filter(m => m.departmentId === departmentId)
       .map(m => ({ id: m.id, value: m.value }))
   );
+  
+  // Usar el primer municipio del departamento como fallback con su valor específico
+  const firstMunicipality = municipalities.find(m => m.departmentId === departmentId);
+  if (firstMunicipality) {
+    return { id: departmentId + firstMunicipality.id, value: firstMunicipality.value };
+  }
   
   return { id: departmentId + "01", value: "" };
 };
@@ -573,6 +600,14 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
               score: mapToCatalog(referenceRatings, ref.score || ref.rating || "", "3"),
               comments: ref.comments || ref.comment || ref.comentarios || ""
             }))
+          },
+          business: {
+            companyName: "",
+            activityDescription: "",
+            grossProfit: 0,
+            productType: "",
+            startDate: "",
+            fullAddress: ""
           },
           investmentPlan: (() => {
             console.log('📋 Mapeando plan de inversión:', formData.investmentPlan);

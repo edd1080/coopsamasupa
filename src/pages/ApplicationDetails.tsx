@@ -503,7 +503,8 @@ const ApplicationDetails = () => {
                   dpiTrasero: 'DPI Trasero',
                   fotoSolicitante: 'Foto Solicitante',
                   recibosServicios: 'Recibos Servicios',
-                  firmaCanvas: 'Firma Digital'
+                  fotoConAgente: 'Foto con Agente',
+                  fotoNegocioVivienda: 'Foto Vivienda/Negocio'
                 }).map(([key, label]) => {
                   const doc = documents[key];
                   // CORREGIDO: Verificar status 'success' en lugar de 'complete'

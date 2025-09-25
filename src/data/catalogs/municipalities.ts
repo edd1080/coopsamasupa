@@ -1,5 +1,10 @@
-export const municipalities = [
-  // Departamento 01 - GUATEMALA
+export interface Municipality {
+  id: string;
+  departmentId: string;
+  value: string;
+}
+
+export const municipalities: Municipality[] = [
   { id: "01", departmentId: "01", value: "GUATEMALA" },
   { id: "02", departmentId: "01", value: "SANTA CATARINA PINULA" },
   { id: "03", departmentId: "01", value: "SAN JOSE PINULA" },
@@ -17,8 +22,6 @@ export const municipalities = [
   { id: "15", departmentId: "01", value: "VILLA NUEVA" },
   { id: "16", departmentId: "01", value: "VILLA CANALES" },
   { id: "17", departmentId: "01", value: "SAN MIGUEL PETAPA" },
-
-  // Departamento 02 - EL PROGRESO
   { id: "01", departmentId: "02", value: "GUASTATOYA" },
   { id: "02", departmentId: "02", value: "MORAZAN" },
   { id: "03", departmentId: "02", value: "SAN AGUSTIN ACASAGUASTLAN" },
@@ -27,8 +30,6 @@ export const municipalities = [
   { id: "06", departmentId: "02", value: "SANSARE" },
   { id: "07", departmentId: "02", value: "SANARATE" },
   { id: "08", departmentId: "02", value: "SAN ANTONIO LA PAZ" },
-
-  // Departamento 03 - SACATEPEQUEZ
   { id: "01", departmentId: "03", value: "ANTIGUA GUATEMALA" },
   { id: "02", departmentId: "03", value: "JOCOTENANGO" },
   { id: "03", departmentId: "03", value: "PASTORES" },
@@ -45,8 +46,6 @@ export const municipalities = [
   { id: "14", departmentId: "03", value: "ALOTENANGO" },
   { id: "15", departmentId: "03", value: "SAN ANTONIO AGUAS CALIENTES" },
   { id: "16", departmentId: "03", value: "SANTA CATARINA BARAHONA" },
-
-  // Departamento 04 - CHIMALTENANGO
   { id: "01", departmentId: "04", value: "CHIMALTENANGO" },
   { id: "02", departmentId: "04", value: "SAN JOSE POAQUIL" },
   { id: "03", departmentId: "04", value: "SAN MARTIN JILOTEPEQUE" },
@@ -63,8 +62,6 @@ export const municipalities = [
   { id: "14", departmentId: "04", value: "PARRAMOS" },
   { id: "15", departmentId: "04", value: "ZARAGOZA" },
   { id: "16", departmentId: "04", value: "EL TEJAR" },
-
-  // Departamento 05 - ESCUINTLA
   { id: "01", departmentId: "05", value: "ESCUINTLA" },
   { id: "02", departmentId: "05", value: "SANTA LUCIA COTZUMALGUAPA" },
   { id: "03", departmentId: "05", value: "LA DEMOCRACIA" },
@@ -79,8 +76,6 @@ export const municipalities = [
   { id: "12", departmentId: "05", value: "SAN VICENTE PACAYA" },
   { id: "13", departmentId: "05", value: "NUEVA CONCEPCION" },
   { id: "14", departmentId: "05", value: "SIPACATE" },
-
-  // Departamento 06 - SANTA ROSA
   { id: "01", departmentId: "06", value: "CUILAPA" },
   { id: "02", departmentId: "06", value: "BARBERENA" },
   { id: "03", departmentId: "06", value: "SANTA ROSA DE LIMA" },
@@ -95,8 +90,6 @@ export const municipalities = [
   { id: "12", departmentId: "06", value: "SANTA CRUZ NARANJO" },
   { id: "13", departmentId: "06", value: "PUEBLO NUEVO VIÑAS" },
   { id: "14", departmentId: "06", value: "NUEVA SANTA ROSA" },
-
-  // Departamento 07 - SOLOLA
   { id: "01", departmentId: "07", value: "SOLOLA" },
   { id: "02", departmentId: "07", value: "SAN JOSE CHACAYA" },
   { id: "03", departmentId: "07", value: "SANTA MARIA VISITACION" },
@@ -116,8 +109,6 @@ export const municipalities = [
   { id: "17", departmentId: "07", value: "SAN JUAN LA LAGUNA" },
   { id: "18", departmentId: "07", value: "SAN PEDRO LA LAGUNA" },
   { id: "19", departmentId: "07", value: "SANTIAGO ATITLAN" },
-
-  // Departamento 08 - TOTONICAPAN
   { id: "01", departmentId: "08", value: "TOTONICAPAN" },
   { id: "02", departmentId: "08", value: "SAN CRISTOBAL TOTONICAPAN" },
   { id: "03", departmentId: "08", value: "SAN FRANCISCO EL ALTO" },
@@ -126,8 +117,6 @@ export const municipalities = [
   { id: "06", departmentId: "08", value: "SANTA MARIA CHIQUIMULA" },
   { id: "07", departmentId: "08", value: "SANTA LUCIA LA REFORMA" },
   { id: "08", departmentId: "08", value: "SAN BARTOLO AGUAS CALIENTES" },
-
-  // Departamento 09 - QUETZALTENANGO
   { id: "01", departmentId: "09", value: "QUETZALTENANGO" },
   { id: "02", departmentId: "09", value: "SALCAJA" },
   { id: "03", departmentId: "09", value: "OLINTEPEQUE" },
@@ -152,8 +141,6 @@ export const municipalities = [
   { id: "22", departmentId: "09", value: "FLORES COSTA CUCA" },
   { id: "23", departmentId: "09", value: "LA ESPERANZA" },
   { id: "24", departmentId: "09", value: "PALESTINA DE LOS ALTOS" },
-
-  // Departamento 10 - SUCHITEPEQUEZ
   { id: "01", departmentId: "10", value: "MAZATENANGO" },
   { id: "02", departmentId: "10", value: "CUYOTENANGO" },
   { id: "03", departmentId: "10", value: "SAN FRANCISCO ZAPOTITLAN" },
@@ -175,8 +162,6 @@ export const municipalities = [
   { id: "19", departmentId: "10", value: "PUEBLO NUEVO" },
   { id: "20", departmentId: "10", value: "RIO BRAVO" },
   { id: "21", departmentId: "10", value: "SAN JOSE LA MAQUINA" },
-
-  // Departamento 11 - RETALHULEU
   { id: "01", departmentId: "11", value: "RETALHULEU" },
   { id: "02", departmentId: "11", value: "SAN SEBASTIAN" },
   { id: "03", departmentId: "11", value: "SANTA CRUZ MULUA" },
@@ -186,8 +171,6 @@ export const municipalities = [
   { id: "07", departmentId: "11", value: "CHAMPERICO" },
   { id: "08", departmentId: "11", value: "NUEVO SAN CARLOS" },
   { id: "09", departmentId: "11", value: "EL ASINTAL" },
-
-  // Departamento 12 - SAN MARCOS
   { id: "01", departmentId: "12", value: "SAN MARCOS" },
   { id: "02", departmentId: "12", value: "SAN PEDRO SACATEPEQUEZ" },
   { id: "03", departmentId: "12", value: "SAN ANTONIO SACATEPEQUEZ" },
@@ -218,8 +201,6 @@ export const municipalities = [
   { id: "28", departmentId: "12", value: "RIO BLANCO" },
   { id: "29", departmentId: "12", value: "SAN LORENZO" },
   { id: "30", departmentId: "12", value: "LA BLANCA" },
-
-  // Departamento 13 - HUEHUETENANGO
   { id: "01", departmentId: "13", value: "HUEHUETENANGO" },
   { id: "02", departmentId: "13", value: "CHIANTLA" },
   { id: "03", departmentId: "13", value: "MALACATANCITO" },
@@ -253,8 +234,6 @@ export const municipalities = [
   { id: "31", departmentId: "13", value: "SANTA ANA HUISTA" },
   { id: "32", departmentId: "13", value: "UNIÓN CANTINIL" },
   { id: "33", departmentId: "13", value: "PETATAN" },
-
-  // Departamento 14 - QUICHE
   { id: "01", departmentId: "14", value: "SANTA CRUZ DEL QUICHE" },
   { id: "02", departmentId: "14", value: "CHICHE" },
   { id: "03", departmentId: "14", value: "CHINIQUE" },
@@ -276,8 +255,6 @@ export const municipalities = [
   { id: "19", departmentId: "14", value: "CHICAMAN" },
   { id: "20", departmentId: "14", value: "IXCAN" },
   { id: "21", departmentId: "14", value: "PACHALUN" },
-
-  // Departamento 15 - BAJA VERAPAZ
   { id: "01", departmentId: "15", value: "SALAMA" },
   { id: "02", departmentId: "15", value: "SAN MIGUEL CHICAJ" },
   { id: "03", departmentId: "15", value: "RABINAL" },
@@ -286,8 +263,6 @@ export const municipalities = [
   { id: "06", departmentId: "15", value: "SANTA CRUZ EL CHOL" },
   { id: "07", departmentId: "15", value: "SAN JERONIMO" },
   { id: "08", departmentId: "15", value: "PURULHA" },
-
-  // Departamento 16 - ALTA VERAPAZ
   { id: "01", departmentId: "16", value: "COBAN" },
   { id: "02", departmentId: "16", value: "SANTA CRUZ VERAPAZ" },
   { id: "03", departmentId: "16", value: "SAN CRISTOBAL VERAPAZ" },
@@ -305,8 +280,6 @@ export const municipalities = [
   { id: "15", departmentId: "16", value: "FRAY BARTOLOME DE LAS CASAS" },
   { id: "16", departmentId: "16", value: "SANTA CATALINA LA TINTA" },
   { id: "17", departmentId: "16", value: "RAXRUHÁ" },
-
-  // Departamento 17 - PETÉN
   { id: "01", departmentId: "17", value: "FLORES" },
   { id: "02", departmentId: "17", value: "SAN JOSE" },
   { id: "03", departmentId: "17", value: "SAN BENITO" },
@@ -321,15 +294,11 @@ export const municipalities = [
   { id: "12", departmentId: "17", value: "POPTUN" },
   { id: "13", departmentId: "17", value: "LAS CRUCES" },
   { id: "14", departmentId: "17", value: "EL CHAL" },
-
-  // Departamento 18 - IZABAL
   { id: "01", departmentId: "18", value: "PUERTO BARRIOS" },
   { id: "02", departmentId: "18", value: "LIVINGSTON" },
   { id: "03", departmentId: "18", value: "EL ESTOR" },
   { id: "04", departmentId: "18", value: "MORALES" },
   { id: "05", departmentId: "18", value: "LOS AMATES" },
-
-  // Departamento 19 - ZACAPA
   { id: "01", departmentId: "19", value: "ZACAPA" },
   { id: "02", departmentId: "19", value: "ESTANZUELA" },
   { id: "03", departmentId: "19", value: "RIO HONDO" },
@@ -341,8 +310,6 @@ export const municipalities = [
   { id: "09", departmentId: "19", value: "LA UNION" },
   { id: "10", departmentId: "19", value: "HUITE" },
   { id: "11", departmentId: "19", value: "SAN JORGE" },
-
-  // Departamento 20 - CHIQUIMULA
   { id: "01", departmentId: "20", value: "CHIQUIMULA" },
   { id: "02", departmentId: "20", value: "SAN JOSE LA ARADA" },
   { id: "03", departmentId: "20", value: "SAN JUAN LA ERMITA" },
@@ -354,8 +321,6 @@ export const municipalities = [
   { id: "09", departmentId: "20", value: "QUEZALTEPEQUE" },
   { id: "10", departmentId: "20", value: "SAN JACINTO" },
   { id: "11", departmentId: "20", value: "IPALA" },
-
-  // Departamento 21 - JALAPA
   { id: "01", departmentId: "21", value: "JALAPA" },
   { id: "02", departmentId: "21", value: "SAN PEDRO PINULA" },
   { id: "03", departmentId: "21", value: "SAN LUIS JILOTEPEQUE" },
@@ -363,8 +328,6 @@ export const municipalities = [
   { id: "05", departmentId: "21", value: "SAN CARLOS ALZATATE" },
   { id: "06", departmentId: "21", value: "MONJAS" },
   { id: "07", departmentId: "21", value: "MATAQUESCUINTLA" },
-
-  // Departamento 22 - JUTIAPA
   { id: "01", departmentId: "22", value: "JUTIAPA" },
   { id: "02", departmentId: "22", value: "EL PROGRESO" },
   { id: "03", departmentId: "22", value: "SANTA CATARINA MITA" },
@@ -384,6 +347,12 @@ export const municipalities = [
   { id: "17", departmentId: "22", value: "QUESADA" }
 ];
 
-export const getMunicipalitiesByDepartment = (departmentId: string) => {
+// Helper function to get municipalities by department
+export const getMunicipalitiesByDepartment = (departmentId: string): Municipality[] => {
   return municipalities.filter(m => m.departmentId === departmentId);
+};
+
+// Helper function to get municipality by ID
+export const getMunicipalityById = (id: string, departmentId: string): Municipality | undefined => {
+  return municipalities.find(m => m.id === id && m.departmentId === departmentId);
 };
