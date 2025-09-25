@@ -20,11 +20,13 @@ interface ReviewSectionProps {
 const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData }) => {
   const { handleSubmit } = useFormContext();
 
-  // Function to construct full name from firstName and lastName
+  // Function to construct full name from all name fields
   const getFullName = () => {
     const firstName = formData.firstName || '';
-    const lastName = formData.lastName || '';
-    return [firstName, lastName].filter(Boolean).join(' ').trim() || 'No especificado';
+    const secondName = formData.secondName || '';
+    const firstLastName = formData.firstLastName || '';
+    const secondLastName = formData.secondLastName || '';
+    return [firstName, secondName, firstLastName, secondLastName].filter(Boolean).join(' ').trim() || 'No especificado';
   };
   const { validateMinimumRequiredData } = useApplicationValidation();
   
