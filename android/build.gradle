@@ -24,25 +24,6 @@ allprojects {
     }
 }
 
-subprojects {
-    afterEvaluate { project ->
-        if (project.hasProperty('android')) {
-            project.android {
-                compileOptions {
-                    sourceCompatibility JavaVersion.VERSION_21
-                    targetCompatibility JavaVersion.VERSION_21
-                }
-            }
-        }
-    }
-}
-
-// Apply capacitor-android Java version override
-apply from: 'capacitor-android-override.gradle'
-
-// Apply capacitor-android R class fix
-apply from: 'capacitor-android-fix.gradle'
-
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
