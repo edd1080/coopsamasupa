@@ -289,7 +289,7 @@ Generado automáticamente el ${new Date().toISOString()}
         console.log('🔄 Sending to Coopsama microservice...');
         const coopsamaResult = await supabase.functions.invoke('coopsama-integration', {
           body: { 
-            applicationId: result.id, // Use the generated UUID from the created application
+            applicationId: formData.applicationId, // Use the SCO ID from the form data
             payload: coopsamaPayload,
             userEmail: user.email
           }
