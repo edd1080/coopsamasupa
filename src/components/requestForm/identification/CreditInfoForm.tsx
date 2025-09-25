@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { requestTypes, fundsOrigins, productTypes } from '@/data/catalogs';
 
 interface CreditInfoFormProps {
   formData: any;
@@ -29,7 +30,26 @@ const CreditInfoForm: React.FC<CreditInfoFormProps> = ({ formData, updateFormDat
       />
       
       <div className="space-y-6">
-        {/* Primera fila - Destino, Monto, Plazo */}
+        {/* Primera fila - Tipo de Producto */}
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="idTypeProduct">Tipo de Producto</Label>
+            <Select value={formData.idTypeProduct || ''} onValueChange={(value) => updateFormData('idTypeProduct', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar tipo de producto" />
+              </SelectTrigger>
+              <SelectContent>
+                {productTypes.map((type) => (
+                  <SelectItem key={type.id} value={type.id}>
+                    {type.value}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Segunda fila - Destino, Monto, Plazo */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
             <Label htmlFor="creditPurpose">Destino del Crédito</Label>
@@ -75,7 +95,7 @@ const CreditInfoForm: React.FC<CreditInfoFormProps> = ({ formData, updateFormDat
           </div>
         </div>
 
-        {/* Segunda fila - Forma de Pago Combinada */}
+        {/* Tercera fila - Forma de Pago Combinada */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="paymentPlan">Forma de pago de capital</Label>
@@ -92,7 +112,7 @@ const CreditInfoForm: React.FC<CreditInfoFormProps> = ({ formData, updateFormDat
           <div></div>
         </div>
 
-        {/* Tercera fila - Información adicional */}
+        {/* Cuarta fila - Información adicional */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
            <div className="space-y-2">
              <Label htmlFor="capitalAmortization">Amortización del Capital</Label>
@@ -153,9 +173,11 @@ const CreditInfoForm: React.FC<CreditInfoFormProps> = ({ formData, updateFormDat
                 <SelectValue placeholder="Seleccionar tipo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="individual">Individual</SelectItem>
-                <SelectItem value="solidaria">Solidaria</SelectItem>
-                <SelectItem value="grupal">Grupal</SelectItem>
+                {requestTypes.map((type) => (
+                  <SelectItem key={type.id} value={type.value}>
+                    {type.value}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -175,6 +197,28 @@ const CreditInfoForm: React.FC<CreditInfoFormProps> = ({ formData, updateFormDat
             />
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="sourceOfFunds">Origen de los Fondos</Label>
+            <Select value={formData.sourceOfFunds || ''} onValueChange={(value) => updateFormData('sourceOfFunds', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar origen" />
+              </SelectTrigger>
+              <SelectContent className="max-w-md">
+                {fundsOrigins.map((origin) => (
+                  <SelectItem 
+                    key={origin.id} 
+                    value={origin.payloadValue}
+                    className="whitespace-normal leading-tight py-2 min-h-[2.5rem]"
+                  >
+                    <div 
+                      className="text-xs leading-tight"
+                      dangerouslySetInnerHTML={{ __html: origin.displayValue }}
+                    />
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* Observaciones de Carácter */}

@@ -163,6 +163,17 @@ const ContactHousingForm: React.FC<ContactHousingFormProps> = ({ formData, updat
             />
           </div>
 
+          {/* Indicaciones Adicionales */}
+          <div className="space-y-2">
+            <Label htmlFor="otherIndications">Indicaciones Adicionales</Label>
+            <Input 
+              id="otherIndications"
+              value={formData.otherIndications || ''} 
+              onChange={(e) => updateFormData('otherIndications', e.target.value)}
+              placeholder="Indicaciones adicionales de la dirección (opcional)"
+            />
+          </div>
+
           {/* Geolocalización Component */}
           <GeolocationCapture 
             onLocationCaptured={handleLocationCaptured}

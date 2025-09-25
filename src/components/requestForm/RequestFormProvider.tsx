@@ -92,6 +92,7 @@ interface FormData {
   email: string;
   address: string;
   addressReference: string;
+  otherIndications: string;
   geolocation: any;
   residenceDepartment: string;
   residenceMunicipality: string;
@@ -115,6 +116,7 @@ interface FormData {
   descuentosPlanilla: string;
   otros: string;
   cuotaSolicitada: string;
+  idTypeProduct: string;
   
   // Patrimonial statement
   efectivoSaldoBancos: string;
@@ -159,6 +161,23 @@ interface FormData {
   otherDestination: string;
   secondaryProject: string;
   addressDetails: string;
+  
+  // Credit Information
+  creditPurpose: string;
+  requestedAmount: string;
+  termMonths: string;
+  capitalPayment: string;
+  interestPayment: string;
+  paymentPlan: string;
+  capitalAmortization: string;
+  memberType: string;
+  interestRate: string;
+  interestAmortization: string;
+  applicationType: string;
+  obtainedCreditsCount: string;
+  fundsOrigin: string;
+  sourceOfFunds: string;
+  characterObservations: string;
   
   [key: string]: any;
 }
@@ -251,13 +270,13 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
       spouseWorkplace: '', spouseJobStability: '', spouseMobilePhone: '', spouseBirthDate: null,
       
       // Contact and Housing
-      mobilePhone: '', homePhone: '', email: '', address: '', addressReference: '', geolocation: null,
+      mobilePhone: '', homePhone: '', email: '', address: '', addressReference: '', otherIndications: '', geolocation: null,
       residenceDepartment: '', residenceMunicipality: '', housingType: '', residenceStability: '',
       
       // Credit Information
       creditPurpose: '', requestedAmount: '', termMonths: '', capitalPayment: '', interestPayment: '',
       paymentPlan: '', capitalAmortization: '', memberType: '', interestRate: '', interestAmortization: '',
-      applicationType: '', obtainedCreditsCount: '', fundsOrigin: '', characterObservations: '',
+      applicationType: '', obtainedCreditsCount: '', fundsOrigin: '', sourceOfFunds: '', characterObservations: '',
       
       // Investment destination
       investmentPlaceDepartment: '', investmentPlaceMunicipality: '', destinationGroup: '', creditDestination: '',
@@ -271,6 +290,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
       // Expenses
       alimentacion: '', vestuario: '', serviciosBasicos: '', educacion: '', vivienda: '', transporte: '',
       compromisos: '', gastosFinancieros: '', descuentosPlanilla: '', otros: '', cuotaSolicitada: '',
+      idTypeProduct: '',
       
       // Patrimonial Statement
       efectivoSaldoBancos: '', cuentasPorCobrar: '', mercaderias: '', bienesMuebles: '', vehiculos: '',
@@ -448,6 +468,40 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     setSectionStatus(prev => ({ ...prev, [sectionId]: status }));
   }, []);
 
+  // Check if a section is completed based on form data
+  const checkSectionCompletion = useCallback((sectionId: string): boolean => {
+    switch (sectionId) {
+      case 'identification':
+        return !!(formData.firstName && formData.firstLastName && formData.dpi);
+      case 'finances':
+        return !!(formData.ingresoPrincipal || formData.ingresoSecundario);
+      case 'business':
+        return !!(formData.occupation || formData.companyName);
+      case 'guarantors':
+        return references.length > 0;
+      case 'documents':
+        return !!(formData.dpiFrontal || formData.fotoSolicitante);
+      case 'review':
+        return true; // Review section is always considered complete
+      default:
+        return false;
+    }
+  }, [formData, references.length]);
+
+  // Auto-update section status based on form data
+  useEffect(() => {
+    steps.forEach(step => {
+      const isCompleted = checkSectionCompletion(step.id);
+      const currentStatus = sectionStatus[step.id];
+      
+      if (isCompleted && currentStatus !== 'complete') {
+        updateSectionStatus(step.id, 'complete');
+      } else if (!isCompleted && currentStatus === 'complete') {
+        updateSectionStatus(step.id, 'pending');
+      }
+    });
+  }, [formData, references, steps, sectionStatus, checkSectionCompletion, updateSectionStatus]);
+
   // Reference functions (formerly guarantor functions)
   const addReference = useCallback(() => {
     // Validar límite máximo de 3 referencias
@@ -483,6 +537,11 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     setReferences(prev => {
       const updated = [...prev, newReference];
       
+      // Mark guarantors section as complete when adding first reference
+      if (prev.length === 0) {
+        updateSectionStatus('guarantors', 'complete');
+      }
+      
       // Sincronizar con formData inmediatamente
       setFormData(prevFormData => ({
         ...prevFormData,
@@ -494,7 +553,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
       
       return updated;
     });
-  }, [references.length]);
+  }, [references.length, updateSectionStatus]);
 
   const removeReference = useCallback((index: number) => {
     setReferences(prev => {
@@ -560,12 +619,12 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     return steps[currentStep] || { id: '', title: '', icon: null };
   }, [currentStep, steps]);
 
-  // Get progress percentage
+  // Get progress percentage based on actual section completion status
   const getProgressPercentage = useCallback((): number => {
-    const totalSubSteps = steps.reduce((acc, _, index) => acc + getSubStepsForSection(index), 0);
-    const currentSubSteps = steps.slice(0, currentStep).reduce((acc, _, index) => acc + getSubStepsForSection(index), 0) + subStep + 1;
-    return Math.round((currentSubSteps / totalSubSteps) * 100);
-  }, [currentStep, subStep, steps, getSubStepsForSection]);
+    const totalSections = steps.length;
+    const completedSections = Object.values(sectionStatus).filter(status => status === 'complete').length;
+    return Math.round((completedSections / totalSections) * 100);
+  }, [sectionStatus, steps.length]);
 
   // Navigation functions
   const handleNext = useCallback(() => {

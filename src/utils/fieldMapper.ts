@@ -209,7 +209,7 @@ const splitFullName = (fullName: string) => {
 
 // Helper function to calculate age from birth date
 const calculateAge = (birthDate: string): number => {
-  if (!birthDate) return 30; // Default age
+  if (!birthDate) return 0; // No default age - should be empty if no birth date
   const today = new Date();
   const birth = new Date(birthDate);
   let age = today.getFullYear() - birth.getFullYear();
@@ -330,20 +330,18 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
     secondLastName
   };
   
-  // DEBUG: Mapeo de agencias
-  console.log("🔍 DEBUG AGENCY - formData.agency:", formData.agency);
-  console.log("🔍 DEBUG AGENCY - agentData?.agency:", agentData?.agency);
-  console.log("🔍 DEBUG AGENCY - agencies catalog:", agencies);
+  // Agency mapping - form stores the agency name, we need to find the ID
+  const agencyName = formData.agencyType || "";
+  console.log("🔍 AGENCY - formData.agencyType:", agencyName);
   
-  // Get agency info - prioritize form data (user selection)
-  const agencySearchValue = formData.agency || agentData?.agency || "";
-  console.log("🔍 DEBUG AGENCY - searching for:", agencySearchValue);
+  // Find agency by name
+  const selectedAgency = agencies.find(agency => 
+    agency.name.toLowerCase() === agencyName.toLowerCase() ||
+    agency.value.toLowerCase() === agencyName.toLowerCase()
+  );
   
-  const agencyMatch = mapToCatalog(agencies, agencySearchValue, "1");
-  console.log("🔍 DEBUG AGENCY - agencyMatch result:", agencyMatch);
-  
-  const agencyId = parseInt(agencyMatch.id) || 1;
-  console.log("🔍 DEBUG AGENCY - final agencyId:", agencyId);
+  const agencyId = selectedAgency ? parseInt(selectedAgency.id) : 0;
+  console.log("🔍 AGENCY - Found agency:", selectedAgency?.name, "ID:", agencyId);
   
   // Get residence location data
   const residenceDepartmentMatch = formData.residenceDepartment || formData.departamento 
@@ -368,9 +366,9 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
     investmentMunicipality: { id: investmentMunicipalityMatch.id, value: investmentMunicipalityMatch.value }
   });
   
-  // Product type mapping
-  const productTypeMatch = mapToCatalog(productTypes, formData.productType || formData.tipoProducto || "", "1");
-  const productTypeId = parseInt(productTypeMatch.id) || 1;
+  // Simple product type mapping - form stores the ID directly
+  const productTypeId = parseInt(formData.idTypeProduct || "0") || 0;
+  console.log("🔍 PRODUCT TYPE - formData.idTypeProduct:", formData.idTypeProduct, "-> productTypeId:", productTypeId);
   
   // Build the payload
   const payload: CoopsamaPayload = {
@@ -419,7 +417,7 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
               : { id: "", value: "" },
             personalDocumentAddress: {
               fullAddress: formData.address || formData.direccion || "",
-              otherIndications: formData.addressReference || formData.addressDetails || formData.detallesDireccion || "",
+              otherIndications: formData.otherIndications || formData.addressReference || formData.addressDetails || formData.detallesDireccion || "",
               state: { id: residenceDepartmentMatch.id, value: residenceDepartmentMatch.value },
               county: { id: residenceMunicipalityMatch.id, value: residenceMunicipalityMatch.value }
             },

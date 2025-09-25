@@ -1,50 +1,33 @@
 export interface ProductType {
   id: string;
   value: string;
-  name: string;
-  description: string;
 }
 
 export const productTypes: ProductType[] = [
   { 
     id: "1", 
-    value: "CREDITO", 
-    name: "Crédito",
-    description: "Créditos tradicionales y préstamos personales"
+    value: "Crédito"
   },
   { 
     id: "2", 
-    value: "AUTOMATICO", 
-    name: "Automático",
-    description: "Préstamos automatizados con aprobación rápida"
+    value: "Automatico"
   },
   { 
     id: "3", 
-    value: "TARJETA_DE_CREDITO", 
-    name: "Tarjeta de Crédito",
-    description: "Líneas de crédito renovables mediante tarjetas"
+    value: "Tarjeta de Credito"
   }
 ];
 
 // Helper function to map credit type to product type
-export const mapCreditTypeToProductType = (creditType: string): ProductType | undefined => {
-  if (!creditType) return productTypes[0]; // Default to "Crédito Normal"
-  
-  const normalizedType = creditType.toLowerCase();
-  
-  // Map common credit types to our product types
-  if (normalizedType.includes('tarjeta') || normalizedType.includes('card')) {
-    return productTypes[2]; // Tarjeta de Crédito
-  }
-  
-  if (normalizedType.includes('auto') || normalizedType.includes('rapido') || normalizedType.includes('quick')) {
-    return productTypes[1]; // Automático
-  }
-  
-  return productTypes[0]; // Default to Crédito Normal
+export const mapCreditTypeToProductType = (creditType: string): ProductType | null => {
+  const match = productTypes.find(type => 
+    type.value.toLowerCase() === creditType.toLowerCase()
+  );
+  return match || null;
 };
 
 // Helper function to get product type by ID
-export const getProductTypeById = (id: string): ProductType | undefined => {
-  return productTypes.find(type => type.id === id);
+export const getProductTypeById = (id: string): ProductType | null => {
+  const match = productTypes.find(type => type.id === id);
+  return match || null;
 };
