@@ -1,6 +1,6 @@
 
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
+import react from "@vitejs/plugin-react";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from 'vite-plugin-pwa';
@@ -12,8 +12,8 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   define: {
-    // Habilitar herramientas de testing en desarrollo y producción
-    'import.meta.env.VITE_ENABLE_TESTING_TOOLS': JSON.stringify('true'),
+    // Deshabilitar herramientas de testing en desarrollo y producción
+    'import.meta.env.VITE_ENABLE_TESTING_TOOLS': JSON.stringify('false'),
   },
   plugins: [
     react(),
