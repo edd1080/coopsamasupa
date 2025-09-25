@@ -107,7 +107,8 @@ export const useSaveDraft = () => {
       await saveOfflineData(offlineKey, offlineData);
 
       // Check if offline - enqueue if no connection and return early
-      if (isOffline) {
+      console.log('🔍 Checking offline status:', { isOffline, navigatorOnLine: navigator.onLine });
+      if (isOffline || !navigator.onLine) {
         console.log('📵 Offline mode detected, saving locally and enqueueing...');
         const { offlineQueue } = await import('@/utils/offlineQueue');
         await offlineQueue.enqueue({

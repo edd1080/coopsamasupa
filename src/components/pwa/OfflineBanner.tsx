@@ -8,7 +8,7 @@ export const OfflineBanner = () => {
   if (isOnline && !isSyncing) return null;
 
   return (
-    <Alert className="fixed top-16 left-0 right-0 z-10 rounded-none border-b border-orange-400 bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100 py-1">
+    <Alert className="fixed top-14 left-0 right-0 z-10 rounded-none border-b border-orange-400 bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100 py-1">
       <div className="flex items-center gap-2 px-2">
         {isSyncing ? (
           <Wifi className="h-3 w-3 animate-pulse" />

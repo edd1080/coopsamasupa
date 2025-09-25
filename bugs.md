@@ -15,6 +15,10 @@
 | BUG-233 | 2025-01-09 | Barra de navegación mal alineada y botones recortados | ✅ Resuelto | Alta | Dev Team |
 | BUG-236 | 2025-01-09 | Campo Monto Solicitado sin formato monetario | ✅ Resuelto | Alta | Dev Team |
 | BUG-254 | 2025-01-20 | Layout desordenado en diálogo de confirmación de eliminación | ✅ Resuelto | Media | Dev Team |
+| BUG-282 | 2025-01-23 | Mapeo de campos business incorrecto en payload | ✅ Resuelto | Alta | Dev Team |
+| BUG-283 | 2025-01-23 | Problema de timezone en spouseBirthDate (GMT vs UTC) | ✅ Resuelto | Media | Dev Team |
+| BUG-284 | 2025-01-23 | Campos faltantes en pantalla de resumen | ✅ Resuelto | Media | Dev Team |
+| BUG-285 | 2025-01-23 | SCO ID incorrecto en metadata del payload | ✅ Resuelto | Alta | Dev Team |
 
 ---
 
@@ -2300,3 +2304,206 @@ Uncaught TypeError: documents.reduce is not a function
   - **FUNCIONALIDAD MANTENIDA**: Actualización de `formData` sigue funcionando sin causar loop
 - **Archivos**: `src/components/requestForm/PhotoDocumentUpload.tsx`
 - **Estado**: ✅ Resuelto definitivamente
+
+---
+
+## 🐛 **BUG-282: Mapeo de campos business incorrecto en payload**
+
+### **📅 Fecha de Reporte**
+2025-01-23
+
+### **📝 Descripción**
+En el mapeo de campos para generar el payload final, dentro del nodo de business se estaban incluyendo todos los datos de business en lugar de solo los 4 campos específicos requeridos: `companyName`, `fullAddress`, `activityDescription`, y `productType`. Además, estos campos debían enviarse siempre vacíos en el payload.
+
+### **🎯 Comportamiento Esperado**
+- **Solo 4 campos**: Incluir únicamente `companyName`, `fullAddress`, `activityDescription`, `productType`
+- **Campos vacíos**: Enviar siempre como strings vacíos si no hay datos
+- **Eliminar campos innecesarios**: Remover `grossProfit` y `startDate` del payload
+
+### **❌ Comportamiento Actual**
+- **Campos extra**: Se incluían `grossProfit` y `startDate` innecesarios
+- **Mapeo incorrecto**: No se seguía la estructura requerida
+- **Validaciones incorrectas**: Advertencias por campos que no debían existir
+
+### **🔍 Análisis del Problema**
+- **Componente afectado**: Mapeo de campos en `fieldMapper.ts`
+- **Archivos involucrados**: 
+  - `src/utils/fieldMapper.ts` (mapeo de payload)
+- **Causa probable**: 
+  - Interfaz `CoopsamaPayload` incluía campos innecesarios
+  - Mapeo de `business` incluía todos los campos disponibles
+  - Validaciones incluían campos removidos
+
+### **✅ Solución Implementada**
+- [x] **Archivos modificados**:
+  - `src/utils/fieldMapper.ts` - Mapeo de business corregido
+- [x] **Cambios realizados**:
+  - **INTERFAZ ACTUALIZADA**: Removidos `grossProfit` y `startDate` de interfaz `CoopsamaPayload`
+  - **MAPEO CORREGIDO**: Solo 4 campos mapeados desde `formData`
+  - **CAMPOS VACÍOS**: Valores por defecto como strings vacíos
+  - **VALIDACIONES LIMPIADAS**: Removidas advertencias de campos eliminados
+- [x] **Script de testing**: `test-business-mapping.js`
+- [x] **Validación**: ✅ Bug corregido exitosamente
+
+### **📊 Estado**
+- **Status**: ✅ Resuelto
+- **Prioridad**: Alta
+- **Complejidad**: Baja
+- **Tiempo estimado**: 30 minutos
+- **Tiempo real**: 30 minutos
+
+---
+
+## 🐛 **BUG-283: Problema de timezone en spouseBirthDate (GMT vs UTC)**
+
+### **📅 Fecha de Reporte**
+2025-01-23
+
+### **📝 Descripción**
+El campo `spouseBirthDate` en el formulario de información del cónyuge tenía un problema de interpretación de timezone. Al seleccionar una fecha, se interpretaba incorrectamente debido a diferencias entre GMT y UTC, causando que la fecha se mostrara un día anterior al seleccionado.
+
+### **🎯 Comportamiento Esperado**
+- **Fecha correcta**: La fecha seleccionada debe mostrarse correctamente
+- **Sin cambios de día**: No debe haber desplazamiento de un día
+- **Timezone consistente**: Manejo correcto de timezone local
+
+### **❌ Comportamiento Actual**
+- **Fecha incorrecta**: La fecha se mostraba un día anterior
+- **Problema de timezone**: Interpretación incorrecta GMT vs UTC
+- **Inconsistencia**: Diferente comportamiento según el navegador
+
+### **🔍 Análisis del Problema**
+- **Componente afectado**: Campo de fecha en formulario de cónyuge
+- **Archivos involucrados**: 
+  - `src/components/requestForm/identification/SpouseInfoForm.tsx`
+- **Causa probable**: 
+  - `Date` constructor interpretaba fecha sin timezone específico
+  - Falta de especificación de timezone local
+
+### **✅ Solución Implementada**
+- [x] **Archivos modificados**:
+  - `src/components/requestForm/identification/SpouseInfoForm.tsx` - Timezone corregido
+- [x] **Cambios realizados**:
+  - **TIMEZONE EXPLÍCITO**: Agregado `'T00:00:00'` al crear objeto Date
+  - **CONVERSIÓN CORRECTA**: `new Date(formData.spouseBirthDate + 'T00:00:00')`
+  - **SERIALIZACIÓN CORRECTA**: `date.toISOString().split('T')[0]` para guardar
+- [x] **Script de testing**: `test-spouse-date-timezone-fix.js`
+- [x] **Validación**: ✅ Bug corregido exitosamente
+
+### **📊 Estado**
+- **Status**: ✅ Resuelto
+- **Prioridad**: Media
+- **Complejidad**: Baja
+- **Tiempo estimado**: 30 minutos
+- **Tiempo real**: 30 minutos
+
+---
+
+## 🐛 **BUG-284: Campos faltantes en pantalla de resumen**
+
+### **📅 Fecha de Reporte**
+2025-01-23
+
+### **📝 Descripción**
+En la pantalla de resumen de la solicitud, los campos "Agencia" y "Fecha de solicitud" mostraban "No especificada" en lugar de los datos reales ingresados. Estos campos no estaban siendo mapeados correctamente desde el formulario.
+
+### **🎯 Comportamiento Esperado**
+- **Datos reales**: Mostrar la agencia y fecha de solicitud ingresadas
+- **Campos visibles**: "Agencia" y "Fecha de solicitud" con datos correctos
+- **Mapeo correcto**: Los datos deben persistir desde el formulario
+
+### **❌ Comportamiento Actual**
+- **"No especificada"**: Ambos campos mostraban texto por defecto
+- **Sin mapeo**: Los datos no se guardaban en el formulario
+- **Campos faltantes**: No estaban definidos en la interfaz
+
+### **🔍 Análisis del Problema**
+- **Componente afectado**: Pantalla de resumen y formulario
+- **Archivos involucrados**: 
+  - `src/components/requestForm/RequestFormProvider.tsx` (interfaz FormData)
+  - `src/components/requestForm/ReviewSection.tsx` (pantalla de resumen)
+- **Causa probable**: 
+  - Campos `agency` y `applicationDate` no definidos en interfaz
+  - No se inicializaban en `defaultFormData`
+  - No se mapeaban en la pantalla de resumen
+
+### **✅ Solución Implementada**
+- [x] **Archivos modificados**:
+  - `src/components/requestForm/RequestFormProvider.tsx` - Campos agregados
+- [x] **Cambios realizados**:
+  - **INTERFAZ ACTUALIZADA**: Agregados `agency` y `applicationDate` a FormData
+  - **INICIALIZACIÓN**: `agency: ''` y `applicationDate: new Date().toISOString().split('T')[0]`
+  - **MAPEO CORRECTO**: Los campos se mapean correctamente en el resumen
+- [x] **Script de testing**: `test-review-section-fields.js`
+- [x] **Validación**: ✅ Bug corregido exitosamente
+
+### **📊 Estado**
+- **Status**: ✅ Resuelto
+- **Prioridad**: Media
+- **Complejidad**: Baja
+- **Tiempo estimado**: 30 minutos
+- **Tiempo real**: 30 minutos
+
+---
+
+## 🐛 **BUG-285: SCO ID incorrecto en metadata del payload**
+
+### **📅 Fecha de Reporte**
+2025-01-23
+
+### **📝 Descripción**
+En la metadata del payload enviado al microservicio de Coopsama, el `processId` mostraba un UUID largo en lugar del SCO ID con formato `SCO_XXXXXX`. El problema persistía a pesar de que el SCO ID se generaba correctamente en el formulario.
+
+### **🎯 Comportamiento Esperado**
+- **SCO ID en metadata**: Mostrar `SCO_XXXXXX` en lugar de UUID largo
+- **Consistencia**: El mismo ID debe usarse en toda la aplicación
+- **Formato correcto**: Mantener formato SCO_XXXXXX en todo el flujo
+
+### **❌ Comportamiento Actual**
+- **UUID largo**: Se mostraba ID interno de la base de datos
+- **Inconsistencia**: Diferentes IDs en diferentes partes del flujo
+- **Mapeo incorrecto**: El SCO ID no llegaba al microservicio
+
+### **🔍 Análisis del Problema**
+- **Componente afectado**: Flujo de envío de solicitudes
+- **Archivos involucrados**: 
+  - `src/hooks/useFinalizeApplication.tsx` (envío de applicationId)
+  - `supabase/functions/coopsama-integration/index.ts` (Edge Function)
+- **Causa probable**: 
+  - `useFinalizeApplication` enviaba `result.id` (UUID) en lugar de `formData.applicationId` (SCO ID)
+  - Edge Function usaba el UUID como fallback
+  - El SCO ID no se propagaba correctamente
+
+### **✅ Solución Implementada**
+- [x] **Archivos modificados**:
+  - `src/hooks/useFinalizeApplication.tsx` - Envío de SCO ID corregido
+- [x] **Cambios realizados**:
+  - **ENVÍO CORREGIDO**: Cambiado `applicationId: result.id` por `applicationId: formData.applicationId`
+  - **SCO ID PRESERVADO**: El SCO ID se mantiene en todo el flujo
+  - **METADATA CORRECTA**: Edge Function recibe y usa el SCO ID correcto
+- [x] **Script de testing**: `test-sco-id-metadata-fix.js`
+- [x] **Validación**: ✅ Bug corregido exitosamente
+
+### **📊 Estado**
+- **Status**: ✅ Resuelto
+- **Prioridad**: Alta
+- **Complejidad**: Media
+- **Tiempo estimado**: 1 hora
+- **Tiempo real**: 45 minutos
+
+---
+
+## 📈 **Estadísticas de Bugs**
+
+- **Total de bugs reportados**: 29
+- **En análisis**: 0
+- **En desarrollo**: 0
+- **Resueltos**: 29
+- **Rechazados**: 0
+
+---
+
+*Última actualización: 2025-01-23*
+*Documento creado por: Dev Team*
+
+---

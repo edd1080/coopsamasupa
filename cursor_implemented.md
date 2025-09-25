@@ -1414,9 +1414,72 @@
 
 ---
 
+### **2025-01-23** - Sesión de Corrección de Mapeo de Payload y Campos
+
+#### 🔧 **72. Corrección de Mapeo de Campos Business (BUG-282)**
+- **Archivos modificados**:
+  - `src/utils/fieldMapper.ts` - Mapeo de business corregido
+- **Problema**: Nodo business incluía todos los campos en lugar de solo 4 requeridos
+- **Solución implementada**:
+  - **INTERFAZ ACTUALIZADA**: Removidos `grossProfit` y `startDate` de `CoopsamaPayload`
+  - **MAPEO CORREGIDO**: Solo 4 campos mapeados: `companyName`, `fullAddress`, `activityDescription`, `productType`
+  - **CAMPOS VACÍOS**: Valores por defecto como strings vacíos
+  - **VALIDACIONES LIMPIADAS**: Removidas advertencias de campos eliminados
+- **Script de testing**: `test-business-mapping.js`
+- **Estado**: ✅ Completado
+
+#### 🔧 **73. Corrección de Timezone en spouseBirthDate (BUG-283)**
+- **Archivos modificados**:
+  - `src/components/requestForm/identification/SpouseInfoForm.tsx` - Timezone corregido
+- **Problema**: Fecha se mostraba un día anterior por interpretación incorrecta GMT vs UTC
+- **Solución implementada**:
+  - **TIMEZONE EXPLÍCITO**: Agregado `'T00:00:00'` al crear objeto Date
+  - **CONVERSIÓN CORRECTA**: `new Date(formData.spouseBirthDate + 'T00:00:00')`
+  - **SERIALIZACIÓN CORRECTA**: `date.toISOString().split('T')[0]` para guardar
+- **Script de testing**: `test-spouse-date-timezone-fix.js`
+- **Estado**: ✅ Completado
+
+#### 🔧 **74. Agregado de Campos Faltantes en Resumen (BUG-284)**
+- **Archivos modificados**:
+  - `src/components/requestForm/RequestFormProvider.tsx` - Campos agregados
+- **Problema**: Campos "Agencia" y "Fecha de solicitud" mostraban "No especificada"
+- **Solución implementada**:
+  - **INTERFAZ ACTUALIZADA**: Agregados `agency` y `applicationDate` a FormData
+  - **INICIALIZACIÓN**: `agency: ''` y `applicationDate: new Date().toISOString().split('T')[0]`
+  - **MAPEO CORRECTO**: Los campos se mapean correctamente en el resumen
+- **Script de testing**: `test-review-section-fields.js`
+- **Estado**: ✅ Completado
+
+#### 🔧 **75. Corrección de SCO ID en Metadata del Payload (BUG-285)**
+- **Archivos modificados**:
+  - `src/hooks/useFinalizeApplication.tsx` - Envío de SCO ID corregido
+- **Problema**: Metadata mostraba UUID largo en lugar de SCO_XXXXXX
+- **Solución implementada**:
+  - **ENVÍO CORREGIDO**: Cambiado `applicationId: result.id` por `applicationId: formData.applicationId`
+  - **SCO ID PRESERVADO**: El SCO ID se mantiene en todo el flujo
+  - **METADATA CORRECTA**: Edge Function recibe y usa el SCO ID correcto
+- **Script de testing**: `test-sco-id-metadata-fix.js`
+- **Estado**: ✅ Completado
+
+#### 📋 **Scripts de Testing Creados y Ejecutados**
+- **`test-business-mapping.js`**: Validación de mapeo de campos business
+- **`test-spouse-date-timezone-fix.js`**: Validación de corrección de timezone
+- **`test-review-section-fields.js`**: Validación de campos en resumen
+- **`test-sco-id-metadata-fix.js`**: Validación de SCO ID en metadata
+- **Estado**: ✅ Todos ejecutados y eliminados después de validación
+
+#### 📋 **Commits Realizados**
+1. **`808326e`**: fix: corregir mapeo de campos business y problema de timezone en spouseBirthDate
+2. **`fa5405a`**: fix: corregir campos faltantes en pantalla de resumen y applicationId en metadata
+3. **`32a1972`**: fix: eliminar campos problemáticos startDate y grossProfit de interfaz business
+4. **`e8479ea`**: fix: corregir envío de SCO ID en metadata del payload
+- **Estado**: ✅ Todos desplegados exitosamente
+
+---
+
 *Última actualización: 2025-01-23*
-*Total de cambios documentados: 67*
-*Estado del proyecto: Listo para producción con funcionalidad de documentos, navegación, subida de archivos, validación de campos y geolocalización completamente funcional y adaptada a dark mode. Persistencia de documentos completamente funcional al navegar entre secciones y al salir/regresar a solicitudes. Consola limpia sin logs de debugging innecesarios. Accesos rápidos en ApplicationDetails funcionando correctamente para todas las secciones. Guardado offline de borradores funcionando sin errores de sesión expirada. Vulnerabilidades de seguridad de Android mitigadas con configuraciones de debug deshabilitadas en producción. Texto de propósito del crédito en ApplicationDetails corregido para evitar desbordamiento en cards. Loop de re-rendering completamente eliminado, persistencia de documentos robusta, directorio consistente para todos los documentos y mensajes de error completamente en español. Error "documents.reduce is not a function" completamente corregido con validación de arrays y procesamiento asíncrono correcto.*
+*Total de cambios documentados: 75*
+*Estado del proyecto: Listo para producción con funcionalidad de documentos, navegación, subida de archivos, validación de campos y geolocalización completamente funcional y adaptada a dark mode. Persistencia de documentos completamente funcional al navegar entre secciones y al salir/regresar a solicitudes. Consola limpia sin logs de debugging innecesarios. Accesos rápidos en ApplicationDetails funcionando correctamente para todas las secciones. Guardado offline de borradores funcionando sin errores de sesión expirada. Vulnerabilidades de seguridad de Android mitigadas con configuraciones de debug deshabilitadas en producción. Texto de propósito del crédito en ApplicationDetails corregido para evitar desbordamiento en cards. Loop de re-rendering completamente eliminado, persistencia de documentos robusta, directorio consistente para todos los documentos y mensajes de error completamente en español. Error "documents.reduce is not a function" completamente corregido con validación de arrays y procesamiento asíncrono correcto. Mapeo de campos business corregido para incluir solo 4 campos requeridos. Problema de timezone en spouseBirthDate resuelto. Campos de agencia y fecha de solicitud agregados al resumen. SCO ID correcto en metadata del payload enviado al microservicio Coopsama.*
 
 #### **#66: Corrección de Error "documents.reduce is not a function"**
 - **Problema**: Error `Uncaught TypeError: documents.reduce is not a function` al entrar al paso de documentos

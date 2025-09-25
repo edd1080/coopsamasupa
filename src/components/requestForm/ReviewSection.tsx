@@ -362,7 +362,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
         <Separator className="my-8" />
 
         {/* Panel de Testing - Habilitado cuando VITE_ENABLE_TESTING_TOOLS=true */}
-        {import.meta.env.VITE_ENABLE_TESTING_TOOLS === 'true' && (
+        {String(import.meta.env.VITE_ENABLE_TESTING_TOOLS) === 'true' && (
           <TestingPanel 
             formData={formData}
             updateFormData={updateFormData}
@@ -371,7 +371,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
         )}
         
         {/* Debug: Solo mostrar cuando las herramientas de testing estén habilitadas */}
-        {import.meta.env.VITE_ENABLE_TESTING_TOOLS === 'true' && (
+        {String(import.meta.env.VITE_ENABLE_TESTING_TOOLS) === 'true' && (
           <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
             <h3 className="font-bold text-yellow-800">🔧 Debug Info:</h3>
             <p>VITE_ENABLE_TESTING_TOOLS: {String(import.meta.env.VITE_ENABLE_TESTING_TOOLS)}</p>

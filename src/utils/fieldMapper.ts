@@ -217,7 +217,7 @@ const calculateAge = (birthDate: string): number => {
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
     age--;
   }
-  return age > 0 ? age : 30;
+  return age > 0 ? age : 0;
 };
 
 // Helper function to format date to yyyy-mm-dd string
@@ -346,12 +346,20 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
   console.log("🔍 DEBUG AGENCY - final agencyId:", agencyId);
   
   // Get residence location data
-  const residenceDepartmentMatch = mapToCatalog(departments, formData.residenceDepartment || formData.departamento || "", "01");
-  const residenceMunicipalityMatch = mapMunicipality(residenceDepartmentMatch.id, formData.residenceMunicipality || formData.municipio || "");
+  const residenceDepartmentMatch = formData.residenceDepartment || formData.departamento 
+    ? mapToCatalog(departments, formData.residenceDepartment || formData.departamento, "01")
+    : { id: "", value: "" };
+  const residenceMunicipalityMatch = residenceDepartmentMatch.id 
+    ? mapMunicipality(residenceDepartmentMatch.id, formData.residenceMunicipality || formData.municipio || "")
+    : { id: "", value: "" };
   
   // Get investment location data  
-  const investmentDepartmentMatch = mapToCatalog(departments, formData.investmentPlaceDepartment || "", "01");
-  const investmentMunicipalityMatch = mapMunicipality(investmentDepartmentMatch.id, formData.investmentPlaceMunicipality || "");
+  const investmentDepartmentMatch = formData.investmentPlaceDepartment 
+    ? mapToCatalog(departments, formData.investmentPlaceDepartment, "01")
+    : { id: "", value: "" };
+  const investmentMunicipalityMatch = investmentDepartmentMatch.id 
+    ? mapMunicipality(investmentDepartmentMatch.id, formData.investmentPlaceMunicipality || "")
+    : { id: "", value: "" };
   
   console.log('🗺️ Location mapping:', {
     residenceDepartment: { id: residenceDepartmentMatch.id, value: residenceDepartmentMatch.value },
@@ -395,20 +403,32 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             personalDocumentId: formData.dpi || "",
             emissionState: { id: residenceDepartmentMatch.id, value: residenceDepartmentMatch.value },
             emissionCounty: { id: residenceMunicipalityMatch.id, value: residenceMunicipalityMatch.value },
-            gender: mapToCatalog(genders, formData.gender || formData.genero || "", "1"),
-            maritalStatus: mapToCatalog(civilStatuses, formData.civilStatus || formData.estadoCivil || "", "1"),
+            gender: formData.gender || formData.genero 
+              ? mapToCatalog(genders, formData.gender || formData.genero, "1")
+              : { id: "", value: "" },
+            maritalStatus: formData.civilStatus || formData.estadoCivil 
+              ? mapToCatalog(civilStatuses, formData.civilStatus || formData.estadoCivil, "1")
+              : { id: "", value: "" },
             birthDate: formatDateToString(formData.birthDate || formData.fechaNacimiento),
             age: calculateAge(formData.birthDate || formData.fechaNacimiento),
-            academicTitle: mapToCatalog(officialProfessions, formData.profession || formData.profesion || "", "1"),
-            occupation: mapToCatalog(officialOccupations, formData.occupation || formData.ocupacion || "", "1"),
+            academicTitle: formData.profession || formData.profesion 
+              ? mapToCatalog(officialProfessions, formData.profession || formData.profesion, "1")
+              : { id: "", value: "" },
+            occupation: formData.occupation || formData.ocupacion 
+              ? mapToCatalog(officialOccupations, formData.occupation || formData.ocupacion, "1")
+              : { id: "", value: "" },
             personalDocumentAddress: {
               fullAddress: formData.address || formData.direccion || "",
               otherIndications: formData.addressDetails || formData.detallesDireccion || "",
               state: { id: residenceDepartmentMatch.id, value: residenceDepartmentMatch.value },
               county: { id: residenceMunicipalityMatch.id, value: residenceMunicipalityMatch.value }
             },
-            typeOfHousing: mapToCatalog(housingTypes, formData.housingType || formData.tipoVivienda || "", "1"),
-            housingStability: mapToCatalog(residentialStabilities, formData.residentialStability || formData.estabilidadResidencial || "", "4"),
+            typeOfHousing: formData.housingType || formData.tipoVivienda 
+              ? mapToCatalog(housingTypes, formData.housingType || formData.tipoVivienda, "1")
+              : { id: "", value: "" },
+            housingStability: formData.residentialStability || formData.estabilidadResidencial 
+              ? mapToCatalog(residentialStabilities, formData.residentialStability || formData.estabilidadResidencial, "4")
+              : { id: "", value: "" },
             geolocalization: formData.geolocation ? `${formData.geolocation.latitude},${formData.geolocation.longitude}` : "",
             spouseFirstName: formData.spouseFirstName || "",
             spouseSecondName: formData.spouseSecondName || "",
@@ -416,15 +436,21 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             spouseFirstLastName: formData.spouseFirstLastName || "",
             spouseSecondLastName: formData.spouseSecondLastName || "",
             spouseCompanyName: formData.spouseWorkplace || "",
-            spouseJobStability: formData.spouseJobStability ? mapToCatalog(workStabilities, formData.spouseJobStability, "4") : { id: "1", value: "" },
+            spouseJobStability: formData.spouseJobStability 
+              ? mapToCatalog(workStabilities, formData.spouseJobStability, "4") 
+              : { id: "", value: "" },
             spouseMobile: formData.spouseMobilePhone || "",
             spouseBirthDate: formatDateToString(formData.spouseBirthDate) || null
           },
           personData: {
             nit: formData.nit || "",
             numberOfDependants: parseInt(formData.dependents || formData.dependientes || "0") || 0,
-            ethnicity: mapToCatalog(ethnicities, formData.ethnicity || formData.etnia || "", "2"),
-            academicDegree: mapToCatalog(educationLevels, formData.educationLevel || formData.nivelEducacion || "", "3"),
+            ethnicity: formData.ethnicity || formData.etnia 
+              ? mapToCatalog(ethnicities, formData.ethnicity || formData.etnia, "2")
+              : { id: "", value: "" },
+            academicDegree: formData.educationLevel || formData.nivelEducacion 
+              ? mapToCatalog(educationLevels, formData.educationLevel || formData.nivelEducacion, "3")
+              : { id: "", value: "" },
             mobile: formData.mobilePhone || "",
             telephone: formData.homePhone || "",
             email: [{
@@ -437,20 +463,38 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             idTypeProduct: productTypeId,
             idAgency: agencyId,
             requestedAmount: parseFloat(formData.requestedAmount || "0") || 0,
-            interestRate: parseFloat(formData.interestRate || formData.tasaInteres || "12.5") || 12.5,
-            startingTerm: parseInt(formData.termMonths || formData.plazoMeses || "36") || 36,
-            principalAmortization: mapToCatalog(capitalAmortizations, formData.capitalAmortization || formData.amortizacionCapital || "", "1"),
-            interestAmortization: mapToCatalog(interestAmortizations, formData.interestAmortization || formData.amortizacionInteres || "", "1"),
-            partnerType: mapToCatalog(memberTypes, formData.memberType || formData.tipoSocio || "", "1"),
-            requestType: mapToCatalog(requestTypes, formData.requestType || formData.tipoSolicitud || "", "1"),
-            sourceOfFunds: mapToCatalog(fundsOrigins, formData.sourceOfFunds || formData.origenFondos || "", "2"),
-            principalProject: mapToCatalog(projectTypes, formData.principalProject || formData.proyectoPrincipal || "", "5"),
-            secondaryProject: mapToCatalog(projectTypes, formData.secondaryProject || formData.proyectoSecundario || "", "5"),
-            paymentMethod: mapToCatalog(paymentMethods, formData.paymentMethod || formData.formaPago || "", "1"),
+            interestRate: parseFloat(formData.interestRate || formData.tasaInteres || "0") || 0,
+            startingTerm: parseInt(formData.termMonths || formData.plazoMeses || "0") || 0,
+            principalAmortization: formData.capitalAmortization || formData.amortizacionCapital 
+              ? mapToCatalog(capitalAmortizations, formData.capitalAmortization || formData.amortizacionCapital, "1")
+              : { id: "", value: "" },
+            interestAmortization: formData.interestAmortization || formData.amortizacionInteres 
+              ? mapToCatalog(interestAmortizations, formData.interestAmortization || formData.amortizacionInteres, "1")
+              : { id: "", value: "" },
+            partnerType: formData.memberType || formData.tipoSocio 
+              ? mapToCatalog(memberTypes, formData.memberType || formData.tipoSocio, "1")
+              : { id: "", value: "" },
+            requestType: formData.requestType || formData.tipoSolicitud 
+              ? mapToCatalog(requestTypes, formData.requestType || formData.tipoSolicitud, "1")
+              : { id: "", value: "" },
+            sourceOfFunds: formData.sourceOfFunds || formData.origenFondos 
+              ? mapToCatalog(fundsOrigins, formData.sourceOfFunds || formData.origenFondos, "2")
+              : { id: "", value: "" },
+            principalProject: formData.principalProject || formData.proyectoPrincipal 
+              ? mapToCatalog(projectTypes, formData.principalProject || formData.proyectoPrincipal, "5")
+              : { id: "", value: "" },
+            secondaryProject: formData.secondaryProject || formData.proyectoSecundario 
+              ? mapToCatalog(projectTypes, formData.secondaryProject || formData.proyectoSecundario, "5")
+              : { id: "", value: "" },
+            paymentMethod: formData.paymentMethod || formData.formaPago 
+              ? mapToCatalog(paymentMethods, formData.paymentMethod || formData.formaPago, "1")
+              : { id: "", value: "" },
             fundsDestination: {
               investmentState: { id: investmentDepartmentMatch.id, value: investmentDepartmentMatch.value },
               investmentCounty: { id: investmentMunicipalityMatch.id, value: investmentMunicipalityMatch.value },
-              destinationCategory: mapToCatalog(destinationCategories, formData.destinationCategory || "", "22"),
+              destinationCategory: formData.destinationCategory 
+                ? mapToCatalog(destinationCategories, formData.destinationCategory, "22")
+                : { id: "", value: "" },
               otherDestination: formData.otherDestination || "",
               description: formData.destinationDescription || "",
               comments: formData.destinationComments || ""
@@ -473,7 +517,9 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             // Ingreso principal (siempre mainIncomeSource: true)
             if (ingresoPrincipal > 0) {
               incomes.push({
-                incomeSource: mapToCatalog(incomeSourceTypes, formData.incomeSource || "NOMINAL", "1"),
+                incomeSource: formData.incomeSource 
+                  ? mapToCatalog(incomeSourceTypes, formData.incomeSource, "1")
+                  : { id: "", value: "" },
                 monthlyIncome: ingresoPrincipal,
                 comments: formData.incomeComments || "Ingreso principal",
                 mainIncomeSource: true
@@ -483,7 +529,9 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             // Ingreso secundario (si existe)
             if (ingresoSecundario > 0) {
               incomes.push({
-                incomeSource: mapToCatalog(incomeSourceTypes, formData.secondaryIncomeSource || "OTROS", "5"),
+                incomeSource: formData.secondaryIncomeSource 
+                  ? mapToCatalog(incomeSourceTypes, formData.secondaryIncomeSource, "5")
+                  : { id: "", value: "" },
                 monthlyIncome: ingresoSecundario,
                 comments: formData.secondaryIncomeComments || "Ingreso secundario",
                 mainIncomeSource: false
@@ -496,7 +544,9 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
                 const amount = parseFloat(source.amount || source.monto || "0");
                 if (amount > 0) {
                   incomes.push({
-                    incomeSource: mapToCatalog(incomeSourceTypes, source.type || "OTROS", "5"),
+                    incomeSource: source.type 
+                      ? mapToCatalog(incomeSourceTypes, source.type, "5")
+                      : { id: "", value: "" },
                     monthlyIncome: amount,
                     comments: source.description || source.descripcion || "Fuente adicional",
                     mainIncomeSource: false
@@ -587,7 +637,9 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
           })),
           personal: {
             references: (formData.references || []).map((ref: any, index: number) => ({
-              type: mapToCatalog(referenceTypes, ref.referenceType || "", "1"),
+              type: ref.referenceType 
+                ? mapToCatalog(referenceTypes, ref.referenceType, "1")
+                : { id: "", value: "" },
               firstName: ref.firstName || "",
               secondName: ref.secondName || "",
               firstLastName: ref.firstLastName || "",

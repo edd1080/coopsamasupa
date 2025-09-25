@@ -625,6 +625,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   // Form actions
   const handleSaveDraft = useCallback(() => {
     console.log('💾 handleSaveDraft called with formData:', formData);
+    console.log('💾 Current offline status:', { isOffline: !navigator.onLine, navigatorOnLine: navigator.onLine });
     saveDraftMutation.mutate({
       formData,
       currentStep,
@@ -677,10 +678,13 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     
     if (shouldSave) {
       try {
-        console.log('💾 Attempting to save before exit...');
+        console.log('💾 Attempting to save before exit using unified save logic...');
         
-        // Save the draft
+        // Use the same logic as handleSaveDraft but with Promise wrapper
         await new Promise((resolve, reject) => {
+          console.log('💾 handleExit save - formData:', formData);
+          console.log('💾 handleExit save - Current offline status:', { isOffline: !navigator.onLine, navigatorOnLine: navigator.onLine });
+          
           saveDraftMutation.mutate({
             formData,
             currentStep,
