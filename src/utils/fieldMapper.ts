@@ -426,8 +426,8 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             typeOfHousing: formData.housingType || formData.tipoVivienda 
               ? mapToCatalog(housingTypes, formData.housingType || formData.tipoVivienda, "1")
               : { id: "", value: "" },
-            housingStability: formData.residentialStability || formData.estabilidadResidencial 
-              ? mapToCatalog(residentialStabilities, formData.residentialStability || formData.estabilidadResidencial, "4")
+            housingStability: formData.residenceStability || formData.residentialStability || formData.estabilidadResidencial 
+              ? mapToCatalog(residentialStabilities, formData.residenceStability || formData.residentialStability || formData.estabilidadResidencial, "4")
               : { id: "", value: "" },
             geolocalization: formData.geolocation ? `${formData.geolocation.latitude},${formData.geolocation.longitude}` : "",
             spouseFirstName: formData.spouseFirstName || "",
@@ -474,20 +474,20 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             partnerType: formData.memberType || formData.tipoSocio 
               ? mapToCatalog(memberTypes, formData.memberType || formData.tipoSocio, "1")
               : { id: "", value: "" },
-            requestType: formData.requestType || formData.tipoSolicitud 
-              ? mapToCatalog(requestTypes, formData.requestType || formData.tipoSolicitud, "1")
+            requestType: formData.applicationType || formData.requestType || formData.tipoSolicitud 
+              ? mapToCatalog(requestTypes, formData.applicationType || formData.requestType || formData.tipoSolicitud, "1")
               : { id: "", value: "" },
-            sourceOfFunds: formData.sourceOfFunds || formData.origenFondos 
-              ? mapToCatalog(fundsOrigins, formData.sourceOfFunds || formData.origenFondos, "2")
+            sourceOfFunds: formData.fundsOrigin || formData.sourceOfFunds || formData.origenFondos 
+              ? mapToCatalog(fundsOrigins, formData.fundsOrigin || formData.sourceOfFunds || formData.origenFondos, "2")
               : { id: "", value: "" },
-            principalProject: formData.principalProject || formData.proyectoPrincipal 
-              ? mapToCatalog(projectTypes, formData.principalProject || formData.proyectoPrincipal, "5")
+            principalProject: formData.creditDestination || formData.principalProject || formData.proyectoPrincipal 
+              ? mapToCatalog(projectTypes, formData.creditDestination || formData.principalProject || formData.proyectoPrincipal, "5")
               : { id: "", value: "" },
             secondaryProject: formData.secondaryProject || formData.proyectoSecundario 
               ? mapToCatalog(projectTypes, formData.secondaryProject || formData.proyectoSecundario, "5")
               : { id: "", value: "" },
-            paymentMethod: formData.paymentMethod || formData.formaPago 
-              ? mapToCatalog(paymentMethods, formData.paymentMethod || formData.formaPago, "1")
+            paymentMethod: formData.paymentPlan || formData.paymentMethod || formData.formaPago 
+              ? mapToCatalog(paymentMethods, formData.paymentPlan || formData.paymentMethod || formData.formaPago, "1")
               : { id: "", value: "" },
             fundsDestination: {
               investmentState: { id: investmentDepartmentMatch.id, value: investmentDepartmentMatch.value },

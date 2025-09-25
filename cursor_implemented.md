@@ -1526,3 +1526,19 @@
 - **Descripción**: Se mejoró el manejo de errores de integración con Coopsama para mostrar mensajes descriptivos en español, incluyendo extracción de errores de validación específicos del microservicio
 - **Archivos modificados**: `src/hooks/useFinalizeApplication.tsx`
 - **Estado**: ✅ Completado
+
+**🔧 Cambio #72: Eliminación completa de valores hardcodeados en payload y corrección de componente de debug**
+- **Descripción**: Se eliminaron todos los valores hardcodeados/fallbacks del payload que se enviaban automáticamente sin que el usuario los hubiera ingresado, y se corrigió el componente de debug que se mostraba en producción
+- **Archivos modificados**: 
+  - `src/utils/fieldMapper.ts` - Eliminación de valores hardcodeados
+  - `src/components/requestForm/ReviewSection.tsx` - Corrección de componente de debug
+- **Problemas resueltos**:
+  - Valores hardcodeados: `age=30`, `interestRate=12.5`, `startingTerm=36`, `investmentCounty=GUATEMALA`
+  - Campos de catálogo con fallbacks: `gender="HOMBRE"`, `maritalStatus="SOLTERO"`, `academicTitle="BACHILLER"`, `occupation="AGRICULTOR"`
+  - Componente de debug amarillo visible en paso final de revisión
+- **Solución implementada**:
+  - Campos numéricos devuelven 0 cuando no hay datos
+  - Campos de catálogo devuelven `{id: "", value: ""}` cuando no se seleccionan
+  - Campos de ubicación solo mapean cuando hay datos válidos del formulario
+  - Componente de debug corregido para no mostrarse en producción
+- **Estado**: ✅ Completado
