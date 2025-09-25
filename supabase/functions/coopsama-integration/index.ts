@@ -113,7 +113,7 @@ serve(async (req) => {
         }
       },
       metadata: {
-        processId: applicationId, // Use SCO_XXXXXX as primary identifier
+        processId: payload.metadata?.processId || applicationId, // Use SCO_XXXXXX from payload metadata
         user: agentEmail
       }
     };

@@ -138,6 +138,10 @@ interface FormData {
   // Generated fields
   applicationId: string;
   
+  // Agency and application date
+  agency: string;
+  applicationDate: string;
+  
   [key: string]: any;
 }
 
@@ -267,7 +271,11 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
       termsAccepted: false, dataProcessingAccepted: false, creditCheckAccepted: false,
       
       // Application ID
-      applicationId: applicationId || generateApplicationId()
+      applicationId: applicationId || generateApplicationId(),
+      
+      // Agency and application date
+      agency: '',
+      applicationDate: new Date().toISOString().split('T')[0]
     };
 
     // Si tenemos applicationData con draft_data, inicializar con esos datos
