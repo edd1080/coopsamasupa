@@ -111,7 +111,7 @@ const SpouseInfoForm: React.FC<SpouseInfoFormProps> = ({ formData, updateFormDat
         <div className="space-y-2">
           <Label htmlFor="spouseBirthDate">Fecha de Nacimiento Cónyuge</Label>
           <DatePicker
-            date={formData.spouseBirthDate ? new Date(formData.spouseBirthDate) : undefined}
+            date={formData.spouseBirthDate ? new Date(formData.spouseBirthDate + 'T00:00:00') : undefined}
             onSelect={(date) => updateFormData('spouseBirthDate', date ? date.toISOString().split('T')[0] : '')}
             placeholder="Seleccionar fecha de nacimiento"
           />

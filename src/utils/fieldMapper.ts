@@ -602,12 +602,10 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             }))
           },
           business: {
-            companyName: "",
-            activityDescription: "",
-            grossProfit: 0,
-            productType: "",
-            startDate: "",
-            fullAddress: ""
+            companyName: formData.companyName || "",
+            activityDescription: formData.activityDescription || "",
+            productType: formData.productType || "",
+            fullAddress: formData.fullAddress || ""
           },
           investmentPlan: (() => {
             console.log('📋 Mapeando plan de inversión:', formData.investmentPlan);
