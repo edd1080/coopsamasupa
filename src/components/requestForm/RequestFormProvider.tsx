@@ -407,7 +407,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
         setReferences([]);
       }
     }
-  }, [formData.references, references]);
+  }, [formData.references]); // CORREGIDO: Eliminada dependencia circular 'references'
 
   // Update form data function
   const updateFormData = useCallback((field: string, value: any) => {

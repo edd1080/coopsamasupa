@@ -47,7 +47,10 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
   // Initialize documents from formData when component mounts
   React.useEffect(() => {
     if (formData?.documents && Object.keys(formData.documents).length > 0) {
+      console.log('📥 Initializing documents from formData:', formData.documents);
       initializeFromFormData(formData.documents);
+    } else {
+      console.log('📥 No documents found in formData, using default documents');
     }
   }, [formData?.documents, initializeFromFormData]);
 
@@ -71,6 +74,7 @@ const PhotoDocumentUpload: React.FC<PhotoDocumentUploadProps> = ({
         return acc;
       }, {} as Record<string, any>);
       
+      console.log('📝 PhotoDocumentUpload: Updating formData with documents:', documentsData);
       updateFormData('documents', documentsData);
     }, 100); // 100ms debounce
 

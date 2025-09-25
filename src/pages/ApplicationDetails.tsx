@@ -20,6 +20,7 @@ import { useApplicationData } from '@/hooks/useApplicationData';
 import { getFirstNameAndLastName, getNavBarName } from '@/lib/nameUtils';
 import { useToast } from '@/hooks/use-toast';
 import { formatApplicationId } from '@/utils/applicationIdGenerator';
+import { formatSelectValue } from '@/utils/formatters';
 const ApplicationDetails = () => {
   const {
     id
@@ -117,7 +118,7 @@ const ApplicationDetails = () => {
     const documents = formData.documents || {};
     const references = formData.references || [];
     const allSectionsComplete = progress >= 6;
-    const requiredDocsComplete = ['dpiFrontal', 'dpiTrasero', 'fotoSolicitante'].every(docKey => documents[docKey]?.status === 'complete');
+    const requiredDocsComplete = ['dpiFrontal', 'dpiTrasero', 'fotoSolicitante'].every(docKey => documents[docKey]?.status === 'success');
     const hasReferences = references.length > 0;
     return allSectionsComplete && requiredDocsComplete && hasReferences;
   };
@@ -372,19 +373,19 @@ const ApplicationDetails = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center p-3 bg-background rounded-md border">
                   <p className="text-xs text-muted-foreground mb-1">Monto Solicitado</p>
-                  <p className="font-bold">{formData.requestedAmount ? `Q ${Number(formData.requestedAmount).toLocaleString()}` : 'Por agregar'}</p>
+                  <p className="font-bold text-xs leading-tight line-clamp-2">{formData.requestedAmount ? `Q ${Number(formData.requestedAmount).toLocaleString()}` : 'Por agregar'}</p>
                 </div>
                 <div className="text-center p-3 bg-background rounded-md border">
                   <p className="text-xs text-muted-foreground mb-1">Plazo</p>
-                  <p className="font-bold">{formData.termMonths ? `${formData.termMonths} meses` : 'Por agregar'}</p>
+                  <p className="font-bold text-xs leading-tight line-clamp-2">{formData.termMonths ? `${formData.termMonths} meses` : 'Por agregar'}</p>
                 </div>
                 <div className="text-center p-3 bg-background rounded-md border">
                   <p className="text-xs text-muted-foreground mb-1">Tipo de Crédito</p>
-                  <p className="font-bold">{formData.productDetails?.productType?.value || formData.productType || 'Por agregar'}</p>
+                  <p className="font-bold text-xs leading-tight line-clamp-2">{formatSelectValue(formData.productDetails?.productType?.value || formData.productType || 'Por agregar')}</p>
                 </div>
                 <div className="text-center p-3 bg-background rounded-md border">
                   <p className="text-xs text-muted-foreground mb-1">Propósito</p>
-                  <p className="font-bold">{formData.creditPurpose || formData.purpose || 'Por agregar'}</p>
+                  <p className="font-bold text-xs leading-tight line-clamp-2">{formatSelectValue(formData.creditPurpose || formData.purpose || 'Por agregar')}</p>
                 </div>
               </div>
             </CardContent>
@@ -505,61 +506,33 @@ const ApplicationDetails = () => {
                   firmaCanvas: 'Firma Digital'
                 }).map(([key, label]) => {
                   const doc = documents[key];
-                  const isComplete = doc?.status === 'complete';
-                  
-                  const handleDocumentClick = () => {
-                    if (isComplete && doc?.url) {
-                      // Abrir vista previa del documento
-                      window.open(doc.url, '_blank');
-                    } else {
-                      // Navegar a la sección de documentos
-                      navigateToFormSection('documents');
-                    }
-                  };
+                  // CORREGIDO: Verificar status 'success' en lugar de 'complete'
+                  const isUploaded = doc?.status === 'success';
                   
                   return (
                     <Card 
                       key={key} 
-                      className={`p-3 border cursor-pointer hover:shadow-md transition-shadow ${
-                        isComplete ? 'border-green-200 bg-green-50' : 'border-amber-200 bg-amber-50'
+                      className={`p-3 border ${
+                        isUploaded ? 'border-green-200 bg-green-50' : 'border-amber-200 bg-amber-50'
                       }`}
-                      onClick={handleDocumentClick}
                     >
                       <div className="text-center">
-                        {/* Thumbnail del documento */}
+                        {/* Icono de estado del documento */}
                         <div className="w-12 h-12 mx-auto mb-2 rounded-md overflow-hidden bg-muted flex items-center justify-center">
-                          {isComplete && doc?.url ? (
-                            <img 
-                              src={doc.url} 
-                              alt={label}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                // Fallback si la imagen no carga
-                                e.currentTarget.style.display = 'none';
-                                const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
-                                if (nextElement) nextElement.style.display = 'flex';
-                              }}
-                            />
-                          ) : null}
                           <div className={`w-full h-full flex items-center justify-center ${
-                            isComplete ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'
+                            isUploaded ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'
                           }`}>
-                            {isComplete ? <CheckCircle className="h-6 w-6" /> : <Clock className="h-6 w-6" />}
+                            {isUploaded ? <CheckCircle className="h-6 w-6" /> : <Clock className="h-6 w-6" />}
                           </div>
                         </div>
                         
                         <p className="text-xs font-medium mb-1">{label}</p>
                         <Badge 
-                          variant={isComplete ? "default" : "secondary"} 
-                          className={`text-xs ${isComplete ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"}`}
+                          variant={isUploaded ? "default" : "secondary"} 
+                          className={`text-xs ${isUploaded ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"}`}
                         >
-                          {isComplete ? 'Completo' : 'Pendiente'}
+                          {isUploaded ? 'Subido' : 'Pendiente'}
                         </Badge>
-                        
-                        {/* Indicador de clickeable */}
-                        {isComplete && doc?.url && (
-                          <p className="text-xs text-muted-foreground mt-1">Tap para ver</p>
-                        )}
                       </div>
                     </Card>
                   );

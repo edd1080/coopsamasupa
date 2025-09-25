@@ -1279,6 +1279,67 @@
 
 ---
 
+#### 🔧 **57. Corrección Completa de Minicards y Nombres Legibles (BUG-275)**
+- **Archivos**: 
+  - `src/pages/ApplicationDetails.tsx` - Todas las minicards corregidas
+  - `src/utils/formatters.ts` - Nueva función `formatSelectValue` agregada
+- **Problema**: 
+  - Texto del propósito del crédito se salía de la card cuando era largo
+  - Nombres se mostraban con guiones bajos (ej: "expansion_negocio") en lugar de texto legible
+  - Inconsistencia en el estilo de las minicards
+- **Solución implementada**:
+  - **CONSISTENCIA**: Todas las minicards (Monto, Plazo, Tipo de Crédito, Propósito) tienen el mismo estilo
+  - **TEXTO REDUCIDO**: Cambiado a `font-bold text-xs leading-tight line-clamp-2` en todas las minicards
+  - **NOMBRES LEGIBLES**: Creada función `formatSelectValue` para convertir valores con guiones bajos a texto legible
+  - **MAPEO COMPLETO**: "expansion_negocio" → "Expansión de Negocio", "capital_trabajo" → "Capital de Trabajo", etc.
+  - **FUNCIÓN REUTILIZABLE**: `formatSelectValue` puede usarse en otros componentes
+- **Script de testing**: `scripts/test-select-value-formatting.cjs`
+- **Validación**: Script ejecutado exitosamente (10/10 tests pasados)
+- **Estado**: ✅ Completado
+
+---
+
+#### 🔧 **58. Corrección de Loop Infinito y Persistencia de Documentos (BUG-276)**
+- **Archivos**: 
+  - `src/components/requestForm/RequestFormProvider.tsx` - Loop infinito corregido
+  - `src/components/requestForm/PhotoDocumentUpload.tsx` - Persistencia mejorada
+  - `src/hooks/useDocumentManager.tsx` - Inicialización optimizada
+- **Problema**: 
+  - Loop infinito en consola con logs de "Form data updated" y "RequestFormContent rendering"
+  - Persistencia fallida de documentos: se suben, se guardan, pero desaparecen al regresar
+  - Dependencia circular en `useEffect` de referencias
+- **Solución implementada**:
+  - **LOOP INFINITO CORREGIDO**: Eliminada dependencia circular `references` del `useEffect`
+  - **LOGS DE DEBUGGING**: Agregados logs detallados para monitorear persistencia
+  - **INICIALIZACIÓN MEJORADA**: Mejorada función `initializeFromFormData` con logs y manejo de errores
+  - **DEPENDENCIAS OPTIMIZADAS**: Dependencias específicas en `useEffect` para evitar re-renders innecesarios
+  - **MANEJO DE ERRORES**: Mejorado manejo de errores en restauración de documentos
+  - **DEBOUNCING**: Mantenido debouncing de 100ms para evitar actualizaciones excesivas
+- **Script de testing**: `scripts/test-documents-persistence-fix.cjs`
+- **Validación**: Script ejecutado exitosamente (11/11 tests pasados)
+- **Estado**: ✅ Completado
+
+---
+
+#### 🔧 **59. Corrección de Estado de Documentos en ApplicationDetails (BUG-277)**
+- **Archivo**: `src/pages/ApplicationDetails.tsx`
+- **Problema**: 
+  - Estado de documentos incorrecto: todos mostraban "Pendiente" aunque estuvieran subidos
+  - Validación incorrecta: `status === 'complete'` en lugar de `status === 'success'`
+  - Funcionalidad innecesaria de vista previa y redirección
+- **Solución implementada**:
+  - **VALIDACIÓN CORREGIDA**: Cambiado de `status === 'complete'` a `status === 'success'`
+  - **TEXTO ACTUALIZADO**: "Subido" para documentos exitosos, "Pendiente" para pendientes
+  - **FUNCIONALIDAD ELIMINADA**: Removida vista previa y redirección innecesarias
+  - **ICONOS CORRECTOS**: CheckCircle para subidos, Clock para pendientes
+  - **COLORES CORRECTOS**: Verde para subidos, Amarillo para pendientes
+  - **FUNCIÓN CORREGIDA**: `isApplicationReadyToSubmit` usa status correcto
+- **Script de testing**: `scripts/test-documents-status-fix.cjs`
+- **Validación**: Script ejecutado exitosamente (10/10 tests pasados)
+- **Estado**: ✅ Completado
+
+---
+
 *Última actualización: 2025-01-23*
-*Total de cambios documentados: 56*
-*Estado del proyecto: Listo para producción con funcionalidad de documentos, navegación, subida de archivos, validación de campos y geolocalización completamente funcional y adaptada a dark mode. Persistencia de documentos completamente funcional al navegar entre secciones y al salir/regresar a solicitudes. Consola limpia sin logs de debugging innecesarios. Accesos rápidos en ApplicationDetails funcionando correctamente para todas las secciones. Guardado offline de borradores funcionando sin errores de sesión expirada. Vulnerabilidades de seguridad de Android mitigadas con configuraciones de debug deshabilitadas en producción.*
+*Total de cambios documentados: 59*
+*Estado del proyecto: Listo para producción con funcionalidad de documentos, navegación, subida de archivos, validación de campos y geolocalización completamente funcional y adaptada a dark mode. Persistencia de documentos completamente funcional al navegar entre secciones y al salir/regresar a solicitudes. Consola limpia sin logs de debugging innecesarios. Accesos rápidos en ApplicationDetails funcionando correctamente para todas las secciones. Guardado offline de borradores funcionando sin errores de sesión expirada. Vulnerabilidades de seguridad de Android mitigadas con configuraciones de debug deshabilitadas en producción. Texto de propósito del crédito en ApplicationDetails corregido para evitar desbordamiento en cards.*

@@ -309,7 +309,12 @@ export const useDocumentManager = (initialDocuments?: DocumentItem[]) => {
   }, [documents, toast]);
 
   const initializeFromFormData = useCallback(async (formDataDocuments: Record<string, any>) => {
-    if (!formDataDocuments) return;
+    if (!formDataDocuments) {
+      console.log('📥 initializeFromFormData: No formDataDocuments provided');
+      return;
+    }
+    
+    console.log('📥 initializeFromFormData: Starting initialization with:', formDataDocuments);
     
     const localforage = (await import('localforage')).default;
     const updatedDocuments = await Promise.all(
@@ -317,11 +322,13 @@ export const useDocumentManager = (initialDocuments?: DocumentItem[]) => {
         const persistedData = formDataDocuments[doc.id];
         
         if (persistedData && persistedData.status === 'success') {
+          console.log(`📥 Restoring document ${doc.id} from formData:`, persistedData);
           try {
             const fileKey = `document-file-${doc.id}`;
             const restoredArrayBuffer = await localforage.getItem(fileKey);
             
             if (restoredArrayBuffer && restoredArrayBuffer instanceof ArrayBuffer) {
+              console.log(`📥 Successfully restored file for document ${doc.id} from localforage`);
               // Convert ArrayBuffer back to File
               const blob = new Blob([restoredArrayBuffer], { type: persistedData.file?.type || 'application/octet-stream' });
               const restoredFile = new File([blob], persistedData.file?.name || `document-${doc.id}`, { 
@@ -335,6 +342,7 @@ export const useDocumentManager = (initialDocuments?: DocumentItem[]) => {
                 thumbnailUrl: thumbnailUrl
               };
             } else {
+              console.log(`📥 No file found in localforage for document ${doc.id}, using metadata only`);
               return {
                 ...doc,
                 status: persistedData.status,
@@ -345,13 +353,16 @@ export const useDocumentManager = (initialDocuments?: DocumentItem[]) => {
             console.error(`❌ Error restoring file for document ${doc.id}:`, error);
             return doc;
           }
+        } else {
+          console.log(`📥 Document ${doc.id} not found in formData or not successful, keeping default`);
         }
         return doc;
       })
     );
     
+    console.log('📥 initializeFromFormData: Updated documents:', updatedDocuments);
     setDocuments(updatedDocuments);
-  }, [toast]);
+  }, [documents, toast]);
 
   return {
     documents,

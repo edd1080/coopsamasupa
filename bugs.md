@@ -1471,10 +1471,10 @@ Cuando se captura con éxito la localización, algunos componentes no son aptos 
 
 ## 📈 **Estadísticas de Bugs**
 
-- **Total de bugs reportados**: 20
+- **Total de bugs reportados**: 23
 - **En análisis**: 0
 - **En desarrollo**: 0
-- **Resueltos**: 20
+- **Resueltos**: 23
 - **Rechazados**: 0
 
 ---
@@ -1789,6 +1789,205 @@ La persistencia de documentos funciona correctamente al navegar entre secciones 
 - ✅ Vulnerabilidades adicionales mitigadas
 
 **Estado:** ✅ RESUELTO
+
+---
+
+## 🐛 **BUG-275: Texto se sale de la card en propósito del crédito**
+
+### **📅 Fecha de Reporte**
+2025-01-23
+
+### **📝 Descripción**
+En la pantalla de detalles de solicitud, dentro de la card de "Solicitud de Crédito", cuando se selecciona el propósito del crédito, el texto se sale de la card porque es demasiado largo para el espacio disponible.
+
+### **🎯 Comportamiento Esperado**
+- **Texto ajustado**: El texto debe mostrarse completamente dentro de la card
+- **Máximo 2 líneas**: Si el texto es largo, debe mostrarse en máximo 2 líneas
+- **Tamaño reducido**: Usar texto más pequeño para mejor ajuste
+- **Legibilidad mantenida**: Mantener la legibilidad con el tamaño reducido
+
+### **❌ Comportamiento Actual**
+- **Texto desbordado**: El texto se sale de la card cuando es largo
+- **Sin límite de líneas**: No hay restricción en el número de líneas
+- **Tamaño fijo**: Usa tamaño de texto estándar que no se ajusta
+
+### **🔍 Análisis del Problema**
+- **Componente afectado**: Pantalla de detalles de solicitud
+- **Archivos involucrados**: 
+  - `src/pages/ApplicationDetails.tsx` (card de "Solicitud de Crédito")
+- **Causa probable**: 
+  - Texto del propósito del crédito usa `font-bold` sin restricciones de tamaño
+  - No hay límite en el número de líneas (`line-clamp`)
+  - Tamaño de texto no se ajusta al espacio disponible
+
+### **🧪 Script de Testing**
+```bash
+# scripts/test-credit-purpose-text-fix.cjs
+# Script para verificar la corrección de texto desbordado
+```
+
+### **💡 Solución Propuesta**
+- [x] Reducir tamaño de texto a `text-xs`
+- [x] Agregar `leading-tight` para espaciado compacto
+- [x] Implementar `line-clamp-2` para máximo 2 líneas
+- [x] Mantener `font-bold` para énfasis
+- [x] Crear script de testing para validación
+
+### **✅ Solución Implementada**
+- [x] **Archivos modificados**:
+  - `src/pages/ApplicationDetails.tsx` - Todas las minicards corregidas
+  - `src/utils/formatters.ts` - Nueva función `formatSelectValue` agregada
+- [x] **Cambios realizados**:
+  - **TEXTO REDUCIDO**: Cambiado de `font-bold` a `font-bold text-xs` en todas las minicards
+  - **ESPACIADO COMPACTO**: Agregado `leading-tight` para mejor ajuste
+  - **LÍMITE DE LÍNEAS**: Agregado `line-clamp-2` para máximo 2 líneas
+  - **ÉNFASIS MANTENIDO**: Conservado `font-bold` para importancia visual
+  - **AJUSTE AUTOMÁTICO**: Texto largo ahora se ajusta dentro de la card
+  - **CONSISTENCIA**: Todas las minicards (Monto, Plazo, Tipo de Crédito, Propósito) tienen el mismo estilo
+  - **NOMBRES LEGIBLES**: Creada función `formatSelectValue` para convertir valores con guiones bajos a texto legible
+  - **MAPEO COMPLETO**: "expansion_negocio" → "Expansión de Negocio", "capital_trabajo" → "Capital de Trabajo", etc.
+- [x] **Script de testing**: `scripts/test-credit-purpose-text-fix.cjs`
+- [x] **Validación**: ✅ Bug corregido exitosamente
+
+### **📊 Estado**
+- **Status**: ✅ Resuelto
+- **Prioridad**: Media
+- **Complejidad**: Baja
+- **Tiempo estimado**: 30 minutos
+- **Tiempo real**: 30 minutos
+
+---
+
+## 🐛 **BUG-276: Loop Infinito y Persistencia Fallida de Documentos**
+
+### **📅 Fecha de Reporte**
+2025-01-23
+
+### **📝 Descripción**
+En el paso de "documentos", la persistencia de documentos o fotos no funciona correctamente. Los archivos se suben, se guarda la solicitud, se sale y al volver a entrar, los archivos ya no aparecen. Además, hay un loop infinito en la consola con logs de "Form data updated" y "RequestFormContent rendering".
+
+### **🎯 Comportamiento Esperado**
+- **Persistencia correcta**: Los documentos subidos deben persistir al salir y regresar
+- **Sin loop infinito**: No debe haber logs infinitos en la consola
+- **Rendimiento óptimo**: El componente debe renderizar eficientemente
+- **Datos consistentes**: Los documentos deben cargarse correctamente desde el borrador
+
+### **❌ Comportamiento Actual**
+- **Persistencia fallida**: Los documentos desaparecen al regresar a la solicitud
+- **Loop infinito**: Logs infinitos de "Form data updated" y "RequestFormContent rendering"
+- **Rendimiento degradado**: El loop infinito causa problemas de rendimiento
+- **Datos inconsistentes**: Los documentos no se cargan desde el borrador guardado
+
+### **🔍 Análisis del Problema**
+- **Componente afectado**: Paso de documentos en el formulario de solicitud
+- **Archivos involucrados**: 
+  - `src/components/requestForm/RequestFormProvider.tsx` (loop infinito)
+  - `src/components/requestForm/PhotoDocumentUpload.tsx` (persistencia)
+  - `src/hooks/useDocumentManager.tsx` (inicialización)
+- **Causa probable**: 
+  - Dependencia circular en `useEffect` de referencias (`[formData.references, references]`)
+  - Inicialización incorrecta de documentos desde `formData`
+  - Falta de logs de debugging para identificar problemas
+
+### **🧪 Script de Testing**
+```bash
+# scripts/test-documents-persistence-fix.cjs
+# Script para verificar la corrección de persistencia y loop infinito
+```
+
+### **💡 Solución Propuesta**
+- [x] Corregir dependencia circular en `useEffect` de referencias
+- [x] Mejorar inicialización de documentos desde `formData`
+- [x] Agregar logs de debugging para monitorear comportamiento
+- [x] Optimizar dependencias de `useEffect` para evitar re-renders innecesarios
+- [x] Mejorar manejo de errores en inicialización de documentos
+
+### **✅ Solución Implementada**
+- [x] **Archivos modificados**:
+  - `src/components/requestForm/RequestFormProvider.tsx` - Loop infinito corregido
+  - `src/components/requestForm/PhotoDocumentUpload.tsx` - Persistencia mejorada
+  - `src/hooks/useDocumentManager.tsx` - Inicialización optimizada
+- [x] **Cambios realizados**:
+  - **LOOP INFINITO CORREGIDO**: Eliminada dependencia circular `references` del `useEffect`
+  - **LOGS DE DEBUGGING**: Agregados logs detallados para monitorear persistencia
+  - **INICIALIZACIÓN MEJORADA**: Mejorada función `initializeFromFormData` con logs y manejo de errores
+  - **DEPENDENCIAS OPTIMIZADAS**: Dependencias específicas en `useEffect` para evitar re-renders innecesarios
+  - **MANEJO DE ERRORES**: Mejorado manejo de errores en restauración de documentos
+  - **DEBOUNCING**: Mantenido debouncing de 100ms para evitar actualizaciones excesivas
+- [x] **Script de testing**: `scripts/test-documents-persistence-fix.cjs`
+- [x] **Validación**: ✅ Bug corregido exitosamente (11/11 tests pasados)
+
+### **📊 Estado**
+- **Status**: ✅ Resuelto
+- **Prioridad**: Alta
+- **Complejidad**: Media
+- **Tiempo estimado**: 2 horas
+- **Tiempo real**: 1.5 horas
+
+---
+
+## 🐛 **BUG-277: Estado de Documentos Incorrecto en ApplicationDetails**
+
+### **📅 Fecha de Reporte**
+2025-01-23
+
+### **📝 Descripción**
+En la pantalla de detalles de solicitud (`ApplicationDetails.tsx`), la sección "Estado de Documentos" muestra incorrectamente todos los documentos como "Pendiente" (amarillo) aunque los documentos estén subidos exitosamente. La persistencia de documentos funciona correctamente, pero la UI no refleja el estado real basándose en los datos del `draft_data`.
+
+### **🎯 Comportamiento Esperado**
+- **Verde**: Documento subido exitosamente (status: 'success')
+- **Amarillo**: Documento pendiente (status: 'pending' o no existe)
+- **Sin vista previa**: Solo mostrar el estado visual
+- **Sin redirección**: No debe llevar a la sección de documentos
+- **Estado correcto**: La UI debe reflejar el estado real de los documentos
+
+### **❌ Comportamiento Actual**
+- **Estado incorrecto**: Todos los documentos muestran "Pendiente" (amarillo)
+- **Validación incorrecta**: Verifica `status === 'complete'` en lugar de `status === 'success'`
+- **Funcionalidad innecesaria**: Incluye vista previa y redirección que no se necesita
+- **UI inconsistente**: No refleja el estado real de los documentos subidos
+
+### **🔍 Análisis del Problema**
+- **Componente afectado**: Pantalla de detalles de solicitud
+- **Archivos involucrados**: 
+  - `src/pages/ApplicationDetails.tsx` (sección Estado de Documentos)
+- **Causa probable**: 
+  - Validación incorrecta: `doc?.status === 'complete'` en lugar de `doc?.status === 'success'`
+  - Los documentos se guardan con `status: 'success'` pero se validan como `'complete'`
+  - Funcionalidad innecesaria de vista previa y redirección
+
+### **🧪 Script de Testing**
+```bash
+# scripts/test-documents-status-fix.cjs
+# Script para verificar la corrección del estado de documentos
+```
+
+### **💡 Solución Propuesta**
+- [x] Corregir validación de estado: `status === 'success'` en lugar de `status === 'complete'`
+- [x] Actualizar texto: "Subido" para documentos exitosos
+- [x] Eliminar funcionalidad de vista previa y redirección
+- [x] Mantener solo el estado visual (verde/amarillo)
+- [x] Corregir función `isApplicationReadyToSubmit` para usar status correcto
+
+### **✅ Solución Implementada**
+- [x] **Archivos modificados**:
+  - `src/pages/ApplicationDetails.tsx` - Estado de documentos corregido
+- [x] **Cambios realizados**:
+  - **VALIDACIÓN CORREGIDA**: Cambiado de `status === 'complete'` a `status === 'success'`
+  - **TEXTO ACTUALIZADO**: "Subido" para documentos exitosos, "Pendiente" para pendientes
+  - **FUNCIONALIDAD ELIMINADA**: Removida vista previa y redirección innecesarias
+  - **ICONOS CORRECTOS**: CheckCircle para subidos, Clock para pendientes
+  - **COLORES CORRECTOS**: Verde para subidos, Amarillo para pendientes
+  - **FUNCIÓN CORREGIDA**: `isApplicationReadyToSubmit` usa status correcto
+- [x] **Script de testing**: `scripts/test-documents-status-fix.cjs`
+- [x] **Validación**: ✅ Bug corregido exitosamente (10/10 tests pasados)
+
+### **📊 Estado**
+- **Status**: ✅ Resuelto
+- **Prioridad**: Media
+- **Complejidad**: Baja
+- **Tiempo estimado**: 30 minutos
+- **Tiempo real**: 30 minutos
 
 ---
 
