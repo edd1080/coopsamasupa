@@ -262,11 +262,12 @@ const ApplicationDetails = () => {
               
               {/* Status badges and tags aligned with name and ID */}
               <div className="flex flex-col items-end gap-2">
-                {'status' in applicationData && applicationData.status === 'error' && (
+                {/* Código de error oculto temporalmente hasta definir posibles errores */}
+                {/* {'status' in applicationData && applicationData.status === 'error' && (
                   <p className="text-sm text-muted-foreground">
                     Código de error: <span className="font-mono font-medium text-destructive">{applicationData.id}</span>
                   </p>
-                )}
+                )} */}
                 {applicationData.isDraft && (
                   <p className="text-sm text-muted-foreground">
                     Estado: <span className="font-medium">Borrador</span>
