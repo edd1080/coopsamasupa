@@ -19,6 +19,13 @@ interface ReviewSectionProps {
 
 const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData }) => {
   const { handleSubmit } = useFormContext();
+
+  // Function to construct full name from firstName and lastName
+  const getFullName = () => {
+    const firstName = formData.firstName || '';
+    const lastName = formData.lastName || '';
+    return [firstName, lastName].filter(Boolean).join(' ').trim() || 'No especificado';
+  };
   const { validateMinimumRequiredData } = useApplicationValidation();
   
 
@@ -170,10 +177,6 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
           <h3 className="text-lg font-semibold text-gray-900 dark:text-foreground dark:text-foreground border-b pb-2">Identificación y Contacto</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <dt className="text-xs font-medium text-gray-500 dark:text-muted-foreground dark:text-muted-foreground uppercase tracking-wide">Agencia</dt>
-              <dd className="text-sm font-medium text-gray-900 dark:text-foreground dark:text-foreground">{formData.agency || 'No especificada'}</dd>
-            </div>
-            <div className="space-y-1">
               <dt className="text-xs font-medium text-gray-500 dark:text-muted-foreground uppercase tracking-wide">Fecha Solicitud</dt>
               <dd className="text-sm font-medium text-gray-900 dark:text-foreground">{formatDate(formData.applicationDate)}</dd>
             </div>
@@ -183,7 +186,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
             </div>
             <div className="space-y-1">
               <dt className="text-xs font-medium text-gray-500 dark:text-muted-foreground uppercase tracking-wide">Nombre Completo</dt>
-              <dd className="text-sm font-medium text-gray-900 dark:text-foreground">{formData.firstName || 'No especificado'} {formData.lastName || ''}</dd>
+              <dd className="text-sm font-medium text-gray-900 dark:text-foreground">{getFullName()}</dd>
             </div>
             <div className="space-y-1">
               <dt className="text-xs font-medium text-gray-500 dark:text-muted-foreground uppercase tracking-wide">Estado Civil</dt>
@@ -365,13 +368,15 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ formData, updateFormData 
           />
         )}
         
-        {/* Debug: Mostrar siempre para verificar */}
-        <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
-          <h3 className="font-bold text-yellow-800">🔧 Debug Info:</h3>
-          <p>VITE_ENABLE_TESTING_TOOLS: {String(import.meta.env.VITE_ENABLE_TESTING_TOOLS)}</p>
-          <p>Type: {typeof import.meta.env.VITE_ENABLE_TESTING_TOOLS}</p>
-          <p>Should show: {String(import.meta.env.VITE_ENABLE_TESTING_TOOLS === 'true')}</p>
-        </div>
+        {/* Debug: Solo mostrar cuando las herramientas de testing estén habilitadas */}
+        {import.meta.env.VITE_ENABLE_TESTING_TOOLS === 'true' && (
+          <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
+            <h3 className="font-bold text-yellow-800">🔧 Debug Info:</h3>
+            <p>VITE_ENABLE_TESTING_TOOLS: {String(import.meta.env.VITE_ENABLE_TESTING_TOOLS)}</p>
+            <p>Type: {typeof import.meta.env.VITE_ENABLE_TESTING_TOOLS}</p>
+            <p>Should show: {String(import.meta.env.VITE_ENABLE_TESTING_TOOLS === 'true')}</p>
+          </div>
+        )}
 
       </CardContent>
     </Card>
