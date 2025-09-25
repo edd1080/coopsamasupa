@@ -108,12 +108,14 @@ export const useSaveDraft = () => {
 
       // Check if offline - enqueue if no connection and return early
       if (isOffline) {
+        console.log('📵 Offline mode detected, saving locally and enqueueing...');
         const { offlineQueue } = await import('@/utils/offlineQueue');
         await offlineQueue.enqueue({
           type: 'updateDraft',
           payload: offlineData
         });
         
+        console.log('✅ Offline save completed, returning optimistic result');
         // Return optimistic result for offline - no need to verify session
         return offlineData;
       }
