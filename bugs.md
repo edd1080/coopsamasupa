@@ -5718,3 +5718,75 @@ Los siguientes campos llegaban vacíos al payload:
 - **Campos verificados**: 12
 
 ---
+
+
+## 🐛 **BUG-291: Campos específicos no se mapean correctamente en payload final**
+
+### **📅 Fecha de Reporte**
+2025-01-23
+
+### **📝 Descripción**
+Después de las correcciones anteriores, se identificó que 4 campos específicos seguían llegando vacíos al payload final a pesar de que el usuario los completaba en el formulario:
+- `sourceOfFunds` (origen de fondos)
+- `otherDestination` (otro destino)
+- `secondaryProject` (proyecto secundario)
+- `otherIndications` (otras indicaciones de dirección)
+
+### **🎯 Comportamiento Esperado**
+Todos los campos del formulario deben mapearse correctamente al payload final, incluyendo:
+- `sourceOfFunds`: debe mapear desde `fundsOrigin`
+- `otherDestination`: debe mapear desde `specificDestination`
+- `secondaryProject`: debe mapear desde `secondaryProject`
+- `otherIndications`: debe mapear desde `addressReference`
+
+### **❌ Comportamiento Actual**
+Los siguientes campos llegaban vacíos al payload:
+- `sourceOfFunds`: `{ "id": "", "value": "" }`
+- `otherDestination`: `""`
+- `secondaryProject`: `{ "id": "", "value": "" }`
+- `otherIndications`: `""`
+
+### **🔍 Análisis del Problema**
+- **Archivo principal**: `src/utils/fieldMapper.ts` y `src/components/requestForm/RequestFormProvider.tsx`
+- **Causa raíz**: Campos faltantes en el `formData` y mapeo incorrecto:
+  - `otherDestination`: no existía en `formData`, formulario usaba `specificDestination`
+  - `secondaryProject`: no existía en `formData` ni en el formulario
+  - `otherIndications`: no existía en `formData`, formulario usaba `addressReference`
+  - `sourceOfFunds`: mapeaba correctamente desde `fundsOrigin` pero no se inicializaba
+- **Impacto**: Datos del formulario no se transferían al payload final
+
+### **✅ Solución Implementada**
+- [x] **Archivo modificado**: `src/components/requestForm/RequestFormProvider.tsx`
+  - Agregado `otherDestination`, `secondaryProject`, `addressDetails` a la interfaz `FormData`
+  - Inicializado campos en `defaultFormData`
+- [x] **Archivo modificado**: `src/utils/fieldMapper.ts`
+  - Corregido mapeo de `otherDestination`: ahora mapea desde `specificDestination`
+  - Corregido mapeo de `otherIndications`: ahora mapea desde `addressReference`
+  - Mantenido mapeo de `sourceOfFunds`: desde `fundsOrigin`
+  - Mantenido mapeo de `secondaryProject`: desde `secondaryProject`
+- [x] **Archivo modificado**: `src/components/requestForm/identification/CreditDestinationForm.tsx`
+  - Agregado campo `secondaryProject` al formulario
+  - Label: "Proyecto Secundario"
+  - Placeholder: "Proyecto secundario (opcional)"
+
+### **🧪 Testing Realizado**
+- [x] Verificado que todos los campos están en `formData`
+- [x] Verificado que el mapeo está corregido en `fieldMapper.ts`
+- [x] Verificado que el campo `secondaryProject` está en el formulario
+- [x] Verificado que no hay errores de sintaxis
+
+### **📊 Resultado**
+- ✅ `sourceOfFunds`: ahora mapea desde `fundsOrigin`
+- ✅ `otherDestination`: ahora mapea desde `specificDestination`
+- ✅ `secondaryProject`: ahora mapea desde `secondaryProject`
+- ✅ `otherIndications`: ahora mapea desde `addressReference`
+
+### **📝 Archivos Modificados**
+- `src/components/requestForm/RequestFormProvider.tsx`
+- `src/utils/fieldMapper.ts`
+- `src/components/requestForm/identification/CreditDestinationForm.tsx`
+
+### **🏷️ Tags**
+`field-mapping` `payload` `form-data` `bug-fix` `critical`
+
+---

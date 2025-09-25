@@ -1563,3 +1563,29 @@
   - `otherDestination` (desde `otherDestination`)
 - **Resultado**: Todos los campos del formulario ahora se mapean correctamente al payload
 - **Estado**: ✅ Completado
+
+
+### **2025-01-23** - Corrección de Mapeo de Campos Faltantes
+
+#### 🔧 **BUG-291: Campos específicos no se mapean correctamente en payload final**
+- **Archivos modificados**:
+  - `src/components/requestForm/RequestFormProvider.tsx`
+  - `src/utils/fieldMapper.ts`
+  - `src/components/requestForm/identification/CreditDestinationForm.tsx`
+- **Problema**: 4 campos específicos llegaban vacíos al payload final:
+  - `sourceOfFunds` (origen de fondos)
+  - `otherDestination` (otro destino)
+  - `secondaryProject` (proyecto secundario)
+  - `otherIndications` (otras indicaciones de dirección)
+- **Causa raíz**: Campos faltantes en el `formData` y mapeo incorrecto
+- **Solución implementada**:
+  - Agregado `otherDestination`, `secondaryProject`, `addressDetails` a la interfaz `FormData`
+  - Inicializado campos en `defaultFormData`
+  - Corregido mapeo de `otherDestination`: ahora mapea desde `specificDestination`
+  - Corregido mapeo de `otherIndications`: ahora mapea desde `addressReference`
+  - Agregado campo `secondaryProject` al formulario de destino de crédito
+  - Mantenido mapeo de `sourceOfFunds`: desde `fundsOrigin`
+- **Resultado**: Todos los campos ahora se mapean correctamente al payload final
+- **Estado**: ✅ Completado
+
+---
