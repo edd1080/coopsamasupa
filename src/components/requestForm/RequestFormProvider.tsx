@@ -624,13 +624,22 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
 
   // Form actions
   const handleSaveDraft = useCallback(() => {
+    console.log('💾 handleSaveDraft called with formData:', formData);
     saveDraftMutation.mutate({
       formData,
       currentStep,
       currentSubStep: subStep,
       isIncremental: false
+    }, {
+      onSuccess: () => {
+        console.log('✅ Save draft success, clearing unsaved changes');
+        setHasUnsavedChanges(false);
+      },
+      onError: (error) => {
+        console.error('❌ Save draft error:', error);
+        // Don't clear unsaved changes on error
+      }
     });
-    setHasUnsavedChanges(false);
   }, [formData, currentStep, subStep, saveDraftMutation]);
 
   const handleSubmit = useCallback(() => {
