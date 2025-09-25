@@ -142,6 +142,24 @@ interface FormData {
   agency: string;
   applicationDate: string;
   
+  // Investment destination
+  investmentPlaceDepartment: string;
+  investmentPlaceMunicipality: string;
+  destinationGroup: string;
+  creditDestination: string;
+  destinationCategory: string;
+  sowingLatitude: string;
+  sowingLongitude: string;
+  destinationDescription: string;
+  destinationObservations: string;
+  sourceTypes: string;
+  sourceQuantity: string;
+  sourceObservations: string;
+  specificDestination: string;
+  otherDestination: string;
+  secondaryProject: string;
+  addressDetails: string;
+  
   [key: string]: any;
 }
 
@@ -245,6 +263,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
       investmentPlaceDepartment: '', investmentPlaceMunicipality: '', destinationGroup: '', creditDestination: '',
       destinationCategory: '', sowingLatitude: '', sowingLongitude: '', destinationDescription: '',
       destinationObservations: '', sourceTypes: '', sourceQuantity: '', sourceObservations: '',
+      specificDestination: '', otherDestination: '', secondaryProject: '', addressDetails: '',
       
       // Financial Analysis
       incomeSource: '', ingresoPrincipal: '', ingresoSecundario: '', comentarioIngreso: '', incomeSources: [],

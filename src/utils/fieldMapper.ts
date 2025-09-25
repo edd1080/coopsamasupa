@@ -419,7 +419,7 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
               : { id: "", value: "" },
             personalDocumentAddress: {
               fullAddress: formData.address || formData.direccion || "",
-              otherIndications: formData.addressDetails || formData.detallesDireccion || "",
+              otherIndications: formData.addressReference || formData.addressDetails || formData.detallesDireccion || "",
               state: { id: residenceDepartmentMatch.id, value: residenceDepartmentMatch.value },
               county: { id: residenceMunicipalityMatch.id, value: residenceMunicipalityMatch.value }
             },
@@ -495,7 +495,7 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
               destinationCategory: formData.destinationCategory 
                 ? mapToCatalog(destinationCategories, formData.destinationCategory, "22")
                 : { id: "", value: "" },
-              otherDestination: formData.otherDestination || "",
+              otherDestination: formData.specificDestination || formData.otherDestination || "",
               description: formData.destinationDescription || "",
               comments: formData.destinationComments || ""
             }

@@ -1542,3 +1542,24 @@
   - Campos de ubicación solo mapean cuando hay datos válidos del formulario
   - Componente de debug corregido para no mostrarse en producción
 - **Estado**: ✅ Completado
+
+**🔧 Cambio #73: Corrección de desalineación de nombres de campos entre formulario y payload**
+- **Descripción**: Se corrigió la desalineación entre los nombres de campos usados en el formulario y los nombres que buscaba el fieldMapper.ts, causando que múltiples campos llegaran vacíos al payload de MongoDB
+- **Archivos modificados**: `src/utils/fieldMapper.ts`
+- **Problemas resueltos**:
+  - Campos vacíos en payload: `ownerCounty`, `emissionCounty`, `county`, `housingStability`, `requestType`, `sourceOfFunds`, `principalProject`, `paymentMethod`, `investmentCounty`
+  - Campos de texto vacíos: `otherIndications`, `otherDestination`
+  - Campo con valor incorrecto: `spouseJobStability` llegaba con valor "1"
+- **Desalineaciones corregidas**:
+  - `housingStability`: Ahora busca `residenceStability` del formulario (antes buscaba `residentialStability`)
+  - `requestType`: Ahora busca `applicationType` del formulario (antes buscaba `requestType`)
+  - `sourceOfFunds`: Ahora busca `fundsOrigin` del formulario (antes buscaba `sourceOfFunds`)
+  - `principalProject`: Ahora busca `creditDestination` del formulario (antes buscaba `principalProject`)
+  - `paymentMethod`: Ahora busca `paymentPlan` del formulario (antes buscaba `paymentMethod`)
+- **Campos que ya funcionaban correctamente**:
+  - `ownerCounty`, `emissionCounty`, `county` (desde `residenceMunicipalityMatch`)
+  - `investmentCounty` (desde `investmentMunicipalityMatch`)
+  - `otherIndications` (desde `addressReference`)
+  - `otherDestination` (desde `otherDestination`)
+- **Resultado**: Todos los campos del formulario ahora se mapean correctamente al payload
+- **Estado**: ✅ Completado
