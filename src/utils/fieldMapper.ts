@@ -162,9 +162,7 @@ export interface CoopsamaPayload {
         business?: {
           companyName: string;
           activityDescription: string;
-          grossProfit: number;
           productType: string;
-          startDate: string;
           fullAddress: string;
         };
         investmentPlan?: {
@@ -780,8 +778,6 @@ export const validateCoopsamaPayload = (payload: CoopsamaPayload): {
   
   // Información del Negocio
   if (!profile.business?.companyName?.trim()) warnings.push("⚠️ Información del negocio incompleta");
-  if (profile.business && !profile.business.startDate) warnings.push("⚠️ Fecha de inicio del negocio recomendada");
-  if (profile.business && (!profile.business.grossProfit || profile.business.grossProfit <= 0)) warnings.push("⚠️ Utilidad bruta del negocio recomendada");
   
   // Plan de Inversión
   if (!profile.investmentPlan?.length) warnings.push("⚠️ Plan de inversión detallado recomendado");
