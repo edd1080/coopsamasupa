@@ -209,7 +209,7 @@ const splitFullName = (fullName: string) => {
 
 // Helper function to calculate age from birth date
 const calculateAge = (birthDate: string): number => {
-  if (!birthDate) return 0; // No default age - should be empty if no birth date
+  if (!birthDate) return 0; // Return 0 if no birth date
   const today = new Date();
   const birth = new Date(birthDate);
   let age = today.getFullYear() - birth.getFullYear();
@@ -367,7 +367,7 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
   });
   
   // Simple product type mapping - form stores the ID directly
-  const productTypeId = parseInt(formData.idTypeProduct || "0") || 0;
+  const productTypeId = formData.idTypeProduct ? parseInt(formData.idTypeProduct) : 0;
   console.log("🔍 PRODUCT TYPE - formData.idTypeProduct:", formData.idTypeProduct, "-> productTypeId:", productTypeId);
   
   // Build the payload
@@ -442,7 +442,7 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
           },
           personData: {
             nit: formData.nit || "",
-            numberOfDependants: parseInt(formData.dependents || formData.dependientes || "0") || 0,
+            numberOfDependants: formData.dependents || formData.dependientes ? parseInt(formData.dependents || formData.dependientes) : 0,
             ethnicity: formData.ethnicity || formData.etnia 
               ? mapToCatalog(ethnicities, formData.ethnicity || formData.etnia, "2")
               : { id: "", value: "" },
@@ -451,18 +451,18 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
               : { id: "", value: "" },
             mobile: formData.mobilePhone || "",
             telephone: formData.homePhone || "",
-            email: [{
-              emailAddress: formData.email || "",
-              emailType: "personal",
-              emailId: "1"
-            }]
+          email: formData.email ? [{
+            emailAddress: formData.email,
+            emailType: "personal",
+            emailId: "1"
+          }] : []
           },
           productDetail: {
             idTypeProduct: productTypeId,
             idAgency: agencyId,
-            requestedAmount: parseFloat(formData.requestedAmount || "0") || 0,
-            interestRate: parseFloat(formData.interestRate || formData.tasaInteres || "0") || 0,
-            startingTerm: parseInt(formData.termMonths || formData.plazoMeses || "0") || 0,
+            requestedAmount: formData.requestedAmount ? parseFloat(formData.requestedAmount) : 0,
+            interestRate: formData.interestRate || formData.tasaInteres ? parseFloat(formData.interestRate || formData.tasaInteres) : 0,
+            startingTerm: formData.termMonths || formData.plazoMeses ? parseInt(formData.termMonths || formData.plazoMeses) : 0,
             principalAmortization: formData.capitalAmortization || formData.amortizacionCapital 
               ? mapToCatalog(capitalAmortizations, formData.capitalAmortization || formData.amortizacionCapital, "1")
               : { id: "", value: "" },
@@ -558,55 +558,55 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
           })(),
           expense: (() => {
             const expenses = [
-              { name: "food", amount: parseFloat(formData.alimentacion || "0") || 0 },
-              { name: "clothing", amount: parseFloat(formData.vestuario || "0") || 0 },
-              { name: "basic services", amount: parseFloat(formData.serviciosBasicos || "0") || 0 },
-              { name: "education", amount: parseFloat(formData.educacion || "0") || 0 },
-              { name: "housing", amount: parseFloat(formData.vivienda || "0") || 0 },
-              { name: "transportation", amount: parseFloat(formData.transporte || "0") || 0 },
-              { name: "commitments", amount: parseFloat(formData.compromisos || "0") || 0 },
-              { name: "financial expenses", amount: parseFloat(formData.gastosFinancieros || "0") || 0 },
-              { name: "payroll deductions", amount: parseFloat(formData.descuentosPlanilla || "0") || 0 },
-              { name: "other expenses", amount: parseFloat(formData.otros || "0") || 0 },
-              { name: "references for other expenses", amount: parseFloat(formData.referenciasOtrosGastos || "0") || 0 }
+              { name: "food", amount: formData.alimentacion && parseFloat(formData.alimentacion) > 0 ? parseFloat(formData.alimentacion) : 0 },
+              { name: "clothing", amount: formData.vestuario && parseFloat(formData.vestuario) > 0 ? parseFloat(formData.vestuario) : 0 },
+              { name: "basic services", amount: formData.serviciosBasicos && parseFloat(formData.serviciosBasicos) > 0 ? parseFloat(formData.serviciosBasicos) : 0 },
+              { name: "education", amount: formData.educacion && parseFloat(formData.educacion) > 0 ? parseFloat(formData.educacion) : 0 },
+              { name: "housing", amount: formData.vivienda && parseFloat(formData.vivienda) > 0 ? parseFloat(formData.vivienda) : 0 },
+              { name: "transportation", amount: formData.transporte && parseFloat(formData.transporte) > 0 ? parseFloat(formData.transporte) : 0 },
+              { name: "commitments", amount: formData.compromisos && parseFloat(formData.compromisos) > 0 ? parseFloat(formData.compromisos) : 0 },
+              { name: "financial expenses", amount: formData.gastosFinancieros && parseFloat(formData.gastosFinancieros) > 0 ? parseFloat(formData.gastosFinancieros) : 0 },
+              { name: "payroll deductions", amount: formData.descuentosPlanilla && parseFloat(formData.descuentosPlanilla) > 0 ? parseFloat(formData.descuentosPlanilla) : 0 },
+              { name: "other expenses", amount: formData.otros && parseFloat(formData.otros) > 0 ? parseFloat(formData.otros) : 0 },
+              { name: "references for other expenses", amount: formData.referenciasOtrosGastos && parseFloat(formData.referenciasOtrosGastos) > 0 ? parseFloat(formData.referenciasOtrosGastos) : 0 }
             ];
             
             // Si hay gastos adicionales en formData, agregarlos
             if (formData.additionalExpenses && Array.isArray(formData.additionalExpenses)) {
               formData.additionalExpenses.forEach((expense: any) => {
-                if (expense.name && expense.amount) {
+                if (expense.name && expense.amount && parseFloat(expense.amount) > 0) {
                   expenses.push({
                     name: expense.name,
-                    amount: parseFloat(expense.amount) || 0
+                    amount: parseFloat(expense.amount)
                   });
                 }
               });
             }
             
-            console.log('💸 Mapeando gastos reales:', expenses);
+            console.log('💸 Mapeando gastos con todos los campos:', expenses);
             return expenses;
           })(),
           financialStatus: (() => {
             const assets = [
-              { name: "cashAndBanks", amount: parseFloat(formData.efectivoSaldoBancos || "0") || 0 },
-              { name: "accountReceivable", amount: parseFloat(formData.cuentasPorCobrar || "0") || 0 },
-              { name: "merchandise", amount: parseFloat(formData.mercaderias || "0") || 0 },
-              { name: "vehicles", amount: parseFloat(formData.vehiculos || "0") || 0 },
-              { name: "realEstate", amount: parseFloat(formData.bienesInmuebles || "0") || 0 },
-              { name: "otherAssets", amount: parseFloat(formData.otrosActivos || "0") || 0 }
+              { name: "cashAndBanks", amount: formData.efectivoSaldoBancos && parseFloat(formData.efectivoSaldoBancos) > 0 ? parseFloat(formData.efectivoSaldoBancos) : 0 },
+              { name: "accountReceivable", amount: formData.cuentasPorCobrar && parseFloat(formData.cuentasPorCobrar) > 0 ? parseFloat(formData.cuentasPorCobrar) : 0 },
+              { name: "merchandise", amount: formData.mercaderias && parseFloat(formData.mercaderias) > 0 ? parseFloat(formData.mercaderias) : 0 },
+              { name: "vehicles", amount: formData.vehiculos && parseFloat(formData.vehiculos) > 0 ? parseFloat(formData.vehiculos) : 0 },
+              { name: "realEstate", amount: formData.bienesInmuebles && parseFloat(formData.bienesInmuebles) > 0 ? parseFloat(formData.bienesInmuebles) : 0 },
+              { name: "otherAssets", amount: formData.otrosActivos && parseFloat(formData.otrosActivos) > 0 ? parseFloat(formData.otrosActivos) : 0 }
             ];
             
             const liabilities = [
-              { name: "accountsPayable", amount: parseFloat(formData.cuentasPorPagar || "0") || 0 },
-              { name: "longTermCreditors", amount: parseFloat(formData.deudasCortoPlazo || "0") || 0 },
-              { name: "longTermLoans", amount: parseFloat(formData.prestamosLargoPlazo || "0") || 0 }
+              { name: "accountsPayable", amount: formData.cuentasPorPagar && parseFloat(formData.cuentasPorPagar) > 0 ? parseFloat(formData.cuentasPorPagar) : 0 },
+              { name: "longTermCreditors", amount: formData.deudasCortoPlazo && parseFloat(formData.deudasCortoPlazo) > 0 ? parseFloat(formData.deudasCortoPlazo) : 0 },
+              { name: "longTermLoans", amount: formData.prestamosLargoPlazo && parseFloat(formData.prestamosLargoPlazo) > 0 ? parseFloat(formData.prestamosLargoPlazo) : 0 }
             ];
             
             const totalAssets = assets.reduce((sum, asset) => sum + asset.amount, 0);
             const totalLiabilities = liabilities.reduce((sum, liability) => sum + liability.amount, 0);
             const totalEquity = totalAssets - totalLiabilities;
             
-            console.log('🏦 Mapeando estado financiero real:', {
+            console.log('🏦 Mapeando estado financiero con todos los campos:', {
               assets: { list: assets, total: totalAssets },
               liabilities: { list: liabilities, total: totalLiabilities },
               equity: { total: totalEquity }
@@ -623,7 +623,7 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
               },
               equity: {
                 currentDebtRatio: totalAssets > 0 ? (totalLiabilities / totalAssets) : 0,
-                projectedDebtRatio: totalAssets > 0 ? ((totalLiabilities + parseFloat(formData.requestedAmount || "0")) / (totalAssets + parseFloat(formData.requestedAmount || "0"))) : 0,
+                projectedDebtRatio: totalAssets > 0 ? ((totalLiabilities + (formData.requestedAmount ? parseFloat(formData.requestedAmount) : 0)) / (totalAssets + (formData.requestedAmount ? parseFloat(formData.requestedAmount) : 0))) : 0,
                 total: totalEquity
               }
             };
@@ -672,19 +672,42 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
           })(),
           expenseSummary: {
             totalExpenses: (() => {
-              const expenses = [
-                parseFloat(formData.alimentacion || "0") || 0,
-                parseFloat(formData.vestuario || "0") || 0,
-                parseFloat(formData.serviciosBasicos || "0") || 0,
-                parseFloat(formData.educacion || "0") || 0,
-                parseFloat(formData.vivienda || "0") || 0,
-                parseFloat(formData.transporte || "0") || 0,
-                parseFloat(formData.compromisos || "0") || 0,
-                parseFloat(formData.gastosFinancieros || "0") || 0,
-                parseFloat(formData.descuentosPlanilla || "0") || 0,
-                parseFloat(formData.otros || "0") || 0
-              ];
-              return expenses.reduce((total, expense) => total + expense, 0);
+              const expenses = [];
+              
+              // Solo agregar gastos que tengan valores reales
+              if (formData.alimentacion && parseFloat(formData.alimentacion) > 0) {
+                expenses.push(parseFloat(formData.alimentacion));
+              }
+              if (formData.vestuario && parseFloat(formData.vestuario) > 0) {
+                expenses.push(parseFloat(formData.vestuario));
+              }
+              if (formData.serviciosBasicos && parseFloat(formData.serviciosBasicos) > 0) {
+                expenses.push(parseFloat(formData.serviciosBasicos));
+              }
+              if (formData.educacion && parseFloat(formData.educacion) > 0) {
+                expenses.push(parseFloat(formData.educacion));
+              }
+              if (formData.vivienda && parseFloat(formData.vivienda) > 0) {
+                expenses.push(parseFloat(formData.vivienda));
+              }
+              if (formData.transporte && parseFloat(formData.transporte) > 0) {
+                expenses.push(parseFloat(formData.transporte));
+              }
+              if (formData.compromisos && parseFloat(formData.compromisos) > 0) {
+                expenses.push(parseFloat(formData.compromisos));
+              }
+              if (formData.gastosFinancieros && parseFloat(formData.gastosFinancieros) > 0) {
+                expenses.push(parseFloat(formData.gastosFinancieros));
+              }
+              if (formData.descuentosPlanilla && parseFloat(formData.descuentosPlanilla) > 0) {
+                expenses.push(parseFloat(formData.descuentosPlanilla));
+              }
+              if (formData.otros && parseFloat(formData.otros) > 0) {
+                expenses.push(parseFloat(formData.otros));
+              }
+              
+              const total = expenses.reduce((sum, expense) => sum + expense, 0);
+              return total;
             })()
           }
         }

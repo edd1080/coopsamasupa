@@ -121,16 +121,6 @@ const DynamicFormHeader: React.FC = () => {
           )}
         </div>
       </div>
-      
-      {/* Progress bar for mobile - linear indicator without percentage */}
-      <div className="mt-3 md:hidden">
-        <div className="w-full bg-muted/30 rounded-full h-1.5">
-          <div 
-            className="bg-primary h-1.5 rounded-full transition-all duration-500 ease-out" 
-            style={{ width: `${progress}%` }} 
-          />
-        </div>
-      </div>
     </div>
   );
 };

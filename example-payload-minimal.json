@@ -1,0 +1,123 @@
+{
+  "data": {
+    "process": {
+      "profile": {
+        "personalDocument": {
+          "firstName": "Juan",
+          "secondName": "",
+          "firstLastName": "Pérez",
+          "secondLastName": "",
+          "marriedSurname": "",
+          "personalDocumentId": "1234567890123",
+          "emissionState": { "id": "", "value": "" },
+          "emissionCounty": { "id": "", "value": "" },
+          "gender": { "id": "", "value": "" },
+          "maritalStatus": { "id": "", "value": "" },
+          "birthDate": null,
+          "age": 0,
+          "academicTitle": { "id": "", "value": "" },
+          "occupation": { "id": "", "value": "" },
+          "personalDocumentAddress": {
+            "fullAddress": "",
+            "otherIndications": "",
+            "state": { "id": "", "value": "" },
+            "county": { "id": "", "value": "" }
+          },
+          "typeOfHousing": { "id": "", "value": "" },
+          "housingStability": { "id": "", "value": "" },
+          "geolocalization": "",
+          "spouseFirstName": "",
+          "spouseSecondName": "",
+          "spouseThirdName": "",
+          "spouseFirstLastName": "",
+          "spouseSecondLastName": "",
+          "spouseCompanyName": "",
+          "spouseJobStability": { "id": "", "value": "" },
+          "spouseMobile": "",
+          "spouseBirthDate": null
+        },
+        "personData": {
+          "nit": "",
+          "numberOfDependants": 0,
+          "ethnicity": { "id": "", "value": "" },
+          "academicDegree": { "id": "", "value": "" },
+          "mobile": "",
+          "telephone": "",
+          "email": []
+        },
+        "productDetail": {
+          "idTypeProduct": 0,
+          "idAgency": 0,
+          "requestedAmount": 0,
+          "interestRate": 0,
+          "startingTerm": 0,
+          "principalAmortization": { "id": "", "value": "" },
+          "interestAmortization": { "id": "", "value": "" },
+          "partnerType": { "id": "", "value": "" },
+          "requestType": { "id": "", "value": "" },
+          "sourceOfFunds": { "id": "", "value": "" },
+          "principalProject": { "id": "", "value": "" },
+          "secondaryProject": { "id": "", "value": "" },
+          "paymentMethod": { "id": "", "value": "" },
+          "destinationCategory": { "id": "", "value": "" },
+          "incomeSource": { "id": "", "value": "" },
+          "referenceType": { "id": "", "value": "" }
+        },
+        "income": [],
+        "expense": [
+          { "name": "food", "amount": 0 },
+          { "name": "clothing", "amount": 0 },
+          { "name": "basic services", "amount": 0 },
+          { "name": "education", "amount": 0 },
+          { "name": "housing", "amount": 0 },
+          { "name": "transportation", "amount": 0 },
+          { "name": "commitments", "amount": 0 },
+          { "name": "financial expenses", "amount": 0 },
+          { "name": "payroll deductions", "amount": 0 },
+          { "name": "other expenses", "amount": 0 },
+          { "name": "references for other expenses", "amount": 0 }
+        ],
+        "financialStatus": {
+          "assets": {
+            "list": [
+              { "name": "cashAndBanks", "amount": 0 },
+              { "name": "accountReceivable", "amount": 0 },
+              { "name": "merchandise", "amount": 0 },
+              { "name": "vehicles", "amount": 0 },
+              { "name": "realEstate", "amount": 0 },
+              { "name": "otherAssets", "amount": 0 }
+            ],
+            "total": 0
+          },
+          "liabilities": {
+            "list": [
+              { "name": "accountsPayable", "amount": 0 },
+              { "name": "longTermCreditors", "amount": 0 },
+              { "name": "longTermLoans", "amount": 0 }
+            ],
+            "total": 0
+          },
+          "equity": {
+            "currentDebtRatio": 0,
+            "projectedDebtRatio": 0,
+            "total": 0
+          }
+        },
+        "collateral": [],
+        "personal": {
+          "references": []
+        },
+        "investmentPlan": [],
+        "expenseSummary": {
+          "totalExpenses": 0
+        }
+      }
+    }
+  },
+  "metadata": {
+    "processId": "APP-1234567890",
+    "timestamp": "2024-01-15T10:30:00.000Z",
+    "version": "1.0.0",
+    "source": "coopsama-mobile-app"
+  }
+}

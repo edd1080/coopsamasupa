@@ -18,6 +18,7 @@ import CircularProgress from '@/components/requestForm/CircularProgress';
 
 import { useApplicationData } from '@/hooks/useApplicationData';
 import { getFirstNameAndLastName, getNavBarName } from '@/lib/nameUtils';
+import { getReviewSectionProgress } from '@/utils/reviewProgressTracker';
 import { useToast } from '@/hooks/use-toast';
 import { formatApplicationId } from '@/utils/applicationIdGenerator';
 import { formatSelectValue } from '@/utils/formatters';
@@ -123,6 +124,16 @@ const ApplicationDetails = () => {
     return allSectionsComplete && requiredDocsComplete && hasReferences;
   };
   const navigateToFormSection = (sectionId: string) => {
+    // Para aplicaciones enviadas, mostrar mensaje informativo
+    if (!applicationData.isDraft) {
+      toast({
+        title: "Aplicación Enviada",
+        description: "Esta aplicación ya ha sido enviada y no puede ser editada. Puedes ver los detalles en esta pantalla.",
+        variant: "default"
+      });
+      return;
+    }
+
     // Map section IDs to step indices
     const sectionToStepMap: {
       [key: string]: number;
@@ -203,8 +214,36 @@ const ApplicationDetails = () => {
   const formData = getFormData(applicationData);
   const references = formData.references || [];
   const documents = formData.documents || {};
+  
+  // Helper function to safely render form data values
+  const safeRenderValue = (value: any, fallback: string = 'Por ingresar'): string => {
+    if (value === null || value === undefined || value === '') {
+      return fallback;
+    }
+    if (typeof value === 'object') {
+      // If it's an object, try to get a meaningful string representation
+      if (value.value) return String(value.value);
+      if (value.name) return String(value.name);
+      if (value.id) return String(value.id);
+      return fallback;
+    }
+    return String(value);
+  };
+
+  // Debug logging
+  console.log('🔍 ApplicationDetails Debug:', {
+    id,
+    isLoading,
+    error: error?.message,
+    applicationData: applicationData ? 'present' : 'null',
+    formDataKeys: Object.keys(formData),
+    referencesCount: references.length,
+    documentsKeys: Object.keys(documents)
+  });
   const progress = applicationData.isDraft && 'last_step' in applicationData ? applicationData.last_step : 'progress_step' in applicationData ? applicationData.progress_step : 0;
-  const progressPercentage = Math.round(progress / 6 * 100);
+  const progressPercentage = applicationData.draft_data ? 
+    getReviewSectionProgress(applicationData.draft_data) : 
+    Math.round(progress / 6 * 100);
   const sections = getFormSections('legacy');
   // Get person name from location state (from cards) or fallback to application data
   const personName = location.state?.clientName || 
@@ -335,7 +374,7 @@ const ApplicationDetails = () => {
                    
                    // Lógica especial para la sección de referencias
                    if (section.id === 'references') {
-                     isCompleted = references.length >= 2; // Al menos 2 referencias completas
+                     isCompleted = references.length >= 1; // Al menos 1 referencia completa
                    }
                    
                    // Lógica especial para la sección de revisión final
@@ -436,7 +475,8 @@ const ApplicationDetails = () => {
                 </CardContent>
               </Card>
 
-              {/* Finances Card */}
+              {/* Finances Card - TEMPORARILY HIDDEN - TO BE IMPLEMENTED LATER */}
+              {/* 
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center text-base">
@@ -461,8 +501,10 @@ const ApplicationDetails = () => {
                   </dl>
                 </CardContent>
               </Card>
+              */}
 
-              {/* Work Card */}
+              {/* Work Card - TEMPORARILY HIDDEN - TO BE IMPLEMENTED LATER */}
+              {/* 
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center text-base">
@@ -474,11 +516,11 @@ const ApplicationDetails = () => {
                   <dl className="space-y-1">
                     <div>
                       <dt className="text-xs text-muted-foreground font-semibold">Situación Laboral</dt>
-                      <dd className="text-sm font-medium">{formData.employmentStatus || 'Por ingresar'}</dd>
+                      <dd className="text-sm font-medium">{safeRenderValue(formData.employmentStatus)}</dd>
                     </div>
                     <div>
                       <dt className="text-xs text-muted-foreground font-semibold">Empresa/Negocio</dt>
-                      <dd className="text-sm font-medium">{formData.companyName || 'Por ingresar'}</dd>
+                      <dd className="text-sm font-medium">{safeRenderValue(formData.companyName)}</dd>
                     </div>
                     <div>
                       <dt className="text-xs text-muted-foreground font-semibold">Años de Experiencia</dt>
@@ -487,6 +529,7 @@ const ApplicationDetails = () => {
                   </dl>
                 </CardContent>
               </Card>
+              */}
             </div>
 
             {/* Document Status Card */}
@@ -545,8 +588,29 @@ const ApplicationDetails = () => {
           </TabsContent>
 
           <TabsContent value="detalles" className="space-y-6">
-            {/* Personal Information Detailed */}
-            <Card>
+            {(() => {
+              try {
+                // Verificar que tenemos datos válidos
+                if (!formData || Object.keys(formData).length === 0) {
+                  console.warn('⚠️ FormData is empty or undefined in detalles tab');
+                  return (
+                    <Card>
+                      <CardContent className="p-6">
+                        <div className="text-center">
+                          <h3 className="text-lg font-semibold mb-2">Sin datos disponibles</h3>
+                          <p className="text-muted-foreground">
+                            No hay información detallada disponible para esta solicitud.
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                }
+
+                return (
+                  <>
+                    {/* Personal Information Detailed */}
+                    <Card>
               <CardHeader>
                 <CardTitle className="text-base">Información Personal Detallada</CardTitle>
               </CardHeader>
@@ -554,19 +618,19 @@ const ApplicationDetails = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label className="text-xs text-muted-foreground font-semibold">Agencia</Label>
-                    <p className="text-sm font-medium">{formData.agencia || 'Por ingresar'}</p>
+                    <p className="text-sm font-medium">{safeRenderValue(formData.agencia)}</p>
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground font-semibold">Tipo Socio</Label>
-                    <p className="text-sm font-medium">{formData.tipoSocio || 'Por ingresar'}</p>
+                    <p className="text-sm font-medium">{safeRenderValue(formData.tipoSocio)}</p>
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground font-semibold">CUI</Label>
-                    <p className="text-sm font-medium">{formData.dpi || 'Por ingresar'}</p>
+                    <p className="text-sm font-medium">{safeRenderValue(formData.dpi)}</p>
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground font-semibold">NIT</Label>
-                    <p className="text-sm font-medium">{formData.nit || 'Por ingresar'}</p>
+                    <p className="text-sm font-medium">{safeRenderValue(formData.nit)}</p>
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground font-semibold">Nombre</Label>
@@ -574,51 +638,51 @@ const ApplicationDetails = () => {
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground font-semibold">Estado Civil</Label>
-                    <p className="text-sm font-medium">{formData.estadoCivil || 'Por ingresar'}</p>
+                    <p className="text-sm font-medium">{safeRenderValue(formData.estadoCivil)}</p>
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground font-semibold">Fecha de Nacimiento</Label>
-                    <p className="text-sm font-medium">{formData.birthDate || 'Por ingresar'}</p>
+                    <p className="text-sm font-medium">{safeRenderValue(formData.birthDate)}</p>
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground font-semibold">Nacionalidad</Label>
-                    <p className="text-sm font-medium">{formData.nacionalidad || 'Por ingresar'}</p>
+                    <p className="text-sm font-medium">{safeRenderValue(formData.nacionalidad)}</p>
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground font-semibold">Género</Label>
-                    <p className="text-sm font-medium">{formData.genero || 'Por ingresar'}</p>
+                    <p className="text-sm font-medium">{safeRenderValue(formData.genero)}</p>
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground font-semibold">Profesión</Label>
-                    <p className="text-sm font-medium">{formData.profesion || 'Por ingresar'}</p>
+                    <p className="text-sm font-medium">{safeRenderValue(formData.profesion)}</p>
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground font-semibold">Nivel Educativo</Label>
-                    <p className="text-sm font-medium">{formData.educationLevel || 'Por ingresar'}</p>
+                    <p className="text-sm font-medium">{safeRenderValue(formData.educationLevel)}</p>
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground font-semibold">Tipo de Vivienda</Label>
-                    <p className="text-sm font-medium">{formData.housingType || 'Por ingresar'}</p>
+                    <p className="text-sm font-medium">{safeRenderValue(formData.housingType)}</p>
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground font-semibold">Años en Vivienda</Label>
-                    <p className="text-sm font-medium">{formData.housingYears || 'Por ingresar'}</p>
+                    <p className="text-sm font-medium">{safeRenderValue(formData.housingYears)}</p>
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground font-semibold">Dependientes</Label>
-                    <p className="text-sm font-medium">{formData.dependents || 'Por ingresar'}</p>
+                    <p className="text-sm font-medium">{safeRenderValue(formData.dependents)}</p>
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground font-semibold">Email</Label>
-                    <p className="text-sm font-medium">{formData.email || 'Por ingresar'}</p>
+                    <p className="text-sm font-medium">{safeRenderValue(formData.email)}</p>
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground font-semibold">Teléfono</Label>
-                    <p className="text-sm font-medium">{formData.mobilePhone || 'Por ingresar'}</p>
+                    <p className="text-sm font-medium">{safeRenderValue(formData.mobilePhone)}</p>
                   </div>
                   <div className="md:col-span-2">
                     <Label className="text-xs text-muted-foreground font-semibold">Dirección</Label>
-                    <p className="text-sm font-medium">{formData.address || 'Por ingresar'}</p>
+                    <p className="text-sm font-medium">{safeRenderValue(formData.address)}</p>
                   </div>
                 </div>
 
@@ -668,7 +732,7 @@ const ApplicationDetails = () => {
                     </div>
                     <div className="md:col-span-2">
                       <Label className="text-xs text-muted-foreground font-semibold">Fuente</Label>
-                      <p className="text-sm font-medium">{formData.incomeSource || 'Por ingresar'}</p>
+                      <p className="text-sm font-medium">{safeRenderValue(formData.incomeSource)}</p>
                     </div>
                   </div>
                 </div>
@@ -811,6 +875,30 @@ const ApplicationDetails = () => {
                 </div>
               </CardContent>
             </Card>
+                  </>
+                );
+              } catch (error) {
+                console.error('Error rendering detalles tab:', error);
+                return (
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="text-center">
+                        <h3 className="text-lg font-semibold mb-2">Error al cargar detalles</h3>
+                        <p className="text-muted-foreground mb-4">
+                          Hubo un problema al mostrar la información detallada de la solicitud.
+                        </p>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => window.location.reload()}
+                        >
+                          Recargar página
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              }
+            })()}
           </TabsContent>
 
         </Tabs>

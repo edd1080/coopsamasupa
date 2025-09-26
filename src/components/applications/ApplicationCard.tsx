@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from '@/components/ui/progress';
 import { getCardProgressPercentage } from '@/utils/progressTracker';
 import { getFieldProgressPercentage } from '@/utils/fieldProgressTracker';
+import { getReviewSectionProgress } from '@/utils/reviewProgressTracker';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, ContextMenuSeparator } from "@/components/ui/context-menu";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Calendar, FileText, Edit, Trash2, MoreVertical, CheckCircle, AlertCircle, BarChart3, Banknote, FileSignature, UserCheck, FileImage, Users, X, Clock, Eye, CalendarDays, FileText as FileTextSolid } from 'lucide-react';
@@ -172,15 +173,15 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
                   <span className="text-muted-foreground">Progreso</span>
                   <span className="font-medium">
                     {application.draft_data ? 
-                      getFieldProgressPercentage(application.draft_data) : 
-                      getCardProgressPercentage(application.progress)
+                      getReviewSectionProgress(application.draft_data) : 
+                      getCardProgressPercentage(application.progress, application.draft_data)
                     }%
                   </span>
                 </div>
                 <Progress 
                   value={application.draft_data ? 
-                    getFieldProgressPercentage(application.draft_data) : 
-                    getCardProgressPercentage(application.progress)
+                    getReviewSectionProgress(application.draft_data) : 
+                    getCardProgressPercentage(application.progress, application.draft_data)
                   } 
                   className="h-1.5" 
                 />

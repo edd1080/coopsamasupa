@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useSaveDraft } from '@/hooks/useDraftActions';
 import { useFinalizeApplication } from '@/hooks/useFinalizeApplication';
 import { useApplicationData } from '@/hooks/useApplicationData';
+import { calculateFieldProgress } from '@/utils/fieldProgressTracker';
 
 interface FormContextType {
   // Form state
@@ -646,12 +647,11 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     return steps[currentStep] || { id: '', title: '', icon: null };
   }, [currentStep, steps]);
 
-  // Get progress percentage based on actual section completion status
+  // Get progress percentage based on actual field completion
   const getProgressPercentage = useCallback((): number => {
-    const totalSections = steps.length;
-    const completedSections = Object.values(sectionStatus).filter(status => status === 'complete').length;
-    return Math.round((completedSections / totalSections) * 100);
-  }, [sectionStatus, steps.length]);
+    const fieldProgress = calculateFieldProgress(formData);
+    return fieldProgress.progressPercentage;
+  }, [formData]);
 
   // Navigation functions
   const handleNext = useCallback(() => {
