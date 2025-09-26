@@ -15,7 +15,60 @@ export const useApplicationData = (applicationId: string) => {
       if (!applicationId) return null; // Para nuevas aplicaciones, retornar null
       
       console.log('🔍 Fetching application data for ID:', sanitizeConsoleOutput({ applicationId, userId: user.id }));
+
+      const isOffline = !navigator.onLine;
+      // Helper to try offline storage lookups
+      const tryOfflineLookup = async () => {
+        try {
+          const localforage = (await import('localforage')).default;
+          const offlineStorage = localforage.createInstance({ name: 'coopsama', storeName: 'offlineData' });
+
+          // 1) Look through offline drafts saved in localforage
+          const keys = await offlineStorage.keys();
+          for (const key of keys) {
+            if (key.startsWith('draft-') || key.startsWith('draft_') || key.startsWith('offline-')) {
+              const item: any = await offlineStorage.getItem(key);
+              if (!item) continue;
+              const matchesById = item.id === applicationId;
+              const matchesByAppId = item.draft_data?.applicationId === applicationId;
+              if (matchesById || matchesByAppId) {
+                console.log('✅ Found offline draft by localforage:', { key, itemId: item.id, applicationId: item.draft_data?.applicationId });
+                return {
+                  ...item,
+                  isDraft: true,
+                  type: 'draft'
+                };
+              }
+            }
+          }
+
+          // 2) Fallback to cached applications list (transformed items)
+          const cacheKey = `applications-cache-${user.id}`;
+          const cachedList = (await offlineStorage.getItem(cacheKey)) as any[] | null;
+          if (Array.isArray(cachedList)) {
+            const found = cachedList.find((it: any) => (it.id === applicationId) || (it.applicationId === applicationId));
+            if (found) {
+              console.log('✅ Found item in cached applications list');
+              return {
+                ...found,
+                isDraft: found.status === 'draft' || found.status === 'offline',
+                type: (found.status === 'draft' || found.status === 'offline') ? 'draft' : 'application'
+              };
+            }
+          }
+        } catch (e) {
+          console.warn('⚠️ Offline lookup failed:', e);
+        }
+        return null;
+      };
       
+      // If offline, try local cache first
+      if (isOffline) {
+        const offlineResult = await tryOfflineLookup();
+        if (offlineResult) return offlineResult;
+        // Continue to DB fallback (might fail offline, but we tried cache)
+      }
+
       // Primero intentar obtener desde aplicaciones completas
       const { data: application, error: appError } = await supabase
         .from('applications')
@@ -60,11 +113,15 @@ export const useApplicationData = (applicationId: string) => {
         };
       }
       
-      // Si no se encuentra en ninguna tabla
-      console.log('❌ Application/draft not found');
+      // Si no se encuentra en ninguna tabla, intentar nuevamente desde cache (por si está online pero no existe en DB)
+      const cachedFallback = await tryOfflineLookup();
+      if (cachedFallback) return cachedFallback;
+
+      console.log('❌ Application/draft not found in DB or cache');
       throw new Error('Solicitud no encontrada');
     },
     enabled: !!user?.id && !!applicationId,
+    networkMode: 'always'
   });
 };
 
