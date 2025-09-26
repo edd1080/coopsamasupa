@@ -103,6 +103,39 @@ export const useFinalizeApplication = () => {
           payload: sanitizedPayload
         });
 
+        // Add the submitted application to local cache so it appears in the list while offline
+        try {
+          const localforage = (await import('localforage')).default;
+          const offlineStorage = localforage.createInstance({ name: 'coopsama', storeName: 'offlineData' });
+          const cacheKey = `applications-cache-${user.id}`;
+          const cachedList = (await offlineStorage.getItem(cacheKey)) as any[] | null;
+
+          const newItem = {
+            id: `offline-${Date.now()}`,
+            applicationId: (sanitizedPayload as any)?.draft_data?.applicationId || (formData?.applicationId) || undefined,
+            externalReferenceId: undefined,
+            processId: undefined,
+            clientName: (sanitizedPayload as any)?.client_name || 'Sin nombre',
+            dpi: (sanitizedPayload as any)?.draft_data?.dpi || '',
+            product: (sanitizedPayload as any)?.product || 'Crédito Personal',
+            amount: ((sanitizedPayload as any)?.amount_requested ?? 0).toString(),
+            status: 'submitted',
+            date: formatDateToGuatemalan(new Date().toISOString()),
+            progress: (sanitizedPayload as any)?.progress_step ?? 5,
+            stage: (sanitizedPayload as any)?.current_stage || 'Revisión Final',
+            draft_data: (sanitizedPayload as any)?.draft_data || formData || {},
+            is_offline: true,
+          };
+
+          const merged = Array.isArray(cachedList) ? [newItem, ...cachedList] : [newItem];
+          await offlineStorage.setItem(cacheKey, merged);
+
+          // Invalidate queries so the list re-renders from cache immediately
+          queryClient.invalidateQueries({ queryKey: ['applications-list'] });
+        } catch (e) {
+          console.warn('⚠️ Failed to add offline submitted application to cache:', e);
+        }
+
         // Note: Draft deletion will be handled after sync
 
         return {

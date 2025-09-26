@@ -238,7 +238,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   children, 
   steps, 
   onNavigateAfterExit,
-  onRedirectSubmittedApplication 
+  onRedirectSubmittedApplication
 }) => {
   console.log('📝 RequestFormProvider initializing');
   const { toast } = useToast();
