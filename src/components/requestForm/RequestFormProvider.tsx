@@ -741,7 +741,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     console.log('💾 Current offline status:', { 
       isOffline: isCurrentlyOffline, 
       navigatorOnLine: navigator.onLine,
-      connectionType: navigator.connection?.effectiveType || 'unknown'
+      connectionType: (navigator as any)?.connection?.effectiveType || 'unknown'
     });
     console.log('💾 About to call saveDraftMutation.mutate...');
     console.log('💾 saveDraftMutation status:', {
@@ -814,6 +814,15 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
           } catch (e) {
             console.warn('⚠️ Failed to invalidate applications list cache:', e);
           }
+
+          // Toast confirmando guardado con ID
+          const displayId = offlineData.applicationId || formData.applicationId || offlineData.id;
+          toast({
+            title: 'Borrador guardado',
+            description: `Tu solicitud ha sido guardada offline${displayId ? ` con ID: ${displayId}` : ''}`,
+            variant: 'success',
+            duration: 2500,
+          });
 
           // Reset saving state
           isSavingRef.current = false;
@@ -911,7 +920,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
         console.log('💾 HANDLE EXIT SAVE - Current offline status:', { 
           isOffline: isCurrentlyOffline, 
           navigatorOnLine: navigator.onLine,
-          connectionType: navigator.connection?.effectiveType || 'unknown'
+          connectionType: (navigator as any)?.connection?.effectiveType || 'unknown'
         });
         
         // Use the same offline bypass logic as handleSaveDraft
@@ -969,6 +978,15 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
             console.warn('⚠️ Failed to invalidate applications list cache:', e);
           }
 
+              // Toast confirmando guardado con ID
+              const displayId = offlineData.applicationId || formData.applicationId || offlineData.id;
+              toast({
+                title: 'Borrador guardado',
+                description: `Tu solicitud ha sido guardada offline${displayId ? ` con ID: ${displayId}` : ''}`,
+                variant: 'success',
+                duration: 2500,
+              });
+
               return offlineData;
             } catch (error) {
               console.error('❌ ERROR in offline exit save:', error);
@@ -985,11 +1003,22 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
               formData,
               currentStep,
               currentSubStep: subStep,
-              isIncremental: false
-            }, {
-              onSuccess: (data) => {
+              isIncremental: false,
+              // Evitar doble toast; manejaremos aquí el aviso con ID
+              silentToast: true as any
+            } as any, {
+              onSuccess: (data: any) => {
                 console.log('✅ Save successful before exit:', data);
                 setHasUnsavedChanges(false);
+
+                const displayId = data?.applicationId || formData.applicationId || data?.id;
+                toast({
+                  title: 'Borrador guardado',
+                  description: `Tu solicitud ha sido guardada${!navigator.onLine ? ' offline' : ''}${displayId ? ` con ID: ${displayId}` : ''}`,
+                  variant: 'success',
+                  duration: 2500,
+                });
+
                 resolve(data);
               },
               onError: (error) => {

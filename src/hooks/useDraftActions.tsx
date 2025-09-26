@@ -329,13 +329,19 @@ export const useSaveDraft = () => {
       queryClient.invalidateQueries({ queryKey: ['application-metrics'] });
       
       const saveType = variables.isIncremental ? 'guardado incremental' : 'borrador guardado';
-      
-      toast({
-        title: `${saveType.charAt(0).toUpperCase() + saveType.slice(1)}`,
-        description: `Tu solicitud ha sido guardada${!navigator.onLine ? ' offline' : ''}`,
-        variant: "success",
-        duration: variables.isIncremental ? 2000 : 3000,
-      });
+
+      const displayId = (data as any)?.applicationId || variables?.formData?.applicationId || (data as any)?.id;
+
+      // Permitir silenciar el toast cuando el flujo lo maneje manualmente (e.g., Guardar y salir)
+      const shouldShowToast = !(variables as any)?.silentToast;
+      if (shouldShowToast) {
+        toast({
+          title: `${saveType.charAt(0).toUpperCase() + saveType.slice(1)}`,
+          description: `Tu solicitud ha sido guardada${!navigator.onLine ? ' offline' : ''}${displayId ? ` con ID: ${displayId}` : ''}`,
+          variant: "success",
+          duration: variables.isIncremental ? 2000 : 3000,
+        });
+      }
     },
     onError: (error: any, variables) => {
       console.error('❌ Error saving draft:', sanitizeConsoleOutput({
