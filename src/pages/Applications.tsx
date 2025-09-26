@@ -8,7 +8,6 @@ import BreadcrumbNavigation from '@/components/navigation/BreadcrumbNavigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { useApplicationsList } from '@/hooks/useApplicationsList';
 import { useDeleteApplication, useCancelApplication } from '@/hooks/useApplicationActions';
 import { Trash2, RefreshCw } from 'lucide-react';
@@ -184,26 +183,24 @@ const Applications = () => {
       <Header />
       
       <main className="flex-1 container mx-auto pb-20 max-w-5xl py-[4px] px-[17px]">
-        <PullToRefresh onRefresh={handleRefresh}>
-          <div className="mb-4">
-            <BreadcrumbNavigation />
-          </div>
-          
-          <ApplicationsHeader 
-            searchTerm={searchTerm} 
-            onSearchChange={setSearchTerm}
-            onRefresh={handleRefresh}
-            isRefreshing={isRefetching}
-          />
-          
-          <ApplicationsList 
-            applications={filteredApplications || []} 
-            isLoading={isLoading} 
-            onEdit={editApplication} 
-            onCancel={handleCancelApplication} 
-            onDelete={handleDeleteApplication} 
-          />
-        </PullToRefresh>
+        <div className="mb-4">
+          <BreadcrumbNavigation />
+        </div>
+
+        <ApplicationsHeader 
+          searchTerm={searchTerm} 
+          onSearchChange={setSearchTerm}
+          onRefresh={handleRefresh}
+          isRefreshing={isRefetching}
+        />
+
+        <ApplicationsList 
+          applications={filteredApplications || []} 
+          isLoading={isLoading} 
+          onEdit={editApplication} 
+          onCancel={handleCancelApplication} 
+          onDelete={handleDeleteApplication} 
+        />
       </main>
       
       <BottomNavigation />

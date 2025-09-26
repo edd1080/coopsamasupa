@@ -51,7 +51,7 @@ export const useApplicationsList = () => {
   }, [queryClient]);
   
   const queryResult = useQuery({
-    queryKey: ['applications-list', user?.id, navigator.onLine],
+    queryKey: ['applications-list', user?.id],
     queryFn: async () => {
       if (!user?.id) throw new Error('Usuario no autenticado');
       
@@ -90,7 +90,11 @@ export const useApplicationsList = () => {
         // Get all offline data
         const offlineData: any[] = [];
         for (const key of offlineKeys) {
-          if (key.startsWith('draft-') || key.startsWith('offline-')) {
+          // Aceptar claves guardadas con distintos prefijos:
+          // - 'draft-' (guardar directo offline en provider)
+          // - 'draft_' (guardar offline desde useSaveDraft/saveOfflineData)
+          // - 'offline-' (cualquier otro guardado offline)
+          if (key.startsWith('draft-') || key.startsWith('draft_') || key.startsWith('offline-')) {
             const data = await offlineStorage.getItem(key);
             console.log(`📱 Processing key ${key}:`, { 
               hasData: !!data, 
@@ -144,8 +148,93 @@ export const useApplicationsList = () => {
       }
       
       if (isActuallyOffline) {
-        console.log('📵 OFFLINE MODE - Using offline data only');
+        console.log('📵 OFFLINE MODE - Using cached applications list + offline drafts');
         drafts = offlineDrafts;
+
+        try {
+          const localforage = (await import('localforage')).default;
+          const offlineStorage = localforage.createInstance({
+            name: 'coopsama',
+            storeName: 'offlineData'
+          });
+          const cacheKey = `applications-cache-${user.id}`;
+          const cachedList = (await offlineStorage.getItem(cacheKey)) as any[] | null;
+
+          // Transform offline drafts to Application[]
+          const mapDraftToApplication = (draft: any) => {
+            const applicationId = draft.draft_data && typeof draft.draft_data === 'object' &&
+              (draft.draft_data as any).applicationId ?
+              (draft.draft_data as any).applicationId :
+              formatApplicationId(draft.id);
+
+            let fullName = draft.client_name || 'Sin nombre';
+            let dpi = '';
+            let requestedAmount = '';
+            if (draft.draft_data && typeof draft.draft_data === 'object') {
+              const draftData = draft.draft_data as any;
+              if (draftData.firstName && (draftData.lastName || draftData.firstLastName)) {
+                fullName = `${draftData.firstName} ${draftData.lastName || draftData.firstLastName}`.trim();
+              } else if (draftData.fullName) {
+                fullName = draftData.fullName;
+              }
+              dpi = draftData.dpi || draftData.cedula || '';
+              requestedAmount = draftData.requestedAmount?.toString() || draftData.montoSolicitado?.toString() || '0';
+            }
+
+            const getStageFromStep = (step: number): string => {
+              switch(step) {
+                case 1: return 'Identificación y Contacto';
+                case 2: return 'Información Laboral';
+                case 3: return 'Información Financiera';
+                case 4: return 'Referencias Personales';
+                case 5: return 'Documentos e Imágenes';
+                case 6: return 'Revisión Final';
+                default: return 'Identificación y Contacto';
+              }
+            };
+
+            return {
+              id: draft.id,
+              applicationId,
+              externalReferenceId: undefined,
+              processId: undefined,
+              clientName: getFirstNameAndLastName(fullName),
+              dpi,
+              product: 'Crédito',
+              amount: requestedAmount,
+              status: draft._is_offline ? 'offline' : 'draft',
+              date: formatDateToGuatemalan(draft.updated_at || draft.created_at || new Date().toISOString()),
+              progress: draft.last_step || 0,
+              stage: getStageFromStep(draft.last_step || 1),
+              draft_data: draft.draft_data,
+              is_offline: draft._is_offline || false,
+            } as Application;
+          };
+
+          const offlineDraftApplications = (drafts || []).map(mapDraftToApplication);
+
+          // Merge cached list with offline drafts, dedupe by applicationId or id
+          const baseList = Array.isArray(cachedList) ? cachedList : [];
+          const merged = [...baseList];
+          const seen = new Set<string>();
+          for (const item of baseList) {
+            seen.add(item.applicationId || item.id);
+          }
+          for (const d of offlineDraftApplications) {
+            const key = d.applicationId || d.id;
+            if (!seen.has(key)) {
+              merged.push(d);
+              seen.add(key);
+            }
+          }
+
+          // Return cached merged list when offline
+          return merged;
+        } catch (e) {
+          console.warn('⚠️ Failed to load cached applications list:', e);
+          // Fallback to only offline drafts (transformed later in common path)
+        }
+
       } else {
         console.log('🌐 ONLINE MODE - Loading applications from database');
         
@@ -337,11 +426,27 @@ export const useApplicationsList = () => {
         hasDraftData: !!app.draft_data // Indicate if draft_data is present
       }))));
 
+      // Cache the transformed list for offline usage
+      try {
+        const localforage = (await import('localforage')).default;
+        const offlineStorage = localforage.createInstance({
+          name: 'coopsama',
+          storeName: 'offlineData'
+        });
+        const cacheKey = `applications-cache-${user.id}`;
+        await offlineStorage.setItem(cacheKey, sortedApplications);
+        console.log('💾 Cached applications list for offline use. Count:', sortedApplications.length);
+      } catch (e) {
+        console.warn('⚠️ Failed to cache applications list:', e);
+      }
+
       return sortedApplications;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnWindowFocus: true,
-    refetchInterval: 1000 * 60 * 1 // 1 minute
+    refetchInterval: 1000 * 60 * 1, // 1 minute
+    // Ensure the query runs even when navigator.onLine is false
+    networkMode: 'always'
   });
 
   return {
