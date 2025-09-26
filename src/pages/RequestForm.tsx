@@ -16,7 +16,6 @@ import ApplicationSuccessScreen from '@/components/requestForm/ApplicationSucces
 import ApplicationErrorScreen from '@/components/requestForm/ApplicationErrorScreen';
 import SafeNavigationWrapper from '@/components/requestForm/SafeNavigationWrapper';
 import { steps } from '@/components/requestForm/formSteps';
-import { OfflineBanner } from '@/components/pwa/OfflineBanner';
 
 const RequestFormContent = () => {
   const { 
@@ -65,9 +64,6 @@ const RequestFormContent = () => {
         onExitFormClick={handleShowExitDialog}
       />
       
-      {/* Offline Banner */}
-      <OfflineBanner />
-      
       <main className="flex-1 container mx-auto px-4 py-0 pb-20 max-w-5xl">
         {/* Breadcrumb Navigation */}
         <div className="mb-3 mt-4">
@@ -102,6 +98,7 @@ const RequestFormContent = () => {
 
 const RequestForm = () => {
   console.log('🚀 RequestForm component initializing');
+  console.log('🔍 RequestForm render stack trace:', new Error().stack);
   const navigate = useNavigate();
   
   // Create navigation function to pass to provider

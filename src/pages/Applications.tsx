@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import Header from '@/components/layout/Header';
 import BottomNavigation from '@/components/layout/BottomNavigation';
 import ApplicationsHeader from '@/components/applications/ApplicationsHeader';
@@ -8,11 +8,13 @@ import BreadcrumbNavigation from '@/components/navigation/BreadcrumbNavigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { useApplicationsList } from '@/hooks/useApplicationsList';
 import { useDeleteApplication, useCancelApplication } from '@/hooks/useApplicationActions';
 import { Trash2, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from '@tanstack/react-query';
 const Applications = () => {
   console.log('Applications component loaded - testing tools moved to form');
   const [searchTerm, setSearchTerm] = useState('');
@@ -23,10 +25,12 @@ const Applications = () => {
   const {
     toast
   } = useToast();
+  const queryClient = useQueryClient();
   const {
     data: applications,
     isLoading,
-    refetch
+    refetch,
+    isRefetching
   } = useApplicationsList();
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
@@ -42,10 +46,46 @@ const Applications = () => {
   const deleteApplication = useDeleteApplication();
   const cancelApplication = useCancelApplication();
 
+  // Función para manejar el refresh manual usando React Query directamente
+  const handleRefresh = useCallback(async () => {
+    try {
+      console.log('🔄 Manual refresh triggered by user');
+      console.log('🌐 Network status:', { 
+        isOffline: !navigator.onLine, 
+        navigatorOnLine: navigator.onLine,
+        connectionType: navigator.connection?.effectiveType || 'unknown'
+      });
+      
+      // Invalidar cache directamente con React Query
+      console.log('🔄 Invalidating applications list cache directly');
+      queryClient.invalidateQueries({ queryKey: ['applications-list'] });
+      
+      // Refetch data
+      await refetch();
+      
+      toast({
+        title: "Lista actualizada",
+        description: navigator.onLine 
+          ? "Las aplicaciones se han actualizado correctamente"
+          : "Lista de aplicaciones offline actualizada",
+        variant: "success",
+        duration: 2000,
+      });
+    } catch (error) {
+      console.error('❌ Error during manual refresh:', error);
+      toast({
+        title: "Error al actualizar",
+        description: "No se pudo actualizar la lista de aplicaciones",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
+  }, [refetch, queryClient, toast]);
+
   // Función para normalizar texto (remover acentos)
-  const normalizeText = (text: string) => {
+  const normalizeText = useCallback((text: string) => {
     return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-  };
+  }, []);
 
   // Filtrar aplicaciones basado en el término de búsqueda
   const filteredApplications = React.useMemo(() => {
@@ -87,41 +127,19 @@ const Applications = () => {
       })) || []
     });
   }, [user, applications, filteredApplications, searchTerm, isLoading]);
-  const handleRefresh = async () => {
-    console.log('🔄 Manual refresh triggered by user');
-    toast({
-      title: "Actualizando lista",
-      description: "Refrescando solicitudes...",
-      duration: 2000
-    });
-    try {
-      await refetch();
-      toast({
-        title: "Lista actualizada",
-        description: "Las solicitudes se han actualizado correctamente",
-        duration: 2000
-      });
-    } catch (error) {
-      console.error('❌ Error during manual refresh:', error);
-      toast({
-        title: "Error al actualizar",
-        description: "No se pudo actualizar la lista. Inténtalo de nuevo.",
-        variant: "destructive",
-        duration: 3000
-      });
-    }
-  };
-  const editApplication = (id: string, clientName: string, e?: React.MouseEvent) => {
+  const editApplication = useCallback((id: string, clientName: string, e?: React.MouseEvent) => {
     console.log('Edit application:', id, clientName);
-  };
-  const handleCancelApplication = (id: string, clientName: string, e?: React.MouseEvent) => {
+  }, []);
+  
+  const handleCancelApplication = useCallback((id: string, clientName: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     cancelApplication.mutate({
       applicationId: id,
       reason: 'Cancelado por el usuario'
     });
-  };
-  const handleDeleteApplication = (id: string, clientName: string, e?: React.MouseEvent) => {
+  }, [cancelApplication]);
+  
+  const handleDeleteApplication = useCallback((id: string, clientName: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
 
     // Determinar si es borrador basándose en si existe en la lista con status 'draft'
@@ -139,8 +157,8 @@ const Applications = () => {
       clientName,
       isDraft
     });
-  };
-  const confirmDelete = () => {
+  }, [filteredApplications]);
+  const confirmDelete = useCallback(() => {
     console.log('🗑️ Confirming delete:', deleteDialog);
     deleteApplication.mutate({
       applicationId: deleteDialog.applicationId,
@@ -152,36 +170,40 @@ const Applications = () => {
       clientName: '',
       isDraft: false
     });
-  };
-  const cancelDelete = () => {
+  }, [deleteDialog, deleteApplication]);
+  
+  const cancelDelete = useCallback(() => {
     setDeleteDialog({
       open: false,
       applicationId: '',
       clientName: '',
       isDraft: false
     });
-  };
+  }, []);
   return <div className="min-h-screen flex flex-col">
       <Header />
       
       <main className="flex-1 container mx-auto pb-20 max-w-5xl py-[4px] px-[17px]">
-        <div className="mb-4">
-          <BreadcrumbNavigation />
-        </div>
-        
-        <ApplicationsHeader 
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-        />
-        
-        
-        <ApplicationsList 
-          applications={filteredApplications || []} 
-          isLoading={isLoading} 
-          onEdit={editApplication} 
-          onCancel={handleCancelApplication} 
-          onDelete={handleDeleteApplication} 
-        />
+        <PullToRefresh onRefresh={handleRefresh}>
+          <div className="mb-4">
+            <BreadcrumbNavigation />
+          </div>
+          
+          <ApplicationsHeader 
+            searchTerm={searchTerm} 
+            onSearchChange={setSearchTerm}
+            onRefresh={handleRefresh}
+            isRefreshing={isRefetching}
+          />
+          
+          <ApplicationsList 
+            applications={filteredApplications || []} 
+            isLoading={isLoading} 
+            onEdit={editApplication} 
+            onCancel={handleCancelApplication} 
+            onDelete={handleDeleteApplication} 
+          />
+        </PullToRefresh>
       </main>
       
       <BottomNavigation />

@@ -32,13 +32,15 @@ export const useSaveDraft = () => {
       changedData?: any;
       lastEditedField?: string;
     }) => {
-      console.log('💾 useSaveDraft: Starting save process', sanitizeConsoleOutput({ 
-        isIncremental, 
-        currentStep, 
-        currentSubStep,
-        userId: user?.id,
-        hasUser: !!user
-      }));
+      try {
+        console.log('🚀 MUTATION FUNCTION EXECUTING - useSaveDraft started');
+        console.log('💾 useSaveDraft: Starting save process', sanitizeConsoleOutput({ 
+          isIncremental, 
+          currentStep, 
+          currentSubStep,
+          userId: user?.id,
+          hasUser: !!user
+        }));
 
       // Verificar autenticación ANTES de cualquier procesamiento
       if (!user?.id) {
@@ -107,16 +109,27 @@ export const useSaveDraft = () => {
       await saveOfflineData(offlineKey, offlineData);
 
       // Check if offline - enqueue if no connection and return early
-      console.log('🔍 Checking offline status:', { isOffline, navigatorOnLine: navigator.onLine });
-      if (isOffline || !navigator.onLine) {
-        console.log('📵 Offline mode detected, saving locally and enqueueing...');
+      const isCurrentlyOffline = isOffline || !navigator.onLine;
+      console.log('🔍 Checking offline status:', { 
+        isOffline, 
+        navigatorOnLine: navigator.onLine, 
+        isCurrentlyOffline,
+        connectionType: navigator.connection?.effectiveType || 'unknown'
+      });
+      
+      if (isCurrentlyOffline) {
+        console.log('📵 OFFLINE MODE DETECTED - Saving locally and enqueueing...');
+        console.log('📵 Form data being saved offline:', sanitizedFormData);
+        
         const { offlineQueue } = await import('@/utils/offlineQueue');
         await offlineQueue.enqueue({
           type: 'updateDraft',
           payload: offlineData
         });
         
-        console.log('✅ Offline save completed, returning optimistic result');
+        console.log('✅ OFFLINE SAVE COMPLETED - Returning optimistic result');
+        console.log('✅ Offline data saved:', offlineData);
+        
         // Return optimistic result for offline - no need to verify session
         return offlineData;
       }
@@ -289,6 +302,16 @@ export const useSaveDraft = () => {
         ...data,
         applicationId: sanitizedFormData.applicationId
       };
+      } catch (error) {
+        console.error('❌ CRITICAL ERROR in mutationFn:', error);
+        console.error('❌ Error details:', {
+          message: error.message,
+          stack: error.stack,
+          userId: user?.id,
+          isOffline: isOffline || !navigator.onLine
+        });
+        throw error; // Re-throw to let React Query handle it
+      }
     },
     onSuccess: (data, variables) => {
       console.log('🎉 Draft save success, invalidating queries');

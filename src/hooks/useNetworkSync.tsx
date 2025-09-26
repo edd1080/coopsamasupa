@@ -67,6 +67,8 @@ export const useNetworkSync = () => {
             break;
 
           case 'updateDraft':
+            console.log('🔄 Processing updateDraft task:', task.payload);
+            
             // Check for existing draft to avoid duplication during sync
             const { data: existingDrafts } = await supabase
               .from('application_drafts')
@@ -80,15 +82,32 @@ export const useNetworkSync = () => {
               (draft.draft_data as any).applicationId === applicationId
             );
             
+            // Ensure we have a valid UUID for application_drafts table
+            const draftId = existingDraft ? existingDraft.id : crypto.randomUUID();
+            
             const draftPayload = {
-              ...sanitizeObjectData(task.payload),
+              id: draftId,
               agent_id: user.id,
-              id: existingDraft ? existingDraft.id : task.payload.id // Reuse existing ID if found
+              client_name: task.payload.client_name || 'Sin nombre',
+              draft_data: task.payload.draft_data || {},
+              last_step: task.payload.last_step || 0,
+              last_sub_step: task.payload.last_sub_step || 0,
+              created_at: task.payload.created_at || new Date().toISOString(),
+              updated_at: new Date().toISOString()
             };
+            
+            console.log('🔄 Draft payload for sync:', draftPayload);
             
             const { data: draftData, error: draftError } = await supabase
               .from('application_drafts')
               .upsert(draftPayload);
+              
+            if (draftError) {
+              console.error('❌ Draft sync error:', draftError);
+            } else {
+              console.log('✅ Draft synced successfully:', draftData);
+            }
+            
             success = !draftError;
             break;
 

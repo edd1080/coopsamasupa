@@ -3,16 +3,20 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, RefreshCw } from 'lucide-react';
 
 interface ApplicationsHeaderProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
 }
 
 const ApplicationsHeader: React.FC<ApplicationsHeaderProps> = ({ 
   searchTerm, 
-  onSearchChange 
+  onSearchChange,
+  onRefresh,
+  isRefreshing = false
 }) => {
   const navigate = useNavigate();
 
@@ -34,10 +38,22 @@ const ApplicationsHeader: React.FC<ApplicationsHeaderProps> = ({
           />
         </div>
         
-        <Button className="w-full" onClick={() => navigate('/applications/new')}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nueva Solicitud
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            className="flex-1" 
+            onClick={onRefresh}
+            disabled={isRefreshing}
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? 'Actualizando...' : 'Actualizar'}
+          </Button>
+          
+          <Button className="flex-1" onClick={() => navigate('/applications/new')}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nueva Solicitud
+          </Button>
+        </div>
       </div>
     </>
   );

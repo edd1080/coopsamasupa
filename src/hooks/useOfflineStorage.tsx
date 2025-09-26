@@ -18,6 +18,7 @@ export const useOfflineStorage = () => {
 
   useEffect(() => {
     const handleOnline = () => {
+      console.log('🌐 NETWORK STATUS: Online detected');
       setIsOffline(false);
       toast({
         title: "Conexión restaurada",
@@ -28,6 +29,7 @@ export const useOfflineStorage = () => {
     };
 
     const handleOffline = () => {
+      console.log('📵 NETWORK STATUS: Offline detected');
       setIsOffline(true);
       toast({
         title: "Sin conexión",
@@ -36,6 +38,13 @@ export const useOfflineStorage = () => {
         duration: 4000
       });
     };
+
+    // Log initial state
+    console.log('🔍 NETWORK STATUS: Initial state:', { 
+      isOffline: !navigator.onLine, 
+      navigatorOnLine: navigator.onLine,
+      connectionType: navigator.connection?.effectiveType || 'unknown'
+    });
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);

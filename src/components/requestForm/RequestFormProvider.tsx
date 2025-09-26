@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { generateApplicationId } from '@/utils/applicationIdGenerator';
 import { useToast } from '@/hooks/use-toast';
@@ -238,6 +238,8 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   onNavigateAfterExit,
   onRedirectSubmittedApplication 
 }) => {
+  console.log('📝 RequestFormProvider initializing');
+  console.log('🔍 RequestFormProvider render stack trace:', new Error().stack);
   const { toast } = useToast();
   const location = useLocation();
   const { id: applicationId } = useParams<{ id: string }>();
@@ -253,9 +255,8 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     }
   }, [applicationData, onRedirectSubmittedApplication]);
   
-  // Initialize form data with application ID
-  const [formData, setFormData] = useState<FormData>(() => {
-    // Define default form data structure
+  // Create default form data using useMemo to avoid recreating on every render
+  const defaultFormData = useMemo((): FormData => {
     const defaultFormData: FormData = {
       // Basic identification
       firstName: '', secondName: '', thirdName: '', firstLastName: '', secondLastName: '', marriedLastName: '',
@@ -331,7 +332,17 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     
     // Si no hay datos del borrador, usar valores por defecto
     return defaultFormData;
-  });
+  }, [applicationId]);
+
+  // Initialize form data with application ID
+  const [formData, setFormData] = useState<FormData>(defaultFormData);
+  
+  // Update formData when defaultFormData changes (e.g., when loading existing draft)
+  useEffect(() => {
+    if (applicationData && (applicationData.isDraft || ('status' in applicationData && applicationData.status === 'error'))) {
+      setFormData(defaultFormData);
+    }
+  }, [defaultFormData, applicationData]);
 
   // Navigation state
   const [currentStep, setCurrentStep] = useState(0);
@@ -366,6 +377,22 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   // Add save draft mutation
   const saveDraftMutation = useSaveDraft();
   const finalizeApplicationMutation = useFinalizeApplication();
+  
+  // Debug: Log mutation status on component mount
+  useEffect(() => {
+    console.log('🔧 saveDraftMutation initialized:', {
+      isPending: saveDraftMutation.isPending,
+      isError: saveDraftMutation.isError,
+      isSuccess: saveDraftMutation.isSuccess,
+      error: saveDraftMutation.error,
+      hasMutate: typeof saveDraftMutation.mutate === 'function'
+    });
+  }, [saveDraftMutation]);
+
+  // Prevent component restart during save operation
+  const [isSaving, setIsSaving] = useState(false);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isSavingRef = useRef(false);
 
   // Load existing data when editing
   useEffect(() => {
@@ -702,23 +729,135 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
 
   // Form actions
   const handleSaveDraft = useCallback(() => {
-    console.log('💾 handleSaveDraft called with formData:', formData);
-    console.log('💾 Current offline status:', { isOffline: !navigator.onLine, navigatorOnLine: navigator.onLine });
-    saveDraftMutation.mutate({
-      formData,
-      currentStep,
-      currentSubStep: subStep,
-      isIncremental: false
-    }, {
-      onSuccess: () => {
-        console.log('✅ Save draft success, clearing unsaved changes');
-        setHasUnsavedChanges(false);
-      },
-      onError: (error) => {
-        console.error('❌ Save draft error:', error);
-        // Don't clear unsaved changes on error
-      }
+    if (isSavingRef.current) {
+      console.log('⏳ Save already in progress, skipping...');
+      return;
+    }
+
+    const isCurrentlyOffline = !navigator.onLine;
+    console.log('💾 HANDLE SAVE DRAFT CALLED');
+    console.log('💾 Form data:', formData);
+    console.log('💾 Current offline status:', { 
+      isOffline: isCurrentlyOffline, 
+      navigatorOnLine: navigator.onLine,
+      connectionType: navigator.connection?.effectiveType || 'unknown'
     });
+    console.log('💾 About to call saveDraftMutation.mutate...');
+    console.log('💾 saveDraftMutation status:', {
+      isPending: saveDraftMutation.isPending,
+      isError: saveDraftMutation.isError,
+      isSuccess: saveDraftMutation.isSuccess,
+      error: saveDraftMutation.error
+    });
+    
+    // Set saving state to prevent component restart
+    isSavingRef.current = true;
+    setIsSaving(true);
+    
+    // Clear any existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    
+    // For offline mode, bypass React Query to avoid component restart
+    if (isCurrentlyOffline) {
+      console.log('📵 OFFLINE MODE - Bypassing React Query to avoid component restart');
+      
+      // Directly call the offline save logic
+      const saveOfflineDataDirectly = async () => {
+        try {
+          console.log('🚀 MUTATION FUNCTION EXECUTING - useSaveDraft started (OFFLINE DIRECT)');
+          
+          // Import localforage directly
+          const localforage = (await import('localforage')).default;
+          
+          // Create offline storage instance
+          const offlineStorage = localforage.createInstance({
+            name: 'coopsama',
+            storeName: 'offlineData'
+          });
+          
+          // Import offline queue
+          const { offlineQueue } = await import('@/utils/offlineQueue');
+          
+          // Create offline data
+          const offlineData = {
+            id: `offline-${Date.now()}`,
+            agent_id: 'offline-user',
+            client_name: `${formData.firstName} ${formData.firstLastName}`,
+            draft_data: formData,
+            status: 'draft',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            applicationId: formData.applicationId || `APP-${Date.now()}`,
+            _offline_timestamp: Date.now(),
+            _offline_saved: true
+          };
+          
+          // Save offline using localforage directly
+          await offlineStorage.setItem(`draft-${Date.now()}`, offlineData);
+          
+          // Enqueue for sync
+          await offlineQueue.enqueue({
+            type: 'updateDraft',
+            payload: offlineData
+          });
+          
+          console.log('✅ OFFLINE SAVE COMPLETED - Returning optimistic result');
+          console.log('✅ Offline data saved:', offlineData);
+          
+          // Reset saving state
+          isSavingRef.current = false;
+          setIsSaving(false);
+          setHasUnsavedChanges(false);
+          
+          console.log('🔄 Save operation completed, resetting saving state');
+        } catch (error) {
+          console.error('❌ ERROR in offline save:', error);
+          isSavingRef.current = false;
+          setIsSaving(false);
+        }
+      };
+      
+      saveOfflineDataDirectly();
+      return;
+    }
+    
+    try {
+      saveDraftMutation.mutate({
+        formData,
+        currentStep,
+        currentSubStep: subStep,
+        isIncremental: false
+      }, {
+        onSuccess: (data) => {
+          console.log('✅ SAVE DRAFT SUCCESS - Clearing unsaved changes');
+          console.log('✅ Save result:', data);
+          setHasUnsavedChanges(false);
+          
+          // Reset saving state after a delay to allow mutation to complete
+          saveTimeoutRef.current = setTimeout(() => {
+            isSavingRef.current = false;
+            setIsSaving(false);
+            console.log('🔄 Save operation completed, resetting saving state');
+          }, 1000);
+        },
+        onError: (error) => {
+          console.error('❌ SAVE DRAFT ERROR:', error);
+          console.error('❌ Error details:', error.message);
+          // Don't clear unsaved changes on error
+          
+          // Reset saving state immediately on error
+          isSavingRef.current = false;
+          setIsSaving(false);
+        }
+      });
+      console.log('💾 saveDraftMutation.mutate() called successfully');
+    } catch (error) {
+      console.error('❌ ERROR calling saveDraftMutation.mutate():', error);
+      isSavingRef.current = false;
+      setIsSaving(false);
+    }
   }, [formData, currentStep, subStep, saveDraftMutation]);
 
   const handleSubmit = useCallback(() => {
@@ -758,28 +897,91 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
       try {
         console.log('💾 Attempting to save before exit using unified save logic...');
         
-        // Use the same logic as handleSaveDraft but with Promise wrapper
-        await new Promise((resolve, reject) => {
-          console.log('💾 handleExit save - formData:', formData);
-          console.log('💾 handleExit save - Current offline status:', { isOffline: !navigator.onLine, navigatorOnLine: navigator.onLine });
-          
-          saveDraftMutation.mutate({
-            formData,
-            currentStep,
-            currentSubStep: subStep,
-            isIncremental: false
-          }, {
-            onSuccess: (data) => {
-              console.log('✅ Save successful before exit:', data);
-              setHasUnsavedChanges(false);
-              resolve(data);
-            },
-            onError: (error) => {
-              console.error('❌ Save failed before exit:', error);
-              reject(error);
-            }
-          });
+        const isCurrentlyOffline = !navigator.onLine;
+        console.log('💾 HANDLE EXIT SAVE - Form data:', formData);
+        console.log('💾 HANDLE EXIT SAVE - Current offline status:', { 
+          isOffline: isCurrentlyOffline, 
+          navigatorOnLine: navigator.onLine,
+          connectionType: navigator.connection?.effectiveType || 'unknown'
         });
+        
+        // Use the same offline bypass logic as handleSaveDraft
+        if (isCurrentlyOffline) {
+          console.log('📵 OFFLINE MODE - Bypassing React Query for exit save');
+          
+          // Directly call the offline save logic
+          const saveOfflineDataDirectly = async () => {
+            try {
+              console.log('🚀 MUTATION FUNCTION EXECUTING - useSaveDraft started (OFFLINE DIRECT EXIT)');
+              
+              // Import localforage directly
+              const localforage = (await import('localforage')).default;
+              
+              // Create offline storage instance
+              const offlineStorage = localforage.createInstance({
+                name: 'coopsama',
+                storeName: 'offlineData'
+              });
+              
+              // Import offline queue
+              const { offlineQueue } = await import('@/utils/offlineQueue');
+              
+              // Create offline data
+              const offlineData = {
+                id: `offline-${Date.now()}`,
+                agent_id: 'offline-user',
+                client_name: `${formData.firstName} ${formData.firstLastName}`,
+                draft_data: formData,
+                status: 'draft',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                applicationId: formData.applicationId || `APP-${Date.now()}`,
+                _offline_timestamp: Date.now(),
+                _offline_saved: true
+              };
+              
+              // Save offline using localforage directly
+              await offlineStorage.setItem(`draft-${Date.now()}`, offlineData);
+              
+              // Enqueue for sync
+              await offlineQueue.enqueue({
+                type: 'updateDraft',
+                payload: offlineData
+              });
+              
+              console.log('✅ OFFLINE EXIT SAVE COMPLETED - Returning optimistic result');
+              console.log('✅ Offline data saved:', offlineData);
+              
+              return offlineData;
+            } catch (error) {
+              console.error('❌ ERROR in offline exit save:', error);
+              throw error;
+            }
+          };
+          
+          await saveOfflineDataDirectly();
+          setHasUnsavedChanges(false);
+        } else {
+          // Online mode - use React Query
+          await new Promise((resolve, reject) => {
+            saveDraftMutation.mutate({
+              formData,
+              currentStep,
+              currentSubStep: subStep,
+              isIncremental: false
+            }, {
+              onSuccess: (data) => {
+                console.log('✅ Save successful before exit:', data);
+                setHasUnsavedChanges(false);
+                resolve(data);
+              },
+              onError: (error) => {
+                console.error('❌ Save failed before exit:', error);
+                reject(error);
+              }
+            });
+          });
+        }
         
         console.log('✅ Save completed, proceeding with exit');
       } catch (error) {
