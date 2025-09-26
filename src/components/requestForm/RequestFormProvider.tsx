@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useLocation, useParams } from 'react-router-dom';
 import { generateApplicationId } from '@/utils/applicationIdGenerator';
 import { useToast } from '@/hooks/use-toast';
@@ -240,10 +241,10 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   onRedirectSubmittedApplication 
 }) => {
   console.log('📝 RequestFormProvider initializing');
-  console.log('🔍 RequestFormProvider render stack trace:', new Error().stack);
   const { toast } = useToast();
   const location = useLocation();
   const { id: applicationId } = useParams<{ id: string }>();
+  const queryClient = useQueryClient();
   
   // Check if application is submitted
   const { data: applicationData } = useApplicationData(applicationId || '');
@@ -806,6 +807,14 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
           console.log('✅ OFFLINE SAVE COMPLETED - Returning optimistic result');
           console.log('✅ Offline data saved:', offlineData);
           
+          // Invalidate applications list so offline drafts appear immediately
+          try {
+            console.log('🔄 Invalidating applications list cache (offline save)');
+            queryClient.invalidateQueries({ queryKey: ['applications-list'] });
+          } catch (e) {
+            console.warn('⚠️ Failed to invalidate applications list cache:', e);
+          }
+
           // Reset saving state
           isSavingRef.current = false;
           setIsSaving(false);
@@ -952,6 +961,14 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
               console.log('✅ OFFLINE EXIT SAVE COMPLETED - Returning optimistic result');
               console.log('✅ Offline data saved:', offlineData);
               
+          // Invalidate applications list so offline drafts appear immediately
+          try {
+            console.log('🔄 Invalidating applications list cache (offline exit save)');
+            queryClient.invalidateQueries({ queryKey: ['applications-list'] });
+          } catch (e) {
+            console.warn('⚠️ Failed to invalidate applications list cache:', e);
+          }
+
               return offlineData;
             } catch (error) {
               console.error('❌ ERROR in offline exit save:', error);
