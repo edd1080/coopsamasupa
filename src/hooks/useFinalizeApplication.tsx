@@ -112,10 +112,82 @@ export const useFinalizeApplication = () => {
         };
       }
 
-      // Online flow: Insert application and delete draft
+      // Online flow: Validate with Coopsama FIRST, then create application
+      console.log('🔄 Validating with Coopsama before creating application...');
+      console.log('🔍 Application ID being sent:', sanitizedPayload.id);
+      
+      // Send to Coopsama for validation
+      const coopsamaResult = await supabase.functions.invoke('coopsama-integration', {
+        body: {
+          applicationId: sanitizedPayload.id,
+          payload: coopsamaPayload,
+          userEmail: user.email
+        }
+      });
+
+      console.log('🔍 RAW Coopsama function response:', coopsamaResult);
+      console.log('🔍 Coopsama result type:', typeof coopsamaResult);
+      console.log('🔍 Coopsama result keys:', Object.keys(coopsamaResult || {}));
+
+      if (coopsamaResult.error) {
+        console.error('❌ Coopsama integration failed:', coopsamaResult.error);
+        throw new Error(`COOPSAMA_ERROR:Error al conectar con Coopsama: ${coopsamaResult.error.message}`);
+      }
+
+      const data = coopsamaResult.data;
+      console.log('🔍 Coopsama data extracted:', data);
+      console.log('🔍 Data type:', typeof data);
+      console.log('🔍 Data keys:', Object.keys(data || {}));
+      
+      if (data && typeof data === 'object') {
+        // El microservicio siempre devuelve 200, pero el error real está en los datos
+        console.log('🔍 Microservicio devolvió 200 - verificando datos internos...');
+        
+        // Extraer datos de la respuesta (el microservicio siempre devuelve data.data)
+        const responseData = data.data || {};
+        const externalReferenceId = responseData.externalReferenceId || responseData.external_reference_id || responseData.referenceId || responseData.reference_id || responseData.id || responseData.solicitudId || responseData.applicationId;
+        const operationId = responseData.operationId || responseData.operation_id || responseData.processId || responseData.process_id;
+        const externalError = responseData.externalError || false;
+        const externalMessage = responseData.externalMessage || '';
+
+        console.log('🔍 Coopsama response validation:', {
+          externalReferenceId,
+          externalError,
+          externalMessage,
+          shouldCreateApplication: externalReferenceId !== "0" && !externalError
+        });
+
+        // Validar respuesta de Coopsama: si externalReferenceId es "0" y externalError es true, no crear aplicación
+        if (externalReferenceId === "0" && externalError === true) {
+          console.log('❌ Coopsama validation failed - not creating application');
+          console.log('📋 Coopsama error details:', {
+            externalReferenceId,
+            externalError,
+            externalMessage
+          });
+          
+          // Lanzar error para prevenir creación de aplicación
+          console.log('🚨 THROWING ERROR TO PREVENT APPLICATION CREATION');
+          throw new Error(`COOPSAMA_ERROR:${externalMessage}`);
+        }
+
+        // Caso de éxito: crear la aplicación
+        console.log('✅ Coopsama validation passed - creating application');
+      } else {
+        throw new Error('COOPSAMA_ERROR:Respuesta inválida del microservicio');
+      }
+
+      // Only create application if Coopsama validation passed
+      console.log('🏗️ CREATING APPLICATION - Coopsama validation passed');
       const { data: result, error } = await supabase
         .from('applications')
-        .insert(sanitizedPayload)
+        .insert({
+          ...sanitizedPayload,
+          coopsama_external_reference_id: externalReferenceId,
+          coopsama_operation_id: operationId,
+          coopsama_sync_status: 'success',
+          coopsama_synced_at: new Date().toISOString()
+        })
         .select()
         .single();
 
@@ -287,125 +359,12 @@ Generado automáticamente el ${new Date().toISOString()}
         .update({ coopsama_sync_status: 'pending' })
         .eq('id', result.id);
 
-      (async () => {
-        // Helper: run with timeout to avoid hanging forever
-        const withTimeout = async <T,>(promise: Promise<T>, ms: number): Promise<T> => {
-          return new Promise<T>((resolve, reject) => {
-            const timer = setTimeout(() => reject(new Error('Timeout en integración Coopsama')), ms);
-            promise
-              .then((value) => { clearTimeout(timer); resolve(value); })
-              .catch((err) => { clearTimeout(timer); reject(err); });
-          });
-        };
-
-        try {
-          console.log('🔄 Sending to Coopsama microservice (background)...');
-          const coopsamaResult = await withTimeout(
-            supabase.functions.invoke('coopsama-integration', {
-              body: {
-                applicationId: formData.applicationId,
-                payload: coopsamaPayload,
-                userEmail: user.email
-              }
-            }),
-            30000
-          );
-
-          console.log('🔍 RAW Coopsama function response:', coopsamaResult);
-
-          if (coopsamaResult.error) {
-            let actualErrorMessage = coopsamaResult.error.message || 'Error al conectar con el microservicio';
-            try {
-              const errorData = JSON.parse(coopsamaResult.error.message);
-              if (errorData.message) {
-                actualErrorMessage = errorData.message;
-                if (errorData.errors && typeof errorData.errors === 'object') {
-                  const validationErrors = (Object.values(errorData.errors) as any[]).flat();
-                  if (validationErrors.length > 0) {
-                    actualErrorMessage += ': ' + validationErrors.join(', ');
-                  }
-                }
-              }
-            } catch {
-              if (actualErrorMessage.includes('edge function returned a non 2xx status code')) {
-                actualErrorMessage = 'Error en el servidor: la solicitud no pudo ser procesada correctamente';
-              } else if (actualErrorMessage.includes('COOPSAMA_ERROR:')) {
-                actualErrorMessage = actualErrorMessage.replace('COOPSAMA_ERROR:', '');
-              }
-            }
-
-            await supabase
-              .from('applications')
-              .update({
-                coopsama_sync_status: 'error',
-                coopsama_sync_error: actualErrorMessage
-              })
-              .eq('id', result.id);
-            return;
-          }
-
-          const data = coopsamaResult.data;
-          if (data && typeof data === 'object') {
-            if (data.code === 1 || data.success === false) {
-              let errorMessage = data.message || 'Error en el envío de la solicitud';
-              if (data.errors && typeof data.errors === 'object') {
-                const validationErrors = (Object.values(data.errors) as any[]).flat();
-                if (validationErrors.length > 0) {
-                  errorMessage += ': ' + validationErrors.join(', ');
-                }
-              }
-              await supabase
-                .from('applications')
-                .update({
-                  coopsama_sync_status: 'error',
-                  coopsama_sync_error: errorMessage
-                })
-                .eq('id', result.id);
-              return;
-            }
-
-            if (data.code === 0 && data.success === true) {
-              const responseData = data.data || {};
-              const externalReferenceId = responseData.externalReferenceId || responseData.external_reference_id || responseData.referenceId || responseData.reference_id || responseData.id || responseData.solicitudId || responseData.applicationId;
-              const operationId = responseData.operationId || responseData.operation_id || responseData.processId || responseData.process_id;
-
-              await supabase
-                .from('applications')
-                .update({
-                  coopsama_external_reference_id: externalReferenceId,
-                  coopsama_operation_id: operationId,
-                  coopsama_sync_status: 'success',
-                  coopsama_synced_at: new Date().toISOString()
-                })
-                .eq('id', result.id);
-              return;
-            }
-          }
-
-          await supabase
-            .from('applications')
-            .update({ coopsama_sync_status: 'error', coopsama_sync_error: 'Respuesta inválida del microservicio' })
-            .eq('id', result.id);
-        } catch (coopsamaError: any) {
-          console.warn('⚠️ Coopsama integration failed (background):', coopsamaError);
-          await supabase
-            .from('applications')
-            .update({
-              coopsama_sync_status: 'error',
-              coopsama_sync_error: coopsamaError.message || 'Error de conexión'
-            })
-            .eq('id', result.id);
-        } finally {
-          // Refresh queries after background sync attempt
-          queryClient.invalidateQueries({ queryKey: ['applications'] });
-          queryClient.invalidateQueries({ queryKey: ['applications-list'] });
-        }
-      })();
+      // Coopsama integration already completed above - no need for background processing
 
       return {
         ...result,
-        externalReferenceId: null,
-        operationId: null,
+        externalReferenceId: externalReferenceId || null,
+        operationId: operationId || null,
         documentUploadResult
       };
     },
