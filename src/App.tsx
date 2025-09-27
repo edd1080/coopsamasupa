@@ -31,6 +31,9 @@ const queryClient = new QueryClient({
         return failureCount < 3;
       },
     },
+    mutations: {
+      networkMode: 'always', // <- permite ejecutar mutaciones estando offline
+    },
   },
 });
 
