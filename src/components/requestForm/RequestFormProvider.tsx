@@ -112,6 +112,7 @@ interface FormData {
   
   // Financial analysis
   incomeSource: string;
+  secondaryIncomeSource: string;
   ingresoPrincipal: string;
   ingresoSecundario: string;
   comentarioIngreso: string;
@@ -297,7 +298,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
       specificDestination: '', otherDestination: '', /* secondaryProject: '', */ addressDetails: '',
       
       // Financial Analysis
-      incomeSource: '', ingresoPrincipal: '', ingresoSecundario: '', comentarioIngreso: '', incomeSources: [],
+      incomeSource: '', secondaryIncomeSource: '', ingresoPrincipal: '', ingresoSecundario: '', comentarioIngreso: '', incomeSources: [],
       
       // Expenses
       alimentacion: '', vestuario: '', serviciosBasicos: '', educacion: '', vivienda: '', transporte: '',

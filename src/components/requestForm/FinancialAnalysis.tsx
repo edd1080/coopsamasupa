@@ -155,13 +155,34 @@ const FinancialAnalysis: React.FC<FinancialAnalysisProps> = ({ formData, updateF
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="ingresoSecundario">Ingreso Secundario (Opcional)</Label>
+              <Label htmlFor="secondaryIncomeSource">Fuente de Ingresos Secundario</Label>
+              <Select value={formData.secondaryIncomeSource || ''} onValueChange={(value) => updateFormData('secondaryIncomeSource', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar fuente secundaria de ingresos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="NOMINAL">Nominal</SelectItem>
+                  <SelectItem value="COMERCIAL">Comercial</SelectItem>
+                  <SelectItem value="AGRICOLA">Agrícola</SelectItem>
+                  <SelectItem value="CONYUGE">Cónyuge</SelectItem>
+                  <SelectItem value="OTROS">Otros</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="ingresoSecundario">Ingreso Secundario</Label>
               <CurrencyInput
                 id="ingresoSecundario"
                 value={formData.ingresoSecundario || ''}
                 onValueChange={(value) => handleCurrencyChange('ingresoSecundario', value)}
                 placeholder="0.00"
               />
+            </div>
+            <div className="space-y-2">
+              {/* Espacio vacío para mantener el layout */}
             </div>
           </div>
           <div className="space-y-2">

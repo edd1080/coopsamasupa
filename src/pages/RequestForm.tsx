@@ -66,7 +66,6 @@ const RequestFormContent = () => {
             setShowCoopsamaErrorDialog(false);
             // User can retry by submitting again
           }}
-          onGoToApplications={() => navigate('/applications')}
         />
       </div>
     );

@@ -211,11 +211,7 @@ export const useFinalizeApplication = () => {
             externalError,
             externalMessage
           });
-<<<<<<< HEAD
           
-=======
-
->>>>>>> 1c2ec9886893806d9245db16f2482f02671a1864
           // Lanzar error para prevenir creación de aplicación
           console.log('🚨 THROWING ERROR TO PREVENT APPLICATION CREATION');
           throw new Error(`COOPSAMA_ERROR:${externalMessage}`);

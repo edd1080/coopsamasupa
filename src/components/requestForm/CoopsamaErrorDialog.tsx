@@ -43,7 +43,6 @@ interface CoopsamaErrorDialogProps {
   onOpenChange: (open: boolean) => void;
   errorMessage: string;
   onRetry: () => void;
-  onGoToApplications: () => void;
 }
 
 const CoopsamaErrorDialog: React.FC<CoopsamaErrorDialogProps> = ({
@@ -51,7 +50,6 @@ const CoopsamaErrorDialog: React.FC<CoopsamaErrorDialogProps> = ({
   onOpenChange,
   errorMessage,
   onRetry,
-  onGoToApplications,
 }) => {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -79,25 +77,18 @@ const CoopsamaErrorDialog: React.FC<CoopsamaErrorDialogProps> = ({
               </div>
               
               <div className="text-sm text-muted-foreground">
-                Puedes corregir la información en el formulario y volver a intentar el envío, 
-                o regresar a la lista de solicitudes.
+                Puedes corregir la información en el formulario y volver a intentar el envío.
               </div>
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
         
-        <AlertDialogFooter className="flex flex-col sm:flex-row gap-2 sm:justify-between">
-          <AlertDialogAction
-            onClick={onGoToApplications}
-            className="w-full sm:w-auto bg-muted text-muted-foreground hover:bg-muted/80"
-          >
-            <XCircle className="mr-2 h-4 w-4" />
-            Regresar a Solicitudes
-          </AlertDialogAction>
+        <AlertDialogFooter className="flex justify-center">
           <AlertDialogAction
             onClick={onRetry}
             className="w-full sm:w-auto"
           >
+            <AlertTriangle className="mr-2 h-4 w-4" />
             Corregir y Reintentar
           </AlertDialogAction>
         </AlertDialogFooter>
