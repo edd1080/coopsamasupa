@@ -782,15 +782,16 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
           const { offlineQueue } = await import('@/utils/offlineQueue');
           
           // Create offline data
+          const offlineApplicationId = formData.applicationId || generateApplicationId();
           const offlineData = {
             id: `offline-${Date.now()}`,
             agent_id: 'offline-user',
             client_name: `${formData.firstName} ${formData.firstLastName}`,
-            draft_data: formData,
+            draft_data: { ...formData, applicationId: offlineApplicationId },
             status: 'draft',
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
-            applicationId: formData.applicationId || `APP-${Date.now()}`,
+            applicationId: offlineApplicationId,
             _offline_timestamp: Date.now(),
             _offline_saved: true
           };
@@ -947,15 +948,16 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
               const { offlineQueue } = await import('@/utils/offlineQueue');
               
               // Create offline data
+              const offlineApplicationIdExit = formData.applicationId || generateApplicationId();
               const offlineData = {
                 id: `offline-${Date.now()}`,
                 agent_id: 'offline-user',
                 client_name: `${formData.firstName} ${formData.firstLastName}`,
-                draft_data: formData,
+                draft_data: { ...formData, applicationId: offlineApplicationIdExit },
                 status: 'draft',
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
-                applicationId: formData.applicationId || `APP-${Date.now()}`,
+                applicationId: offlineApplicationIdExit,
                 _offline_timestamp: Date.now(),
                 _offline_saved: true
               };

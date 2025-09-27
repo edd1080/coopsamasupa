@@ -31,6 +31,9 @@ export const useNetworkSync = () => {
 
     setIsSyncing(true);
     console.log('🔄 Processing offline queue:', queue.length, 'tasks');
+    try {
+      console.log('🧾 Offline queue content:', queue.map((t: any) => ({ id: t.id, type: t.type })));
+    } catch {}
 
     let successCount = 0;
     let failureCount = 0;
@@ -42,10 +45,106 @@ export const useNetworkSync = () => {
         switch (task.type) {
           case 'createApplication':
             // Payload is already properly formatted from useFinalizeApplication
-            const { data: appData, error: appError } = await supabase
+            const sanitized = sanitizeObjectData(task.payload);
+            console.log('📝 [createApplication] Payload summary:', {
+              hasOfficialData: !!sanitized?.official_data,
+              client_name: sanitized?.client_name,
+              agent_id: sanitized?.agent_id,
+              applicationId: sanitized?.draft_data?.applicationId,
+              amount_requested: sanitized?.amount_requested
+            });
+            const { data: appInsertData, error: appError } = await supabase
               .from('applications')
-              .insert(sanitizeObjectData(task.payload));
-            success = !appError;
+              .insert(sanitized)
+              .select()
+              .single();
+            if (!appError && appInsertData) {
+              success = true;
+              console.log('✅ [createApplication] Inserted into applications:', { id: appInsertData.id });
+
+              try {
+                await supabase
+                  .from('applications')
+                  .update({ coopsama_sync_status: 'pending' })
+                  .eq('id', appInsertData.id);
+
+                const applicationId = sanitized?.draft_data?.applicationId || appInsertData.id;
+                const coopsamaPayload = sanitized?.official_data || null;
+                console.log('🚀 [createApplication] Invoking Coopsama integration (background)...', {
+                  applicationId,
+                  hasPayload: !!coopsamaPayload
+                });
+
+                const withTimeout = async (promise: Promise<any>, ms: number) => new Promise((resolve, reject) => {
+                  const timer = setTimeout(() => reject(new Error('Timeout en integración Coopsama (sync)')), ms);
+                  promise.then(v => { clearTimeout(timer); resolve(v); })
+                         .catch(e => { clearTimeout(timer); reject(e); });
+                });
+
+                (async () => {
+                  try {
+                    const result = await withTimeout(
+                      supabase.functions.invoke('coopsama-integration', {
+                        body: { applicationId, payload: coopsamaPayload, userEmail: user.email }
+                      }),
+                      30000
+                    );
+                    console.log('🔍 [createApplication] Coopsama raw response:', result);
+
+                    if (result?.error) {
+                      const msg = result.error.message || 'Error al conectar con el microservicio';
+                      console.warn('⚠️ [createApplication] Coopsama error:', msg);
+                      await supabase
+                        .from('applications')
+                        .update({ coopsama_sync_status: 'error', coopsama_sync_error: msg })
+                        .eq('id', appInsertData.id);
+                    } else if (result?.data && typeof result.data === 'object') {
+                      const data = result.data;
+                      if (data.code === 1 || data.success === false) {
+                        let message = data.message || 'Error en el envío de la solicitud';
+                        if (data.errors && typeof data.errors === 'object') {
+                          const validationErrors = (Object.values(data.errors) as any[]).flat();
+                          if (validationErrors.length > 0) message += ': ' + validationErrors.join(', ');
+                        }
+                        console.warn('⚠️ [createApplication] Coopsama microservice returned error:', message);
+                        await supabase
+                          .from('applications')
+                          .update({ coopsama_sync_status: 'error', coopsama_sync_error: message })
+                          .eq('id', appInsertData.id);
+                      } else if (data.code === 0 && data.success === true) {
+                        const responseData = data.data || {};
+                        const externalReferenceId = responseData.externalReferenceId || responseData.external_reference_id || responseData.referenceId || responseData.reference_id || responseData.id || responseData.solicitudId || responseData.applicationId;
+                        const operationId = responseData.operationId || responseData.operation_id || responseData.processId || responseData.process_id;
+                        await supabase
+                          .from('applications')
+                          .update({
+                            coopsama_external_reference_id: externalReferenceId,
+                            coopsama_operation_id: operationId,
+                            coopsama_sync_status: 'success',
+                            coopsama_synced_at: new Date().toISOString()
+                          })
+                          .eq('id', appInsertData.id);
+                        console.log('✅ [createApplication] Coopsama success:', { externalReferenceId, operationId });
+                      }
+                    }
+
+                    await queryClient.invalidateQueries({ queryKey: ['applications'] });
+                    await queryClient.invalidateQueries({ queryKey: ['applications-list'] });
+                  } catch (e: any) {
+                    console.error('❌ [createApplication] Coopsama background sync failed:', e);
+                    await supabase
+                      .from('applications')
+                      .update({ coopsama_sync_status: 'error', coopsama_sync_error: e.message || 'Error de conexión' })
+                      .eq('id', appInsertData.id);
+                  }
+                })();
+              } catch (e) {
+                console.warn('⚠️ Coopsama background sync (post-offline) setup failed:', e);
+              }
+            } else {
+              console.error('❌ [createApplication] Insert failed:', appError);
+              success = false;
+            }
             break;
 
           case 'deleteDraft':
@@ -67,7 +166,11 @@ export const useNetworkSync = () => {
             break;
 
           case 'updateDraft':
-            console.log('🔄 Processing updateDraft task:', task.payload);
+            console.log('🔄 Processing updateDraft task:', {
+              id: task.payload?.id,
+              applicationId: task.payload?.draft_data?.applicationId,
+              client_name: task.payload?.client_name
+            });
             
             // Check for existing draft to avoid duplication during sync
             const { data: existingDrafts } = await supabase

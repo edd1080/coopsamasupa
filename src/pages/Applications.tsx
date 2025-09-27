@@ -14,6 +14,7 @@ import { Trash2, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from '@tanstack/react-query';
+import { offlineQueue } from '@/utils/offlineQueue';
 const Applications = () => {
   console.log('Applications component loaded - testing tools moved to form');
   const [searchTerm, setSearchTerm] = useState('');
@@ -122,6 +123,31 @@ const Applications = () => {
   const handleLoadMore = useCallback(() => {
     setVisibleCount(prev => prev + 10);
   }, []);
+
+  // Log offline queue status on mount, when applications change and on network changes
+  React.useEffect(() => {
+    const logQueue = async () => {
+      try {
+        const queue = await offlineQueue.getQueue();
+        console.log('📦 OFFLINE QUEUE STATUS:', {
+          isOnline: navigator.onLine,
+          size: queue.length,
+          tasks: queue.map((t: any) => ({ id: t.id, type: t.type }))
+        });
+      } catch (e) {
+        console.warn('⚠️ Failed to read offline queue:', e);
+      }
+    };
+    logQueue();
+    const onOnline = () => logQueue();
+    const onOffline = () => logQueue();
+    window.addEventListener('online', onOnline);
+    window.addEventListener('offline', onOffline);
+    return () => {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('offline', onOffline);
+    };
+  }, [applications]);
 
   // Debug: Log current user and applications
   React.useEffect(() => {
