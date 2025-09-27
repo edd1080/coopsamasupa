@@ -56,9 +56,9 @@ const ApplicationSuccessScreen: React.FC<ApplicationSuccessScreenProps> = ({
             <p className="text-gray-600">
               La solicitud de crédito ha sido enviada exitosamente
             </p>
-            {(externalReferenceId || applicationId) && (
+            {(applicationId || externalReferenceId) && (
               <p className="text-sm text-gray-500">
-                ID de Solicitud: <span className="font-mono font-bold text-primary">{externalReferenceId || applicationId}</span>
+                ID de Solicitud: <span className="font-mono font-bold text-primary">{applicationId || externalReferenceId}</span>
               </p>
             )}
           </div>

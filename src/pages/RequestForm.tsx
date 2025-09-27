@@ -39,7 +39,7 @@ const RequestFormContent = () => {
   
   const navigate = useNavigate();
 
-  console.log('🎯 RequestFormContent rendering');
+  // Removed console.log to reduce re-render noise
 
   // Show Coopsama error dialog if there's an error, even if success screen is shown
   if (showCoopsamaErrorDialog) {

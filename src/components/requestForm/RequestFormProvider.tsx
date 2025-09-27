@@ -249,7 +249,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   onNavigateAfterExit,
   onRedirectSubmittedApplication 
 }) => {
-  console.log('📝 RequestFormProvider initializing');
+  // Removed console.log to reduce re-render noise
   const { toast } = useToast();
   const location = useLocation();
   const { id: applicationId } = useParams<{ id: string }>();
@@ -592,8 +592,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
         references: updated
       }));
       
-      console.log('📝 Nueva referencia agregada:', newReference);
-      console.log('📝 Referencias actualizadas:', updated);
+      // Removed console.logs to reduce re-render noise
       
       return updated;
     });
@@ -625,8 +624,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
         references: updated
       }));
       
-      console.log('📝 Referencia actualizada:', { index, field, value });
-      console.log('📝 Referencias actualizadas:', updated);
+      // Removed console.logs to reduce re-render noise
       
       return updated;
     });

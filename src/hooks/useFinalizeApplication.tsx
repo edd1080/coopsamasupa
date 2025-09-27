@@ -5,6 +5,7 @@ import { toast } from '@/hooks/use-toast';
 import { sanitizeObjectData } from '@/utils/inputValidation';
 import { toCoopsamaPayload } from '@/utils/fieldMapper';
 import { formatDateToGuatemalan } from '@/utils/dateUtils';
+import { useRef } from 'react';
 
 // Build application payload with proper column mapping
 const buildApplicationPayload = (formData: any, userId: string) => {
@@ -39,10 +40,18 @@ const buildApplicationPayload = (formData: any, userId: string) => {
 export const useFinalizeApplication = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const isSubmittingRef = useRef(false);
 
   return useMutation({
     mutationFn: async (formData: any) => {
       if (!user?.id) throw new Error('Usuario no autenticado');
+      
+      // Prevent multiple simultaneous submissions
+      if (isSubmittingRef.current) {
+        throw new Error('Ya hay una solicitud en proceso. Por favor, espera un momento.');
+      }
+      
+      isSubmittingRef.current = true;
 
       // Extract full name with fallback logic (same as in buildApplicationPayload)
       const fullName = 
@@ -139,14 +148,18 @@ export const useFinalizeApplication = () => {
       console.log('🔍 Data type:', typeof data);
       console.log('🔍 Data keys:', Object.keys(data || {}));
       
+      // Extraer datos de la respuesta
+      let externalReferenceId: string | null = null;
+      let operationId: string | null = null;
+      
       if (data && typeof data === 'object') {
         // El microservicio siempre devuelve 200, pero el error real está en los datos
         console.log('🔍 Microservicio devolvió 200 - verificando datos internos...');
         
         // Extraer datos de la respuesta (el microservicio siempre devuelve data.data)
         const responseData = data.data || {};
-        const externalReferenceId = responseData.externalReferenceId || responseData.external_reference_id || responseData.referenceId || responseData.reference_id || responseData.id || responseData.solicitudId || responseData.applicationId;
-        const operationId = responseData.operationId || responseData.operation_id || responseData.processId || responseData.process_id;
+        externalReferenceId = responseData.externalReferenceId || responseData.external_reference_id || responseData.referenceId || responseData.reference_id || responseData.id || responseData.solicitudId || responseData.applicationId;
+        operationId = responseData.operationId || responseData.operation_id || responseData.processId || responseData.process_id;
         const externalError = responseData.externalError || false;
         const externalMessage = responseData.externalMessage || '';
 
@@ -369,6 +382,9 @@ Generado automáticamente el ${new Date().toISOString()}
       };
     },
     onSuccess: () => {
+      // Reset submission flag
+      isSubmittingRef.current = false;
+      
       // Invalidate all relevant queries
       queryClient.invalidateQueries({ queryKey: ['applications'] });
       queryClient.invalidateQueries({ queryKey: ['applications-list'] });
@@ -383,6 +399,9 @@ Generado automáticamente el ${new Date().toISOString()}
       });
     },
     onError: (error: any) => {
+      // Reset submission flag
+      isSubmittingRef.current = false;
+      
       console.error('❌ Error finalizing application:', error);
       
       // Check if this is a Coopsama microservice error

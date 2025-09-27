@@ -31,6 +31,7 @@ const Applications = () => {
     refetch,
     isRefetching
   } = useApplicationsList();
+  const [visibleCount, setVisibleCount] = useState(10);
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
     applicationId: string;
@@ -107,6 +108,20 @@ const Applications = () => {
       return nameMatch || dpiMatch || applicationIdMatch;
     });
   }, [applications, searchTerm]);
+
+  // Reset pagination when filters change
+  React.useEffect(() => {
+    setVisibleCount(10);
+  }, [searchTerm, applications]);
+
+  const displayedApplications = React.useMemo(() => {
+    return (filteredApplications || []).slice(0, visibleCount);
+  }, [filteredApplications, visibleCount]);
+
+  const hasMore = (filteredApplications?.length || 0) > visibleCount;
+  const handleLoadMore = useCallback(() => {
+    setVisibleCount(prev => prev + 10);
+  }, []);
 
   // Debug: Log current user and applications
   React.useEffect(() => {
@@ -195,11 +210,13 @@ const Applications = () => {
         />
 
         <ApplicationsList 
-          applications={filteredApplications || []} 
+          applications={displayedApplications || []} 
           isLoading={isLoading} 
           onEdit={editApplication} 
           onCancel={handleCancelApplication} 
-          onDelete={handleDeleteApplication} 
+          onDelete={handleDeleteApplication}
+          hasMore={hasMore}
+          onLoadMore={handleLoadMore}
         />
       </main>
       

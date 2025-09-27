@@ -8,35 +8,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { AlertTriangle, XCircle } from 'lucide-react';
-
-// Función para mapear códigos de error específicos
-const getSpecificErrorMessage = (errorMessage: string): string => {
-  // Extraer código de error del mensaje
-  const errorCodeMatch = errorMessage.match(/código de error: (Erx\d+)/i);
-  const errorCode = errorCodeMatch ? errorCodeMatch[1] : null;
-  
-  // Mapear códigos específicos
-  const errorMappings: Record<string, string> = {
-    'Erx001': 'Error en el guardado del plan de pagos',
-    'Erx002': 'Error en el guardado del análisis financiero', 
-    'Erx003': 'Error en alguno de los registros de las fuentes de ingreso',
-    'Erx004': 'Error en la información adicional',
-    'Erx005': 'Error en el guardado de la solicitud de crédito',
-    'Erx006': 'Error en el guardado del balance patrimonial',
-    'Erx007': 'Error en la calificación del asociado',
-    'Erx008': 'Error al guardar las referencias personales y comerciales',
-    'Erx009': 'Error al guardar el plan de inversión',
-    'Erx010': 'Error al guardar la información del cliente'
-  };
-  
-  if (errorCode && errorMappings[errorCode]) {
-    return `${errorMappings[errorCode]} (${errorCode})`;
-  }
-  
-  // Si no se encuentra el código específico, devolver el mensaje original
-  return errorMessage;
-};
+import { AlertTriangle, XCircle, Info } from 'lucide-react';
+import { getErrorInfo, formatErrorMessage, getRecommendedAction } from '@/utils/errorMapping';
 
 interface CoopsamaErrorDialogProps {
   open: boolean;
@@ -53,6 +26,10 @@ const CoopsamaErrorDialog: React.FC<CoopsamaErrorDialogProps> = ({
   onRetry,
   onGoToApplications,
 }) => {
+  const errorInfo = getErrorInfo(errorMessage);
+  const formattedMessage = formatErrorMessage(errorMessage);
+  const recommendedAction = getRecommendedAction(errorMessage);
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent className="sm:max-w-[500px]">
@@ -62,26 +39,48 @@ const CoopsamaErrorDialog: React.FC<CoopsamaErrorDialogProps> = ({
             Error en el Envío a Coopsama
           </AlertDialogTitle>
           <AlertDialogDescription className="text-left">
-            <div className="space-y-3">
-              <div>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
                 La solicitud no pudo ser procesada correctamente por el sistema de Coopsama. 
                 Por favor, revisa los detalles del error y corrige la información necesaria.
-              </div>
+              </p>
               
               {/* Error message from Coopsama */}
-              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
-                <div className="text-sm text-destructive font-medium">
-                  <strong>Detalle del error:</strong>
+              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 space-y-3">
+                <div className="flex items-start gap-2">
+                  <XCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
+                  <div className="space-y-2">
+                    <p className="text-sm text-destructive font-medium">
+                      {formattedMessage}
+                    </p>
+                    {errorInfo && (
+                      <div className="text-xs text-destructive/80">
+                        <span className="font-medium">Categoría:</span> {errorInfo.category}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="text-sm text-destructive mt-1">
-                  {getSpecificErrorMessage(errorMessage)}
+                
+                {/* Recommended action */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <div className="flex items-start gap-2">
+                    <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-xs font-medium text-blue-800 mb-1">
+                        Acción recomendada:
+                      </p>
+                      <p className="text-xs text-blue-700">
+                        {recommendedAction}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
               
-              <div className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Puedes corregir la información en el formulario y volver a intentar el envío, 
                 o regresar a la lista de solicitudes.
-              </div>
+              </p>
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>

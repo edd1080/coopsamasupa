@@ -18,13 +18,19 @@ interface ApplicationsListProps {
   onEdit: (id: string, clientName: string, e?: React.MouseEvent) => void;
   onCancel: (id: string, clientName: string, e?: React.MouseEvent) => void;
   onDelete: (id: string, clientName: string, e?: React.MouseEvent) => void;
+  hasMore?: boolean;
+  onLoadMore?: () => void;
+  isLoadingMore?: boolean;
 }
 const ApplicationsList: React.FC<ApplicationsListProps> = ({
   applications,
   isLoading,
   onEdit,
   onCancel,
-  onDelete
+  onDelete,
+  hasMore = false,
+  onLoadMore,
+  isLoadingMore = false
 }) => {
   if (isLoading) {
     return <div className="text-center py-12">
@@ -45,10 +51,18 @@ const ApplicationsList: React.FC<ApplicationsListProps> = ({
         {applications.map(application => <ApplicationCard key={application.id} application={application} onEdit={onEdit} onCancel={onCancel} onDelete={onDelete} />)}
       </div>
       
-      {/* Solo mostrar "Cargar más" si hay muchas aplicaciones */}
-      {applications.length >= 10 && <div className="flex justify-center py-4">
-          <Button variant="outline">Cargar más</Button>
-        </div>}
+      {/* Cargar más */}
+      {hasMore && (
+        <div className="flex justify-center py-4">
+          <Button 
+            variant="outline" 
+            onClick={onLoadMore}
+            disabled={isLoadingMore}
+          >
+            {isLoadingMore ? 'Cargando...' : 'Cargar más'}
+          </Button>
+        </div>
+      )}
     </>;
 };
 export default ApplicationsList;
