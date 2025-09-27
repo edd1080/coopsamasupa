@@ -241,15 +241,7 @@ const CreditDestinationForm: React.FC<CreditDestinationFormProps> = ({ formData,
 
         {/* Campos adicionales opcionales */}
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="secondaryProject">Proyecto Secundario</Label>
-            <Input
-              id="secondaryProject"
-              value={formData.secondaryProject || ''}
-              onChange={(e) => updateFormData('secondaryProject', e.target.value)}
-              placeholder="Proyecto secundario (opcional)"
-            />
-          </div>
+          {/* Proyecto Secundario removido - causaba error Erx003 en Coopsama */}
 
           <div className="space-y-2">
             <Label htmlFor="specificDestination">Otros (destino específico)</Label>
