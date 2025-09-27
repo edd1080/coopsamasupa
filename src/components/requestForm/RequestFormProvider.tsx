@@ -878,33 +878,35 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     }
   }, [formData, currentStep, subStep, saveDraftMutation]);
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     console.log('📤 Submitting form with data:', formData);
     
     // Mark all sections as complete when submitting
     steps.forEach(step => {
       updateSectionStatus(step.id, 'complete');
     });
-    
-    finalizeApplicationMutation.mutate(formData, {
-      onSuccess: (result) => {
-        setSubmissionResult(result);
-        setShowSuccessScreen(true);
-        setShowErrorScreen(false); // Reset error screen
-      },
-      onError: (error) => {
-        console.error('❌ Error submitting form:', error);
-        
-        // Check if this is a Coopsama microservice error
-        if (error.message?.includes('COOPSAMA_ERROR:')) {
-          const errorMsg = error.message.replace('COOPSAMA_ERROR:', '');
-          setErrorMessage(errorMsg);
-          setShowErrorScreen(true);
-          setShowSuccessScreen(false);
-        }
-        // Other errors will be handled by the mutation's onError
+
+    try {
+      console.log('🚀 Calling finalizeApplicationMutation.mutateAsync...');
+      const result = await finalizeApplicationMutation.mutateAsync(formData);
+      console.log('✅ finalizeApplication result:', result);
+      setSubmissionResult(result);
+      setShowSuccessScreen(true);
+      setShowErrorScreen(false);
+    } catch (error: any) {
+      console.error('❌ Error submitting form (mutateAsync):', error);
+      if (error?.message?.includes('COOPSAMA_ERROR:')) {
+        const errorMsg = error.message.replace('COOPSAMA_ERROR:', '');
+        setErrorMessage(errorMsg);
+        setShowErrorScreen(true);
+        setShowSuccessScreen(false);
+      } else {
+        // Fallback: show generic error screen
+        setErrorMessage(error?.message || 'Error desconocido al enviar la solicitud');
+        setShowErrorScreen(true);
+        setShowSuccessScreen(false);
       }
-    });
+    }
   }, [formData, finalizeApplicationMutation, steps, updateSectionStatus]);
 
   // Updated exit handling with save functionality and proper navigation
