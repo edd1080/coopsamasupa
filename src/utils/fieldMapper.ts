@@ -104,7 +104,7 @@ export interface CoopsamaPayload {
           requestType: { id: string; value: string };
           sourceOfFunds?: { id: string; value: string };
           principalProject?: { id: string; value: string };
-          secondaryProject: { id: string; value: string }; // Campo requerido por Coopsama pero siempre vacío
+          secondaryProject: { id: string; value: string }; // Campo requerido por Coopsama - usando N/A como valor por defecto
           paymentMethod?: { id: string; value: string };
           fundsDestination: {
             investmentState: { id: string; value: string };
@@ -478,10 +478,8 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             sourceOfFunds: formData.fundsOrigin || formData.sourceOfFunds || formData.origenFondos 
               ? mapToCatalog(fundsOrigins, formData.fundsOrigin || formData.sourceOfFunds || formData.origenFondos, "2")
               : { id: "", value: "" },
-            principalProject: formData.creditDestination || formData.principalProject || formData.proyectoPrincipal 
-              ? mapToCatalog(projectTypes, formData.creditDestination || formData.principalProject || formData.proyectoPrincipal, "5")
-              : { id: "", value: "" },
-            secondaryProject: { id: "", value: "" }, // Campo requerido por Coopsama pero vacío
+            principalProject: { id: "5", value: "N/A" },
+            secondaryProject: { id: "5", value: "N/A" }, // Campo requerido por Coopsama - usando N/A como valor por defecto
             paymentMethod: formData.paymentPlan || formData.paymentMethod || formData.formaPago 
               ? mapToCatalog(paymentMethods, formData.paymentPlan || formData.paymentMethod || formData.formaPago, "1")
               : { id: "", value: "" },
@@ -518,11 +516,11 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
               incomeSourceTypes: incomeSourceTypes,
               mappedResult: formData.incomeSource ? mapToCatalog(incomeSourceTypes, formData.incomeSource, "1") : null
             });
-            
+
             if (formData.incomeSource) {
               const mappedIncomeSource = mapToCatalog(incomeSourceTypes, formData.incomeSource, "1");
               console.log('🔍 DEBUG mappedIncomeSource:', mappedIncomeSource);
-              
+
               incomes.push({
                 incomeSource: mappedIncomeSource,
                 monthlyIncome: ingresoPrincipal || 0, // Asegurar que siempre sea un número

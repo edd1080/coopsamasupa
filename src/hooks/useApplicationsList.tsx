@@ -268,6 +268,28 @@ export const useApplicationsList = () => {
         drafts = draftsData || [];
         console.log('📝 Raw drafts fetched:', drafts.length);
         
+        // Build a set of applicationIds that already exist as submitted applications
+        const applicationIdsSet = new Set<string>();
+        for (const app of applications) {
+          const appIdFromDraft = app?.draft_data && typeof app.draft_data === 'object' ? (app.draft_data as any).applicationId : undefined;
+          if (appIdFromDraft) applicationIdsSet.add(appIdFromDraft);
+        }
+        console.log('🧩 Application IDs present online:', Array.from(applicationIdsSet));
+        
+        // Exclude drafts (online and offline) that correspond to already submitted applications to avoid duplicate states
+        if (applicationIdsSet.size > 0) {
+          const beforeCounts = { onlineDrafts: drafts.length, offlineDrafts: offlineDrafts.length };
+          drafts = drafts.filter(d => {
+            const id = d?.draft_data && typeof d.draft_data === 'object' ? (d.draft_data as any).applicationId : undefined;
+            return !id || !applicationIdsSet.has(id);
+          });
+          offlineDrafts = offlineDrafts.filter(d => {
+            const id = d?.draft_data && typeof d.draft_data === 'object' ? (d.draft_data as any).applicationId : undefined;
+            return !id || !applicationIdsSet.has(id);
+          });
+          console.log('🧹 Filtered drafts due to submitted apps:', beforeCounts, { onlineDraftsAfter: drafts.length, offlineDraftsAfter: offlineDrafts.length });
+        }
+        
         // Combine online drafts with offline drafts
         console.log('🔄 Combining online and offline drafts...');
         console.log('📊 Online drafts:', drafts.length, drafts.map(d => ({ id: d.id, client_name: d.client_name })));

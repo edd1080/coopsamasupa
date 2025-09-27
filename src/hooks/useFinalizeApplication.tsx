@@ -5,6 +5,7 @@ import { toast } from '@/hooks/use-toast';
 import { sanitizeObjectData } from '@/utils/inputValidation';
 import { toCoopsamaPayload } from '@/utils/fieldMapper';
 import { formatDateToGuatemalan } from '@/utils/dateUtils';
+import { useRef } from 'react';
 
 // Build application payload with proper column mapping
 const buildApplicationPayload = (formData: any, userId: string) => {
@@ -39,10 +40,18 @@ const buildApplicationPayload = (formData: any, userId: string) => {
 export const useFinalizeApplication = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const isSubmittingRef = useRef(false);
 
   return useMutation({
     mutationFn: async (formData: any) => {
       if (!user?.id) throw new Error('Usuario no autenticado');
+
+      // Prevent multiple simultaneous submissions
+      if (isSubmittingRef.current) {
+        throw new Error('Ya hay una solicitud en proceso. Por favor, espera un momento.');
+      }
+
+      isSubmittingRef.current = true;
 
       // Extract full name with fallback logic (same as in buildApplicationPayload)
       const fullName = 
@@ -103,6 +112,39 @@ export const useFinalizeApplication = () => {
           payload: sanitizedPayload
         });
 
+        // Add the submitted application to local cache so it appears in the list while offline
+        try {
+          const localforage = (await import('localforage')).default;
+          const offlineStorage = localforage.createInstance({ name: 'coopsama', storeName: 'offlineData' });
+          const cacheKey = `applications-cache-${user.id}`;
+          const cachedList = (await offlineStorage.getItem(cacheKey)) as any[] | null;
+
+          const newItem = {
+            id: `offline-${Date.now()}`,
+            applicationId: (sanitizedPayload as any)?.draft_data?.applicationId || (formData?.applicationId) || undefined,
+            externalReferenceId: undefined,
+            processId: undefined,
+            clientName: (sanitizedPayload as any)?.client_name || 'Sin nombre',
+            dpi: (sanitizedPayload as any)?.draft_data?.dpi || '',
+            product: (sanitizedPayload as any)?.product || 'Crédito Personal',
+            amount: ((sanitizedPayload as any)?.amount_requested ?? 0).toString(),
+            status: 'submitted',
+            date: formatDateToGuatemalan(new Date().toISOString()),
+            progress: (sanitizedPayload as any)?.progress_step ?? 5,
+            stage: (sanitizedPayload as any)?.current_stage || 'Revisión Final',
+            draft_data: (sanitizedPayload as any)?.draft_data || formData || {},
+            is_offline: true,
+          };
+
+          const merged = Array.isArray(cachedList) ? [newItem, ...cachedList] : [newItem];
+          await offlineStorage.setItem(cacheKey, merged);
+
+          // Invalidate queries so the list re-renders from cache immediately
+          queryClient.invalidateQueries({ queryKey: ['applications-list'] });
+        } catch (e) {
+          console.warn('⚠️ Failed to add offline submitted application to cache:', e);
+        }
+
         // Note: Draft deletion will be handled after sync
 
         return {
@@ -113,9 +155,9 @@ export const useFinalizeApplication = () => {
       }
 
       // Online flow: Validate with Coopsama FIRST, then create application
-      console.log('🔄 Validating with Coopsama before creating application...');
-      console.log('🔍 Application ID being sent:', sanitizedPayload.id);
-      
+        console.log('🔄 Validating with Coopsama before creating application...');
+        console.log('🔍 Application ID being sent:', sanitizedPayload.id);
+
       // Send to Coopsama for validation
       const coopsamaResult = await supabase.functions.invoke('coopsama-integration', {
         body: {
@@ -135,18 +177,22 @@ export const useFinalizeApplication = () => {
       }
 
       const data = coopsamaResult.data;
-      console.log('🔍 Coopsama data extracted:', data);
-      console.log('🔍 Data type:', typeof data);
-      console.log('🔍 Data keys:', Object.keys(data || {}));
-      
+        console.log('🔍 Coopsama data extracted:', data);
+        console.log('🔍 Data type:', typeof data);
+        console.log('🔍 Data keys:', Object.keys(data || {}));
+
+      // Extraer datos de la respuesta
+      let externalReferenceId: string | null = null;
+      let operationId: string | null = null;
+
       if (data && typeof data === 'object') {
         // El microservicio siempre devuelve 200, pero el error real está en los datos
         console.log('🔍 Microservicio devolvió 200 - verificando datos internos...');
-        
+
         // Extraer datos de la respuesta (el microservicio siempre devuelve data.data)
         const responseData = data.data || {};
-        const externalReferenceId = responseData.externalReferenceId || responseData.external_reference_id || responseData.referenceId || responseData.reference_id || responseData.id || responseData.solicitudId || responseData.applicationId;
-        const operationId = responseData.operationId || responseData.operation_id || responseData.processId || responseData.process_id;
+        externalReferenceId = responseData.externalReferenceId || responseData.external_reference_id || responseData.referenceId || responseData.reference_id || responseData.id || responseData.solicitudId || responseData.applicationId;
+        operationId = responseData.operationId || responseData.operation_id || responseData.processId || responseData.process_id;
         const externalError = responseData.externalError || false;
         const externalMessage = responseData.externalMessage || '';
 
@@ -165,7 +211,11 @@ export const useFinalizeApplication = () => {
             externalError,
             externalMessage
           });
+<<<<<<< HEAD
           
+=======
+
+>>>>>>> 1c2ec9886893806d9245db16f2482f02671a1864
           // Lanzar error para prevenir creación de aplicación
           console.log('🚨 THROWING ERROR TO PREVENT APPLICATION CREATION');
           throw new Error(`COOPSAMA_ERROR:${externalMessage}`);
@@ -369,6 +419,9 @@ Generado automáticamente el ${new Date().toISOString()}
       };
     },
     onSuccess: () => {
+      // Reset submission flag
+      isSubmittingRef.current = false;
+
       // Invalidate all relevant queries
       queryClient.invalidateQueries({ queryKey: ['applications'] });
       queryClient.invalidateQueries({ queryKey: ['applications-list'] });
@@ -383,6 +436,9 @@ Generado automáticamente el ${new Date().toISOString()}
       });
     },
     onError: (error: any) => {
+      // Reset submission flag
+      isSubmittingRef.current = false;
+
       console.error('❌ Error finalizing application:', error);
       
       // Check if this is a Coopsama microservice error

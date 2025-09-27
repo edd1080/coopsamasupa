@@ -54,7 +54,7 @@ const FormActionBar: React.FC<FormActionBarProps> = ({
     // Si la validación pasa, proceder con el envío
     handleSubmit();
   };
-  return <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t z-40 px-3 py-2.5 sm:px-4 sm:py-3.5">
+  return <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t z-40 px-3 py-2.5 sm:px-4 sm:py-3.5 pb-safe">
       <div className="container max-w-5xl mx-auto">
         <div className="flex items-center justify-center gap-2 sm:gap-3 md:gap-4">
           {/* Left: Anterior button */}

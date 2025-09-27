@@ -14,6 +14,7 @@ import { Trash2, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from '@tanstack/react-query';
+import { offlineQueue } from '@/utils/offlineQueue';
 const Applications = () => {
   console.log('Applications component loaded - testing tools moved to form');
   const [searchTerm, setSearchTerm] = useState('');
@@ -31,6 +32,7 @@ const Applications = () => {
     refetch,
     isRefetching
   } = useApplicationsList();
+  const [visibleCount, setVisibleCount] = useState(10);
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
     applicationId: string;
@@ -108,6 +110,45 @@ const Applications = () => {
     });
   }, [applications, searchTerm]);
 
+  // Reset pagination when filters change
+  React.useEffect(() => {
+    setVisibleCount(10);
+  }, [searchTerm, applications]);
+
+  const displayedApplications = React.useMemo(() => {
+    return (filteredApplications || []).slice(0, visibleCount);
+  }, [filteredApplications, visibleCount]);
+
+  const hasMore = (filteredApplications?.length || 0) > visibleCount;
+  const handleLoadMore = useCallback(() => {
+    setVisibleCount(prev => prev + 10);
+  }, []);
+
+  // Log offline queue status on mount, when applications change and on network changes
+  React.useEffect(() => {
+    const logQueue = async () => {
+      try {
+        const queue = await offlineQueue.getQueue();
+        console.log('📦 OFFLINE QUEUE STATUS:', {
+          isOnline: navigator.onLine,
+          size: queue.length,
+          tasks: queue.map((t: any) => ({ id: t.id, type: t.type }))
+        });
+      } catch (e) {
+        console.warn('⚠️ Failed to read offline queue:', e);
+      }
+    };
+    logQueue();
+    const onOnline = () => logQueue();
+    const onOffline = () => logQueue();
+    window.addEventListener('online', onOnline);
+    window.addEventListener('offline', onOffline);
+    return () => {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('offline', onOffline);
+    };
+  }, [applications]);
+
   // Debug: Log current user and applications
   React.useEffect(() => {
     console.log('🔍 Applications page debug info:', {
@@ -182,7 +223,7 @@ const Applications = () => {
   return <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main className="flex-1 container mx-auto pb-20 max-w-5xl py-[4px] px-[17px]">
+      <main className="flex-1 container mx-auto pb-24 sm:pb-20 max-w-5xl py-[4px] px-3 sm:px-4">
         <div className="mb-4">
           <BreadcrumbNavigation />
         </div>
@@ -195,11 +236,13 @@ const Applications = () => {
         />
 
         <ApplicationsList 
-          applications={filteredApplications || []} 
+          applications={displayedApplications || []} 
           isLoading={isLoading} 
           onEdit={editApplication} 
           onCancel={handleCancelApplication} 
-          onDelete={handleDeleteApplication} 
+          onDelete={handleDeleteApplication}
+          hasMore={hasMore}
+          onLoadMore={handleLoadMore}
         />
       </main>
       
