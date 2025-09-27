@@ -18,8 +18,8 @@ const BottomNavigation = () => {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50">
-      <div className="flex justify-around items-center h-20 pb-safe">
+    <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50 pb-safe">
+      <div className="flex justify-around items-center h-16">
         <Link 
           to="/" 
           className={`flex flex-col items-center justify-center w-1/3 py-2 ${isActive('/') && !isActive('/applications') && !isActive('/settings') ? 'text-primary' : 'text-muted-foreground'}`}

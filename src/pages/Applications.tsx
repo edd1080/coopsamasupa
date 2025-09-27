@@ -223,7 +223,7 @@ const Applications = () => {
   return <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main className="flex-1 container mx-auto pb-20 max-w-5xl py-[4px] px-[17px]">
+      <main className="flex-1 container mx-auto pb-24 sm:pb-20 max-w-5xl py-[4px] px-3 sm:px-4">
         <div className="mb-4">
           <BreadcrumbNavigation />
         </div>
