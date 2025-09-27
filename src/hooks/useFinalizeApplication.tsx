@@ -7,21 +7,104 @@ import { toCoopsamaPayload } from '@/utils/fieldMapper';
 import { formatDateToGuatemalan } from '@/utils/dateUtils';
 import { useRef } from 'react';
 
-// Build application payload with proper column mapping
-const buildApplicationPayload = (formData: any, userId: string) => {
-  // Extract full name with fallback logic
-  const fullName = 
+// Helpers
+const getFullNameFromFormData = (formData: any): string => {
+  return (
     formData?.fullName ||
     formData?.identification?.fullName ||
     formData?.personalInfo?.fullName ||
     formData?.basicData?.fullName ||
     (formData?.firstName && formData?.lastName ? `${formData.firstName} ${formData.lastName}` : '') ||
-    (formData?.identification?.firstName && formData?.identification?.lastName ? `${formData.identification.firstName} ${formData.identification.lastName}` : '') ||
+    (formData?.identification?.firstName && formData?.identification?.lastName
+      ? `${formData.identification.firstName} ${formData.identification.lastName}`
+      : '') ||
     formData?.firstName ||
-    'Sin nombre';
+    'Sin nombre'
+  );
+};
 
-  // Extract amount with fallback logic
-  const amount = Number(formData?.loanAmount ?? formData?.requestedAmount ?? formData?.montoSolicitado ?? 0) || 0;
+const getRequestedAmountFromFormData = (formData: any): number => {
+  return Number(formData?.loanAmount ?? formData?.requestedAmount ?? formData?.montoSolicitado ?? 0) || 0;
+};
+
+const withTimeout = async <T,>(promise: Promise<T>, ms: number): Promise<T> => {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('Timeout en integración Coopsama')), ms);
+    promise
+      .then((value) => {
+        clearTimeout(timer);
+        resolve(value);
+      })
+      .catch((err) => {
+        clearTimeout(timer);
+        reject(err);
+      });
+  });
+};
+
+const parseCoopsamaResult = (data: any): { ok: boolean; externalReferenceId?: string; operationId?: string; message?: string } => {
+  if (!data || typeof data !== 'object') {
+    return { ok: false, message: 'Respuesta inválida del microservicio' };
+  }
+
+  // Shape 1: { code, success, data, message, errors }
+  if (typeof data.code !== 'undefined' || typeof data.success !== 'undefined') {
+    if (data.code === 0 && data.success === true) {
+      const responseData = data.data || {};
+      return {
+        ok: true,
+        externalReferenceId:
+          responseData.externalReferenceId ||
+          responseData.external_reference_id ||
+          responseData.referenceId ||
+          responseData.reference_id ||
+          responseData.id ||
+          responseData.solicitudId ||
+          responseData.applicationId,
+        operationId:
+          responseData.operationId ||
+          responseData.operation_id ||
+          responseData.processId ||
+          responseData.process_id,
+      };
+    }
+
+    // Build error message with validations if present
+    let message = data.message || 'Error en el envío de la solicitud';
+    if (data.errors && typeof data.errors === 'object') {
+      const validationErrors = (Object.values(data.errors) as any[]).flat();
+      if (validationErrors.length > 0) message += ': ' + validationErrors.join(', ');
+    }
+    return { ok: false, message };
+  }
+
+  // Shape 2: { data: { externalReferenceId, externalError, externalMessage, ... } }
+  const responseData = data.data || {};
+  const externalReferenceId =
+    responseData.externalReferenceId ||
+    responseData.external_reference_id ||
+    responseData.referenceId ||
+    responseData.reference_id ||
+    responseData.id ||
+    responseData.solicitudId ||
+    responseData.applicationId;
+  const operationId = responseData.operationId || responseData.operation_id || responseData.processId || responseData.process_id;
+  const externalError = responseData.externalError || false;
+  const externalMessage = responseData.externalMessage || '';
+  if (externalReferenceId === '0' && externalError === true) {
+    return { ok: false, message: externalMessage || 'Validación rechazada por Coopsama' };
+  }
+  return { ok: true, externalReferenceId, operationId };
+};
+
+const getCoopsamaApplicationId = (formData: any, payload: any): string | undefined => {
+  return formData?.applicationId || payload?.draft_data?.applicationId;
+};
+
+// Build application payload with proper column mapping
+const buildApplicationPayload = (formData: any, userId: string) => {
+  const fullName = getFullNameFromFormData(formData);
+  const amount = getRequestedAmountFromFormData(formData);
 
   return {
     // Remove id to let PostgreSQL generate UUID automatically
@@ -52,20 +135,6 @@ export const useFinalizeApplication = () => {
       }
 
       isSubmittingRef.current = true;
-
-      // Extract full name with fallback logic (same as in buildApplicationPayload)
-      const fullName = 
-        formData?.fullName ||
-        formData?.identification?.fullName ||
-        formData?.personalInfo?.fullName ||
-        formData?.basicData?.fullName ||
-        (formData?.firstName && formData?.lastName ? `${formData.firstName} ${formData.lastName}` : '') ||
-        (formData?.identification?.firstName && formData?.identification?.lastName ? `${formData.identification.firstName} ${formData.identification.lastName}` : '') ||
-        formData?.firstName ||
-        'Sin nombre';
-
-      // Extract amount with fallback logic
-      const amount = Number(formData?.loanAmount ?? formData?.requestedAmount ?? formData?.montoSolicitado ?? 0) || 0;
 
       console.log('📤 Finalizing application for user:', user.id);
 
@@ -103,6 +172,10 @@ export const useFinalizeApplication = () => {
       // Sanitize the payload
       const sanitizedPayload = sanitizeObjectData(applicationPayload);
       console.log("🔍 SANITIZED PAYLOAD DEBUG (after sanitization):", JSON.stringify(sanitizedPayload, null, 2));
+      
+      // Values derived once
+      const fullName = applicationPayload.client_name as string;
+      const amount = applicationPayload.amount_requested as number;
 
       // Check if offline - enqueue if no connection
       if (!navigator.onLine) {
@@ -155,17 +228,21 @@ export const useFinalizeApplication = () => {
       }
 
       // Online flow: Validate with Coopsama FIRST, then create application
-        console.log('🔄 Validating with Coopsama before creating application...');
-        console.log('🔍 Application ID being sent:', sanitizedPayload.id);
+      console.log('🔄 Validating with Coopsama before creating application...');
+      const coopsamaApplicationId = getCoopsamaApplicationId(formData, sanitizedPayload);
+      console.log('🔍 Application ID being sent:', coopsamaApplicationId);
 
-      // Send to Coopsama for validation
-      const coopsamaResult = await supabase.functions.invoke('coopsama-integration', {
-        body: {
-          applicationId: sanitizedPayload.id,
-          payload: coopsamaPayload,
-          userEmail: user.email
-        }
-      });
+      // Send to Coopsama for validation (with timeout)
+      const coopsamaResult = await withTimeout(
+        supabase.functions.invoke('coopsama-integration', {
+          body: {
+            applicationId: coopsamaApplicationId,
+            payload: coopsamaPayload,
+            userEmail: user.email
+          }
+        }),
+        30000
+      );
 
       console.log('🔍 RAW Coopsama function response:', coopsamaResult);
       console.log('🔍 Coopsama result type:', typeof coopsamaResult);
@@ -180,6 +257,19 @@ export const useFinalizeApplication = () => {
         console.log('🔍 Coopsama data extracted:', data);
         console.log('🔍 Data type:', typeof data);
         console.log('🔍 Data keys:', Object.keys(data || {}));
+
+      // // Parse Coopsama response
+      // const parsed = parseCoopsamaResult(data);
+      // if (!parsed.ok) {
+      //   const msg = parsed.message || 'Error en validación Coopsama';
+      //   console.log('❌ Coopsama validation failed - not creating application');
+      //   console.log('🚨 THROWING ERROR TO PREVENT APPLICATION CREATION');
+      //   throw new Error(`COOPSAMA_ERROR:${msg}`);
+      // }
+      // const externalReferenceId = parsed.externalReferenceId || null;
+      // const operationId = parsed.operationId || null;
+      // console.log('✅ Coopsama validation passed - creating application');
+
 
       // Extraer datos de la respuesta
       let externalReferenceId: string | null = null;
@@ -404,8 +494,6 @@ Generado automáticamente el ${new Date().toISOString()}
         .from('applications')
         .update({ coopsama_sync_status: 'pending' })
         .eq('id', result.id);
-
-      // Coopsama integration already completed above - no need for background processing
 
       return {
         ...result,
