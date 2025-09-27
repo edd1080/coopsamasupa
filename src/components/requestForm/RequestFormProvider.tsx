@@ -7,6 +7,7 @@ import { useSaveDraft } from '@/hooks/useDraftActions';
 import { useFinalizeApplication } from '@/hooks/useFinalizeApplication';
 import { useApplicationData } from '@/hooks/useApplicationData';
 import { calculateFieldProgress } from '@/utils/fieldProgressTracker';
+// import { validateFormData } from '@/utils/fieldMapper'; // Removed - no longer needed
 
 interface FormContextType {
   // Form state
@@ -71,6 +72,14 @@ interface FormContextType {
   isSubmitting: boolean;
   showErrorScreen: boolean;
   errorMessage: string;
+
+  // Coopsama error dialog
+  showCoopsamaErrorDialog: boolean;
+  setShowCoopsamaErrorDialog: (show: boolean) => void;
+  coopsamaErrorMessage: string;
+  setCoopsamaErrorMessage: (message: string) => void;
+
+  // Validation dialog - REMOVED (no longer needed)
 }
 
 
@@ -161,7 +170,7 @@ interface FormData {
   sourceObservations: string;
   specificDestination: string;
   otherDestination: string;
-  secondaryProject: string;
+  // secondaryProject: string; // Removido - causaba error Erx003 en Coopsama
   addressDetails: string;
   
   // Credit Information
@@ -240,7 +249,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   onNavigateAfterExit,
   onRedirectSubmittedApplication
 }) => {
-  console.log('📝 RequestFormProvider initializing');
+  // Removed console.log to reduce re-render noise
   const { toast } = useToast();
   const location = useLocation();
   const { id: applicationId } = useParams<{ id: string }>();
@@ -285,7 +294,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
       investmentPlaceDepartment: '', investmentPlaceMunicipality: '', destinationGroup: '', creditDestination: '',
       destinationCategory: '', sowingLatitude: '', sowingLongitude: '', destinationDescription: '',
       destinationObservations: '', sourceTypes: '', sourceQuantity: '', sourceObservations: '',
-      specificDestination: '', otherDestination: '', secondaryProject: '', addressDetails: '',
+      specificDestination: '', otherDestination: '', /* secondaryProject: '', */ addressDetails: '',
       
       // Financial Analysis
       incomeSource: '', ingresoPrincipal: '', ingresoSecundario: '', comentarioIngreso: '', incomeSources: [],
@@ -375,6 +384,12 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
   const [submissionResult, setSubmissionResult] = useState<any>(null);
   const [showErrorScreen, setShowErrorScreen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Coopsama error dialog state
+  const [showCoopsamaErrorDialog, setShowCoopsamaErrorDialog] = useState(false);
+  const [coopsamaErrorMessage, setCoopsamaErrorMessage] = useState('');
+
+  // Validation dialog state - REMOVED (no longer needed)
 
   // Add save draft mutation
   const saveDraftMutation = useSaveDraft();
@@ -577,8 +592,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
         references: updated
       }));
       
-      console.log('📝 Nueva referencia agregada:', newReference);
-      console.log('📝 Referencias actualizadas:', updated);
+      // Removed console.logs to reduce re-render noise
       
       return updated;
     });
@@ -610,8 +624,7 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
         references: updated
       }));
       
-      console.log('📝 Referencia actualizada:', { index, field, value });
-      console.log('📝 Referencias actualizadas:', updated);
+      // Removed console.logs to reduce re-render noise
       
       return updated;
     });
@@ -843,16 +856,16 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     }
     
     try {
-      saveDraftMutation.mutate({
-        formData,
-        currentStep,
-        currentSubStep: subStep,
-        isIncremental: false
-      }, {
+    saveDraftMutation.mutate({
+      formData,
+      currentStep,
+      currentSubStep: subStep,
+      isIncremental: false
+    }, {
         onSuccess: (data) => {
           console.log('✅ SAVE DRAFT SUCCESS - Clearing unsaved changes');
           console.log('✅ Save result:', data);
-          setHasUnsavedChanges(false);
+        setHasUnsavedChanges(false);
           
           // Reset saving state after a delay to allow mutation to complete
           saveTimeoutRef.current = setTimeout(() => {
@@ -860,11 +873,11 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
             setIsSaving(false);
             console.log('🔄 Save operation completed, resetting saving state');
           }, 1000);
-        },
-        onError: (error) => {
+      },
+      onError: (error) => {
           console.error('❌ SAVE DRAFT ERROR:', error);
           console.error('❌ Error details:', error.message);
-          // Don't clear unsaved changes on error
+        // Don't clear unsaved changes on error
           
           // Reset saving state immediately on error
           isSavingRef.current = false;
@@ -898,8 +911,8 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
       console.error('❌ Error submitting form (mutateAsync):', error);
       if (error?.message?.includes('COOPSAMA_ERROR:')) {
         const errorMsg = error.message.replace('COOPSAMA_ERROR:', '');
-        setErrorMessage(errorMsg);
-        setShowErrorScreen(true);
+        setCoopsamaErrorMessage(errorMsg);
+        setShowCoopsamaErrorDialog(true);
         setShowSuccessScreen(false);
       } else {
         // Fallback: show generic error screen
@@ -909,6 +922,8 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
       }
     }
   }, [formData, finalizeApplicationMutation, steps, updateSectionStatus]);
+
+  // Función goToField - REMOVED (no longer needed)
 
   // Updated exit handling with save functionality and proper navigation
   const handleExit = useCallback(async (shouldSave: boolean = false) => {
@@ -1003,17 +1018,17 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
         } else {
           // Online mode - use React Query
           await new Promise((resolve, reject) => {
-            saveDraftMutation.mutate({
-              formData,
-              currentStep,
-              currentSubStep: subStep,
+          saveDraftMutation.mutate({
+            formData,
+            currentStep,
+            currentSubStep: subStep,
               isIncremental: false,
               // Evitar doble toast; manejaremos aquí el aviso con ID
               silentToast: true as any
             } as any, {
               onSuccess: (data: any) => {
-                console.log('✅ Save successful before exit:', data);
-                setHasUnsavedChanges(false);
+              console.log('✅ Save successful before exit:', data);
+              setHasUnsavedChanges(false);
 
                 const displayId = data?.applicationId || formData.applicationId || data?.id;
                 toast({
@@ -1023,14 +1038,14 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
                   duration: 2500,
                 });
 
-                resolve(data);
-              },
-              onError: (error) => {
-                console.error('❌ Save failed before exit:', error);
-                reject(error);
-              }
-            });
+              resolve(data);
+            },
+            onError: (error) => {
+              console.error('❌ Save failed before exit:', error);
+              reject(error);
+            }
           });
+        });
         }
         
         console.log('✅ Save completed, proceeding with exit');
@@ -1129,6 +1144,14 @@ const RequestFormProvider: React.FC<RequestFormProviderProps> = ({
     isSubmitting: finalizeApplicationMutation.isPending,
     showErrorScreen,
     errorMessage,
+
+    // Coopsama error dialog
+    showCoopsamaErrorDialog,
+    setShowCoopsamaErrorDialog,
+    coopsamaErrorMessage,
+    setCoopsamaErrorMessage,
+
+    // Validation dialog - REMOVED (no longer needed)
   };
 
   return (

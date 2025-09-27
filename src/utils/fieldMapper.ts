@@ -104,7 +104,7 @@ export interface CoopsamaPayload {
           requestType: { id: string; value: string };
           sourceOfFunds?: { id: string; value: string };
           principalProject?: { id: string; value: string };
-          secondaryProject?: { id: string; value: string };
+          secondaryProject: { id: string; value: string }; // Campo requerido por Coopsama - usando N/A como valor por defecto
           paymentMethod?: { id: string; value: string };
           fundsDestination: {
             investmentState: { id: string; value: string };
@@ -478,12 +478,8 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             sourceOfFunds: formData.fundsOrigin || formData.sourceOfFunds || formData.origenFondos 
               ? mapToCatalog(fundsOrigins, formData.fundsOrigin || formData.sourceOfFunds || formData.origenFondos, "2")
               : { id: "", value: "" },
-            principalProject: formData.creditDestination || formData.principalProject || formData.proyectoPrincipal 
-              ? mapToCatalog(projectTypes, formData.creditDestination || formData.principalProject || formData.proyectoPrincipal, "5")
-              : { id: "", value: "" },
-            secondaryProject: formData.secondaryProject || formData.proyectoSecundario 
-              ? mapToCatalog(projectTypes, formData.secondaryProject || formData.proyectoSecundario, "5")
-              : { id: "", value: "" },
+            principalProject: { id: "5", value: "N/A" },
+            secondaryProject: { id: "5", value: "N/A" }, // Campo requerido por Coopsama - usando N/A como valor por defecto
             paymentMethod: formData.paymentPlan || formData.paymentMethod || formData.formaPago 
               ? mapToCatalog(paymentMethods, formData.paymentPlan || formData.paymentMethod || formData.formaPago, "1")
               : { id: "", value: "" },
@@ -513,23 +509,31 @@ export const toCoopsamaPayload = (formData: any, agentData?: any): CoopsamaPaylo
             const incomes = [];
             
             // Ingreso principal (siempre mainIncomeSource: true)
-            if (ingresoPrincipal > 0) {
+            // Incluir siempre que haya una fuente de ingreso seleccionada, independientemente del monto
+            console.log('🔍 DEBUG incomeSource:', {
+              formDataIncomeSource: formData.incomeSource,
+              ingresoPrincipal: ingresoPrincipal,
+              incomeSourceTypes: incomeSourceTypes,
+              mappedResult: formData.incomeSource ? mapToCatalog(incomeSourceTypes, formData.incomeSource, "1") : null
+            });
+
+            if (formData.incomeSource) {
+              const mappedIncomeSource = mapToCatalog(incomeSourceTypes, formData.incomeSource, "1");
+              console.log('🔍 DEBUG mappedIncomeSource:', mappedIncomeSource);
+
               incomes.push({
-                incomeSource: formData.incomeSource 
-                  ? mapToCatalog(incomeSourceTypes, formData.incomeSource, "1")
-                  : { id: "", value: "" },
-                monthlyIncome: ingresoPrincipal,
+                incomeSource: mappedIncomeSource,
+                monthlyIncome: ingresoPrincipal || 0, // Asegurar que siempre sea un número
                 comments: formData.incomeComments || "Ingreso principal",
                 mainIncomeSource: true
               });
             }
             
-            // Ingreso secundario (si existe)
-            if (ingresoSecundario > 0) {
+            // Ingreso secundario (solo si tiene secondaryIncomeSource seleccionado)
+            if (ingresoSecundario > 0 && formData.secondaryIncomeSource) {
+              const mappedSecondarySource = mapToCatalog(incomeSourceTypes, formData.secondaryIncomeSource, "5");
               incomes.push({
-                incomeSource: formData.secondaryIncomeSource 
-                  ? mapToCatalog(incomeSourceTypes, formData.secondaryIncomeSource, "5")
-                  : { id: "", value: "" },
+                incomeSource: mappedSecondarySource,
                 monthlyIncome: ingresoSecundario,
                 comments: formData.secondaryIncomeComments || "Ingreso secundario",
                 mainIncomeSource: false
@@ -901,4 +905,192 @@ export const validateCoopsamaPayload = (payload: CoopsamaPayload): {
       warnings: warnings.length
     }
   };
+};
+
+/**
+ * Validación previa del formulario antes del envío a Coopsama
+ * Verifica campos obligatorios y estructura de datos del formulario
+ */
+export const validateFormData = (formData: any): {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+  criticalFields: string[];
+  missingFields: string[];
+} => {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+  const criticalFields: string[] = [];
+  const missingFields: string[] = [];
+
+  console.log('🔍 Validating Coopsama payload before submission...');
+
+  // 1. Validar campos de identificación personal (CRÍTICOS)
+  const personalFields = {
+    firstName: formData.firstName,
+    firstLastName: formData.firstLastName,
+    dpi: formData.dpi,
+    birthDate: formData.birthDate,
+    gender: formData.gender,
+    occupation: formData.occupation,
+    mobilePhone: formData.mobilePhone,
+    email: formData.email
+  };
+
+  Object.entries(personalFields).forEach(([field, value]) => {
+    if (!value || value === '' || value === null || value === undefined) {
+      const fieldName = getFieldDisplayName(field);
+      errors.push(`Campo obligatorio: ${fieldName}`);
+      missingFields.push(field);
+      criticalFields.push(field);
+    }
+  });
+
+  // 2. Validar información de ubicación (CRÍTICOS)
+  const locationFields = {
+    residenceDepartment: formData.residenceDepartment,
+    residenceMunicipality: formData.residenceMunicipality,
+    address: formData.address
+  };
+
+  Object.entries(locationFields).forEach(([field, value]) => {
+    if (!value || value === '' || value === null || value === undefined) {
+      const fieldName = getFieldDisplayName(field);
+      errors.push(`Campo obligatorio: ${fieldName}`);
+      missingFields.push(field);
+      criticalFields.push(field);
+    }
+  });
+
+  // 3. Validar información del crédito (CRÍTICOS)
+  const creditFields = {
+    requestedAmount: formData.requestedAmount,
+    termMonths: formData.termMonths,
+    applicationType: formData.applicationType,
+    sourceOfFunds: formData.sourceOfFunds
+  };
+
+  Object.entries(creditFields).forEach(([field, value]) => {
+    if (!value || value === '' || value === null || value === undefined) {
+      const fieldName = getFieldDisplayName(field);
+      errors.push(`Campo obligatorio: ${fieldName}`);
+      missingFields.push(field);
+      criticalFields.push(field);
+    }
+  });
+
+  // 4. Validar información financiera (CRÍTICOS)
+  const financialFields = {
+    ingresoPrincipal: formData.ingresoPrincipal,
+    incomeSource: formData.incomeSource
+  };
+
+  Object.entries(financialFields).forEach(([field, value]) => {
+    if (!value || value === '' || value === null || value === undefined) {
+      const fieldName = getFieldDisplayName(field);
+      errors.push(`Campo obligatorio: ${fieldName}`);
+      missingFields.push(field);
+      criticalFields.push(field);
+    }
+  });
+
+  // 5. Validar referencias (CRÍTICAS - al menos 1)
+  if (!formData.references || formData.references.length === 0) {
+    errors.push('Debe agregar al menos una referencia personal');
+    missingFields.push('references');
+    criticalFields.push('references');
+  }
+
+  // 6. Validar campos opcionales (solo advertencias)
+  const optionalFields = {
+    maritalStatus: formData.maritalStatus,
+    principalProject: formData.principalProject,
+    dpiFrontal: formData.dpiFrontal,
+    fotoSolicitante: formData.fotoSolicitante
+  };
+
+  Object.entries(optionalFields).forEach(([field, value]) => {
+    if (!value || value === '' || value === null || value === undefined) {
+      const fieldName = getFieldDisplayName(field);
+      warnings.push(`Campo recomendado: ${fieldName} (opcional pero recomendado)`);
+    }
+  });
+
+  // 7. Validaciones de formato y lógica
+  if (formData.requestedAmount && (isNaN(Number(formData.requestedAmount)) || Number(formData.requestedAmount) <= 0)) {
+    errors.push('El monto solicitado debe ser un número válido mayor a 0');
+  }
+
+  if (formData.termMonths && (isNaN(Number(formData.termMonths)) || Number(formData.termMonths) <= 0)) {
+    errors.push('El plazo en meses debe ser un número válido mayor a 0');
+  }
+
+  if (formData.ingresoPrincipal && (isNaN(Number(formData.ingresoPrincipal)) || Number(formData.ingresoPrincipal) <= 0)) {
+    errors.push('El ingreso principal debe ser un número válido mayor a 0');
+  }
+
+  // 8. Validar formato de DPI
+  if (formData.dpi && !/^\d{4}\s?\d{5}\s?\d{4}$/.test(formData.dpi.replace(/\s/g, ''))) {
+    warnings.push('El formato del DPI podría no ser correcto. Verifique que tenga 13 dígitos.');
+  }
+
+  // 9. Validar formato de email
+  if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    errors.push('El formato del email no es válido');
+  }
+
+  // 10. Validar formato de teléfono
+  if (formData.mobilePhone && !/^\d{4}\s?\d{4}$/.test(formData.mobilePhone.replace(/\s/g, ''))) {
+    warnings.push('El formato del teléfono móvil podría no ser correcto. Verifique que tenga 8 dígitos.');
+  }
+
+  const isValid = errors.length === 0;
+
+  console.log('📊 Validation results:', {
+    isValid,
+    errorsCount: errors.length,
+    warningsCount: warnings.length,
+    criticalFieldsCount: criticalFields.length,
+    missingFieldsCount: missingFields.length
+  });
+
+  return {
+    isValid,
+    errors,
+    warnings,
+    criticalFields,
+    missingFields
+  };
+};
+
+/**
+ * Obtiene el nombre de visualización de un campo
+ */
+const getFieldDisplayName = (field: string): string => {
+  const fieldNames: Record<string, string> = {
+    firstName: 'Nombres',
+    firstLastName: 'Primer Apellido',
+    dpi: 'DPI',
+    birthDate: 'Fecha de Nacimiento',
+    gender: 'Género',
+    maritalStatus: 'Estado Civil',
+    occupation: 'Ocupación',
+    mobilePhone: 'Teléfono Móvil',
+    email: 'Email',
+    residenceDepartment: 'Departamento de Residencia',
+    residenceMunicipality: 'Municipio de Residencia',
+    address: 'Dirección',
+    requestedAmount: 'Monto Solicitado',
+    termMonths: 'Plazo en Meses',
+    applicationType: 'Tipo de Solicitud',
+    sourceOfFunds: 'Origen de los Fondos',
+    principalProject: 'Proyecto Principal',
+    ingresoPrincipal: 'Ingreso Principal',
+    incomeSource: 'Fuente de Ingreso',
+    references: 'Referencias Personales',
+    dpiFrontal: 'DPI Frontal',
+    fotoSolicitante: 'Foto del Solicitante'
+  };
+
+  return fieldNames[field] || field;
 };

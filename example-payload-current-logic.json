@@ -1,0 +1,358 @@
+{
+  "data": {
+    "process": {
+      "profile": {
+        "processControl": {
+          "processId": "SCO_123456",
+          "ownerCounty": {
+            "id": "0101",
+            "value": "GUATEMALA"
+          },
+          "ownerState": {
+            "id": "01",
+            "value": "GUATEMALA"
+          },
+          "cuaT24": "CUA123456",
+          "cif": "",
+          "userEmail": "agente@coopsama.com"
+        },
+        "personalDocument": {
+          "firstName": "Juan",
+          "secondName": "Carlos",
+          "firstLastName": "Pérez",
+          "secondLastName": "García",
+          "marriedSurname": "",
+          "personalDocumentId": "1234 56789 0101",
+          "emissionState": {
+            "id": "01",
+            "value": "GUATEMALA"
+          },
+          "emissionCounty": {
+            "id": "0101",
+            "value": "GUATEMALA"
+          },
+          "gender": {
+            "id": "1",
+            "value": "HOMBRE"
+          },
+          "maritalStatus": {
+            "id": "1",
+            "value": "SOLTERO"
+          },
+          "birthDate": "1985-05-15",
+          "age": 40,
+          "academicTitle": {
+            "id": "1",
+            "value": "INGENIERO"
+          },
+          "occupation": {
+            "id": "112",
+            "value": "ARQUITECTO"
+          },
+          "personalDocumentAddress": {
+            "fullAddress": "Zona 10, Ciudad de Guatemala",
+            "otherIndications": "Cerca del parque central",
+            "state": {
+              "id": "01",
+              "value": "GUATEMALA"
+            },
+            "county": {
+              "id": "0101",
+              "value": "GUATEMALA"
+            }
+          },
+          "typeOfHousing": {
+            "id": "1",
+            "value": "PROPIA"
+          },
+          "housingStability": {
+            "id": "4",
+            "value": "MÁS_DE_5_AÑOS"
+          },
+          "geolocalization": "14.553657923360634,-90.55031270780137",
+          "spouseFirstName": "",
+          "spouseSecondName": "",
+          "spouseThirdName": "",
+          "spouseFirstLastName": "",
+          "spouseSecondLastName": "",
+          "spouseCompanyName": "",
+          "spouseJobStability": {
+            "id": "",
+            "value": ""
+          },
+          "spouseMobile": "",
+          "spouseBirthDate": null
+        },
+        "personData": {
+          "nit": "12345678-9",
+          "numberOfDependants": 2,
+          "ethnicity": {
+            "id": "2",
+            "value": "Mestizo"
+          },
+          "academicDegree": {
+            "id": "3",
+            "value": "UNIVERSITARIO"
+          },
+          "mobile": "5555-1234",
+          "telephone": "2222-5678",
+          "email": [
+            {
+              "emailAddress": "juan.perez@email.com",
+              "emailType": "personal",
+              "emailId": "1"
+            }
+          ]
+        },
+        "productDetail": {
+          "idTypeProduct": 1,
+          "idAgency": 1,
+          "requestedAmount": 50000,
+          "interestRate": 12.5,
+          "startingTerm": 36,
+          "principalAmortization": {
+            "id": "1",
+            "value": "trimestral/3"
+          },
+          "interestAmortization": {
+            "id": "1",
+            "value": "anual/12"
+          },
+          "partnerType": {
+            "id": "2",
+            "value": "B"
+          },
+          "requestType": {
+            "id": "1",
+            "value": "NUEVO"
+          },
+          "sourceOfFunds": {
+            "id": "2",
+            "value": "Propios"
+          },
+          "principalProject": {
+            "id": "5",
+            "value": "comercio"
+          },
+          "secondaryProject": {
+            "id": "",
+            "value": ""
+          },
+          "paymentMethod": {
+            "id": "1",
+            "value": "DECRECIENTE"
+          },
+          "fundsDestination": {
+            "investmentState": {
+              "id": "01",
+              "value": "GUATEMALA"
+            },
+            "investmentCounty": {
+              "id": "0101",
+              "value": "GUATEMALA"
+            },
+            "destinationCategory": {
+              "id": "22",
+              "value": "activos_fijos"
+            },
+            "otherDestination": "Compra de equipo",
+            "description": "Equipos de computación",
+            "comments": "Para modernizar la oficina"
+          }
+        },
+        "income": [
+          {
+            "incomeSource": {
+              "id": "1",
+              "value": "NOMINAL"
+            },
+            "monthlyIncome": 8000,
+            "comments": "Salario mensual",
+            "mainIncomeSource": true
+          },
+          {
+            "incomeSource": {
+              "id": "1",
+              "value": "NOMINAL"
+            },
+            "monthlyIncome": 3000,
+            "comments": "Ingreso secundario",
+            "mainIncomeSource": false
+          },
+          {
+            "incomeSource": {
+              "id": "1",
+              "value": "NOMINAL"
+            },
+            "monthlyIncome": 1500,
+            "comments": "Bonificaciones",
+            "mainIncomeSource": false
+          },
+          {
+            "incomeSource": {
+              "id": "2",
+              "value": "COMERCIAL"
+            },
+            "monthlyIncome": 2000,
+            "comments": "Comisiones",
+            "mainIncomeSource": false
+          }
+        ],
+        "expense": [
+          {
+            "name": "food",
+            "amount": 2000
+          },
+          {
+            "name": "clothing",
+            "amount": 500
+          },
+          {
+            "name": "basic services",
+            "amount": 800
+          },
+          {
+            "name": "education",
+            "amount": 1000
+          },
+          {
+            "name": "housing",
+            "amount": 1500
+          },
+          {
+            "name": "transportation",
+            "amount": 600
+          },
+          {
+            "name": "commitments",
+            "amount": 400
+          },
+          {
+            "name": "financial expenses",
+            "amount": 300
+          },
+          {
+            "name": "payroll deductions",
+            "amount": 200
+          },
+          {
+            "name": "other expenses",
+            "amount": 100
+          },
+          {
+            "name": "references for other expenses",
+            "amount": 50
+          }
+        ],
+        "financialStatus": {
+          "assets": {
+            "list": [
+              {
+                "name": "cashAndBanks",
+                "amount": 5000
+              },
+              {
+                "name": "accountReceivable",
+                "amount": 2000
+              },
+              {
+                "name": "merchandise",
+                "amount": 3000
+              },
+              {
+                "name": "vehicles",
+                "amount": 15000
+              },
+              {
+                "name": "realEstate",
+                "amount": 100000
+              },
+              {
+                "name": "otherAssets",
+                "amount": 1000
+              }
+            ],
+            "total": 126000
+          },
+          "liabilities": {
+            "list": [
+              {
+                "name": "accountsPayable",
+                "amount": 1000
+              },
+              {
+                "name": "longTermCreditors",
+                "amount": 2000
+              },
+              {
+                "name": "longTermLoans",
+                "amount": 5000
+              }
+            ],
+            "total": 8000
+          },
+          "equity": {
+            "currentDebtRatio": 0.06349206349206349,
+            "projectedDebtRatio": 0.4107142857142857,
+            "total": 118000
+          }
+        },
+        "collateral": [],
+        "personal": {
+          "references": [
+            {
+              "type": {
+                "id": "1",
+                "value": "PERSONAL"
+              },
+              "firstName": "Ana",
+              "secondName": "",
+              "firstLastName": "Martínez",
+              "secondLastName": "",
+              "fullAddress": "Zona 9, Ciudad de Guatemala",
+              "relationship": "Amiga",
+              "mobile": "5555-1111",
+              "score": {
+                "id": "1",
+                "value": "EXCELENTE"
+              },
+              "comments": "Conocida desde hace 10 años"
+            },
+            {
+              "type": {
+                "id": "2",
+                "value": "COMERCIAL"
+              },
+              "firstName": "Carlos",
+              "secondName": "",
+              "firstLastName": "Rodríguez",
+              "secondLastName": "",
+              "fullAddress": "Zona 11, Ciudad de Guatemala",
+              "relationship": "Cliente",
+              "mobile": "5555-2222",
+              "score": {
+                "id": "2",
+                "value": "BUENO"
+              },
+              "comments": "Cliente frecuente"
+            }
+          ]
+        },
+        "business": {
+          "companyName": "Constructora Pérez S.A.",
+          "activityDescription": "Construcción de viviendas",
+          "productType": "Servicios de construcción",
+          "fullAddress": "Zona 12, Ciudad de Guatemala"
+        },
+        "investmentPlan": [],
+        "expenseSummary": {
+          "totalExpenses": 7450
+        }
+      }
+    }
+  },
+  "metadata": {
+    "processId": "SCO_123456",
+    "email": "agente@coopsama.com"
+  }
+}

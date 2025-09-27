@@ -14,6 +14,8 @@ import ExitDialog from '@/components/requestForm/ExitDialog';
 import FormActionBar from '@/components/requestForm/FormActionBar';
 import ApplicationSuccessScreen from '@/components/requestForm/ApplicationSuccessScreen';
 import ApplicationErrorScreen from '@/components/requestForm/ApplicationErrorScreen';
+import CoopsamaErrorDialog from '@/components/requestForm/CoopsamaErrorDialog';
+// import ValidationDialog from '@/components/requestForm/ValidationDialog'; // REMOVED (no longer needed)
 import SafeNavigationWrapper from '@/components/requestForm/SafeNavigationWrapper';
 import { steps } from '@/components/requestForm/formSteps';
 
@@ -29,12 +31,46 @@ const RequestFormContent = () => {
     showSuccessScreen,
     submissionResult,
     showErrorScreen,
-    errorMessage
+    errorMessage,
+    showCoopsamaErrorDialog,
+    setShowCoopsamaErrorDialog,
+    coopsamaErrorMessage
   } = useFormContext();
   
   const navigate = useNavigate();
 
-  console.log('🎯 RequestFormContent rendering');
+  // Removed console.log to reduce re-render noise
+
+  // Show Coopsama error dialog if there's an error, even if success screen is shown
+  if (showCoopsamaErrorDialog) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-2xl mx-auto">
+            <h1 className="text-2xl font-bold text-center mb-8">Enviando Solicitud</h1>
+            <div className="bg-card rounded-lg p-6 shadow-sm border">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Procesando solicitud...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Coopsama Error Dialog */}
+        <CoopsamaErrorDialog
+          open={showCoopsamaErrorDialog}
+          onOpenChange={setShowCoopsamaErrorDialog}
+          errorMessage={coopsamaErrorMessage}
+          onRetry={() => {
+            setShowCoopsamaErrorDialog(false);
+            // User can retry by submitting again
+          }}
+          onGoToApplications={() => navigate('/applications')}
+        />
+      </div>
+    );
+  }
 
   if (showSuccessScreen) {
     return (
@@ -92,6 +128,10 @@ const RequestFormContent = () => {
         hasUnsavedChanges={hasUnsavedChanges}
         formData={formData}
       />
+
+      {/* Coopsama Error Dialog - moved to conditional rendering above */}
+
+      {/* Validation Dialog - REMOVED (no longer needed) */}
     </div>
   );
 };

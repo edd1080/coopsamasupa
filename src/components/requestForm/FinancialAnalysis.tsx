@@ -135,11 +135,11 @@ const FinancialAnalysis: React.FC<FinancialAnalysisProps> = ({ formData, updateF
                 <SelectValue placeholder="Seleccionar fuente principal de ingresos" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="nominal">Nominal</SelectItem>
-                <SelectItem value="comercial">Comercial</SelectItem>
-                <SelectItem value="agricola">Agrícola</SelectItem>
-                <SelectItem value="conyuge">Cónyuge</SelectItem>
-                <SelectItem value="otros">Otros</SelectItem>
+                <SelectItem value="NOMINAL">Nominal</SelectItem>
+                <SelectItem value="COMERCIAL">Comercial</SelectItem>
+                <SelectItem value="AGRICOLA">Agrícola</SelectItem>
+                <SelectItem value="CONYUGE">Cónyuge</SelectItem>
+                <SelectItem value="OTROS">Otros</SelectItem>
               </SelectContent>
             </Select>
           </div>
