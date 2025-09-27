@@ -5417,10 +5417,10 @@ Los siguientes campos llegaban vacíos al payload:
 
 ## 📈 **Estadísticas de Bugs**
 
-- **Total de bugs reportados**: 31
+- **Total de bugs reportados**: 35
 - **En análisis**: 0
 - **En desarrollo**: 0
-- **Resueltos**: 31
+- **Resueltos**: 35
 - **Rechazados**: 0
 
 ---
@@ -5719,8 +5719,193 @@ Los siguientes campos llegaban vacíos al payload:
 
 ---
 
+## 🐛 **BUG-288: Pantalla en blanco en pestaña 'detalles' de ApplicationDetails**
 
-## 🐛 **BUG-291: Campos específicos no se mapean correctamente en payload final**
+### **📅 Fecha de Reporte**
+2025-01-26
+
+### **📝 Descripción**
+Al abrir una aplicación ya enviada y hacer clic en la pestaña "detalles", la pantalla se mostraba completamente en blanco, impidiendo al usuario ver la información detallada de su solicitud.
+
+### **🎯 Comportamiento Esperado**
+La pestaña "detalles" debe mostrar toda la información de la aplicación de forma organizada y legible, incluyendo datos personales, financieros, de trabajo, etc.
+
+### **🔍 Comportamiento Actual**
+- Pantalla completamente en blanco al hacer clic en "detalles"
+- No se muestra ningún contenido ni mensaje de error
+- La pestaña "resumen" funciona correctamente
+
+### **🔧 Causa Raíz**
+- Objetos vacíos en `formData` causaban errores de renderizado
+- Falta de validación de datos antes de renderizar
+- Ausencia de manejo de errores en el componente
+
+### **✅ Solución Implementada**
+- Agregada función `safeRenderValue` para manejar valores vacíos o nulos
+- Implementado try-catch para capturar errores de renderizado
+- Agregada validación de `formData` antes de renderizar
+- Mejorado manejo de objetos vacíos y valores undefined
+
+### **📊 Archivos Modificados**
+- `src/pages/ApplicationDetails.tsx`
+- `src/utils/reviewProgressTracker.ts`
+
+### **🎯 Estado**
+✅ Resuelto
+
+### **📈 Prioridad**
+Alta
+
+### **👥 Asignado**
+Dev Team
+
+---
+
+## 🐛 **BUG-289: Inconsistencia en cálculo de progreso entre componentes**
+
+### **📅 Fecha de Reporte**
+2025-01-26
+
+### **📝 Descripción**
+Diferentes componentes mostraban porcentajes de progreso inconsistentes para la misma aplicación:
+- ApplicationCard mostraba un porcentaje
+- ApplicationDetails mostraba otro porcentaje
+- ReviewSection tenía su propio cálculo
+- Esto causaba confusión al usuario sobre el estado real de su solicitud
+
+### **🎯 Comportamiento Esperado**
+Todos los componentes deben mostrar el mismo porcentaje de progreso para una aplicación específica, basado en la misma lógica de cálculo.
+
+### **🔍 Comportamiento Actual**
+- ApplicationCard: usaba `getCardProgressPercentage()`
+- ApplicationDetails: usaba cálculo interno diferente
+- ReviewSection: tenía su propia lógica de progreso
+- Resultado: porcentajes diferentes para la misma aplicación
+
+### **🔧 Causa Raíz**
+- Múltiples funciones de cálculo de progreso independientes
+- Falta de centralización de la lógica de progreso
+- Diferentes criterios de evaluación entre componentes
+
+### **✅ Solución Implementada**
+- Creado `src/utils/reviewProgressTracker.ts` como fuente única de verdad
+- Implementada función `getReviewSectionProgress()` centralizada
+- Actualizados ApplicationCard y ApplicationDetails para usar la misma función
+- Eliminada barra de progreso interna de DynamicFormHeader
+
+### **📊 Archivos Modificados**
+- `src/utils/reviewProgressTracker.ts` (nuevo)
+- `src/components/applications/ApplicationCard.tsx`
+- `src/pages/ApplicationDetails.tsx`
+- `src/components/requestForm/DynamicFormHeader.tsx`
+
+### **🎯 Estado**
+✅ Resuelto
+
+### **📈 Prioridad**
+Media
+
+### **👥 Asignado**
+Dev Team
+
+---
+
+## 🐛 **BUG-290: Errores de mapeo de campos numéricos con valores vacíos**
+
+### **📅 Fecha de Reporte**
+2025-01-26
+
+### **📝 Descripción**
+Campos numéricos en el payload se mapeaban incorrectamente cuando estaban vacíos:
+- Campos como `age`, `numberOfDependants`, `requestedAmount` se enviaban como `""` (string vacío)
+- El backend esperaba `0` para campos numéricos vacíos
+- Esto causaba errores de validación en Coopsama
+
+### **🎯 Comportamiento Esperado**
+Campos numéricos vacíos deben mapearse como `0` (número) en el payload, no como `""` (string vacío).
+
+### **🔍 Comportamiento Actual**
+```json
+{
+  "age": "",
+  "numberOfDependants": "",
+  "requestedAmount": "",
+  "interestRate": ""
+}
+```
+
+### **🔧 Causa Raíz**
+- Lógica de mapeo en `fieldMapper.ts` retornaba strings vacíos para campos numéricos
+- Falta de validación de tipos de datos en el mapeo
+- Inconsistencia entre lo que envía el frontend y lo que espera el backend
+
+### **✅ Solución Implementada**
+- Modificada lógica de mapeo para retornar `0` en lugar de `""` para campos numéricos
+- Actualizada función `calculateAge` para manejar fechas vacías
+- Corregido mapeo de todos los campos numéricos en el payload
+- Agregada validación de tipos de datos
+
+### **📊 Archivos Modificados**
+- `src/utils/fieldMapper.ts`
+
+### **🎯 Estado**
+✅ Resuelto
+
+### **📈 Prioridad**
+Alta
+
+### **👥 Asignado**
+Dev Team
+
+---
+
+## 🐛 **BUG-291: Falta dropdown de fuente de ingresos secundarios**
+
+### **📅 Fecha de Reporte**
+2025-01-27
+
+### **📝 Descripción**
+El formulario de análisis financiero no incluía un dropdown para seleccionar la fuente de ingresos secundarios, aunque el campo `secondaryIncomeSource` ya estaba implementado en el mapeo del payload.
+
+### **🎯 Comportamiento Esperado**
+El formulario debe incluir un dropdown para seleccionar la fuente de ingresos secundarios, posicionado entre el input de ingreso principal y el input de ingreso secundario.
+
+### **🔍 Comportamiento Actual**
+- Solo existía dropdown para fuente de ingresos principal
+- Campo `secondaryIncomeSource` no tenía interfaz de usuario
+- Usuario no podía seleccionar fuente para ingreso secundario
+
+### **🔧 Causa Raíz**
+- Campo `secondaryIncomeSource` implementado en backend pero no en frontend
+- Falta de interfaz de usuario para el campo
+- Desalineación entre funcionalidad de mapeo y UI
+
+### **✅ Solución Implementada**
+- Agregado campo `secondaryIncomeSource` a interfaz `FormData`
+- Implementado dropdown en `FinancialAnalysis.tsx`
+- Posicionado correctamente entre inputs principal y secundario
+- Usa mismo catálogo que fuente principal
+- Siempre visible pero no obligatorio
+- Removido texto "(Opcional)" del título
+
+### **📊 Archivos Modificados**
+- `src/components/requestForm/RequestFormProvider.tsx`
+- `src/components/requestForm/FinancialAnalysis.tsx`
+- `src/utils/fieldMapper.ts` (ya implementado)
+- `example-payload-fixed-logic.json`
+
+### **🎯 Estado**
+✅ Resuelto
+
+### **📈 Prioridad**
+Media
+
+### **👥 Asignado**
+Dev Team
+
+---
+
+## 🐛 **BUG-292: Campos específicos no se mapean correctamente en payload final**
 
 ### **📅 Fecha de Reporte**
 2025-01-23

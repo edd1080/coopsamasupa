@@ -1589,3 +1589,83 @@
 - **Estado**: ✅ Completado
 
 ---
+
+### **2025-01-26** - Mejoras en Manejo de Errores y UI
+
+#### 🔧 **Cambio #74: Mejoras en manejo de errores Coopsama con códigos específicos**
+
+- **Archivos modificados**:
+  - `src/components/requestForm/CoopsamaErrorDialog.tsx`
+  - `src/hooks/useFinalizeApplication.tsx`
+  - `src/pages/RequestForm.tsx`
+  - `src/utils/errorMapping.ts`
+- **Problema**: Errores de Coopsama mostraban mensajes genéricos sin información específica
+- **Solución implementada**:
+  - Agregado mapeo de códigos de error Erx001-Erx010 con descripciones específicas
+  - Implementado `CoopsamaErrorDialog` con información detallada del error
+  - Corregido flujo: error detectado → aplicación NO creada → diálogo mostrado
+  - Eliminada validación previa de campos (ya no necesaria)
+  - Corregidos warnings de DOM en diálogos
+- **Estado**: ✅ Completado
+
+#### 🔧 **Cambio #75: Resolución de pantalla en blanco en ApplicationDetails**
+
+- **Archivos modificados**:
+  - `src/pages/ApplicationDetails.tsx`
+  - `src/utils/reviewProgressTracker.ts`
+- **Problema**: Pestaña "detalles" mostraba pantalla en blanco al abrir aplicaciones enviadas
+- **Solución implementada**:
+  - Agregada función `safeRenderValue` para manejar valores vacíos o nulos
+  - Implementado try-catch para capturar errores de renderizado
+  - Agregada validación de `formData` antes de renderizar
+  - Mejorado manejo de objetos vacíos y valores undefined
+- **Estado**: ✅ Completado
+
+#### 🔧 **Cambio #76: Unificación de cálculo de progreso con reviewProgressTracker**
+
+- **Archivos modificados**:
+  - `src/utils/reviewProgressTracker.ts` (nuevo)
+  - `src/components/applications/ApplicationCard.tsx`
+  - `src/pages/ApplicationDetails.tsx`
+  - `src/components/requestForm/DynamicFormHeader.tsx`
+- **Problema**: Diferentes componentes mostraban porcentajes de progreso inconsistentes
+- **Solución implementada**:
+  - Creado `reviewProgressTracker.ts` como fuente única de verdad
+  - Implementada función `getReviewSectionProgress()` centralizada
+  - Actualizados todos los componentes para usar la misma función
+  - Eliminada barra de progreso interna de DynamicFormHeader
+- **Estado**: ✅ Completado
+
+#### 🔧 **Cambio #77: Mejoras en mapeo de campos numéricos**
+
+- **Archivos modificados**:
+  - `src/utils/fieldMapper.ts`
+- **Problema**: Campos numéricos vacíos se mapeaban como strings vacíos `""` en lugar de `0`
+- **Solución implementada**:
+  - Modificada lógica de mapeo para retornar `0` en lugar de `""` para campos numéricos
+  - Actualizada función `calculateAge` para manejar fechas vacías
+  - Corregido mapeo de todos los campos numéricos en el payload
+  - Agregada validación de tipos de datos
+- **Estado**: ✅ Completado
+
+### **2025-01-27** - Implementación de Dropdown de Ingresos Secundarios
+
+#### 🔧 **Cambio #78: Implementación de dropdown de fuente de ingresos secundarios**
+
+- **Archivos modificados**:
+  - `src/components/requestForm/RequestFormProvider.tsx`
+  - `src/components/requestForm/FinancialAnalysis.tsx`
+  - `src/utils/fieldMapper.ts` (ya implementado)
+  - `example-payload-fixed-logic.json`
+- **Problema**: Campo `secondaryIncomeSource` implementado en backend pero sin interfaz de usuario
+- **Solución implementada**:
+  - Agregado campo `secondaryIncomeSource` a interfaz `FormData`
+  - Implementado dropdown en `FinancialAnalysis.tsx`
+  - Posicionado correctamente entre inputs principal y secundario
+  - Usa mismo catálogo que fuente principal (NOMINAL, COMERCIAL, etc.)
+  - Siempre visible pero no obligatorio
+  - Removido texto "(Opcional)" del título de ingreso secundario
+  - Restaurado `mainIncomeSource: false` en ingreso secundario
+- **Estado**: ✅ Completado
+
+---
